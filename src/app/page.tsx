@@ -10,7 +10,7 @@ export default function Home() {
         <Image
           src="./Ajo.svg"
           alt="Ajo Logo"
-          className="relative -left-[2rem] -top-[1.1rem] md:-top-[2rem] m-0"
+          className="relative -left-[2rem] -top-[1rem] m-0"
           width={158}
           height={140}
           loading="lazy"
@@ -42,9 +42,9 @@ export default function Home() {
         </div>
 
         <Image
-          src="./coins.svg"
+          src="./coins_.svg"
           alt="coins growing like a tree"
-          className="relative -left-[1.1rem] mt-8 w-full"
+          className="relative mt-8 w-[120%]"
           width={435}
           height={234}
           loading="lazy"
@@ -59,7 +59,7 @@ export default function Home() {
           </p>
         </div>
       </section>
-      <section className="bg-ajo_darkBlue px-4 pb-10 pt-8 md:flex md:h-screen md:w-1/2 md:items-center md:justify-center">
+      <section className="bg-ajo_darkBlue px-4 md:px-8 pb-10 pt-8 md:flex md:h-screen md:w-1/2 md:items-center md:justify-center">
         <div className="">
           <div className="mb-4">
             <span className="text-ajo_orange text-[32px] leading-10">
