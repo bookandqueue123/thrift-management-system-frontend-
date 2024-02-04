@@ -76,10 +76,7 @@ const MerchantForm = () => {
         </div>
 
         <div className="mb-3">
-          <label
-            htmlFor="url"
-            className="m-0 text-xs font-medium text-white"
-          >
+          <label htmlFor="url" className="m-0 text-xs font-medium text-white">
             Preferred URL
           </label>
           <input
