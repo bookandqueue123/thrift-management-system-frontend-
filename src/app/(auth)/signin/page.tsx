@@ -101,7 +101,7 @@ const page = () => {
           </p>
           <Link href="/">
             <p className="text-ajo_orange text-center text-sm font-semibold hover:underline focus:underline">
-              Sign up!!
+              Sign up!
             </p>
           </Link>
         </div>
