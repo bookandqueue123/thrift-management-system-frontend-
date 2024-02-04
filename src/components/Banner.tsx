@@ -1,18 +1,21 @@
 import Image from "next/image";
+import Link from "next/link";
 
 const Banner = () => {
   const date = new Date();
   const currentYear = date.getFullYear();
   return (
     <section className="mb-4 md:w-1/2">
-      <Image
-        src="./Ajo.svg"
-        alt="Ajo Logo"
-        className="relative -left-[2rem] -top-[1rem] m-0"
-        width={158}
-        height={140}
-        loading="lazy"
-      />
+      <Link href="/">
+        <Image
+          src="./Ajo.svg"
+          alt="Ajo Logo"
+          className="relative -left-[2rem] -top-[1rem] m-0"
+          width={158}
+          height={140}
+          loading="eager"
+        />
+      </Link>
 
       <div className="mx-4 mt-4">
         <span className="mb-4 flex items-center gap-2">
@@ -21,9 +24,9 @@ const Banner = () => {
             alt="bullet point"
             width={25}
             height={40}
-            loading="lazy"
+            // loading="lazy"
           />
-          <p className="text-ajo_blue text-3xl font-bold">Grow your Money</p>
+          <p className="text-3xl font-bold text-ajo_blue">Grow your Money</p>
         </span>
         <span className="flex items-center gap-2">
           <Image
@@ -31,9 +34,9 @@ const Banner = () => {
             alt="bullet point"
             width={25}
             height={40}
-            loading="lazy"
+            // loading="lazy"
           />
-          <p className="text-ajo_blue text-3xl font-bold">Save your Future.</p>
+          <p className="text-3xl font-bold text-ajo_blue">Save your Future.</p>
         </span>
       </div>
 
@@ -47,10 +50,10 @@ const Banner = () => {
       />
 
       <div className="mt-8">
-        <p className="text-ajo_orange text-center text-xs font-semibold md:text-base">
+        <p className="text-center text-xs font-semibold text-ajo_orange md:text-base">
           Powered by Raoatech
         </p>
-        <p className="text-ajo_orange text-center text-xs md:text-base">
+        <p className="text-center text-xs text-ajo_orange md:text-base">
           ©{currentYear}
         </p>
       </div>

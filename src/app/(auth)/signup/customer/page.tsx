@@ -1,24 +1,11 @@
-import Image from "next/image";
-import Link from "next/link";
-
 export const metadata = {
-  title: "SignUp",
+  title: "Customer SignUp | Ajo by Raoatech",
   description: "Create your account",
 };
 
 const page = () => {
   return (
-    <section className="bg-ajo_darkBlue px-4 pb-10 pt-8 md:flex md:h-full md:w-1/2 md:items-center md:justify-center md:px-8">
-      <div className="">
-        <p className="text-center text-3xl font-bold text-white md:text-6xl">
-          SignUp
-        </p>
-        <p className="mt-2 text-center text-sm text-ajo_orange">
-          Experience the power of seamless savings with Ajo.{" "}
-          <span className="font-semibold">
-            Kindly Fill in your details in the fields provided below:
-          </span>
-        </p>
+
         <form className="mt-8">
           <div className="mb-8">
             <div className="flex w-full items-center justify-between gap-4">
@@ -85,7 +72,7 @@ const page = () => {
                   *
                 </span>
               </label>
-              <div className="mt-1 flex w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] gap-2">
+              <div className="mt-1 flex w-full gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
                 <span className="flex h-full w-1/5 select-none items-center gap-2 text-gray-400 sm:text-sm">
                   {/* <Image
                     src="./NG.svg"
@@ -184,18 +171,7 @@ const page = () => {
             Create account
           </button>
         </form>
-        <div className="mt-6 justify-center md:flex md:gap-1">
-          <p className="text-center text-sm font-semibold text-white">
-            Don’t have an account yet?
-          </p>
-          <Link href="/signin">
-            <p className="text-center text-sm font-semibold text-ajo_orange hover:underline focus:underline">
-              Sign In!
-            </p>
-          </Link>
-        </div>
-      </div>
-    </section>
+       
   );
 };
 
