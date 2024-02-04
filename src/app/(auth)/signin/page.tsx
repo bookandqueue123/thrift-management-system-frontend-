@@ -95,7 +95,7 @@ const page = () => {
             LogIn
           </button>
         </form>
-        <div className="mt-6 md:flex md:gap-1">
+        <div className="mt-6 md:flex md:gap-1 justify-center">
           <p className="text-center text-sm font-semibold text-white">
             Don’t have an account yet?
           </p>
