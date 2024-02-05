@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function Home() {
   
   return (
-    <main className="md:flex md:h-screen md:items-center">
+    <main className="md:flex">
       <Banner/>
       <section className="bg-ajo_darkBlue px-4 md:px-8 pb-10 pt-8 md:flex md:h-screen md:w-1/2 md:items-center md:justify-center">
         <div className="">

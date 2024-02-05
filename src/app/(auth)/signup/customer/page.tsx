@@ -1,9 +1,11 @@
+import Link from "next/link";
+
 export const metadata = {
   title: "Customer SignUp | Ajo by Raoatech",
   description: "Create your account",
 };
 
-const page = () => {
+const Page = () => {
   return (
     <form className="mt-8">
       <div className="mb-8">
@@ -62,14 +64,8 @@ const page = () => {
             Phone Number{" "}
             <span className="font-base font-semibold text-[#FF0000]">*</span>
           </label>
-          <div className="mt-1 flex w-full gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-            <span className="flex h-full w-1/5 select-none items-center gap-2 text-gray-400 sm:text-sm">
-              {/* <Image
-                    src="./NG.svg"
-                    alt="nigerian flag"
-                    width={18}
-                    height={13.5}
-                  /> */}
+          <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+            <span className="flex h-full select-none items-center gap-2 text-gray-400 sm:text-sm">
               <svg
                 width="20"
                 height="16"
@@ -99,7 +95,8 @@ const page = () => {
               id="phone"
               name="phone"
               type="tel"
-              className="w-4/5 bg-transparent outline-none"
+              required
+              className="bg-transparent outline-none"
             />
           </div>
         </div>
@@ -128,6 +125,7 @@ const page = () => {
             id="password"
             name="password"
             type="password"
+            required
             className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
           />
         </div>
@@ -143,18 +141,21 @@ const page = () => {
             id="confirm-password"
             name="confirm-password"
             type="confirm-password"
+            required
             className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
           />
         </div>
       </div>
-      <button
-        type="submit"
-        className="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
-      >
-        Create account
-      </button>
+      <Link href="customer/kyc">
+        <button
+          type="submit"
+          className="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
+        >
+          Create account
+        </button>
+      </Link>
     </form>
   );
 };
 
-export default page;
+export default Page;

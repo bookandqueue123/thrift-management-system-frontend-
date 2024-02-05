@@ -1,4 +1,6 @@
+"use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React from "react";
 
 export default function RootLayout({
@@ -6,9 +8,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  // console.log(pathname)
   return (
-    <section className="bg-ajo_darkBlue px-4 pb-10 pt-8 md:flex md:w-1/2 md:items-center  md:justify-center md:px-8 md:py-12 md:pt-52">
-      <div className="">
+    <section className="bg-ajo_darkBlue px-4 pb-10 pt-8 md:flex md:w-1/2 md:items-center  md:justify-center md:px-8 md:py-12">
+      <div className="h-[100%]">
         <div>
           <h1 className="text-center text-3xl font-bold text-white md:text-6xl">
             SignUp
@@ -21,16 +25,18 @@ export default function RootLayout({
           </h3>
         </div>{" "}
         {children}
-        <div className="mt-6 justify-center md:flex md:gap-1">
-          <p className="text-center text-sm font-semibold text-white">
-            Don’t have an account yet?
-          </p>
-          <Link href="/signin">
-            <p className="text-center text-sm font-semibold text-ajo_orange hover:underline focus:underline">
-              Sign In!
+        {pathname !== "/signup/customer/kyc" && (
+          <div className="mt-6 justify-center md:flex md:gap-1">
+            <p className="text-center text-sm font-semibold text-white">
+              Don’t have an account yet?
             </p>
-          </Link>
-        </div>
+            <Link href="/signin">
+              <p className="text-center text-sm font-semibold text-ajo_orange hover:underline focus:underline">
+                Sign In!
+              </p>
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );

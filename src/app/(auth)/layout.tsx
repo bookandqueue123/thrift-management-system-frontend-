@@ -8,7 +8,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <main className="md:flex md:h-screen md:items-center">
+        <main className="md:flex">
           <Banner />
           {children}
         </main>
