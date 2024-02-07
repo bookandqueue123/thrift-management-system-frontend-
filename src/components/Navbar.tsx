@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
-const CustomerDashboardNavbar = () => {
+const CustomerNavbar = () => {
   const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
   const [DropdownMenuIsOpen, setDropdownMenuIsOpen] = useState(false);
 
@@ -153,4 +153,4 @@ const CustomerDashboardNavbar = () => {
   );
 };
 
-export default CustomerDashboardNavbar;
+export default CustomerNavbar;
