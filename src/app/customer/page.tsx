@@ -1,9 +1,13 @@
-import React from 'react'
+import CustomerDashboardNavbar from "@/components/Navbar";
 
-const Customer = () => {
+import React from "react";
+
+const CustomerDashboard = () => {
   return (
-    <div>Customer</div>
-  )
-}
+    <main className="h-screen bg-ajo_darkBlue">
+      <CustomerDashboardNavbar/>
+    </main>
+  );
+};
 
-export default Customer
+export default CustomerDashboard;
