@@ -1,4 +1,6 @@
+import { DashboardCard } from "@/components/Cards";
 import CustomerNavbar from "@/components/Navbar";
+import AmountFormatter from "@/utils/AmountFormatter";
 import Image from "next/image";
 
 import React from "react";
@@ -11,7 +13,7 @@ const CustomerDashboard = () => {
     nextWithdrawalDate: new Date("2024-02-12"),
   };
   return (
-    <div className="container px-4 py-2 md:px-16 md:py-8">
+    <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
       <div className="mb-4 space-y-2">
         <h6 className="text-base font-bold text-ajo_offWhite opacity-60">
           Dashboard
@@ -23,11 +25,12 @@ const CustomerDashboard = () => {
           </span>
         </p>
       </div>
-      <section className="mt-6 gap-y-4 flex flex-col mb-12 md:flex-row md:items-stretch md:gap-x-4 md:gap-y-0">
-        <div className="flex items-center justify-between rounded-[20px] bg-[rgba(255,255,255,0.1)] pl-5">
-          <div className="space-y-6">
+      <section className="mb-12 mt-6 flex flex-col gap-y-4 md:flex-row md:items-stretch md:gap-x-4 md:gap-y-0">
+        <DashboardCard
+          illustrationName="stars"
+          topValue={
             <div className="inline-block">
-              <div className="flex items-center justify-start gap-x-1 rounded-lg bg-[rgba(255,255,255,0.1)] px-2 py-1">
+              <button className="flex items-center justify-start gap-x-1 rounded-lg bg-[rgba(255,255,255,0.1)] px-2 py-1 hover:bg-[rgba(255,255,255,0.2)] focus:bg-[rgba(255,255,255,0.2)]">
                 <svg
                   width="14"
                   height="12"
@@ -41,47 +44,24 @@ const CustomerDashboard = () => {
                   />
                 </svg>
                 <p className="text-[10px] text-ajo_offWhite">Hide Balance</p>
-              </div>
+              </button>
             </div>
-            <div className="">
-              <p className="text-xs font-semibold text-ajo_offWhite">
-                Current Savings Balance
-              </p>
-              <p className="text-3xl font-extrabold text-white">
-                N{user.acctBalance}
-              </p>
-            </div>
-          </div>
-          <Image
-            src="/stars.svg"
-            alt="stars"
-            width={150}
-            height={145}
-            className=""
-          />
-        </div>
-        <div className="flex items-center justify-between rounded-[20px] bg-[rgba(255,255,255,0.1)] pl-5">
-          <div className="space-y-6">
+          }
+          bottomValueTopText="Current Savings Balance"
+          bottomValueBottomText={`N${AmountFormatter(user.acctBalance)}`}
+        />
+        <DashboardCard
+          illustrationName="calendar"
+          topValue={
             <p className="text-sm font-semibold text-ajo_offWhite">
               Next Withdrawal Date
             </p>
-            <div className="">
-              <p className="text-xs font-medium text-ajo_offWhite">
-                {user.nextWithdrawalDate.toDateString()}
-              </p>
-              <p className="text-3xl font-extrabold text-white">
-                {user.nextWithdrawalDate.toLocaleDateString("en-GB")}
-              </p>
-            </div>
-          </div>
-          <Image
-            src="/calendar.svg"
-            alt="stars"
-            width={150}
-            height={145}
-            className=""
-          />
-        </div>
+          }
+          bottomValueTopText={user.nextWithdrawalDate.toDateString()}
+          bottomValueBottomText={user.nextWithdrawalDate.toLocaleDateString(
+            "en-GB",
+          )}
+        />
       </section>
     </div>
   );
