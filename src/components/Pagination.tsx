@@ -57,7 +57,7 @@ const PaginationBar = ({ apiResponse, updatePagination }: { apiResponse: any[]; 
         </button>
         {renderPageLinks()}
         <button
-          onClick={updatePagination()}
+          // onClick={updatePagination()}
           className="px-2 py-2 text-sm font-semibold text-gray-400 hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100 rounded-md"
         >
           <span className="sr-only">Next</span>
