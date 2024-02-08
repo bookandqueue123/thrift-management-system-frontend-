@@ -86,7 +86,7 @@ const CustomerDashboard = () => {
         </div>
 
         <div>
-          <p className="pl-2 text-[10px] text-ajo_offWhite">
+          <p className="pl-2 text-xs text-ajo_offWhite">
             *Please Scroll sideways to view all content
           </p>
           <TransactionsTable
