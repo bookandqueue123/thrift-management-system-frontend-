@@ -1,4 +1,6 @@
+import { FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
+import { SearchInput } from "@/components/Forms";
 import CustomerNavbar from "@/components/Navbar";
 import AmountFormatter from "@/utils/AmountFormatter";
 import Image from "next/image";
@@ -62,6 +64,27 @@ const CustomerDashboard = () => {
             "en-GB",
           )}
         />
+      </section>
+      <section>
+        <div className="flex flex-col gap-2">
+          <p className="min-w-16 truncate text-sm font-semibold text-ajo_offWhite">
+            Recent Transactions
+          </p>
+          <span className="flex items-center gap-3">
+            <SearchInput />
+            <FilterDropdown
+              options={[
+                "Timestamp",
+                "Name",
+                "Email",
+                "Phone",
+                "Channel",
+                "Amount",
+                "Status",
+              ]}
+            />
+          </span>
+        </div>
       </section>
     </div>
   );
