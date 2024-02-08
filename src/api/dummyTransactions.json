@@ -1,0 +1,72 @@
+[
+  {
+    "transactionDate": "07/09/2022, 06:31",
+    "reference": "RTUU653167F",
+    "customerName": "Ayoleyi Lurogho",
+    "emailAddress": "ayolurogho@gmail.com",
+    "phoneNumber": "08102914133",
+    "channel": "Bank Deposit",
+    "amount": 5000,
+    "transactionStatus": "pending"
+  },
+  {
+    "transactionDate": "07/09/2022, 07:45",
+    "reference": "RTUU653168F",
+    "customerName": "John Doe",
+    "emailAddress": "johndoe@gmail.com",
+    "phoneNumber": "08012345678",
+    "channel": "Online Payment",
+    "amount": 7000,
+    "transactionStatus": "pending"
+  },
+  {
+    "transactionDate": "07/09/2022, 08:20",
+    "reference": "RTUU653169F",
+    "customerName": "Jane Smith",
+    "emailAddress": "janesmith@gmail.com",
+    "phoneNumber": "09098765432",
+    "channel": "Credit Card Payment",
+    "amount": 10000,
+    "transactionStatus": "pending"
+  },
+  {
+    "transactionDate": "07/09/2022, 09:10",
+    "reference": "RTUU653170F",
+    "customerName": "Michael Johnson",
+    "emailAddress": "michaeljohnson@gmail.com",
+    "phoneNumber": "07011223344",
+    "channel": "Bank Transfer",
+    "amount": 12000,
+    "transactionStatus": "failed"
+  },
+  {
+    "transactionDate": "07/09/2022, 10:15",
+    "reference": "RTUU653171F",
+    "customerName": "Grace Williams",
+    "emailAddress": "gracewilliams@gmail.com",
+    "phoneNumber": "08099887766",
+    "channel": "Bank Deposit",
+    "amount": 8500,
+    "transactionStatus": "failed"
+  },
+  {
+    "transactionDate": "07/09/2022, 11:30",
+    "reference": "RTUU653172F",
+    "customerName": "David Brown",
+    "emailAddress": "davidbrown@gmail.com",
+    "phoneNumber": "08123456789",
+    "channel": "Online Payment",
+    "amount": 9500,
+    "transactionStatus": "success"
+  },
+  {
+    "transactionDate": "07/09/2022, 11:30",
+    "reference": "RTUU653172F",
+    "customerName": "David Brown",
+    "emailAddress": "davidbrown@gmail.com",
+    "phoneNumber": "08123456789",
+    "channel": "Online Payment",
+    "amount": 9500,
+    "transactionStatus": "success"
+  }
+]

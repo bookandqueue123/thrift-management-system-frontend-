@@ -75,7 +75,7 @@ const CustomerNavbar = () => {
                   return (
                     <Link
                       key={route}
-                      href={route !== "dashboard" ? route : "/customer"}
+                      href={route !== "dashboard" ? `/customer/${route}` : "/customer"}
                       className={`rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}
                     >
                       {route}
@@ -116,7 +116,9 @@ const CustomerNavbar = () => {
                   return (
                     <Link
                       key={route}
-                      href={route !== "sign out" ? route : logout()}
+                      href={
+                        route !== "sign out" ? `/customer/${route}` : logout()
+                      }
                       className={`block px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
                     >
                       {route}

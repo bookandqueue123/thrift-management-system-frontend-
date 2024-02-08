@@ -1,11 +1,9 @@
 import { FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
 import { SearchInput } from "@/components/Forms";
-import CustomerNavbar from "@/components/Navbar";
+import TransactionsTable from "@/components/Tables";
 import AmountFormatter from "@/utils/AmountFormatter";
-import Image from "next/image";
-
-import React from "react";
+import DummyTransactions from "@/api/dummyTransactions.json";
 
 const CustomerDashboard = () => {
   const user = {
@@ -14,6 +12,7 @@ const CustomerDashboard = () => {
     acctBalance: 203935,
     nextWithdrawalDate: new Date("2024-02-12"),
   };
+
   return (
     <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
       <div className="mb-4 space-y-2">
@@ -66,7 +65,7 @@ const CustomerDashboard = () => {
         />
       </section>
       <section>
-        <div className="flex flex-col gap-2">
+        <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <p className="min-w-16 truncate text-sm font-semibold text-ajo_offWhite">
             Recent Transactions
           </p>
@@ -85,9 +84,71 @@ const CustomerDashboard = () => {
             />
           </span>
         </div>
+
+        <div>
+          <p className="pl-2 text-[10px] text-ajo_offWhite">
+            *Please Scroll sideways to view all content
+          </p>
+          <TransactionsTable
+            headers={["Date", "Reference", "Channel", "Amount", "Status"]}
+            content={DummyTransactions.map((transaction, index) => (
+              <tr className="" key={index}>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {transaction.transactionDate}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {transaction.reference}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {transaction.channel}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {AmountFormatter(Number(transaction.amount))} NGN
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  <StatusIndicator label={transaction.transactionStatus} />
+                </td>
+              </tr>
+            ))}
+          />
+        </div>
       </section>
     </div>
   );
 };
 
 export default CustomerDashboard;
+
+const StatusIndicator = ({ label }: { label: string }) => {
+  const getIndicatorStyles = (label: string) => {
+    switch (label.toLowerCase()) {
+      case "pending":
+        return {
+          bgClass: "bg-pendingBg",
+          textClass: "text-pendingText",
+        };
+      case "success":
+        return {
+          bgClass: "bg-successBg",
+          textClass: "text-successText",
+        };
+      case "failed":
+        return {
+          bgClass: "bg-failedBg",
+          textClass: "text-errorText",
+        };
+      default:
+        return {
+          bgClass: "",
+          textClass: "",
+        };
+    }
+  };
+
+  const { bgClass, textClass } = getIndicatorStyles(label);
+  return (
+    <div className={`${bgClass} px-3 py-2 rounded-lg`}>
+      <p className={`text-sm font-medium ${textClass} capitalize text-center`}>{label}</p>
+    </div>
+  );
+};
