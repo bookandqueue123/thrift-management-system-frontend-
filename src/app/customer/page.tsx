@@ -4,6 +4,7 @@ import { SearchInput } from "@/components/Forms";
 import TransactionsTable from "@/components/Tables";
 import AmountFormatter from "@/utils/AmountFormatter";
 import DummyTransactions from "@/api/dummyTransactions.json";
+import PaginationBar from "@/components/Pagination";
 
 const CustomerDashboard = () => {
   const user = {
@@ -110,6 +111,13 @@ const CustomerDashboard = () => {
                 </td>
               </tr>
             ))}
+          />
+          <PaginationBar
+            apiResponse={[
+              { id: 1, data: "some data" },
+              { id: 2, data: "some data" },
+              { id: 3, data: "some data" },
+            ]}
           />
         </div>
       </section>
