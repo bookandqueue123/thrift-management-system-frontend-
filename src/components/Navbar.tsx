@@ -70,19 +70,19 @@ const CustomerNavbar = () => {
               />
             </div>
             <div className="hidden items-center gap-x-2 md:flex">
-              {endpoints.map(
-                (route) => {
-                  return (
-                    <Link
-                      key={route}
-                      href={route !== "dashboard" ? `/customer/${route}` : "/customer"}
-                      className={`rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}
-                    >
-                      {route}
-                    </Link>
-                  );
-                },
-              )}
+              {endpoints.map((route) => {
+                return (
+                  <Link
+                    key={route}
+                    href={
+                      route !== "dashboard" ? `/customer/${route}` : "/customer"
+                    }
+                    className={`rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}
+                  >
+                    {route}
+                  </Link>
+                );
+              })}
             </div>
           </div>
           <div className="pr-2 md:pl-11">
@@ -133,21 +133,21 @@ const CustomerNavbar = () => {
 
       {/* <!-- Mobile menu, show/hide based on menu state. --> */}
       {DropdownMenuIsOpen && (
-        <div className="md:hidden">
+        <div className="absolute z-10 w-full rounded-b-lg bg-ajo_darkBlue md:hidden">
           <div className="space-y-1 px-2 pb-3 pt-2">
-            {endpoints.map(
-              (route) => {
-                return (
-                  <Link
-                    key={route}
-                    href={route !== "dashboard" ? route : "/customer"}
-                    className={`block rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}
-                  >
-                    {route}
-                  </Link>
-                );
-              },
-            )}
+            {endpoints.map((route) => {
+              return (
+                <Link
+                  key={route}
+                  href={
+                    route !== "dashboard" ? `/customer/${route}` : "/customer"
+                  }
+                  className={`block rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}
+                >
+                  {route}
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}
