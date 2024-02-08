@@ -113,11 +113,7 @@ const CustomerDashboard = () => {
             ))}
           />
           <PaginationBar
-            apiResponse={[
-              { id: 1, data: "some data" },
-              { id: 2, data: "some data" },
-              { id: 3, data: "some data" },
-            ]}
+            apiResponse={DummyTransactions}
           />
         </div>
       </section>
