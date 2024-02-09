@@ -1,19 +1,22 @@
+"use client";
 import { CustomButton } from "@/components/Buttons";
+import { useRouter } from "next/navigation";
 
-// 'use client'
-export const metadata = {
-  title: "Customer SignUp | Ajo by Raoatech",
-  description: "Create your account",
-};
 
 const Page = () => {
-  const handleSubmit = async () => {
-    "use server"
-    console.log('Account Created!!!!!!!!!!!!!!!!')
-      // return;
+  const router = useRouter();
+
+  const handleSubmit = async (event: { preventDefault: () => void }) => {
+    event.preventDefault();
+    try {
+      console.log("Account Created!");
+      router.push("/customer");
+    } catch (error) {
+      console.error("Error creating account:", error);
     }
+  };
   return (
-    <form className="mt-8">
+    <form className="mt-8" onSubmit={handleSubmit}>
       <div className="mb-8">
         <div className="flex w-full items-center justify-between gap-4">
           <div className="mb-3 w-1/2">
@@ -152,7 +155,11 @@ const Page = () => {
           />
         </div>
       </div>
-      <CustomButton type="submit" style="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500" onButtonClick={handleSubmit} label="Create account"/> 
+      <CustomButton
+        type="submit"
+        style="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
+        label="Create account"
+      />
     </form>
   );
 };
