@@ -16,7 +16,7 @@ const Kyc = () => {
         <div className="mx-[10%] flex items-center gap-x-2">
           <div
             id="kyc1"
-            className="flex h-4 w-4 items-center justify-center rounded-lg border border-ajo_orange bg-ajo_offWhite mb-1"
+            className="mb-1 flex h-4 w-4 items-center justify-center rounded-lg border border-ajo_orange bg-ajo_offWhite"
           >
             <div className="h-2 w-2  rounded-lg bg-ajo_orange"></div>
           </div>
@@ -24,14 +24,14 @@ const Kyc = () => {
           <span className="flex-grow border-t-[1px] border-dashed border-ajo_orange"></span>
           <div
             id="kyc2"
-            className="flex h-4 w-4 items-center justify-center rounded-lg border border-ajo_orange bg-ajo_offWhite mb-1"
+            className="mb-1 flex h-4 w-4 items-center justify-center rounded-lg border border-ajo_orange bg-ajo_offWhite"
           >
             <div className="h-2 w-2  rounded-lg bg-ajo_orange"></div>
           </div>
           <span className="flex-grow border-t-[1px] border-dashed border-ajo_orange"></span>
           <div
             id="kyc3"
-            className="flex h-4 w-4 items-center justify-center rounded-lg border border-ajo_orange bg-ajo_offWhite mb-1"
+            className="mb-1 flex h-4 w-4 items-center justify-center rounded-lg border border-ajo_orange bg-ajo_offWhite"
           >
             <div className="h-2 w-2  rounded-lg bg-ajo_orange"></div>
           </div>
@@ -340,6 +340,20 @@ const Kyc = () => {
               <input
                 id="bvn"
                 name="bvn"
+                type="text"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+            </div>
+            <div className="mb-3">
+              <label
+                htmlFor="bank-acct-no"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Bank Account Number (All withdrawals will be made into this account)
+              </label>
+              <input
+                id="bank-acct-no"
+                name="bank-acct-no"
                 type="text"
                 className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
