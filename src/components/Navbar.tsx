@@ -2,16 +2,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import AvatarDropdown from "./Dropdowns";
 
 const CustomerNavbar = () => {
   const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
   const [DropdownMenuIsOpen, setDropdownMenuIsOpen] = useState(false);
 
   const endpoints = ["dashboard", "wallet", "withdrawals", "transactions"];
-  const logout = () => {
-    console.log("logged out");
-    return "logged out";
-  };
+
   return (
     <nav className="border-ajo_offWhite border-opacity-40 md:border-b">
       <div className="mx-auto max-w-7xl px-2 md:px-6 lg:px-8">
@@ -85,49 +83,8 @@ const CustomerNavbar = () => {
               })}
             </div>
           </div>
-          <div className="pr-2 md:pl-11">
-            {/* <!-- Profile dropdown --> */}
-            <button
-              type="button"
-              className="flex items-center gap-x-2 rounded-full"
-              onClick={() => setAvatarMenuIsOpen(!AvatarMenuIsOpen)}
-            >
-              <Image
-                className="h-6 w-6 rounded-full"
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                alt="user image"
-                width={24}
-                height={24}
-              />
-              <svg width="10" height="5" viewBox="0 0 12 7" fill="none">
-                <path
-                  d="M1 1L6 6L11 1"
-                  stroke="#BDBDBD"
-                  strokeWidth="1"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span className="sr-only">Open user menu</span>
-            </button>
-            {AvatarMenuIsOpen && (
-              <div className="absolute right-0 top-14 z-10 mt-2 w-48 origin-top-right rounded-md bg-white bg-opacity-20 py-1 shadow-lg">
-                {["profile", "settings", "sign out"].map((route, index) => {
-                  return (
-                    <Link
-                      key={route}
-                      href={
-                        route !== "sign out" ? `/customer/${route}` : logout()
-                      }
-                      className={`block px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
-                    >
-                      {route}
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          <AvatarDropdown avatarImg="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" routeOptions={["profile", "settings", "sign out"]} logoutFn={()=>{}} />
+          
         </div>
       </div>
 
@@ -169,7 +126,7 @@ export const Sidebar = () => {
   return (
     <div
       className="h-screen w-44 space-y-10
-border-r border-r-ajo_offWhite bg-transparent"
+border-r border-r-ajo_offWhite border-opacity-80 bg-transparent"
     >
       <div className="px-6 py-6">
         <Link href="/" tabIndex={-1} className="outline-none">
@@ -188,7 +145,9 @@ border-r border-r-ajo_offWhite bg-transparent"
             return (
               <Link
                 key={route}
-                href={route === "dashboard" ? "/merchant" : route}
+                href={
+                  route === "dashboard" ? "/merchant" : `/merchant/${route}`
+                }
                 className="block rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
               >
                 {route}
@@ -196,12 +155,12 @@ border-r border-r-ajo_offWhite bg-transparent"
             );
           })}
         </div>
-          <button
-            onClick={() => {}}
-            className="block rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100 text-start"
-          >
-            Sign Out
-          </button>
+        <button
+          onClick={() => {}}
+          className="block rounded-lg px-4 py-2 text-start text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
+        >
+          Sign Out
+        </button>
       </nav>
     </div>
   );
