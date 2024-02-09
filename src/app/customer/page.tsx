@@ -5,6 +5,7 @@ import TransactionsTable from "@/components/Tables";
 import AmountFormatter from "@/utils/AmountFormatter";
 import DummyTransactions from "@/api/dummyTransactions.json";
 import PaginationBar from "@/components/Pagination";
+import Alert from "@/components/Alert";
 
 const CustomerDashboard = () => {
   const user = {
@@ -12,10 +13,19 @@ const CustomerDashboard = () => {
     lastName: "Olanrewaju",
     acctBalance: 203935,
     nextWithdrawalDate: new Date("2024-02-12"),
+    hasKyc: false,
   };
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
+      {!user.hasKyc && (
+        <Alert
+          content="Please upload your KYC documents to ensure uninterrupted service. Thank you."
+          endpoint="signup/customer/kyc"
+          buttonLabel="upload Kyc Details"
+          variant={user.hasKyc ? "success" : "error"}
+        />
+      )}
       <div className="mb-4 space-y-2">
         <h6 className="text-base font-bold text-ajo_offWhite opacity-60">
           Dashboard
@@ -112,9 +122,7 @@ const CustomerDashboard = () => {
               </tr>
             ))}
           />
-          <PaginationBar
-            apiResponse={DummyTransactions}
-          />
+          <PaginationBar apiResponse={DummyTransactions} />
         </div>
       </section>
     </div>
@@ -151,8 +159,10 @@ export const StatusIndicator = ({ label }: { label: string }) => {
 
   const { bgClass, textClass } = getIndicatorStyles(label);
   return (
-    <div className={`${bgClass} px-3 py-2 rounded-lg`}>
-      <p className={`text-sm font-medium ${textClass} capitalize text-center`}>{label}</p>
+    <div className={`${bgClass} rounded-lg px-3 py-2`}>
+      <p className={`text-sm font-medium ${textClass} text-center capitalize`}>
+        {label}
+      </p>
     </div>
   );
 };
