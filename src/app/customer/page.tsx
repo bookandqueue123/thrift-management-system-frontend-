@@ -1,11 +1,11 @@
+import DummyTransactions from "@/api/dummyTransactions.json";
+import Alert from "@/components/Alert";
 import { FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
 import { SearchInput } from "@/components/Forms";
+import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import AmountFormatter from "@/utils/AmountFormatter";
-import DummyTransactions from "@/api/dummyTransactions.json";
-import PaginationBar from "@/components/Pagination";
-import Alert from "@/components/Alert";
 
 const CustomerDashboard = () => {
   const user = {

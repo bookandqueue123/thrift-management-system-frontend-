@@ -8,51 +8,106 @@ const Kyc = () => {
   const [kycSection, setKycSection] = useState<
     "personal" | "next of kin" | "identification" | "final"
   >("personal");
+  const [filledSection, setFilledSection] = useState<string[]>([]);
 
   const socials = ["facebook", "linkedin", "instagram", "twitter", "envelope"];
+
+  const handleSectionComplete = (section: string) => {
+    // check if the section is already in the filledSection array
+    if (!filledSection.includes(section)) {
+      // if not, add it to the array and update the state
+      setFilledSection([...filledSection, section]);
+    }
+    // then, move to the next section
+    switch (section) {
+      case "personal":
+        setKycSection("next of kin");
+        break;
+      case "next of kin":
+        setKycSection("identification");
+        break;
+      case "identification":
+        setKycSection("final");
+        break;
+      default:
+        break;
+    }
+  };
+
+  console.log("after:", filledSection);
+
+  const getIndicatorColor = (previousSection: string) => {
+    const color = {
+      borderColor: "border-ajo_orange",
+      bgColor: "bg-ajo_orange",
+      textColor: "text-ajo_orange",
+    };
+    return filledSection.includes(previousSection)
+      ? color
+      : {
+          borderColor: "border-ajo_offWhite",
+          bgColor: "bg-ajo_offWhite",
+          textColor: "text-ajo_offWhite",
+        };
+  };
+
+  const prevSection =
+    kycSection === "next of kin"
+      ? "personal"
+      : kycSection === "identification"
+        ? "next of kin"
+        : "identification";
+
+
+  const { borderColor, bgColor, textColor } = getIndicatorColor(prevSection);
+  console.log(getIndicatorColor(prevSection));
   return (
     <>
       <div className="mx-auto mb-10 mt-8 w-[90%] align-middle">
         <div className="mx-[10%] flex items-center gap-x-2">
           <div
             id="kyc1"
-            className="mb-1 flex h-4 w-4 items-center justify-center rounded-lg border border-ajo_orange bg-ajo_offWhite"
+            className={`mb-1 flex h-4 w-4 items-center justify-center rounded-lg border ${borderColor} bg-ajo_offWhite`}
           >
-            <div className="h-2 w-2  rounded-lg bg-ajo_orange"></div>
+            <div className={`h-2 w-2  rounded-lg ${bgColor}`}></div>
           </div>
 
-          <span className="flex-grow border-t-[1px] border-dashed border-ajo_orange"></span>
+          <span
+            className={`flex-grow border-t-[1px] border-dashed ${borderColor}`}
+          ></span>
           <div
             id="kyc2"
-            className="mb-1 flex h-4 w-4 items-center justify-center rounded-lg border border-ajo_orange bg-ajo_offWhite"
+            className={`mb-1 flex h-4 w-4 items-center justify-center rounded-lg border ${borderColor} bg-ajo_offWhite`}
           >
-            <div className="h-2 w-2  rounded-lg bg-ajo_orange"></div>
+            <div className={`h-2 w-2  rounded-lg ${bgColor}`}></div>
           </div>
-          <span className="flex-grow border-t-[1px] border-dashed border-ajo_orange"></span>
+          <span
+            className={`flex-grow border-t-[1px] border-dashed ${borderColor}`}
+          ></span>
           <div
             id="kyc3"
-            className="mb-1 flex h-4 w-4 items-center justify-center rounded-lg border border-ajo_orange bg-ajo_offWhite"
+            className={`mb-1 flex h-4 w-4 items-center justify-center rounded-lg border ${borderColor} bg-ajo_offWhite`}
           >
-            <div className="h-2 w-2  rounded-lg bg-ajo_orange"></div>
+            <div className={`h-2 w-2  rounded-lg ${bgColor}`}></div>
           </div>
         </div>
         <div className="flex items-center justify-between">
           <label
             htmlFor="kyc1"
-            className="text-center text-xs font-semibold text-ajo_orange"
+            className={`text-center text-xs font-semibold ${textColor}`}
           >
             Personal Details
           </label>
 
           <label
             htmlFor="kyc2"
-            className="text-center text-xs font-semibold text-ajo_orange"
+            className={`text-center text-xs font-semibold ${textColor}`}
           >
             Next of Kin Details
           </label>
           <label
             htmlFor="kyc3"
-            className="text-center text-xs font-semibold text-ajo_orange"
+            className={`text-center text-xs font-semibold ${textColor}`}
           >
             Identification Details
           </label>
@@ -349,7 +404,8 @@ const Kyc = () => {
                 htmlFor="bank-acct-no"
                 className="m-0 text-xs font-medium text-white"
               >
-                Bank Account Number (All withdrawals will be made into this account)
+                Bank Account Number (All withdrawals will be made into this
+                account)
               </label>
               <input
                 id="bank-acct-no"
@@ -473,15 +529,7 @@ const Kyc = () => {
             <button
               type="button"
               className="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
-              onClick={() => {
-                kycSection === "personal"
-                  ? setKycSection("next of kin")
-                  : kycSection === "next of kin"
-                    ? setKycSection("identification")
-                    : kycSection === "identification"
-                      ? setKycSection("final")
-                      : null;
-              }}
+              onClick={() => handleSectionComplete(kycSection)}
             >
               Next
             </button>

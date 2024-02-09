@@ -6,7 +6,7 @@ const Banner = () => {
   const currentYear = date.getFullYear();
   return (
     <section className="mb-4 md:mb-0 md:w-1/2">
-      <Link href="/">
+      <Link href="/" tabIndex={-1}>
         <Image
           src="/Ajo.svg"
           alt="Ajo Logo"
@@ -14,6 +14,7 @@ const Banner = () => {
           width={158}
           height={140}
           loading="eager"
+          tabIndex={-1}
         />
       </Link>
 

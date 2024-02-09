@@ -1,13 +1,11 @@
+import DummyTransactions from "@/api/dummyTransactions.json";
 import { FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
 import { SearchInput } from "@/components/Forms";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import AmountFormatter from "@/utils/AmountFormatter";
-import React from "react";
 import { StatusIndicator } from "../customer/page";
-import DummyTransactions from "@/api/dummyTransactions.json";
-
 
 const MerchantDashboard = () => {
   const organization = {

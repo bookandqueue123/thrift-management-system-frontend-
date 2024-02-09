@@ -1,10 +1,9 @@
+import DummyTransactions from "@/api/dummyTransactions.json";
 import { FilterDropdown } from "@/components/Buttons";
 import { SearchInput } from "@/components/Forms";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import AmountFormatter from "@/utils/AmountFormatter";
-import DummyTransactions from "@/api/dummyTransactions.json";
-import React from "react";
 import { StatusIndicator } from "../page";
 
 const Transactions = () => {
