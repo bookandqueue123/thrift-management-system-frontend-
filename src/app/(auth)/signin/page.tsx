@@ -88,12 +88,12 @@ const page = () => {
             </div>
           </div>
 
-          <button
+          <Link href="/customer"><button
             type="submit"
             className="bg-ajo_blue w-full rounded-md py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
           >
             LogIn
-          </button>
+          </button></Link>
         </form>
         <div className="mt-6 md:flex md:gap-1 justify-center">
           <p className="text-center text-sm font-semibold text-white">

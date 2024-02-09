@@ -156,3 +156,53 @@ const CustomerNavbar = () => {
 };
 
 export default CustomerNavbar;
+
+export const Sidebar = () => {
+  const merchantRoutes = [
+    "dashboard",
+    "customers",
+    "posting",
+    "location",
+    "history",
+    "analytics",
+  ];
+  return (
+    <div
+      className="h-screen w-44 space-y-10
+border-r border-r-ajo_offWhite bg-transparent"
+    >
+      <div className="px-6 py-6">
+        <Link href="/" tabIndex={-1} className="outline-none">
+          <Image
+            className="h-8 w-auto"
+            src="/Ajo2.svg"
+            alt="Ajo Logo"
+            width={20}
+            height={20}
+          />
+        </Link>
+      </div>
+      <nav className="mt-6 flex h-4/5 flex-col justify-between px-2">
+        <div className="space-y-4">
+          {merchantRoutes.map((route) => {
+            return (
+              <Link
+                key={route}
+                href={route === "dashboard" ? "/merchant" : route}
+                className="block rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
+              >
+                {route}
+              </Link>
+            );
+          })}
+        </div>
+          <button
+            onClick={() => {}}
+            className="block rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100 text-start"
+          >
+            Sign Out
+          </button>
+      </nav>
+    </div>
+  );
+};

@@ -1,9 +1,9 @@
 import React from 'react'
 
-const Merchant = () => {
+const MerchantDashboard = () => {
   return (
     <div>Merchant</div>
   )
 }
 
-export default Merchant
+export default MerchantDashboard

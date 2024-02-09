@@ -19,7 +19,10 @@ export const FilterDropdown = ({
           id="filter"
           name="filter"
           className="w-full bg-transparent text-ajo_offWhite text-opacity-60 outline-none hover:outline-none focus:outline-none cursor-pointer"
+          defaultValue={"Filter"}
+          
         >
+          <option disabled defaultValue={"Filter"}className="hidden">Filter</option>
           {options.map((option) => (
             <option
               className="bg-[rgba(34,28,62,.9)] px-4 py-4 text-sm capitalize hover:text-ajo_darkBlue cursor-pointer"

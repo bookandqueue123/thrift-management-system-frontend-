@@ -35,7 +35,7 @@ export default function Home() {
           <Link href="/signup/merchant">
             <div className="cursor-pointer rounded-lg border border-[#E0E0E0] bg-white bg-opacity-20 px-6 py-4 hover:bg-opacity-40 focus:bg-opacity-40">
               <h6 className="text-ajo_offWhite mb-1 text-left font-bold">
-                Sign Up as a Merchant
+                Sign Up as an Organization
               </h6>
               <p className="text-ajo_offWhite text-justify text-sm font-light">
                 Optimize your financial operations with Ajo&apos;s

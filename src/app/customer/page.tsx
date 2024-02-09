@@ -123,7 +123,7 @@ const CustomerDashboard = () => {
 
 export default CustomerDashboard;
 
-const StatusIndicator = ({ label }: { label: string }) => {
+export const StatusIndicator = ({ label }: { label: string }) => {
   const getIndicatorStyles = (label: string) => {
     switch (label.toLowerCase()) {
       case "pending":
