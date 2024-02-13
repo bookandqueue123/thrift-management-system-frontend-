@@ -17,9 +17,9 @@ const MerchantDashboard = () => {
   return (
     <>
       <div className="mb-4 space-y-2">
-        <h6 className="text-base font-bold text-ajo_offWhite opacity-60">
+        <p className="text-base font-bold text-ajo_offWhite text-opacity-60">
           Dashboard
-        </h6>
+        </p>
         <p className="text-sm text-ajo_offWhite">
           Welcome, <span className="font-bold">{organization.Name}</span>
         </p>

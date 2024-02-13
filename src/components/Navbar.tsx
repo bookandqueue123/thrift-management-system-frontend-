@@ -1,11 +1,17 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import {
+  Dispatch,
+  ReactElement,
+  ReactHTML,
+  SetStateAction,
+  useState,
+} from "react";
 import AvatarDropdown from "./Dropdowns";
 
 const CustomerNavbar = () => {
-  const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
+  // const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
   const [DropdownMenuIsOpen, setDropdownMenuIsOpen] = useState(false);
 
   const endpoints = ["dashboard", "wallet", "withdrawals", "transactions"];
@@ -83,8 +89,11 @@ const CustomerNavbar = () => {
               })}
             </div>
           </div>
-          <AvatarDropdown avatarImg="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" routeOptions={["profile", "settings", "sign out"]} logoutFn={()=>{}} />
-          
+          <AvatarDropdown
+            avatarImg="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+            routeOptions={["profile", "settings", "sign out"]}
+            logoutFn={() => {}}
+          />
         </div>
       </div>
 
@@ -114,7 +123,21 @@ const CustomerNavbar = () => {
 
 export default CustomerNavbar;
 
-export const Sidebar = () => {
+export const Sidebar = ({
+  onShow,
+  setShow,
+}: {
+  onShow: boolean;
+  setShow: Dispatch<SetStateAction<boolean>>;
+}) => {
+  const toggleSidebar = () => {
+    return onShow ? "visible" : "invisible";
+  };
+
+  const toggleLeftPadding = () => {
+    return onShow && "pl-4 md:pl-12";
+  };
+
   const merchantRoutes = [
     "dashboard",
     "customers",
@@ -123,45 +146,101 @@ export const Sidebar = () => {
     "history",
     "analytics",
   ];
-  return (
-    <div
-      className="h-screen w-44 space-y-10
-border-r border-r-ajo_offWhite border-opacity-80 bg-transparent"
+
+  const MenuBtn = ({ icon, positioning }: { icon: ReactElement; positioning?: string; }) => (
+    <button
+      type="button"
+      className={`${positioning} inline-flex cursor-pointer items-center justify-center rounded-md p-2 pl-0 text-gray-400 ${toggleLeftPadding()}`}
+      aria-controls="mobile-menu"
+      aria-expanded="false"
+      tabIndex={-1}
+      onClick={() => setShow(!onShow)}
     >
-      <div className="px-6 py-6">
-        <Link href="/" tabIndex={-1} className="outline-none">
-          <Image
-            className="h-8 w-auto"
-            src="/Ajo2.svg"
-            alt="Ajo Logo"
-            width={20}
-            height={20}
-          />
-        </Link>
-      </div>
-      <nav className="mt-6 flex h-4/5 flex-col justify-between px-2">
-        <div className="space-y-4">
-          {merchantRoutes.map((route) => {
-            return (
-              <Link
-                key={route}
-                href={
-                  route === "dashboard" ? "/merchant" : `/merchant/${route}`
-                }
-                className="block rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
+      <span className="sr-only">Open main menu</span>
+      {icon}
+    </button>
+  );
+  return (
+    <aside>
+      <div
+        className={`${toggleSidebar()} fixed h-full w-44 space-y-10 border-r border-r-ajo_offWhite border-opacity-80 bg-ajo_darkBlue`}
+      >
+        <div className="px-6 py-6 flex items-center justify-between w-full">
+          <Link href="/" tabIndex={-1} className="outline-none">
+            <Image
+              className="h-8 w-auto"
+              src="/Ajo2.svg"
+              alt="Ajo Logo"
+              width={20}
+              height={20}
+            />
+          </Link>
+
+          <MenuBtn
+            icon={
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+                aria-hidden="true"
               >
-                {route}
-              </Link>
-            );
-          })}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            }
+          />
         </div>
-        <button
-          onClick={() => {}}
-          className="block rounded-lg px-4 py-2 text-start text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
-        >
-          Sign Out
-        </button>
-      </nav>
-    </div>
+        <nav className="mt-6 flex h-3/4 flex-col justify-between px-2 to">
+          <div className="space-y-4">
+            {merchantRoutes.map((route) => {
+              return (
+                <Link
+                  key={route}
+                  href={
+                    route === "dashboard" ? "/merchant" : `/merchant/${route}`
+                  }
+                  className="block rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
+                >
+                  {route}
+                </Link>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => {}}
+            className="block rounded-lg px-4 py-2 text-start text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
+          >
+            Sign Out
+          </button>
+        </nav>
+      </div>
+      {/* <!-- Mobile menu button--> */}
+      {!onShow && (
+        <MenuBtn
+          positioning="absolute top-3.5"
+          icon={
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+              />
+            </svg>
+          }
+        />
+      )}
+    </aside>
   );
 };
