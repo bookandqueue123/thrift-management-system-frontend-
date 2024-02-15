@@ -151,8 +151,8 @@ export const StatusIndicator = ({ label }: { label: string }) => {
         };
       default:
         return {
-          bgClass: "",
-          textClass: "",
+          bgClass: "bg-pendingBg",
+          textClass: "text-ajo_offWhite",
         };
     }
   };

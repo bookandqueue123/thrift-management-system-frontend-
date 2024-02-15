@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Abdulrahman Musa",
+    "created_At": "2024-01-15",
+    "email": "abdulrahman.musa@gmail.com",
+    "phone": "+2348031234567",
+    "state": "Lagos",
+    "local_govt": "Ikeja"
+  },
+  {
+    "name": "Chinwe Okonkwo",
+    "created_At": "2024-01-14",
+    "email": "chinwe.okonkwo@yahoo.com",
+    "phone": "+2348065432109",
+    "state": "Anambra",
+    "local_govt": "Awka"
+  },
+  {
+    "name": "Fatima Ahmed",
+    "created_At": "2024-01-13",
+    "email": "fatima.ahmed@outlook.com",
+    "phone": "+2348098765432",
+    "state": "Kano",
+    "local_govt": "Nassarawa"
+  },
+  {
+    "name": "Emmanuel Ojo",
+    "created_At": "2024-01-12",
+    "email": "emmanuel.ojo@ajo.com",
+    "phone": "+2348076543210",
+    "state": "Oyo",
+    "local_govt": "Ibadan North"
+  },
+  {
+    "name": "Maryam Bello",
+    "created_At": "2024-01-11",
+    "email": "maryam.bello@hotmail.com",
+    "phone": "+2348054321098",
+    "state": "Kaduna",
+    "local_govt": "Zaria"
+  },
+  {
+    "name": "Chinedu Eze",
+    "created_At": "2024-01-10",
+    "email": "chinedu.eze@gmail.com",
+    "phone": "+2348043210987",
+    "state": "Enugu",
+    "local_govt": "Nsukka"
+  },
+  {
+    "name": "Aisha Yusuf",
+    "created_At": "2024-01-09",
+    "email": "aisha.yusuf@yahoo.com",
+    "phone": "+2348032109876",
+    "state": "Sokoto",
+    "local_govt": "Sokoto North"
+  },
+  {
+    "name": "Tunde Adeyemi",
+    "created_At": "2024-01-08",
+    "email": "tunde.adeyemi@outlook.com",
+    "phone": "+2348021098765",
+    "state": "Ogun",
+    "local_govt": "Abeokuta South"
+  },
+  {
+    "name": "Halima Mohammed",
+    "created_At": "2024-01-07",
+    "email": "halima.mohammed@ajo.com",
+    "phone": "+2348010987654",
+    "state": "Borno",
+    "local_govt": "Maiduguri"
+  },
+  {
+    "name": "Uche Nwosu",
+    "created_At": "2024-01-06",
+    "email": "uche.nwosu@hotmail.com",
+    "phone": "+2348009876543",
+    "state": "Imo",
+    "local_govt": "Owerri"
+  }
+]
