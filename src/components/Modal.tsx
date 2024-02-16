@@ -7,7 +7,7 @@ const Modal = ({
   children,
 }: {
   setModalState: Dispatch<SetStateAction<boolean>>;
-  title: string;
+  title?: string;
   children: React.ReactNode;
 }) => {
   return (
@@ -17,7 +17,7 @@ const Modal = ({
         className="fixed inset-0 z-10 flex items-center justify-center"
         // onClick={() => setModalState(false)}
       >
-        <div className="w-4/5 overflow-hidden rounded-lg bg-[#090E2C] bg-[url('/squiggly.svg')] bg-cover bg-center bg-no-repeat">
+        <div className="w-4/5 rounded-lg bg-[#090E2C] bg-[url('/squiggly.svg')] bg-cover bg-center bg-no-repeat pb-8">
           <div className="flex w-full items-center justify-between overflow-hidden">
             <Image
               src="/Ajo.svg"

@@ -145,8 +145,50 @@ const PostingForm = () => {
           <option>Medical</option>
         </select>
       </div>
+      <div className="items-center gap-6  md:flex">
+        <label
+          htmlFor="check-group"
+          className="m-0 w-[16%] text-xs font-medium text-white"
+        >
+          Is this payment for today?
+        </label>
+        <div id="check-group" className="flex items-center w-[80%] gap-8 my-3 justify-start">
+          <span className="flex items-center gap-2">
+            <input
+              id="yes"
+              name="payment"
+              type="radio"
+              className="border-1 h-4 w-4 border-ajo_offWhite bg-transparent cursor-pointer"
+            />
+            <label
+              htmlFor="yes"
+              className="m-0 whitespace-nowrap text-sm font-medium text-ajo_offWhite cursor-pointer"
+            >
+              Yes
+            </label>
+          </span>
+          <span className="flex items-center gap-2">
+            <input
+              id="no"
+              name="payment"
+              type="radio"
+              className="border-1 h-4 w-4 border-ajo_offWhite bg-transparent cursor-pointer"
+            />
+            <label
+              htmlFor="no"
+              className="m-0 whitespace-nowrap text-sm font-medium text-ajo_offWhite cursor-pointer"
+            >
+              No
+            </label>
+          </span>
+        </div>
+      </div>
+      <p className="text-sm text-ajo_offWhite text-opacity-60">
+        Payment Coverage Tenure (Kindly select the date range this payment is to
+        cover)
+      </p>
       <div className="flex w-full items-center justify-between gap-x-8">
-        <div className="items-center gap-6 md:flex md:w-[60%] w-[50%]">
+        <div className="w-[50%] items-center gap-6 md:flex md:w-[60%]">
           <label
             htmlFor="start-date"
             className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white md:w-[40%]"
@@ -160,7 +202,7 @@ const PostingForm = () => {
             className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
           />
         </div>
-        <div className="items-center gap-6 md:flex w-[50%] md:w-[40%]">
+        <div className="w-[50%] items-center gap-6 md:flex md:w-[40%]">
           <label
             htmlFor="end-date"
             className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
@@ -171,7 +213,7 @@ const PostingForm = () => {
             id="end-date"
             name="end-date"
             type="date"
-            className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] md:bg-none bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+            className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
           />
         </div>
       </div>
@@ -195,7 +237,7 @@ const PostingForm = () => {
           <option>Cash</option>
         </select>
       </div>
-      <div className="items-center gap-6 md:flex">
+      <div className="items-center gap-6 md:flex pb-4">
         <label
           htmlFor="narration"
           className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
@@ -208,6 +250,17 @@ const PostingForm = () => {
           rows={3}
           className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-sm text-[#7D7D7D]"
         ></textarea>
+      </div>
+      <div className="flex items-center">
+        <span className="invisible w-[20%]">Submit</span>
+        <div className="flex md:w-[80%] justify-center">
+          <CustomButton
+            type="button"
+            label="Submit"
+            style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 md:w-[60%]"
+            onButtonClick={() => {}}
+          />
+        </div>
       </div>
     </form>
   );
