@@ -6,10 +6,13 @@ import TransactionsTable from "@/components/Tables";
 import { StatusIndicator } from "@/app/customer/page";
 import DummyCustomers from "@/api/dummyCustomers.json";
 import Modal from "@/components/Modal";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 const Posting = () => {
   const [modalState, setModalState] = useState(false);
+  const [modalContent, setModalContent] = useState<"form" | "confirmation">(
+    "form",
+  );
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -37,11 +40,21 @@ const Posting = () => {
             type="button"
             label="Post Payment"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-            onButtonClick={() => setModalState(true)}
+            onButtonClick={() => {
+              setModalState(true);
+              setModalContent("form");
+            }}
           />
           {modalState && (
-            <Modal setModalState={setModalState} title="Post Payment">
-              <PostingForm />
+            <Modal
+              setModalState={setModalState}
+              title={modalContent === "confirmation" ? "" : "Post Payment"}
+            >
+              {modalContent === "confirmation" ? (
+                <PostConfirmation />
+              ) : (
+                <PostingForm onSubmit={setModalContent} />
+              )}
             </Modal>
           )}
         </div>
@@ -92,9 +105,13 @@ const Posting = () => {
 
 export default Posting;
 
-const PostingForm = () => {
+const PostingForm = ({
+  onSubmit,
+}: {
+  onSubmit: Dispatch<SetStateAction<"form" | "confirmation">>;
+}) => {
   return (
-    <form className="mx-auto h-full w-[75%] space-y-3">
+    <form className="mx-auto w-[75%] space-y-3">
       <div className="items-center gap-6 md:flex">
         <label
           htmlFor="acc-number"
@@ -152,17 +169,20 @@ const PostingForm = () => {
         >
           Is this payment for today?
         </label>
-        <div id="check-group" className="flex items-center w-[80%] gap-8 my-3 justify-start">
+        <div
+          id="check-group"
+          className="my-3 flex w-[80%] items-center justify-start gap-8"
+        >
           <span className="flex items-center gap-2">
             <input
               id="yes"
               name="payment"
               type="radio"
-              className="border-1 h-4 w-4 border-ajo_offWhite bg-transparent cursor-pointer"
+              className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
             />
             <label
               htmlFor="yes"
-              className="m-0 whitespace-nowrap text-sm font-medium text-ajo_offWhite cursor-pointer"
+              className="m-0 cursor-pointer whitespace-nowrap text-sm font-medium text-ajo_offWhite"
             >
               Yes
             </label>
@@ -172,11 +192,11 @@ const PostingForm = () => {
               id="no"
               name="payment"
               type="radio"
-              className="border-1 h-4 w-4 border-ajo_offWhite bg-transparent cursor-pointer"
+              className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
             />
             <label
               htmlFor="no"
-              className="m-0 whitespace-nowrap text-sm font-medium text-ajo_offWhite cursor-pointer"
+              className="m-0 cursor-pointer whitespace-nowrap text-sm font-medium text-ajo_offWhite"
             >
               No
             </label>
@@ -237,7 +257,7 @@ const PostingForm = () => {
           <option>Cash</option>
         </select>
       </div>
-      <div className="items-center gap-6 md:flex pb-4">
+      <div className="items-center gap-6 pb-4 md:flex">
         <label
           htmlFor="narration"
           className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
@@ -253,15 +273,99 @@ const PostingForm = () => {
       </div>
       <div className="flex items-center">
         <span className="invisible w-[20%]">Submit</span>
-        <div className="flex md:w-[80%] justify-center">
+        <div className="flex justify-center md:w-[80%]">
           <CustomButton
             type="button"
             label="Submit"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 md:w-[60%]"
-            onButtonClick={() => {}}
+            onButtonClick={() => onSubmit("confirmation")}
           />
         </div>
       </div>
     </form>
+  );
+};
+
+const PostConfirmation = () => {
+  const accountNumber = "0230533122";
+  const amount = "5000 NGN";
+  const time = "09:09:27 PM";
+  const purpose = "Daily Savings";
+  const payment = "Payment is for today";
+  const startDate = "12/04/2023";
+  const endDate = "12/04/2023";
+  const paymentMode = "Cash";
+  const narration = "Upkeep Money";
+  const status = "Payment Successful";
+
+  return (
+    <div className="mx-auto h-full w-[75%] bg-ajo_offWhite py-8">
+      <p className="mb-8 text-center text-3xl font-bold text-black">Posting</p>
+      <div className="space-y-4">
+        {" "}
+        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+          <p className="text-sm font-semibold text-[#7D7D7D]">
+            Account Number:
+          </p>
+          <p className="text-sm text-[#7D7D7D]">{accountNumber}</p>
+        </div>
+        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+          <p className="text-sm font-semibold text-[#7D7D7D]">Amount:</p>
+          <p className="text-sm text-[#7D7D7D]">{amount}</p>
+        </div>
+        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+          <p className="text-sm font-semibold text-[#7D7D7D]">Time:</p>
+          <p className="text-sm text-[#7D7D7D]">{time}</p>
+        </div>
+        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+          <p className="text-sm font-semibold text-[#7D7D7D]">Purpose:</p>
+          <p className="text-sm text-[#7D7D7D]">{purpose}</p>
+        </div>
+        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+          <p className="text-sm font-semibold text-[#7D7D7D]">Payment:</p>
+          <p className="text-sm text-[#7D7D7D]">{payment}</p>
+        </div>
+        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+          <p className="text-sm font-semibold text-[#7D7D7D]">Start Date:</p>
+          <p className="text-sm text-[#7D7D7D]">{startDate}</p>
+        </div>
+        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+          <p className="text-sm font-semibold text-[#7D7D7D]">End Date:</p>
+          <p className="text-sm text-[#7D7D7D]">{endDate}</p>
+        </div>
+        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+          <p className="text-sm font-semibold text-[#7D7D7D]">Payment Mode:</p>
+          <p className="text-sm text-[#7D7D7D]">{paymentMode}</p>
+        </div>
+        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+          <p className="text-sm font-semibold text-[#7D7D7D]">Narration:</p>
+          <p className="text-sm text-[#7D7D7D]">{narration}</p>
+        </div>
+        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+          <p className="text-sm font-semibold text-[#7D7D7D]">Status:</p>
+          <p className="text-sm text-[#7D7D7D]">{status}</p>
+        </div>
+      </div>
+      <div className="mx-auto my-8 flex items-center justify-center gap-x-8 px-8 md:w-[50%]">
+        <CustomButton
+          type="button"
+          label="Download"
+          style="rounded-md bg-ajo_offWhite border border-ajo_blue py-3 px-9 text-sm text-ajo_blue hover:text-ajo_offWhite focus:text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 w-1/2"
+          // onButtonClick={() => onSubmit("confirmation")}
+        />
+        <CustomButton
+          type="button"
+          label="Share"
+          style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 w-1/2"
+          // onButtonClick={() => onSubmit("confirmation")}
+        />
+      </div>
+      <div className="bg-ajo_orange px-8 py-4">
+        <p className="text-center text-xs font-medium text-ajo_offWhite">
+          For further enquiries and assistance kindly send a mail
+          ajo@raoatech.com or call +23497019767
+        </p>
+      </div>
+    </div>
   );
 };
