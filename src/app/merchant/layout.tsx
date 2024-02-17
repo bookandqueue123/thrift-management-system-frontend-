@@ -24,9 +24,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <main className="flex bg-ajo_darkBlue">
-          <section className={`w-full px-4 md:px-12 ${leftPadding}`}>
-            <Sidebar onShow={ShowSidebar} setShow={setShowSidebar}/>
+        <main className={`w-full px-4 md:px-12 ${leftPadding} bg-ajo_darkBlue min-h-screen`}>
+          {/* <section> */}
+            <Sidebar onShow={ShowSidebar} setShow={setShowSidebar} />
             <div className="flex justify-end py-6">
               <AvatarDropdown
                 avatarImg="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
@@ -35,7 +35,7 @@ export default function RootLayout({
             </div>
 
             {children}
-          </section>
+          {/* </section> */}
         </main>
       </body>
     </html>

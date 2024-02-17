@@ -4,6 +4,7 @@ import { FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
 import { SearchInput } from "@/components/Forms";
 import PaginationBar from "@/components/Pagination";
+import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import AmountFormatter from "@/utils/AmountFormatter";
 
@@ -131,38 +132,4 @@ const CustomerDashboard = () => {
 
 export default CustomerDashboard;
 
-export const StatusIndicator = ({ label }: { label: string }) => {
-  const getIndicatorStyles = (label: string) => {
-    switch (label.toLowerCase()) {
-      case "pending":
-        return {
-          bgClass: "bg-pendingBg",
-          textClass: "text-pendingText",
-        };
-      case "success":
-        return {
-          bgClass: "bg-successBg",
-          textClass: "text-successText",
-        };
-      case "failed":
-        return {
-          bgClass: "bg-failedBg",
-          textClass: "text-errorText",
-        };
-      default:
-        return {
-          bgClass: "bg-pendingBg",
-          textClass: "text-ajo_offWhite",
-        };
-    }
-  };
 
-  const { bgClass, textClass } = getIndicatorStyles(label);
-  return (
-    <div className={`${bgClass} rounded-lg px-3 py-2`}>
-      <p className={`text-sm font-medium ${textClass} text-center capitalize`}>
-        {label}
-      </p>
-    </div>
-  );
-};

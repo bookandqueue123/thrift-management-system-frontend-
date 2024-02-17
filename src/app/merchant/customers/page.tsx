@@ -1,14 +1,32 @@
-"use client"
+"use client";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import { SearchInput } from "@/components/Forms";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import DummyCustomers from "@/api/dummyCustomers.json";
+import { client } from "@/api/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import { customer } from "@/types";
+import { AxiosError, AxiosResponse } from "axios";
 
 const Customers = () => {
-  const AddCustomer = () => {
-    
-  }
+  const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
+    queryKey: ["allCustomers"],
+    queryFn: async () => {
+      return client
+        .get("/api/user?role=customer", {
+        })
+        .then((response: AxiosResponse<customer[], any>) => {
+          console.log(response);
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          console.log(error)
+        });
+    },
+  });
+
+  const AddCustomer = () => {};
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -50,19 +68,19 @@ const Customers = () => {
               "State",
               "Local Govt Area",
             ]}
-            content={DummyCustomers.map((customer, index) => (
+            content={allCustomers?.map((customer, index) => (
               <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.name}
+                  {customer.firstName + " " + customer.lastName}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.created_At}
+                  {customer.createdAt}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {customer.email}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.phone}
+                  {customer.phoneNumber}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {customer.state}
@@ -73,7 +91,7 @@ const Customers = () => {
               </tr>
             ))}
           />
-          <PaginationBar apiResponse={DummyCustomers} />
+          {/* <PaginationBar apiResponse={allCustomers !== undefined && allCustom} /> */}
         </div>
       </section>
     </>

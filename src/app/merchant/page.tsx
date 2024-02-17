@@ -5,7 +5,7 @@ import { SearchInput } from "@/components/Forms";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import AmountFormatter from "@/utils/AmountFormatter";
-import { StatusIndicator } from "../customer/page";
+import { StatusIndicator } from "@/components/StatusIndicator";
 
 const MerchantDashboard = () => {
   const organization = {

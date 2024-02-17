@@ -3,8 +3,8 @@ import { FilterDropdown, CustomButton } from "@/components/Buttons";
 import { SearchInput } from "@/components/Forms";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
-import { StatusIndicator } from "@/app/customer/page";
-import DummyCustomers from "@/api/dummyCustomers.json";
+import { StatusIndicator } from "@/components/StatusIndicator";
+// import DummyCustomers from "@/api/dummyCustomers.json";
 import Modal from "@/components/Modal";
 import { Dispatch, SetStateAction, useState } from "react";
 
@@ -13,6 +13,18 @@ const Posting = () => {
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
     "form",
   );
+  const [postDetails, setPostDetails] = useState({
+    name: "Ayoleyi Lurogho",
+    transaction_id: "RTUU653167F  ",
+    email: "ayolurogho@gamil.com",
+    phone: "08102914133",
+    state: "Ogun State",
+    local_govt: "Abeokuta",
+  });
+
+  const DummyCustomers: (typeof postDetails)[] = [];
+
+  DummyCustomers.push(postDetails);
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -53,7 +65,11 @@ const Posting = () => {
               {modalContent === "confirmation" ? (
                 <PostConfirmation />
               ) : (
-                <PostingForm onSubmit={setModalContent} />
+                <PostingForm
+                  onSubmit={setModalContent}
+                  formState={postDetails}
+                  updateFormState={setPostDetails}
+                />
               )}
             </Modal>
           )}
@@ -76,7 +92,7 @@ const Posting = () => {
                   {customer.name}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.created_At}
+                  {customer.transaction_id}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {customer.email}
@@ -91,7 +107,7 @@ const Posting = () => {
                   {customer.local_govt}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  <StatusIndicator label={"Add Details"} />
+                  <StatusIndicator label={"View Details"} />
                 </td>
               </tr>
             ))}
@@ -107,11 +123,33 @@ export default Posting;
 
 const PostingForm = ({
   onSubmit,
+  formState,
+  updateFormState,
 }: {
   onSubmit: Dispatch<SetStateAction<"form" | "confirmation">>;
+  formState: Object;
+  updateFormState: Dispatch<
+    SetStateAction<{
+      name: string;
+      transaction_id: string;
+      email: string;
+      phone: string;
+      state: string;
+      local_govt: string;
+    }>
+  >;
 }) => {
+  const handleChange = (e: { target: { name: any; value: any } }) => {
+    const { name, value } = e.target;
+    updateFormState((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const onSubmitHandler = () => {
+    console.log(formState);
+    onSubmit("confirmation");
+  };
   return (
-    <form className="mx-auto w-[75%] space-y-3">
+    <form className="mx-auto w-[75%] space-y-3" onSubmit={onSubmitHandler}>
       <div className="items-center gap-6 md:flex">
         <label
           htmlFor="acc-number"
@@ -124,6 +162,7 @@ const PostingForm = ({
           name="acc-number"
           type="text"
           className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+          onChange={handleChange}
         />
       </div>
       <div className="items-center gap-6 md:flex">
@@ -138,6 +177,7 @@ const PostingForm = ({
           name="amount"
           type="text"
           className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+          onChange={handleChange}
         />
       </div>
       <div className="items-center gap-6 md:flex">
@@ -152,6 +192,7 @@ const PostingForm = ({
           name="purpose"
           className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] "
           defaultValue={"Select a category"}
+          onChange={handleChange}
         >
           <option disabled defaultValue={"Filter"} className="hidden">
             Select a category
@@ -179,6 +220,7 @@ const PostingForm = ({
               name="payment"
               type="radio"
               className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
+              onChange={handleChange}
             />
             <label
               htmlFor="yes"
@@ -193,6 +235,7 @@ const PostingForm = ({
               name="payment"
               type="radio"
               className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
+              onChange={handleChange}
             />
             <label
               htmlFor="no"
@@ -220,6 +263,7 @@ const PostingForm = ({
             name="start-date"
             type="date"
             className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+            onChange={handleChange}
           />
         </div>
         <div className="w-[50%] items-center gap-6 md:flex md:w-[40%]">
@@ -234,6 +278,7 @@ const PostingForm = ({
             name="end-date"
             type="date"
             className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+            onChange={handleChange}
           />
         </div>
       </div>
@@ -269,6 +314,7 @@ const PostingForm = ({
           name="narration"
           rows={3}
           className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-sm text-[#7D7D7D]"
+          onChange={handleChange}
         ></textarea>
       </div>
       <div className="flex items-center">
@@ -278,7 +324,7 @@ const PostingForm = ({
             type="button"
             label="Submit"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 md:w-[60%]"
-            onButtonClick={() => onSubmit("confirmation")}
+            onButtonClick={onSubmitHandler}
           />
         </div>
       </div>
@@ -343,7 +389,7 @@ const PostConfirmation = () => {
         </div>
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Status:</p>
-          <p className="text-sm text-[#7D7D7D]">{status}</p>
+          <p className="text-sm font-semibold text-successText">{status}</p>
         </div>
       </div>
       <div className="mx-auto my-8 flex items-center justify-center gap-x-8 px-8 md:w-[50%]">

@@ -1,0 +1,15 @@
+export type customer = {
+    _id: string,
+    firstName: string,
+    lastName: string,
+    otherName: string,
+    email: string,
+    phoneNumber: string,
+    accountNumber: number,
+    role: "customer" | "merchant" | "organization",
+    kycVerified: boolean,
+    organisation: string,
+    createdAt: string,
+    updatedAt: string,
+    __v: number,
+} 
