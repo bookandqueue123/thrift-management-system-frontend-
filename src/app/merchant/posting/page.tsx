@@ -1,11 +1,14 @@
 "use client";
-import { FilterDropdown, CustomButton } from "@/components/Buttons";
+import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import { SearchInput } from "@/components/Forms";
-import PaginationBar from "@/components/Pagination";
-import TransactionsTable from "@/components/Tables";
 import { StatusIndicator } from "@/components/StatusIndicator";
+import TransactionsTable from "@/components/Tables";
 // import DummyCustomers from "@/api/dummyCustomers.json";
+import { client } from "@/api/hooks/useAuth";
 import Modal from "@/components/Modal";
+import { customer, postSavingsResponse, setSavingsResponse } from "@/types";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { AxiosError, AxiosResponse } from "axios";
 import { Dispatch, SetStateAction, useState } from "react";
 
 const Posting = () => {
@@ -13,18 +16,27 @@ const Posting = () => {
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
     "form",
   );
-  const [postDetails, setPostDetails] = useState({
-    name: "Ayoleyi Lurogho",
-    transaction_id: "RTUU653167F  ",
-    email: "ayolurogho@gamil.com",
-    phone: "08102914133",
-    state: "Ogun State",
-    local_govt: "Abeokuta",
+  const [postingResponse, setPostingResponse] = useState<postSavingsResponse>();
+  console.log(postingResponse);
+
+  // const DummyCustomers: (typeof postDetails)[] = [];
+
+  const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
+    queryKey: ["allCustomers"],
+    queryFn: async () => {
+      return client
+        .get("/api/user?role=customer", {})
+        .then((response: AxiosResponse<customer[], any>) => {
+          console.log(response);
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          console.log(error);
+        });
+    },
   });
 
-  const DummyCustomers: (typeof postDetails)[] = [];
-
-  DummyCustomers.push(postDetails);
+  // allCustomers.push(postDetails);
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -63,12 +75,12 @@ const Posting = () => {
               title={modalContent === "confirmation" ? "" : "Post Payment"}
             >
               {modalContent === "confirmation" ? (
-                <PostConfirmation />
+                <PostConfirmation postingResponse={postingResponse} />
               ) : (
                 <PostingForm
                   onSubmit={setModalContent}
-                  formState={postDetails}
-                  updateFormState={setPostDetails}
+                  Customers={allCustomers}
+                  setPostingResponse={setPostingResponse}
                 />
               )}
             </Modal>
@@ -86,25 +98,25 @@ const Posting = () => {
               "Local Govt Area",
               "Action",
             ]}
-            content={DummyCustomers.map((customer, index) => (
+            content={allCustomers?.map((customer, index) => (
               <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.name}
+                  {customer.firstName + " " + customer.lastName || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.transaction_id}
+                  {customer.transaction_id || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {customer.email}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.phone}
+                  {customer.phoneNumber}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.state}
+                  {customer.state || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.local_govt}
+                  {customer.lga || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   <StatusIndicator label={"View Details"} />
@@ -123,34 +135,94 @@ export default Posting;
 
 const PostingForm = ({
   onSubmit,
-  formState,
-  updateFormState,
+  Customers,
+  setPostingResponse,
 }: {
   onSubmit: Dispatch<SetStateAction<"form" | "confirmation">>;
-  formState: Object;
-  updateFormState: Dispatch<
-    SetStateAction<{
-      name: string;
-      transaction_id: string;
-      email: string;
-      phone: string;
-      state: string;
-      local_govt: string;
-    }>
-  >;
+  Customers: void | customer[] | undefined;
+  setPostingResponse: Dispatch<SetStateAction<postSavingsResponse | undefined>>;
 }) => {
+  // TODO remove the organization ID later
+  const organizationID = "65d06c2886b396b76ebb736d";
+  const [postDetails, setPostDetails] = useState({
+    customerId: "",
+    purposeName: "",
+    amount: 15000,
+    startDate: "",
+    endDate: "",
+    collectionDate: "",
+    organisation: "",
+    frequency: "daily",
+    savingId: "",
+    paymentMode: "",
+    narrative: "",
+  });
+
   const handleChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target;
-    updateFormState((prev) => ({ ...prev, [name]: value }));
+    setPostDetails((prev) => ({ ...prev, [name]: value }));
   };
 
+  const { mutate: setSavings, isPending: isSettingSavings } = useMutation({
+    mutationFn: async () => {
+      return client.post(
+        `/api/saving/${postDetails.customerId?.split(":")[1]?.trim()}`,
+        {
+          purposeName: postDetails.purposeName,
+          amount: Number(postDetails.amount),
+          startDate: postDetails.startDate,
+          endDate: postDetails.endDate,
+          collectionDate: postDetails.collectionDate,
+          organisation: postDetails.organisation || organizationID,
+          frequency: postDetails.frequency,
+        },
+      );
+    },
+    onSuccess(response: AxiosResponse<setSavingsResponse, any>) {
+      setPostDetails((prev) => ({ ...prev, savingId: response.data.id }));
+      console.log(response.data);
+    },
+    onError(error: AxiosError<any, any>) {
+      console.log(error.response);
+    },
+  });
+
+  const { mutate: postSavings } = useMutation({
+    mutationFn: async () => {
+      return client.post(
+        `/api/saving/${postDetails.customerId?.split(":")[1]?.trim()}/${postDetails.savingId}`,
+        {
+          paidDays: {
+            dates: [postDetails.startDate, postDetails.endDate],
+            amount: postDetails.amount,
+          },
+          paymentMode: postDetails.paymentMode,
+          narrative: postDetails.narrative,
+          purposeName: postDetails.purposeName,
+          amount: Number(postDetails.amount),
+          startDate: postDetails.startDate,
+          endDate: postDetails.endDate,
+        },
+      );
+    },
+    onSuccess(response: AxiosResponse<postSavingsResponse, any>) {
+      setPostingResponse(response.data);
+      console.log(response.data);
+    },
+    onError(error: AxiosError<any, any>) {
+      console.log(error.response);
+    },
+  });
+
   const onSubmitHandler = () => {
-    console.log(formState);
+    console.log(postDetails);
+    setSavings();
+    !isSettingSavings && postSavings();
     onSubmit("confirmation");
   };
   return (
     <form className="mx-auto w-[75%] space-y-3" onSubmit={onSubmitHandler}>
-      <div className="items-center gap-6 md:flex">
+      {/* <div className="items-center gap-6 md:flex">
         <label
           htmlFor="acc-number"
           className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
@@ -164,6 +236,39 @@ const PostingForm = ({
           className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
           onChange={handleChange}
         />
+      </div> */}
+      <div className="items-center gap-6 md:flex">
+        <label
+          htmlFor="customerId"
+          className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+        >
+          Customer ID:
+        </label>
+        <select
+          id="customerId"
+          name="customerId"
+          className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+          // defaultValue={"Select a user"}
+          onChange={handleChange}
+          required
+        >
+          <option defaultValue={"Select a user"} className="hidden">
+            Select a user
+          </option>
+          {Customers?.map((customer: customer) => {
+            return (
+              <>
+                <option key={customer._id} className="capitalize">
+                  {customer.firstName +
+                    " " +
+                    customer.lastName +
+                    ":  " +
+                    customer._id}
+                </option>
+              </>
+            );
+          })}
+        </select>
       </div>
       <div className="items-center gap-6 md:flex">
         <label
@@ -178,21 +283,23 @@ const PostingForm = ({
           type="text"
           className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
           onChange={handleChange}
+          required
         />
       </div>
       <div className="items-center gap-6 md:flex">
         <label
-          htmlFor="purpose"
+          htmlFor="purposeName"
           className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
         >
           Purpose:
         </label>
         <select
-          id="purpose"
-          name="purpose"
+          id="purposeName"
+          name="purposeName"
           className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] "
           defaultValue={"Select a category"}
           onChange={handleChange}
+          required
         >
           <option disabled defaultValue={"Filter"} className="hidden">
             Select a category
@@ -217,10 +324,11 @@ const PostingForm = ({
           <span className="flex items-center gap-2">
             <input
               id="yes"
-              name="payment"
+              name="todayPayment"
               type="radio"
               className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
               onChange={handleChange}
+              required
             />
             <label
               htmlFor="yes"
@@ -232,10 +340,11 @@ const PostingForm = ({
           <span className="flex items-center gap-2">
             <input
               id="no"
-              name="payment"
+              name="todayPayment"
               type="radio"
               className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
               onChange={handleChange}
+              required
             />
             <label
               htmlFor="no"
@@ -253,65 +362,69 @@ const PostingForm = ({
       <div className="flex w-full items-center justify-between gap-x-8">
         <div className="w-[50%] items-center gap-6 md:flex md:w-[60%]">
           <label
-            htmlFor="start-date"
+            htmlFor="startDate"
             className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white md:w-[40%]"
           >
             Start Date:
           </label>
           <input
-            id="start-date"
-            name="start-date"
+            id="startDate"
+            name="startDate"
             type="date"
             className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
             onChange={handleChange}
+            required
           />
         </div>
         <div className="w-[50%] items-center gap-6 md:flex md:w-[40%]">
           <label
-            htmlFor="end-date"
+            htmlFor="endDate"
             className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
           >
             End Date:
           </label>
           <input
-            id="end-date"
-            name="end-date"
+            id="endDate"
+            name="endDate"
             type="date"
             className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
             onChange={handleChange}
+            required
           />
         </div>
       </div>
       <div className="items-center gap-6 md:flex">
         <label
-          htmlFor="payment-mode"
+          htmlFor="paymentMode"
           className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
         >
           Payment Mode:
         </label>
         <select
-          id="payment-mode"
-          name="payment-mode"
-          className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] "
+          id="paymentMode"
+          name="paymentMode"
+          className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 capitalize text-[#7D7D7D]"
           defaultValue={"Select a category"}
+          onChange={handleChange}
+          required
         >
           <option disabled defaultValue={"Filter"} className="hidden">
             Select a category
           </option>
-          <option>Online</option>
-          <option>Cash</option>
+          <option className="capitalize">online</option>
+          <option className="capitalize">cash</option>
         </select>
       </div>
       <div className="items-center gap-6 pb-4 md:flex">
         <label
-          htmlFor="narration"
+          htmlFor="narrative"
           className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
         >
           Narration:
         </label>
         <textarea
-          id="narration"
-          name="narration"
+          id="narrative"
+          name="narrative"
           rows={3}
           className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-sm text-[#7D7D7D]"
           onChange={handleChange}
@@ -332,64 +445,90 @@ const PostingForm = ({
   );
 };
 
-const PostConfirmation = () => {
-  const accountNumber = "0230533122";
-  const amount = "5000 NGN";
-  const time = "09:09:27 PM";
-  const purpose = "Daily Savings";
-  const payment = "Payment is for today";
-  const startDate = "12/04/2023";
-  const endDate = "12/04/2023";
-  const paymentMode = "Cash";
-  const narration = "Upkeep Money";
-  const status = "Payment Successful";
+const PostConfirmation = ({
+  postingResponse,
+}: {
+  postingResponse: postSavingsResponse | undefined;
+}) => {
+  const postingCreation: string | undefined = Date();
+  const formattedPostingDate = new Date(postingCreation);
+  const timeOfPosting = formattedPostingDate.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true, // Use 12-hour format
+    timeZone: "UTC",
+  });
 
+  const postingStartDate: string | undefined = Date();
+  const formattedPostingStartDate = new Date(postingStartDate);
+  const formattedStartDate = formattedPostingStartDate.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+
+  const postingEndDate: string | undefined = Date();
+  const formattedPostingEndDate = new Date(postingEndDate);
+  const formattedEndDate = formattedPostingEndDate.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
   return (
     <div className="mx-auto h-full w-[75%] bg-ajo_offWhite py-8">
       <p className="mb-8 text-center text-3xl font-bold text-black">Posting</p>
       <div className="space-y-4">
         {" "}
-        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+        {/* <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">
             Account Number:
           </p>
-          <p className="text-sm text-[#7D7D7D]">{accountNumber}</p>
-        </div>
+          <p className="text-sm text-[#7D7D7D]">{postingResponse.}</p>
+        </div> */}
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Amount:</p>
-          <p className="text-sm text-[#7D7D7D]">{amount}</p>
+          <p className="text-sm text-[#7D7D7D]">
+            {postingResponse?.amount} NGN
+          </p>
         </div>
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Time:</p>
-          <p className="text-sm text-[#7D7D7D]">{time}</p>
+          <p className="text-sm text-[#7D7D7D]">{timeOfPosting}</p>
         </div>
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Purpose:</p>
-          <p className="text-sm text-[#7D7D7D]">{purpose}</p>
+          <p className="text-sm capitalize text-[#7D7D7D]">
+            {postingResponse?.purposeName}
+          </p>
         </div>
-        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+        {/* <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Payment:</p>
-          <p className="text-sm text-[#7D7D7D]">{payment}</p>
-        </div>
+          <p className="text-sm text-[#7D7D7D]">{postingResponse.}</p>
+        </div> */}
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Start Date:</p>
-          <p className="text-sm text-[#7D7D7D]">{startDate}</p>
+          <p className="text-sm text-[#7D7D7D]">{formattedStartDate}</p>
         </div>
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">End Date:</p>
-          <p className="text-sm text-[#7D7D7D]">{endDate}</p>
+          <p className="text-sm text-[#7D7D7D]">{formattedEndDate}</p>
         </div>
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Payment Mode:</p>
-          <p className="text-sm text-[#7D7D7D]">{paymentMode}</p>
+          <p className="text-sm text-[#7D7D7D]">
+            {postingResponse?.paymentMode}
+          </p>
         </div>
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Narration:</p>
-          <p className="text-sm text-[#7D7D7D]">{narration}</p>
+          <p className="text-sm text-[#7D7D7D]">{postingResponse?.narrative}</p>
         </div>
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Status:</p>
-          <p className="text-sm font-semibold text-successText">{status}</p>
+          <p className="text-sm font-semibold text-successText">
+            Payment Successful
+          </p>
         </div>
       </div>
       <div className="mx-auto my-8 flex items-center justify-center gap-x-8 px-8 md:w-[50%]">

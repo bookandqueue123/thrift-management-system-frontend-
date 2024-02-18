@@ -3,7 +3,7 @@ import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import { SearchInput } from "@/components/Forms";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
-import DummyCustomers from "@/api/dummyCustomers.json";
+// import DummyCustomers from "@/api/dummyCustomers.json";
 import { client } from "@/api/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { customer } from "@/types";
@@ -25,6 +25,7 @@ const Customers = () => {
         });
     },
   });
+
 
   const AddCustomer = () => {};
   return (
@@ -71,22 +72,22 @@ const Customers = () => {
             content={allCustomers?.map((customer, index) => (
               <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.firstName + " " + customer.lastName}
+                  {customer.firstName + " " + customer.lastName || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.createdAt}
+                  {customer.createdAt || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.email}
+                  {customer.email || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.phoneNumber}
+                  {customer.phoneNumber || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.state}
+                  {customer.state || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.local_govt}
+                  {customer.lga || "----"}
                 </td>
               </tr>
             ))}
