@@ -12,30 +12,30 @@ const Modal = ({
 }) => {
   return (
     <>
-      {/* <div className="fixed inset-0 bg-black opacity-25 h-max"></div> */}
+      <div className="fixed inset-0 bg-ajo_offWhite opacity-25"></div>
       <div
-        className="fixed inset-0 z-10 flex items-center justify-center h-max"
+        className=""
         // onClick={() => setModalState(false)}
       >
-        <div className="w-4/5 rounded-lg bg-[#090E2C] bg-[url('/squiggly.svg')] bg-cover bg-center bg-no-repeat pb-8  min-h-screen:">
-          <div className="flex w-full items-center justify-between overflow-hidden">
+        <div className="fixed inset-0 left-1/2 top-1/2 z-10 mx-auto h-[90%] w-[90%] -translate-x-1/2 -translate-y-1/2 transform overflow-y-auto rounded-lg bg-[#090E2C] bg-[url('/squiggly.svg')] bg-cover bg-center bg-no-repeat pb-8 md:w-4/5">
+          <div className="flex items-center justify-between overflow-hidden">
             <Image
               src="/Ajo.svg"
               alt="Ajo Logo"
-              className="relative -left-[2rem] -top-[1rem] m-0"
+              className="relative m-0 h-[50px] w-[50px] md:-left-[2rem] -left-[.5rem] md:-top-[1rem] -top-[.5rem] md:h-[100px] md:w-[100px] "
               width={100}
               height={100}
               loading="eager"
               tabIndex={-1}
             />
-            <h3 className="text-2xl font-semibold text-ajo_offWhite">
+            <h3 className="text-xl md:text-2xl font-semibold text-ajo_offWhite">
               {title}
             </h3>
             <div
               onClick={() => setModalState(false)}
               className="mr-8 cursor-pointer"
             >
-              <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+              <svg width="32" height="32" viewBox="0 0 48 48" fill="none" className="w-[16px] h-[16px]">
                 <path
                   d="M48 16L16 48M16 16L48 48"
                   stroke="#F2F0FF"
@@ -46,7 +46,7 @@ const Modal = ({
               </svg>
             </div>
           </div>
-          {children}
+          <div>{children}</div>
         </div>
       </div>
     </>

@@ -17,7 +17,7 @@ const Posting = () => {
     "form",
   );
   const [postingResponse, setPostingResponse] = useState<postSavingsResponse>();
-  console.log("postingResponse: ",postingResponse);
+  // console.log("postingResponse: ",postingResponse);
 
   // const DummyCustomers: (typeof postDetails)[] = [];
 
@@ -223,7 +223,7 @@ const PostingForm = ({
     onSubmit("confirmation");
   };
   return (
-    <form className="mx-auto w-[75%] space-y-3" onSubmit={onSubmitHandler}>
+    <form className="mx-auto w-[85%] space-y-3" onSubmit={onSubmitHandler}>
       {/* <div className="items-center gap-6 md:flex">
         <label
           htmlFor="acc-number"
