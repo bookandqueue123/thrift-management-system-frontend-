@@ -17,21 +17,22 @@ const Posting = () => {
     "form",
   );
   const [postingResponse, setPostingResponse] = useState<postSavingsResponse>();
-  console.log(postingResponse);
+  console.log("postingResponse: ",postingResponse);
 
   // const DummyCustomers: (typeof postDetails)[] = [];
 
   const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
     queryKey: ["allCustomers"],
+    staleTime: 5000,
     queryFn: async () => {
       return client
         .get("/api/user?role=customer", {})
         .then((response: AxiosResponse<customer[], any>) => {
-          console.log(response);
+          console.log("allCustomersSuccess: ", response.data);
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error);
+          console.log(error.response);
         });
     },
   });
@@ -104,7 +105,8 @@ const Posting = () => {
                   {customer.firstName + " " + customer.lastName || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.transaction_id || "----"}
+                  {/* {customer.transaction_id || "----"} */}
+                  {customer._id || "-----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {customer.email}
@@ -461,12 +463,14 @@ const PostConfirmation = ({
 
   const postingStartDate: string | undefined = Date();
   const formattedPostingStartDate = new Date(postingStartDate);
-  const formattedStartDate = formattedPostingStartDate.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-
+  const formattedStartDate = formattedPostingStartDate.toLocaleDateString(
+    "en-US",
+    {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    },
+  );
 
   const postingEndDate: string | undefined = Date();
   const formattedPostingEndDate = new Date(postingEndDate);

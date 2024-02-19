@@ -1,8 +1,8 @@
-
 import axios from "axios";
-const BASE_URL = "http://13.50.228.186:5000";
+const BASE_URL = "https://thrift.schoolkiatest.com.ng";
 
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1ZDA2YzI4ODZiMzk2Yjc2ZWJiNzM2ZCIsImlhdCI6MTcwODE1ODQwOCwiZXhwIjoxNzA4MjQ0ODA4fQ.aA03kf4_sYzaBGxCgEtHARHlV0FHWu335uuZ3icUQus"
+const token =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1ZDA2YzI4ODZiMzk2Yjc2ZWJiNzM2ZCIsImlhdCI6MTcwODMzNjg5MX0.JQ1l47phQxd5z5-wB93oTL1w-NKD4cuNudXug7zGbn0";
 
 export const client = axios.create({
   baseURL: BASE_URL,
@@ -10,7 +10,6 @@ export const client = axios.create({
     Authorization: `Bearer ${token}`, // Replace with your actual token
   },
 });
-
 
 // {
 //     "email": "kanmiairs@gmail.com",
