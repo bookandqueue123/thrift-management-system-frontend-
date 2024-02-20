@@ -13,7 +13,7 @@ export const StatusIndicator = ({
   label: string;
   clickHandler: () => void;
   dropdownEnabled?: boolean;
-  dropdownContents?: string[];
+  dropdownContents?: { labels: string[]; actions: (() => void)[] };
   openDropdown: number;
   toggleDropdown: (val: number) => void;
   currentIndex?: number;
@@ -78,13 +78,14 @@ export const StatusIndicator = ({
         )}
       </div>
       {openDropdown === currentIndex && dropdownEnabled && (
-        <div className="top-[105%] right-[20%] absolute z-20 rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
-          {dropdownContents?.map((option, index) => (
+        <div className="absolute right-[20%] top-[105%] z-20 rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+          {dropdownContents?.labels?.map((option, index) => (
             <p
               key={index}
               onClick={() => {
                 // setCurrentlyOpened(openDropdown + 1);
                 toggleDropdown(openDropdown);
+                dropdownContents.actions[index]();
               }}
               className={` block cursor-pointer px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
             >

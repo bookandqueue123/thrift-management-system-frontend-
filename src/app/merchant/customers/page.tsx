@@ -115,12 +115,28 @@ const Customers = () => {
                       }
                     }}
                     dropdownEnabled
-                    dropdownContents={[
-                      "View Customer",
-                      "Edit Customer",
-                      "Savings Settings",
-                      "Disable/Enable",
-                    ]}
+                    dropdownContents={{
+                      labels: [
+                        "View Customer",
+                        "Edit Customer",
+                        "Savings Settings",
+                        "Disable/Enable",
+                      ],
+                      actions: [
+                        () => {
+                          console.log("View Customer");
+                        },
+                        () => {
+                          console.log("Edit Customer");
+                        },
+                        () => {
+                          console.log("Savings Settings");
+                        },
+                        () => {
+                          console.log("Disable/Enable");
+                        },
+                      ],
+                    }}
                     openDropdown={openDropdown}
                     toggleDropdown={toggleDropdown}
                     currentIndex={index + 1}
