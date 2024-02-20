@@ -11,11 +11,11 @@ export const StatusIndicator = ({
   currentIndex,
 }: {
   label: string;
-  clickHandler: () => void;
+  clickHandler?: () => void;
   dropdownEnabled?: boolean;
   dropdownContents?: { labels: string[]; actions: (() => void)[] };
-  openDropdown: number;
-  toggleDropdown: (val: number) => void;
+  openDropdown?: number;
+  toggleDropdown?: (val: number) => void;
   currentIndex?: number;
 }) => {
   // const [currentlyOpened, setCurrentlyOpened] = useState(0);
@@ -54,7 +54,7 @@ export const StatusIndicator = ({
       <div
         className={`${bgClass} rounded-lg px-3 py-2  ${btn} flex items-center gap-x-4 border border-transparent md:max-w-28`}
         onClick={() => {
-          clickHandler();
+          clickHandler?.();
         }}
       >
         <p
@@ -84,7 +84,7 @@ export const StatusIndicator = ({
               key={index}
               onClick={() => {
                 // setCurrentlyOpened(openDropdown + 1);
-                toggleDropdown(openDropdown);
+                toggleDropdown?.(openDropdown ?? 0);
                 dropdownContents.actions[index]();
               }}
               className={` block cursor-pointer px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
