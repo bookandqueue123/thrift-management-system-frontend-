@@ -33,7 +33,7 @@ const AvatarDropdown = ({ logoutFn, avatarImg, routeOptions }: { logoutFn?: () =
         <span className="sr-only">Open user menu</span>
       </button>
       {AvatarMenuIsOpen && (
-        <div className="absolute right-0 top-14 z-10 mt-2 w-48 origin-top-right rounded-md bg-white bg-opacity-20 py-1 shadow-lg">
+        <div className="absolute right-0 top-14 z-10 mt-2 w-48  rounded-md bg-white bg-opacity-20 py-1 shadow-lg">
           {routeOptions.map((route, index) => {
             if (route.toLowerCase() === 'sign out' && logoutFn) {
               return (

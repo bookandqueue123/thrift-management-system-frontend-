@@ -8,24 +8,37 @@ import { client } from "@/api/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { customer } from "@/types";
 import { AxiosError, AxiosResponse } from "axios";
+import { formatToDateAndTime } from "@/utils/TimeStampFormatter";
+import { StatusIndicator } from "@/components/StatusIndicator";
+import { SetStateAction, useState } from "react";
 
 const Customers = () => {
+  const [openDropdown, setOpenDropdown] = useState<number>(0);
+
+  const toggleDropdown = (val: number) => {
+    console.log("value: ", val);
+    if (openDropdown === val) {
+      setOpenDropdown(0);
+    } else {
+      setOpenDropdown(val);
+    }
+  };
+
+  console.log("openDropdown: ", openDropdown);
   const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
     queryKey: ["allCustomers"],
     queryFn: async () => {
       return client
-        .get("/api/user?role=customer", {
-        })
+        .get("/api/user?role=customer", {})
         .then((response: AxiosResponse<customer[], any>) => {
           console.log(response);
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error)
+          console.log(error);
         });
     },
   });
-
 
   const AddCustomer = () => {};
   return (
@@ -68,14 +81,15 @@ const Customers = () => {
               "Phone Number",
               "State",
               "Local Govt Area",
+              "Action",
             ]}
             content={allCustomers?.map((customer, index) => (
-              <tr className="" key={index}>
+              <tr className="" key={index + 1}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {customer.firstName + " " + customer.lastName || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.createdAt || "----"}
+                  {formatToDateAndTime(customer.createdAt) || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {customer.email || "----"}
@@ -88,6 +102,29 @@ const Customers = () => {
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {customer.lga || "----"}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  <StatusIndicator
+                    label={`Actions`}
+                    clickHandler={() => {
+                      setOpenDropdown(index + 1);
+                      if (index + 1 === openDropdown) {
+                        toggleDropdown(openDropdown);
+                      } else {
+                        toggleDropdown(index + 1);
+                      }
+                    }}
+                    dropdownEnabled
+                    dropdownContents={[
+                      "View Customer",
+                      "Edit Customer",
+                      "Savings Settings",
+                      "Disable/Enable",
+                    ]}
+                    openDropdown={openDropdown}
+                    toggleDropdown={toggleDropdown}
+                    currentIndex={index + 1}
+                  />
                 </td>
               </tr>
             ))}

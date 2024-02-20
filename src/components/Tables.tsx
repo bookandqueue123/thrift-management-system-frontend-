@@ -13,7 +13,7 @@ const TransactionsTable = ({
         <thead className="text-xs font-bold tracking-wider text-ajo_offWhite text-opacity-60">
           <tr className="text-left">
             {headers.map((header: string) => (
-              <th className="px-6 py-3" key={header}>
+              <th className="px-6 py-3 whitespace-nowrap" key={header}>
                 {header}
               </th>
             ))}
