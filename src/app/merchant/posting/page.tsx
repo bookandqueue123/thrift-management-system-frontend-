@@ -483,13 +483,12 @@ const PostConfirmation = ({
     <div className="mx-auto h-full w-[75%] bg-ajo_offWhite py-8">
       <p className="mb-8 text-center text-3xl font-bold text-black">Posting</p>
       <div className="space-y-4">
-        {" "}
-        {/* <div className="mx-auto flex items-center justify-between md:w-[40%]">
+        <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">
-            Account Number:
+            Transaction Id:
           </p>
-          <p className="text-sm text-[#7D7D7D]">{postingResponse.}</p>
-        </div> */}
+          <p className="text-sm text-[#7D7D7D]">{postingResponse?._id}</p>
+        </div>
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Amount:</p>
           <p className="text-sm text-[#7D7D7D]">
