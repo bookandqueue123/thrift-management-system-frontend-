@@ -231,6 +231,8 @@ export const Sidebar = ({
                 onClick={() => {
                   if (label !== "settings") {
                     SignOut();
+                  } else {
+
                   }
                 }}
               >
@@ -244,24 +246,26 @@ export const Sidebar = ({
                     height={6}
                   />
                 )}
-                <div className="absolute right-[-20%] top-[105%] z-20 rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg md:right-[20%]">
-                  {["location", "group", "savings"].map((label) => (
-                    <Link
-                      key={label}
-                      onClick={() => {}}
-                      href={
-                        label === "location"
-                          ? "/merchant/settings/location"
-                          : label === "group"
-                            ? "/merchant/settings/group"
-                            : "/merchant/settings/savings"
-                      }
-                      className={` block cursor-pointer px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
-                    >
-                      Group Settings
-                    </Link>
-                  ))}
-                </div>
+                {label === "settings" && (
+                  <div className="absolute left-0 bottom-[110%] z-20 rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg w-full">
+                    {["location", "group", "savings"].map((label) => (
+                      <Link
+                        key={label}
+                        onClick={() => {}}
+                        href={
+                          label === "location"
+                            ? "/merchant/settings/location"
+                            : label === "group"
+                              ? "/merchant/settings/group"
+                              : "/merchant/settings/savings"
+                        }
+                        className={` block cursor-pointer px-4  py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue whitespace-nowrap`}
+                      >
+                        {label + " settings"}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </Link>
             ))}
           </div>
