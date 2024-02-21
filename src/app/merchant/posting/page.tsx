@@ -145,7 +145,6 @@ const PostingForm = ({
   setPostingResponse: Dispatch<SetStateAction<postSavingsResponse | undefined>>;
 }) => {
   // TODO remove the organization ID later
-  const organizationID = "65d06c2886b396b76ebb736d";
   const [postDetails, setPostDetails] = useState({
     customerId: "",
     purposeName: "",
@@ -164,30 +163,6 @@ const PostingForm = ({
     const { name, value } = e.target;
     setPostDetails((prev) => ({ ...prev, [name]: value }));
   };
-
-  const { mutate: setSavings, isPending: isSettingSavings } = useMutation({
-    mutationFn: async () => {
-      return client.post(
-        `/api/saving/${postDetails.customerId?.split(":")[1]?.trim()}`,
-        {
-          purposeName: postDetails.purposeName,
-          amount: Number(postDetails.amount),
-          startDate: postDetails.startDate,
-          endDate: postDetails.endDate,
-          collectionDate: postDetails.collectionDate,
-          organisation: postDetails.organisation || organizationID,
-          frequency: postDetails.frequency,
-        },
-      );
-    },
-    onSuccess(response: AxiosResponse<setSavingsResponse, any>) {
-      setPostDetails((prev) => ({ ...prev, savingId: response.data.id }));
-      console.log(response.data);
-    },
-    onError(error: AxiosError<any, any>) {
-      console.log(error.response);
-    },
-  });
 
   const { mutate: postSavings } = useMutation({
     mutationFn: async () => {
@@ -218,8 +193,8 @@ const PostingForm = ({
 
   const onSubmitHandler = () => {
     console.log(postDetails);
-    setSavings();
-    !isSettingSavings && postSavings();
+    // setSavings();
+    postSavings();
     onSubmit("confirmation");
   };
   return (
