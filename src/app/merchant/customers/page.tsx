@@ -345,7 +345,7 @@ const SavingsSettings = ({ customerId }: { customerId: string }) => {
               id="startDate"
               name="startDate"
               type="date"
-              className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+              className="bg-right-20 w-full rounded-lg border-0 appearance-none bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
               onChange={handleChange}
               required
             />
@@ -361,7 +361,7 @@ const SavingsSettings = ({ customerId }: { customerId: string }) => {
               id="endDate"
               name="endDate"
               type="date"
-              className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+              className="bg-right-20 w-full rounded-lg border-0 appearance-none bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
               onChange={handleChange}
               required
             />
@@ -378,13 +378,13 @@ const SavingsSettings = ({ customerId }: { customerId: string }) => {
             id="collectionDate"
             name="collectionDate"
             type="date"
-            className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+            className="bg-right-20 w-full rounded-lg border-0 appearance-none bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
             onChange={handleChange}
             required
           />
         </div>
 
-        <div className="flex items-center pb-12 pt-4 ">
+        <div className="flex items-center pb-12 pt-4 justify-center">
           <span className="hidden w-[20%] md:block">Submit</span>
           <div className="md:flex md:w-[80%] md:justify-center">
             <CustomButton
