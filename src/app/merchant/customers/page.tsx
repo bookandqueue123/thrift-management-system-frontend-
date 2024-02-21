@@ -342,9 +342,7 @@ const SavingsSettings = ({
                 className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                 onChange={(event) => {
                   const input = event.target.value.replace(/\D/g, "");
-                  // Format the number with commas
                   const formatted = Number(input).toLocaleString();
-                  // Update the state
                   setSaveDetails((prev) => ({
                     ...prev,
                     ["amount"]: formatted,
