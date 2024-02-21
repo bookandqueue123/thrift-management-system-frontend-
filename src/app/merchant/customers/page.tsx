@@ -1,17 +1,16 @@
 "use client";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import { SearchInput } from "@/components/Forms";
-import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 // import DummyCustomers from "@/api/dummyCustomers.json";
 import { client } from "@/api/hooks/useAuth";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { customer, setSavingsResponse } from "@/types";
-import { AxiosError, AxiosResponse } from "axios";
-import { formatToDateAndTime } from "@/utils/TimeStampFormatter";
-import { StatusIndicator } from "@/components/StatusIndicator";
-import { SetStateAction, useState } from "react";
 import Modal from "@/components/Modal";
+import { StatusIndicator } from "@/components/StatusIndicator";
+import { customer, setSavingsResponse } from "@/types";
+import { formatToDateAndTime } from "@/utils/TimeStampFormatter";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { AxiosError, AxiosResponse } from "axios";
+import { useState } from "react";
 
 const Customers = () => {
   const [modalState, setModalState] = useState(false);
@@ -190,7 +189,6 @@ const SavingsSettings = ({ customerId }: { customerId: string }) => {
     startDate: "",
     endDate: "",
     collectionDate: "",
-    organisation: "",
     frequency: "",
   });
 
@@ -204,7 +202,7 @@ const SavingsSettings = ({ customerId }: { customerId: string }) => {
     mutationFn: async () => {
       return client.post(`/api/saving/${customerId}`, {
         purposeName: saveDetails.purposeName,
-        amount: Number(saveDetails.amount),
+        amount: Number(saveDetails.amount.replace(/\D/g, "")),
         startDate: saveDetails.startDate,
         endDate: saveDetails.endDate,
         collectionDate: saveDetails.collectionDate,
@@ -213,20 +211,19 @@ const SavingsSettings = ({ customerId }: { customerId: string }) => {
       });
     },
     onSuccess(response: AxiosResponse<setSavingsResponse, any>) {
-      setSaveDetails((prev) => ({ ...prev, savingId: response.data.id }));
       console.log(response.data);
+      return response.data;
     },
     onError(error: AxiosError<any, any>) {
       console.log(error.response);
+      throw error;
     },
   });
 
   const onSubmitHandler = () => {
-    console.log(saveDetails);
     setSavings();
-    // !isSettingSavings && postSavings();
-    // onSubmit("confirmation");
   };
+
   return (
     <div>
       <div className="mx-auto w-[90%] rounded bg-ajo_orange p-4 md:w-[60%]">
@@ -298,7 +295,14 @@ const SavingsSettings = ({ customerId }: { customerId: string }) => {
             placeholder="0000.00 NGN"
             type="text"
             className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-            onChange={handleChange}
+            onChange={(event) => {
+          const input = event.target.value.replace (/\D/g, "");
+          // Format the number with commas
+          const formatted = Number (input).toLocaleString ();
+          // Update the state
+              setSaveDetails((prev) => ({ ...prev, ["amount"]: formatted }));
+
+        }}
             required
           />
         </div>
@@ -382,7 +386,7 @@ const SavingsSettings = ({ customerId }: { customerId: string }) => {
 
         <div className="flex items-center pb-12 pt-4 ">
           <span className="hidden w-[20%] md:block">Submit</span>
-          <div className="md:flex md:justify-center md:w-[80%]">
+          <div className="md:flex md:w-[80%] md:justify-center">
             <CustomButton
               type="button"
               label="Submit"
