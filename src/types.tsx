@@ -72,6 +72,7 @@ export type postSavingsResponse = {
     __v: 0,
     savedDates: [],
     specificDates: string[],
-    id: '65d0ec6986b396b76ebb759f'
+    id: string,
 
 };
+

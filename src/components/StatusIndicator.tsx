@@ -78,7 +78,7 @@ export const StatusIndicator = ({
         )}
       </div>
       {openDropdown === currentIndex && dropdownEnabled && (
-        <div className="absolute right-[20%] top-[105%] z-20 rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+        <div className="absolute top-[105%] z-20 rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg md:right-[20%] right-[-20%]">
           {dropdownContents?.labels?.map((option, index) => (
             <p
               key={index}

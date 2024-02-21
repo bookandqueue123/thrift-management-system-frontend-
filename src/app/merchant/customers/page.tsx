@@ -11,12 +11,17 @@ import { AxiosError, AxiosResponse } from "axios";
 import { formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import { SetStateAction, useState } from "react";
+import Modal from "@/components/Modal";
 
 const Customers = () => {
-  const [openDropdown, setOpenDropdown] = useState<number>(0);
+  const [modalState, setModalState] = useState(false);
+  const [modalContent, setModalContent] = useState<"form" | "confirmation">(
+    "form",
+  );
+  const [customerToBeEdited, setCustomerToBeEdited] = useState("");
 
+  const [openDropdown, setOpenDropdown] = useState<number>(0);
   const toggleDropdown = (val: number) => {
-    console.log("value: ", val);
     if (openDropdown === val) {
       setOpenDropdown(0);
     } else {
@@ -24,7 +29,6 @@ const Customers = () => {
     }
   };
 
-  console.log("openDropdown: ", openDropdown);
   const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
     queryKey: ["allCustomers"],
     queryFn: async () => {
@@ -130,7 +134,9 @@ const Customers = () => {
                           console.log("Edit Customer");
                         },
                         () => {
-                          console.log("Savings Settings");
+                          setModalState(true);
+                          setModalContent("form");
+                          setCustomerToBeEdited(customer._id);
                         },
                         () => {
                           console.log("Disable/Enable");
@@ -145,6 +151,14 @@ const Customers = () => {
               </tr>
             ))}
           />
+          {modalState && (
+            <Modal
+              setModalState={setModalState}
+              title={modalContent === "confirmation" ? "" : "Savings Settings"}
+            >
+              <SavingsSettings customerId={customerToBeEdited} />
+            </Modal>
+          )}
           {/* <PaginationBar apiResponse={allCustomers !== undefined && allCustom} /> */}
         </div>
       </section>
@@ -153,3 +167,58 @@ const Customers = () => {
 };
 
 export default Customers;
+
+const SavingsSettings = ({ customerId }: { customerId: string }) => {
+  console.log(customerId);
+  const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
+    queryKey: ["customerInfo"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user/${customerId}`)
+        .then((response: AxiosResponse<customer, any>) => {
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          console.log(error.response ?? error.message);
+          throw error;
+        });
+    },
+  });
+  return (
+    <div className="mx-auto w-[90%] rounded bg-ajo_orange p-4 md:w-[60%]">
+      <h4 className="mb-4 text-lg font-semibold text-ajo_offWhite md:text-xl">
+        Customer Details
+      </h4>
+      <div className="items-center justify-between gap-y-4 md:flex">
+        <span className="space-y-2">
+          <p className="overflow-hidden text-nowrap text-sm font-semibold text-ajo_offWhite md:text-base">
+            Customer name:{" "}
+            <span className="font-normal">
+              {customerInfo?.firstName + " " + customerInfo?.lastName}
+            </span>
+          </p>
+          <p className="overflow-hidden text-nowrap text-sm font-semibold text-ajo_offWhite md:text-base">
+            Country:{" "}
+            <span className="font-normal">{customerInfo?.country}</span>
+          </p>
+          <p className="overflow-hidden text-nowrap text-sm font-semibold text-ajo_offWhite md:text-base">
+            Phone number:{" "}
+            <span className="font-normal">{customerInfo?.phoneNumber}</span>
+          </p>
+        </span>
+        <span className="space-y-2">
+          <p className="overflow-hidden text-nowrap pt-2 text-sm font-semibold text-ajo_offWhite md:pt-0 md:text-base">
+            Email address:{" "}
+            <span className="font-normal">{customerInfo?.email}</span>
+          </p>
+          <p className="overflow-hidden text-nowrap text-sm font-semibold text-ajo_offWhite md:text-base">
+            State: <span className="font-normal">{customerInfo?.state}</span>
+          </p>
+          <p className="overflow-hidden text-nowrap text-sm font-semibold text-ajo_offWhite md:text-base">
+            LGA: <span className="font-normal">{customerInfo?.lga}</span>
+          </p>
+        </span>
+      </div>
+    </div>
+  );
+};

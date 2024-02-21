@@ -22,20 +22,26 @@ const Modal = ({
             <Image
               src="/Ajo.svg"
               alt="Ajo Logo"
-              className="relative m-0 h-[50px] w-[50px] md:-left-[2rem] -left-[.5rem] md:-top-[1rem] -top-[.5rem] md:h-[100px] md:w-[100px] "
+              className="relative -left-[.5rem] -top-[.5rem] m-0 h-[50px] w-[50px] md:-left-[2rem] md:-top-[1rem] md:h-[100px] md:w-[100px] "
               width={100}
               height={100}
               loading="eager"
               tabIndex={-1}
             />
-            <h3 className="text-xl md:text-2xl font-semibold text-ajo_offWhite">
+            <h3 className="text-xl font-semibold text-ajo_offWhite md:text-2xl">
               {title}
             </h3>
             <div
               onClick={() => setModalState(false)}
               className="mr-8 cursor-pointer"
             >
-              <svg width="32" height="32" viewBox="0 0 48 48" fill="none" className="w-[16px] h-[16px]">
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 48 48"
+                fill="none"
+                className="md:h-[32px] h-[16px] md:w-[32px] w-[16px]"
+              >
                 <path
                   d="M48 16L16 48M16 16L48 48"
                   stroke="#F2F0FF"
