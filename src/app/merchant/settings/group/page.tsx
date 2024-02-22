@@ -1,37 +1,111 @@
 "use client";
 import { CustomButton } from "@/components/Buttons";
 import Modal from "@/components/Modal";
-import Image from "next/image";
+import PaginationBar from "@/components/Pagination";
+import { StatusIndicator } from "@/components/StatusIndicator";
+import TransactionsTable from "@/components/Tables";
+import AmountFormatter from "@/utils/AmountFormatter";
 import React, { useState } from "react";
+import DummyGroups from "@/api/dummyGroups.json";
+import Image from "next/image";
 
 const GroupSettings = () => {
   const [modalState, setModalState] = useState(false);
 
   return (
-    <div className="">
-      <div className="mb-4 space-y-2 ">
-        <p className="text-2xl font-bold text-ajo_offWhite text-opacity-60">
-          Settings
-        </p>
-        <p className="text-sm font-bold text-ajo_offWhite">Group settings</p>
+    <>
+      <div className="">
+        <div className="mb-4 space-y-2 ">
+          <p className="text-2xl font-bold text-ajo_offWhite text-opacity-60">
+            Settings
+          </p>
+          <p className="text-sm font-bold text-ajo_offWhite">Group settings</p>
+        </div>
+        <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-end">
+          <CustomButton
+            type="button"
+            label="Create group"
+            style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+            onButtonClick={() => {
+              setModalState(true);
+              // setModalContent("form");
+            }}
+          />
+          {modalState && (
+            <Modal setModalState={setModalState} title="Create a Group">
+              <CreateGroupForm />
+            </Modal>
+          )}
+        </div>
+        <section>
+          <div>
+            <p className="mb-3 pl-2 text-base font-semibold text-ajo_offWhite">
+              Existing Group List
+            </p>
+            <TransactionsTable
+              headers={[
+                "Group Name",
+                "Account Name",
+                "Account Number",
+                "Bank Name",
+                "Group Type",
+                "Total Group Number",
+                "Action",
+              ]}
+              content={DummyGroups.groups.map((group, index) => (
+                <tr className="" key={index}>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {group.groupName}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {group.accountName}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {group.accountNumber}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {group.bankName}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {group.groupType}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {group.totalMembers}
+                  </td>
+                  <td className="flex gap-2 whitespace-nowrap px-6 py-4 text-sm">
+                    <Image
+                      src="/pencil.svg"
+                      alt="pencil"
+                      width={20}
+                      height={20}
+                      onClick={() => {}}
+                      className="cursor-pointer"
+                    />
+                    <Image
+                      src="/trash.svg"
+                      alt="pencil"
+                      width={20}
+                      height={20}
+                      onClick={() => {}}
+                      className="cursor-pointer"
+                    />
+                    <Image
+                      src="/archive.svg"
+                      alt="pencil"
+                      width={20}
+                      height={20}
+                      onClick={() => {}}
+                      className="cursor-pointer"
+                    />
+                  </td>
+                </tr>
+              ))}
+            />
+            <PaginationBar apiResponse={DummyGroups.groups} />
+          </div>
+        </section>
       </div>
-      <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-end">
-        <CustomButton
-          type="button"
-          label="Create group"
-          style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-          onButtonClick={() => {
-            setModalState(true);
-            // setModalContent("form");
-          }}
-        />
-        {modalState && (
-          <Modal setModalState={setModalState} title="Create a Group">
-            <CreateGroupForm />
-          </Modal>
-        )}
-      </div>
-    </div>
+    </>
   );
 };
 
