@@ -250,16 +250,14 @@ export const Sidebar = ({
                 )}
                 {label === "settings" && settingsDropdownIsOpen && (
                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
-                    {["location", "group", "savings"].map((label) => (
+                    {["location", "group"].map((label) => (
                       <Link
                         key={label}
                         onClick={() => {}}
                         href={
                           label === "location"
                             ? "/merchant/settings/location"
-                            : label === "group"
-                              ? "/merchant/settings/group"
-                              : "/merchant/settings/savings"
+                            : "/merchant/settings/group"
                         }
                         className={` block cursor-pointer whitespace-nowrap  px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
                       >

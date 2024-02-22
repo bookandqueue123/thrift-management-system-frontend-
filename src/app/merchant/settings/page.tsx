@@ -11,7 +11,7 @@ const Settings = () => {
     <div className="">
       <div className="mb-4 space-y-2 ">
         <p className="text-2xl font-bold text-ajo_offWhite text-opacity-60">
-          Savings Settings
+          Settings
         </p>
         <p className="text-sm font-bold text-ajo_offWhite">Savings settings</p>
       </div>
