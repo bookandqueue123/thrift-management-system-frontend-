@@ -135,6 +135,8 @@ export const Sidebar = ({
     console.log("signed out succesfully");
   };
 
+  const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
+
   const toggleSidebar = () => {
     return onShow ? "visible" : "invisible";
   };
@@ -232,7 +234,7 @@ export const Sidebar = ({
                   if (label !== "settings") {
                     SignOut();
                   } else {
-
+                    setSettingsDropdownIsOpen(!settingsDropdownIsOpen);
                   }
                 }}
               >
@@ -246,8 +248,8 @@ export const Sidebar = ({
                     height={6}
                   />
                 )}
-                {label === "settings" && (
-                  <div className="absolute left-0 bottom-[110%] z-20 rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg w-full">
+                {label === "settings" && settingsDropdownIsOpen && (
+                  <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
                     {["location", "group", "savings"].map((label) => (
                       <Link
                         key={label}
@@ -259,7 +261,7 @@ export const Sidebar = ({
                               ? "/merchant/settings/group"
                               : "/merchant/settings/savings"
                         }
-                        className={` block cursor-pointer px-4  py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue whitespace-nowrap`}
+                        className={` block cursor-pointer whitespace-nowrap  px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
                       >
                         {label + " settings"}
                       </Link>

@@ -6,10 +6,10 @@ import TransactionsTable from "@/components/Tables";
 // import DummyCustomers from "@/api/dummyCustomers.json";
 import { client } from "@/api/hooks/useAuth";
 import Modal from "@/components/Modal";
-import { customer, postSavingsResponse, setSavingsResponse } from "@/types";
+import { allSavingsResponse, postSavingsResponse } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { AxiosError, AxiosResponse } from "axios";
-import { Dispatch, SetStateAction, useState } from "react";
+import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 const Posting = () => {
   const [modalState, setModalState] = useState(false);
@@ -17,22 +17,29 @@ const Posting = () => {
     "form",
   );
   const [postingResponse, setPostingResponse] = useState<postSavingsResponse>();
-  // console.log("postingResponse: ",postingResponse);
 
-  // const DummyCustomers: (typeof postDetails)[] = [];
+  interface CustomAxiosRequestConfig extends AxiosRequestConfig {
+    startDate: string;
+    endDate: string;
+  }
 
-  const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
-    queryKey: ["allCustomers"],
+  const config: CustomAxiosRequestConfig = {
+    startDate: "",
+    endDate: "",
+  };
+  const { data: allSavings, isLoading: isLoadingAllSavings } = useQuery({
+    queryKey: ["allSavings"],
     staleTime: 5000,
     queryFn: async () => {
       return client
-        .get("/api/user?role=customer", {})
-        .then((response: AxiosResponse<customer[], any>) => {
-          console.log("allCustomersSuccess: ", response.data);
+        .get("/api/saving/get-savings", config)
+        .then((response: AxiosResponse<allSavingsResponse, any>) => {
+          // console.log("allSavingsSuccess: ", response.data);
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
           console.log(error.response);
+          throw error;
         });
     },
   });
@@ -80,7 +87,7 @@ const Posting = () => {
               ) : (
                 <PostingForm
                   onSubmit={setModalContent}
-                  Customers={allCustomers}
+                  Savings={allSavings}
                   setPostingResponse={setPostingResponse}
                 />
               )}
@@ -99,26 +106,27 @@ const Posting = () => {
               "Local Govt Area",
               "Action",
             ]}
-            content={allCustomers?.map((customer, index) => (
+            content={allSavings?.savings?.map((savings, index) => (
               <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.firstName + " " + customer.lastName || "----"}
+                  {savings.user.firstName + " " + savings.user.lastName ||
+                    "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {/* {customer.transaction_id || "----"} */}
-                  {customer._id || "-----"}
+                  {savings._id || "-----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.email}
+                  {savings.user.email}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.phoneNumber}
+                  {savings.user.phoneNumber}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.state || "----"}
+                  {savings.user.state || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.lga || "----"}
+                  {savings.user.lga || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   <StatusIndicator label={"View Details"} />
@@ -137,11 +145,11 @@ export default Posting;
 
 const PostingForm = ({
   onSubmit,
-  Customers,
+  Savings,
   setPostingResponse,
 }: {
   onSubmit: Dispatch<SetStateAction<"form" | "confirmation">>;
-  Customers: void | customer[] | undefined;
+  Savings: void | allSavingsResponse | undefined;
   setPostingResponse: Dispatch<SetStateAction<postSavingsResponse | undefined>>;
 }) => {
   // TODO remove the organization ID later
@@ -158,6 +166,15 @@ const PostingForm = ({
     paymentMode: "",
     narrative: "",
   });
+
+  // TODO: fIX SAVINGS iDS rENDERINGS
+  useEffect(() => {
+    let savingsIds;
+    if (postDetails.customerId) {
+      savingsIds = Savings?.savings.filter((s) => s.user._id === postDetails.customerId);
+      console.log(savingsIds);
+    }
+  },[postDetails.customerId, Savings?.savings])
 
   const handleChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target;
@@ -193,27 +210,26 @@ const PostingForm = ({
 
   const onSubmitHandler = () => {
     console.log(postDetails);
-    // setSavings();
     postSavings();
     onSubmit("confirmation");
   };
+
+  // Filtered the savings array to avoid repeating customer ids
+  const customerIds = new Set<string>();
+  Savings?.savings.forEach((eachSaving) =>
+    customerIds.add(
+      eachSaving.user.firstName +
+        " " +
+        eachSaving.user.lastName +
+        ": " +
+        eachSaving.user._id,
+    ),
+  );
+  const uniqueCustomerIds = Array.from(customerIds);
+
+  // TODO: Render each savings Id by the customer Id that is chosen
   return (
     <form className="mx-auto w-[85%] space-y-3" onSubmit={onSubmitHandler}>
-      {/* <div className="items-center gap-6 md:flex">
-        <label
-          htmlFor="acc-number"
-          className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
-        >
-          Account Number:
-        </label>
-        <input
-          id="acc-number"
-          name="acc-number"
-          type="text"
-          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-          onChange={handleChange}
-        />
-      </div> */}
       <div className="items-center gap-6 md:flex">
         <label
           htmlFor="customerId"
@@ -226,27 +242,32 @@ const PostingForm = ({
           name="customerId"
           className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
           // defaultValue={"Select a user"}
-          onChange={handleChange}
+          onChange={(e) => {
+            handleChange(e);
+            const { value } = e.target;
+            
+            // setPostDetails((prev) => ({
+            //   ...prev,
+            //   ["savingId"]: savingsId,
+            // }));
+          }}
           required
         >
           <option defaultValue={"Select a user"} className="hidden">
             Select a user
           </option>
-          {Customers?.map((customer: customer) => {
+          {uniqueCustomerIds.map((customer, index) => {
             return (
               <>
-                <option key={customer._id} className="capitalize">
-                  {customer.firstName +
-                    " " +
-                    customer.lastName +
-                    ":  " +
-                    customer._id}
+                <option key={index} className="capitalize">
+                  {customer}
                 </option>
               </>
             );
           })}
         </select>
       </div>
+
       <div className="items-center gap-6 md:flex">
         <label
           htmlFor="amount"
