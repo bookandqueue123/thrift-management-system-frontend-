@@ -1,5 +1,6 @@
 "use client";
 import { CustomButton } from "@/components/Buttons";
+import { MultiSelectDropdown } from "@/components/Dropdowns";
 import Modal from "@/components/Modal";
 import Image from "next/image";
 import React, { useState } from "react";
@@ -189,23 +190,12 @@ const SetUpSavingsForm = () => {
           </select>
         </div>
       )}
-      <div className="items-center gap-6 md:flex">
-        <label
-          htmlFor="addCustomers"
-          className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
-        >
-          Add Customers:
-        </label>
-        <input
-          id="addCustomers"
-          name="addCustomers"
-          type="text"
-          placeholder="choose customers"
-          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-          onChange={handleChange}
-          required
-        />
-      </div>
+      <MultiSelectDropdown
+        options={["Option 1", "Option 2", "Option 3"]}
+        label="Add Customers: "
+        placeholder="Choose customers"
+      />
+
       <div className="items-center gap-6 md:flex">
         <label
           htmlFor="amount"

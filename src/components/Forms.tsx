@@ -6,14 +6,9 @@ export const SearchInput = () => {
       <input
         type="search"
         placeholder="Search"
-        className="w-full bg-transparent outline-none focus:outline-none caret-ajo_offWhite text-ajo_offWhite"
+        className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
       />
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 18 18"
-        fill="none"
-      >
+      <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
         <circle
           cx="8.60996"
           cy="8.10312"
@@ -34,3 +29,5 @@ export const SearchInput = () => {
     </form>
   );
 };
+
+

@@ -10,6 +10,7 @@ import { allSavingsResponse, postSavingsResponse } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { MultiSelectDropdown } from "@/components/Dropdowns";
 
 const Posting = () => {
   const [modalState, setModalState] = useState(false);
@@ -327,23 +328,11 @@ const PostingForm = ({
           </select>
         </div>
       ) : (
-        <div className="items-center gap-6 md:flex">
-          <label
-            htmlFor="addCustomers"
-            className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
-          >
-            Add Customers:
-          </label>
-          <input
-            id="addCustomers"
-            name="addCustomers"
-            type="text"
-            placeholder="choose customers"
-            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-            onChange={handleChange}
-            required
-          />
-        </div>
+        <MultiSelectDropdown
+          options={uniqueCustomerIds}
+          label="Add Customers: "
+          placeholder="Choose customers"
+        />
       )}
       <div className="items-center gap-6 md:flex">
         <label

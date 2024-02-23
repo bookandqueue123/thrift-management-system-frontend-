@@ -64,3 +64,64 @@ const AvatarDropdown = ({ logoutFn, avatarImg, routeOptions }: { logoutFn?: () =
 };
 
 export default AvatarDropdown;
+
+
+export const MultiSelectDropdown = ({ options, placeholder, label }: { options: string[]; placeholder: string; label: string; }) => {
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+
+  const handleOptionChange = (e: { target: { name: any; value: any; }; }) => {
+   const {value} = e.target
+   !selectedOptions.includes(value) &&
+     setSelectedOptions((prev) => [...prev, value]);
+ };
+
+  const handleRemoveOption = (option: string) => {
+    setSelectedOptions((prevOptions) =>
+      prevOptions.filter((item) => item !== option),
+    );
+  };
+
+  return (
+    <div className="items-center gap-6 md:flex">
+      <label
+        htmlFor="addCustomers"
+        className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+      >
+        {label}
+      </label>
+      <div className="w-full">
+        <select
+          id="addCustomers"
+          className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+          onChange={handleOptionChange}
+          value={selectedOptions}
+        >
+          <option className="hidden lowercase">{placeholder}</option>
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        <div className="space-x-1 space-y-2">
+          {selectedOptions.map((option) => (
+            <div
+              key={option}
+              className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
+            >
+              <span className="text-sm font-medium">{option}</span>
+              <button
+                type="button"
+                className="text-red-500 hover:text-red-700 focus:outline-none"
+                aria-label="Remove"
+                onClick={() => handleRemoveOption(option)}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};

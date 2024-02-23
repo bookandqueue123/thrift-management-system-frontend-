@@ -8,6 +8,7 @@ import AmountFormatter from "@/utils/AmountFormatter";
 import React, { useState } from "react";
 import DummyGroups from "@/api/dummyGroups.json";
 import Image from "next/image";
+import { MultiSelectDropdown } from "@/components/Dropdowns";
 
 const GroupSettings = () => {
   const [modalState, setModalState] = useState(false);
@@ -231,23 +232,11 @@ const CreateGroupForm = () => {
           </div>
         </>
       )}
-      <div className="items-center gap-6 md:flex">
-        <label
-          htmlFor="addCustomers"
-          className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
-        >
-          Add Customers:
-        </label>
-        <input
-          id="addCustomers"
-          name="addCustomers"
-          type="text"
-          placeholder="Choose customers"
-          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-          onChange={handleChange}
-          required
-        />
-      </div>
+      <MultiSelectDropdown
+        options={["Option 1", "Option 2", "Option 3"]}
+        label="Add Customers: "
+        placeholder="Choose customers"
+      />
 
       <div className="flex items-center justify-center pb-12 pt-4">
         <span className="hidden w-[20%] md:block">Submit</span>
