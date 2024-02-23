@@ -311,7 +311,7 @@ const PostingForm = ({
               //   ["savingId"]: savingsId,
               // }));
             }}
-            required
+            // required
           >
             <option defaultValue={"Select a user"} className="hidden">
               Select a user

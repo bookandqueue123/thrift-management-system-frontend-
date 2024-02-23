@@ -189,13 +189,30 @@ const CreateGroupForm = () => {
               htmlFor="nameless group"
               className="m-0 cursor-pointer whitespace-nowrap text-sm font-medium capitalize text-ajo_offWhite"
             >
-              nameless group
+              unnamed group
             </label>
           </span>
         </div>
       </div>
       {createGroup.groupType === "named group" && (
         <>
+          <div className="items-center gap-6 md:flex">
+            <label
+              htmlFor="groupName"
+              className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+            >
+              Group Name:
+            </label>
+            <input
+              id="groupName"
+              name="groupName"
+              type="text"
+              placeholder="E.g 1million Goal"
+              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              onChange={handleChange}
+              required
+            />
+          </div>
           <div className="items-center gap-6 md:flex">
             <label
               htmlFor="groupDescription"
