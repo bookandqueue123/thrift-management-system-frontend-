@@ -154,6 +154,7 @@ const PostingForm = ({
 }) => {
   // TODO remove the organization ID later
   const [postDetails, setPostDetails] = useState({
+    postingType: "individual",
     customerId: "",
     purposeName: "",
     amount: 15000,
@@ -230,44 +231,120 @@ const PostingForm = ({
   // TODO: Render each savings Id by the customer Id that is chosen
   return (
     <form className="mx-auto w-[85%] space-y-3" onSubmit={onSubmitHandler}>
-      <div className="items-center gap-6 md:flex">
+      <div className="items-center gap-6  md:flex">
         <label
-          htmlFor="customerId"
-          className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+          htmlFor="postingType"
+          className="m-0 w-[16%] text-xs font-medium text-white"
         >
-          Customer ID:
+          Posting Type:
         </label>
-        <select
-          id="customerId"
-          name="customerId"
-          className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
-          // defaultValue={"Select a user"}
-          onChange={(e) => {
-            handleChange(e);
-            const { value } = e.target;
-            
-            // setPostDetails((prev) => ({
-            //   ...prev,
-            //   ["savingId"]: savingsId,
-            // }));
-          }}
-          required
+        <div
+          id="postingType"
+          className="my-3 flex w-[80%] items-center justify-start gap-8"
         >
-          <option defaultValue={"Select a user"} className="hidden">
-            Select a user
-          </option>
-          {uniqueCustomerIds.map((customer, index) => {
-            return (
-              <>
-                <option key={index} className="capitalize">
-                  {customer}
-                </option>
-              </>
-            );
-          })}
-        </select>
+          <span className="flex items-center gap-2">
+            <input
+              id="individual"
+              name="postingType"
+              type="radio"
+              className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
+              onChange={() => {
+                setPostDetails((prev) => ({
+                  ...prev,
+                  ["postingType"]: "individual",
+                }));
+              }}
+              checked={postDetails.postingType === "individual"}
+              required
+            />
+            <label
+              htmlFor="individual"
+              className="m-0 cursor-pointer whitespace-nowrap text-sm font-medium capitalize text-ajo_offWhite"
+            >
+              Individual
+            </label>
+          </span>
+          <span className="flex items-center gap-2">
+            <input
+              id="group"
+              name="postingType"
+              type="radio"
+              className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
+              onChange={() => {
+                setPostDetails((prev) => ({
+                  ...prev,
+                  ["postingType"]: "group",
+                }));
+              }}
+              required
+              checked={postDetails.postingType === "group"}
+            />
+            <label
+              htmlFor="group"
+              className="m-0 cursor-pointer whitespace-nowrap text-sm font-medium capitalize text-ajo_offWhite"
+            >
+              Group
+            </label>
+          </span>
+        </div>
       </div>
+      {postDetails.postingType === "individual" ? (
+        <div className="items-center gap-6 md:flex">
+          <label
+            htmlFor="customerId"
+            className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+          >
+            Customer ID:
+          </label>
+          <select
+            id="customerId"
+            name="customerId"
+            className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+            // defaultValue={"Select a user"}
+            onChange={(e) => {
+              handleChange(e);
+              const { value } = e.target;
 
+              // setPostDetails((prev) => ({
+              //   ...prev,
+              //   ["savingId"]: savingsId,
+              // }));
+            }}
+            required
+          >
+            <option defaultValue={"Select a user"} className="hidden">
+              Select a user
+            </option>
+            {uniqueCustomerIds.map((customer, index) => {
+              return (
+                <>
+                  <option key={index} className="capitalize">
+                    {customer}
+                  </option>
+                </>
+              );
+            })}
+          </select>
+        </div>
+      ) : (
+        <div className="items-center gap-6 md:flex">
+          <label
+            htmlFor="addCustomers"
+            className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+          >
+            Add Customers:
+          </label>
+          <input
+            id="addCustomers"
+            name="addCustomers"
+            type="text"
+            placeholder="choose customers"
+            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+            onChange={handleChange}
+            required
+          />
+        </div>
+      )}
       <div className="items-center gap-6 md:flex">
         <label
           htmlFor="amount"
@@ -284,30 +361,32 @@ const PostingForm = ({
           required
         />
       </div>
-      <div className="items-center gap-6 md:flex">
-        <label
-          htmlFor="purposeName"
-          className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
-        >
-          Purpose:
-        </label>
-        <select
-          id="purposeName"
-          name="purposeName"
-          className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] "
-          defaultValue={"Select a category"}
-          onChange={handleChange}
-          required
-        >
-          <option disabled defaultValue={"Filter"} className="hidden">
-            Select a category
-          </option>
-          <option>Education</option>
-          <option>Business</option>
-          <option>Emergency</option>
-          <option>Medical</option>
-        </select>
-      </div>
+      {postDetails.postingType === "individual" && (
+        <div className="items-center gap-6 md:flex">
+          <label
+            htmlFor="purposeName"
+            className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+          >
+            Purpose:
+          </label>
+          <select
+            id="purposeName"
+            name="purposeName"
+            className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] "
+            defaultValue={"Select a category"}
+            onChange={handleChange}
+            required
+          >
+            <option disabled defaultValue={"Filter"} className="hidden">
+              Select a category
+            </option>
+            <option>Education</option>
+            <option>Business</option>
+            <option>Emergency</option>
+            <option>Medical</option>
+          </select>
+        </div>
+      )}
       <div className="items-center gap-6  md:flex">
         <label
           htmlFor="check-group"
