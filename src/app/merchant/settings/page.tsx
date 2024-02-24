@@ -126,12 +126,12 @@ const SetUpSavingsForm = () => {
               htmlFor="nameless group"
               className="m-0 cursor-pointer whitespace-nowrap text-sm font-medium capitalize text-ajo_offWhite"
             >
-              nameless group
+              unnamed group
             </label>
           </span>
         </div>
       </div>
-      <div className="items-center gap-6 md:flex">
+      {/* <div className="items-center gap-6 md:flex">
         <label
           htmlFor="savingsName"
           className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
@@ -147,7 +147,7 @@ const SetUpSavingsForm = () => {
           onChange={handleChange}
           required
         />
-      </div>
+      </div> */}
       <div className="items-center gap-6 md:flex">
         <label
           htmlFor="purposeName"

@@ -137,7 +137,7 @@ const CreateGroupForm = () => {
       className="mx-auto mt-12 w-[90%] space-y-3 md:w-[60%]"
       onSubmit={onSubmitHandler}
     >
-      <div className="items-center gap-6  md:flex">
+      {/* <div className="items-center gap-6  md:flex">
         <label
           htmlFor="check-group"
           className="m-0 w-[16%] text-xs font-medium text-white"
@@ -193,7 +193,7 @@ const CreateGroupForm = () => {
             </label>
           </span>
         </div>
-      </div>
+      </div> */}
       {createGroup.groupType === "named group" && (
         <>
           <div className="items-center gap-6 md:flex">

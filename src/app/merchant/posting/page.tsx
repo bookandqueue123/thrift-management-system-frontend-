@@ -6,11 +6,17 @@ import TransactionsTable from "@/components/Tables";
 // import DummyCustomers from "@/api/dummyCustomers.json";
 import { client } from "@/api/hooks/useAuth";
 import Modal from "@/components/Modal";
-import { allSavingsResponse, postSavingsResponse } from "@/types";
+import {
+  allSavingsResponse,
+  postSavingsResponse,
+  savingsFilteredById,
+} from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { MultiSelectDropdown } from "@/components/Dropdowns";
+import { formatToDateAndTime } from "@/utils/TimeStampFormatter";
+import AmountFormatter from "@/utils/AmountFormatter";
 
 const Posting = () => {
   const [modalState, setModalState] = useState(false);
@@ -154,6 +160,8 @@ const PostingForm = ({
   setPostingResponse: Dispatch<SetStateAction<postSavingsResponse | undefined>>;
 }) => {
   // TODO remove the organization ID later
+  const [filteredSavingIds, setFilteredSavingIds] =
+    useState<savingsFilteredById[]>();
   const [postDetails, setPostDetails] = useState({
     postingType: "individual",
     customerId: "",
@@ -171,12 +179,14 @@ const PostingForm = ({
 
   // TODO: fIX SAVINGS iDS rENDERINGS
   useEffect(() => {
-    let savingsIds;
     if (postDetails.customerId) {
-      savingsIds = Savings?.savings.filter((s) => s.user._id === postDetails.customerId);
-      console.log(savingsIds);
+      let savingsIds =
+        Savings?.savings?.filter(
+          (s) => s.user?._id === postDetails.customerId?.split(":")[1]?.trim(),
+        ) ?? [];
+      setFilteredSavingIds(savingsIds ?? undefined);
     }
-  },[postDetails.customerId, Savings?.savings])
+  }, [postDetails.customerId, Savings?.savings]);
 
   const handleChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target;
@@ -334,6 +344,61 @@ const PostingForm = ({
           placeholder="Choose customers"
         />
       )}
+      {filteredSavingIds && (
+        <div className="items-center gap-6 md:flex">
+          <label
+            htmlFor="savingId"
+            className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+          >
+            Choose Saving:
+          </label>
+          <select
+            id="savingId"
+            name="savingId"
+            className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+            // defaultValue={"Select a user"}
+            onChange={(e) => {
+              handleChange(e);
+              const { value } = e.target;
+
+              // setPostDetails((prev) => ({
+              //   ...prev,
+              //   ["savingId"]: savingsId,
+              // }));
+            }}
+          >
+            <option defaultValue={"Select a user"} className="hidden">
+              Select a user
+            </option>
+            {filteredSavingIds.map((savingId, index) => {
+              return (
+                <>
+                  <option key={index} className="capitalize">
+                    {
+                      <span className="flex items-center justify-between">
+                        <span>Purpose: {savingId.purposeName + " | "}</span>
+                        <span>
+                          Amount: {AmountFormatter(savingId.amount) + " | "}
+                        </span>
+                        <span>Frequency: {savingId.frequency + " | "}</span>
+                        <span>
+                          Start Date: 
+                          {formatToDateAndTime(savingId.startDate, "date") +
+                            " | "}
+                        </span>
+                        <span>
+                          End Date: 
+                          {formatToDateAndTime(savingId.endDate, "date")}
+                        </span>
+                      </span>
+                    }
+                  </option>
+                </>
+              );
+            })}
+          </select>
+        </div>
+      )}
       <div className="items-center gap-6 md:flex">
         <label
           htmlFor="amount"
@@ -350,7 +415,7 @@ const PostingForm = ({
           required
         />
       </div>
-      {postDetails.postingType === "individual" && (
+      {/* {postDetails.postingType === "individual" && (
         <div className="items-center gap-6 md:flex">
           <label
             htmlFor="purposeName"
@@ -375,7 +440,7 @@ const PostingForm = ({
             <option>Medical</option>
           </select>
         </div>
-      )}
+      )} */}
       <div className="items-center gap-6  md:flex">
         <label
           htmlFor="check-group"
