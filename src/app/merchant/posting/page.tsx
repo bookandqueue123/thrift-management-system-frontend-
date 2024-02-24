@@ -338,11 +338,33 @@ const PostingForm = ({
           </select>
         </div>
       ) : (
-        <MultiSelectDropdown
-          options={uniqueCustomerIds}
-          label="Add Customers: "
-          placeholder="Choose customers"
-        />
+        // <MultiSelectDropdown
+        //   options={uniqueCustomerIds}
+        //   label="Add Customers: "
+        //   placeholder="Choose customers"
+        // />
+        <div className="items-center gap-6 md:flex">
+          <label
+            htmlFor="chooseGroup"
+            className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+          >
+            Choose Group:
+          </label>
+          <select
+            id="chooseGroup"
+            name="chooseGroup"
+            className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+            defaultValue={"Select a category"}
+            onChange={handleChange}
+            required
+          >
+            <option className="hidden">
+              Select a group
+            </option>
+            <option className="capitalize">Emergency Savers</option>
+            <option className="capitalize">1 Million AJO</option>
+          </select>
+        </div>
       )}
       {filteredSavingIds && (
         <div className="items-center gap-6 md:flex">
@@ -382,12 +404,12 @@ const PostingForm = ({
                         </span>
                         <span>Frequency: {savingId.frequency + " | "}</span>
                         <span>
-                          Start Date: 
+                          Start Date:
                           {formatToDateAndTime(savingId.startDate, "date") +
                             " | "}
                         </span>
                         <span>
-                          End Date: 
+                          End Date:
                           {formatToDateAndTime(savingId.endDate, "date")}
                         </span>
                       </span>

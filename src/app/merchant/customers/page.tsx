@@ -209,6 +209,7 @@ const SavingsSettings = ({
     endDate: "",
     collectionDate: "",
     frequency: "",
+    users: [] as string[],
   });
 
   const handleChange = (e: { target: { name: any; value: any } }) => {
@@ -219,7 +220,7 @@ const SavingsSettings = ({
   const { mutate: setSavings, isPending: isSettingSavings } = useMutation({
     mutationKey: ["set Savings"],
     mutationFn: async () => {
-      return client.post(`/api/saving/${customerId}`, {
+      return client.post(`/api/saving/`, {
         purposeName: saveDetails.purposeName,
         amount: Number(saveDetails.amount.replace(/\D/g, "")),
         startDate: saveDetails.startDate,
@@ -227,6 +228,7 @@ const SavingsSettings = ({
         collectionDate: saveDetails.collectionDate,
         organisation: customerInfo?.organisation,
         frequency: saveDetails.frequency,
+        users: saveDetails.users,
       });
     },
     onSuccess(response: AxiosResponse<setSavingsResponse, any>) {
@@ -239,15 +241,22 @@ const SavingsSettings = ({
       throw error;
     },
   });
+  // console.log(saveDetails.users);
 
   const onSubmitHandler = () => {
+    if (!saveDetails.users.includes(customerId)) {
+      setSaveDetails((prev) => ({
+        ...prev,
+        users: [...prev.users, customerId],
+      }));
+    }
     setSavings();
   };
 
   return (
     <div>
       {content === "confirmation" ? (
-        <div className="mx-auto flex h-full w-1/2 flex-col items-center justify-center space-y-8 mt-[10%]">
+        <div className="mx-auto mt-[10%] flex h-full w-1/2 flex-col items-center justify-center space-y-8">
           <Image
             src="/check-circle.svg"
             alt="check-circle"
