@@ -11,12 +11,11 @@ import {
   postSavingsResponse,
   savingsFilteredById,
 } from "@/types";
+import AmountFormatter from "@/utils/AmountFormatter";
+import { formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { MultiSelectDropdown } from "@/components/Dropdowns";
-import { formatToDateAndTime } from "@/utils/TimeStampFormatter";
-import AmountFormatter from "@/utils/AmountFormatter";
 
 const Posting = () => {
   const [modalState, setModalState] = useState(false);
@@ -41,7 +40,7 @@ const Posting = () => {
       return client
         .get("/api/saving/get-savings", config)
         .then((response: AxiosResponse<allSavingsResponse, any>) => {
-          // console.log("allSavingsSuccess: ", response.data);
+          console.log("allSavingsSuccess: ", response.data);
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -90,7 +89,10 @@ const Posting = () => {
               title={modalContent === "confirmation" ? "" : "Post Payment"}
             >
               {modalContent === "confirmation" ? (
-                <PostConfirmation postingResponse={postingResponse} />
+                <PostConfirmation
+                  postingResponse={postingResponse}
+                  status={postingResponse?.status}
+                />
               ) : (
                 <PostingForm
                   onSubmit={setModalContent}
@@ -159,25 +161,22 @@ const PostingForm = ({
   Savings: void | allSavingsResponse | undefined;
   setPostingResponse: Dispatch<SetStateAction<postSavingsResponse | undefined>>;
 }) => {
-  // TODO remove the organization ID later
   const [filteredSavingIds, setFilteredSavingIds] =
     useState<savingsFilteredById[]>();
   const [postDetails, setPostDetails] = useState({
     postingType: "individual",
     customerId: "",
     purposeName: "",
-    amount: 15000,
+    amount: "",
     startDate: "",
     endDate: "",
-    collectionDate: "",
-    organisation: "",
-    frequency: "daily",
     savingId: "",
     paymentMode: "",
     narrative: "",
+    todayPayment: "no",
+    // status: "",
   });
 
-  // TODO: fIX SAVINGS iDS rENDERINGS
   useEffect(() => {
     if (postDetails.customerId) {
       let savingsIds =
@@ -193,6 +192,25 @@ const PostingForm = ({
     setPostDetails((prev) => ({ ...prev, [name]: value }));
   };
 
+  useEffect(() => {
+    if (postDetails.todayPayment === "yes") {
+      let date = new Date();
+      let day = date.getDate();
+      let month = date.getMonth();
+      let year = date.getFullYear();
+
+      console.log(`${day}/${month + 1}/${year}`);
+      setPostDetails((prev) => ({
+        ...prev,
+        ["startDate"]: `${day}/${month + 1}/${year}`,
+      }));
+      setPostDetails((prev) => ({
+        ...prev,
+        ["endDate"]: `${day}/${month + 1}/${year}`,
+      }));
+    }
+  }, [postDetails.todayPayment]);
+
   const { mutate: postSavings } = useMutation({
     mutationFn: async () => {
       return client.post(
@@ -200,22 +218,35 @@ const PostingForm = ({
         {
           paidDays: {
             dates: [postDetails.startDate, postDetails.endDate],
-            amount: postDetails.amount,
+            amount: Number(postDetails.amount.replace(",", "")),
           },
           paymentMode: postDetails.paymentMode,
           narrative: postDetails.narrative,
-          purposeName: postDetails.purposeName,
-          amount: Number(postDetails.amount),
-          startDate: postDetails.startDate,
-          endDate: postDetails.endDate,
+          // purposeName: postDetails.purposeName,
+          // startDate: postDetails.startDate,
+          // endDate: postDetails.endDate,
         },
       );
     },
     onSuccess(response: AxiosResponse<postSavingsResponse, any>) {
       setPostingResponse(response.data);
+      setPostingResponse(
+        (prev) =>
+          ({
+            ...prev,
+            ["status"]: "success",
+          }) as postSavingsResponse,
+      );
       console.log(response.data);
     },
     onError(error: AxiosError<any, any>) {
+      setPostingResponse(
+        (prev) =>
+          ({
+            ...prev,
+            ["status"]: "failed",
+          }) as postSavingsResponse,
+      );
       console.log(error.response);
     },
   });
@@ -239,7 +270,6 @@ const PostingForm = ({
   );
   const uniqueCustomerIds = Array.from(customerIds);
 
-  // TODO: Render each savings Id by the customer Id that is chosen
   return (
     <form className="mx-auto w-[85%] space-y-3" onSubmit={onSubmitHandler}>
       <div className="items-center gap-6  md:flex">
@@ -311,17 +341,7 @@ const PostingForm = ({
             id="customerId"
             name="customerId"
             className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
-            // defaultValue={"Select a user"}
-            onChange={(e) => {
-              handleChange(e);
-              const { value } = e.target;
-
-              // setPostDetails((prev) => ({
-              //   ...prev,
-              //   ["savingId"]: savingsId,
-              // }));
-            }}
-            // required
+            onChange={handleChange}
           >
             <option defaultValue={"Select a user"} className="hidden">
               Select a user
@@ -358,9 +378,7 @@ const PostingForm = ({
             onChange={handleChange}
             required
           >
-            <option className="hidden">
-              Select a group
-            </option>
+            <option className="hidden">Select a group</option>
             <option className="capitalize">Emergency Savers</option>
             <option className="capitalize">1 Million AJO</option>
           </select>
@@ -380,13 +398,22 @@ const PostingForm = ({
             className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
             // defaultValue={"Select a user"}
             onChange={(e) => {
-              handleChange(e);
+              // handleChange(e);
               const { value } = e.target;
+              let firstPart = value.split("|")[0];
+              let lastPart = value.split("|")[5];
 
-              // setPostDetails((prev) => ({
-              //   ...prev,
-              //   ["savingId"]: savingsId,
-              // }));
+              let purpose = firstPart.split(":")[1];
+              let selectedId = lastPart.split(":")[1];
+
+              setPostDetails((prev) => ({
+                ...prev,
+                ["purposeName"]: purpose.trim(),
+              }));
+              setPostDetails((prev) => ({
+                ...prev,
+                ["savingId"]: selectedId.trim(),
+              }));
             }}
           >
             <option defaultValue={"Select a user"} className="hidden">
@@ -410,7 +437,12 @@ const PostingForm = ({
                         </span>
                         <span>
                           End Date:
-                          {formatToDateAndTime(savingId.endDate, "date")}
+                          {formatToDateAndTime(savingId.endDate, "date") +
+                            " | "}
+                        </span>
+                        <span>
+                          Id:
+                          {savingId.id}
                         </span>
                       </span>
                     }
@@ -480,8 +512,14 @@ const PostingForm = ({
               name="todayPayment"
               type="radio"
               className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
-              onChange={handleChange}
+              onChange={() =>
+                setPostDetails((prev) => ({
+                  ...prev,
+                  ["todayPayment"]: "yes",
+                }))
+              }
               required
+              checked={postDetails.todayPayment === "yes"}
             />
             <label
               htmlFor="yes"
@@ -496,7 +534,13 @@ const PostingForm = ({
               name="todayPayment"
               type="radio"
               className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
-              onChange={handleChange}
+              onChange={() =>
+                setPostDetails((prev) => ({
+                  ...prev,
+                  ["todayPayment"]: "no",
+                }))
+              }
+              checked={postDetails.todayPayment === "no"}
               required
             />
             <label
@@ -508,44 +552,48 @@ const PostingForm = ({
           </span>
         </div>
       </div>
-      <p className="text-sm text-ajo_offWhite text-opacity-60">
-        Payment Coverage Tenure (Kindly select the date range this payment is to
-        cover)
-      </p>
-      <div className="flex w-full items-center justify-between gap-x-8">
-        <div className="w-[50%] items-center gap-6 md:flex md:w-[60%]">
-          <label
-            htmlFor="startDate"
-            className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white md:w-[40%]"
-          >
-            Start Date:
-          </label>
-          <input
-            id="startDate"
-            name="startDate"
-            type="date"
-            className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="w-[50%] items-center gap-6 md:flex md:w-[40%]">
-          <label
-            htmlFor="endDate"
-            className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
-          >
-            End Date:
-          </label>
-          <input
-            id="endDate"
-            name="endDate"
-            type="date"
-            className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
-            onChange={handleChange}
-            required
-          />
-        </div>
-      </div>
+      {postDetails.todayPayment === "no" && (
+        <>
+          <p className="text-sm text-ajo_offWhite text-opacity-60">
+            Payment Coverage Tenure (Kindly select the date range this payment
+            is to cover)
+          </p>
+          <div className="flex w-full items-center justify-between gap-x-8">
+            <div className="w-[50%] items-center gap-6 md:flex md:w-[60%]">
+              <label
+                htmlFor="startDate"
+                className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white md:w-[40%]"
+              >
+                Start Date:
+              </label>
+              <input
+                id="startDate"
+                name="startDate"
+                type="date"
+                className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="w-[50%] items-center gap-6 md:flex md:w-[40%]">
+              <label
+                htmlFor="endDate"
+                className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+              >
+                End Date:
+              </label>
+              <input
+                id="endDate"
+                name="endDate"
+                type="date"
+                className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+        </>
+      )}
       <div className="items-center gap-6 md:flex">
         <label
           htmlFor="paymentMode"
@@ -600,8 +648,10 @@ const PostingForm = ({
 
 const PostConfirmation = ({
   postingResponse,
+  status,
 }: {
   postingResponse: postSavingsResponse | undefined;
+  status: "success" | "failed" | undefined;
 }) => {
   const postingCreation: string | undefined = Date();
   const formattedPostingDate = new Date(postingCreation);
@@ -680,8 +730,10 @@ const PostConfirmation = ({
         </div>
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Status:</p>
-          <p className="text-sm font-semibold text-successText">
-            Payment Successful
+          <p
+            className={`text-sm font-bold ${status === "success" ? "text-successText" : "text-errorText"}`}
+          >
+            {status === "success" ? "Payment Successful" : "Payment Failed"}
           </p>
         </div>
       </div>

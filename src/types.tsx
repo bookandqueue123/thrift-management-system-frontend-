@@ -73,6 +73,7 @@ export type postSavingsResponse = {
   savedDates: [];
   specificDates: string[];
   id: string;
+  status: "failed" | "success" | undefined;
 };
 
 export type allSavingsResponse = {
