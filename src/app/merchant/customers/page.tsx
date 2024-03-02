@@ -254,6 +254,7 @@ const SavingsSettings = ({
   };
 
   return (
+    
     <div>
       {content === "confirmation" ? (
         <div className="mx-auto mt-[10%] flex h-full w-1/2 flex-col items-center justify-center space-y-8">
@@ -375,7 +376,7 @@ const SavingsSettings = ({
                 onChange={handleChange}
                 required
               >
-                <option disabled className="hidden">
+                <option className="hidden">
                   Select frequency
                 </option>
                 <option className="capitalize">daily</option>
