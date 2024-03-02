@@ -8,14 +8,17 @@ import { client } from "@/api/hooks/useAuth";
 import Modal from "@/components/Modal";
 import {
   allSavingsResponse,
+  customer,
   postSavingsResponse,
   savingsFilteredById,
+  setSavingsResponse,
 } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { group } from "console";
 
 const Posting = () => {
   const [modalState, setModalState] = useState(false);
@@ -38,7 +41,7 @@ const Posting = () => {
     staleTime: 5000,
     queryFn: async () => {
       return client
-        .get("/api/saving/get-savings", config)
+        .get("/api/saving/get-savings?organisation=65ca01a52c8fabbc92aed513", config)
         .then((response: AxiosResponse<allSavingsResponse, any>) => {
           console.log("allSavingsSuccess: ", response.data);
           return response.data;
@@ -161,9 +164,11 @@ const PostingForm = ({
   Savings: void | allSavingsResponse | undefined;
   setPostingResponse: Dispatch<SetStateAction<postSavingsResponse | undefined>>;
 }) => {
+  console.log(Savings)
   const [filteredSavingIds, setFilteredSavingIds] =
     useState<savingsFilteredById[]>();
-  const [postDetails, setPostDetails] = useState({
+  const [groupId, setGroupId] = useState()
+    const [postDetails, setPostDetails] = useState({
     postingType: "individual",
     customerId: "",
     purposeName: "",
@@ -176,8 +181,28 @@ const PostingForm = ({
     todayPayment: "no",
     // status: "",
   });
+  const [filteredArray, setFilteredArray] = useState<savingsFilteredById[]>([]);
 
   useEffect(() => {
+    // Define a function to filter the array based on postDetails.customerId
+    const filterArray = () => {
+      if (Savings?.savings) { // Check if Savings?.savings is not undefined or null
+        const filtered = Savings.savings.filter(item => item.user._id === postDetails.customerId);
+        setFilteredArray(filtered);
+      } else {
+        // Handle case where Savings?.savings is undefined or null
+        setFilteredArray([]); // Set filteredArray to an empty array
+      }
+    };
+  
+    filterArray(); // Call the filterArray function
+  }, [Savings, postDetails.customerId]); // Add dependencies to useEffect
+
+  console.log(filteredArray)
+
+  console.log(postDetails.customerId)
+  useEffect(() => {
+    console.log(postDetails.customerId + "1")
     if (postDetails.customerId) {
       let savingsIds =
         Savings?.savings?.filter(
@@ -185,12 +210,17 @@ const PostingForm = ({
         ) ?? [];
       setFilteredSavingIds(savingsIds ?? undefined);
     }
-  }, [postDetails.customerId, Savings?.savings]);
+  }, [postDetails.customerId]);
 
+  console.log(filteredSavingIds)
   const handleChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target;
     setPostDetails((prev) => ({ ...prev, [name]: value }));
+
   };
+  const handleGroupChange = (e: any ) =>{
+    setGroupId(e.target.value)
+  }
 
   useEffect(() => {
     if (postDetails.todayPayment === "yes") {
@@ -211,10 +241,39 @@ const PostingForm = ({
     }
   }, [postDetails.todayPayment]);
 
+
+  const {data: groups, isLoading: isUserLoading, isError} = useQuery({
+    queryKey: ["allgroups", postDetails.postingType],
+    queryFn: async () => {
+      return client
+        .get(`/api/user?organisation=65ca01a52c8fabbc92aed513&userType=${postDetails.postingType}`, {})
+        .then((response) => {
+          console.log(response.data)
+          return response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+          throw error;
+        })
+    }
+  })
+
+ 
+
+
+
+ 
   const { mutate: postSavings } = useMutation({
     mutationFn: async () => {
+      console.log(postDetails)
+      console.log(postDetails.postingType)
+      console.log(postDetails.customerId)
+      const endpoint = postDetails.postingType === "individual" 
+    ? `/api/saving/post-savings?userId=${postDetails.customerId}&savingId=${postDetails.savingId}`
+    : `/api/saving/post-savings?userId=${groupId}`;
       return client.post(
-        `/api/saving/${postDetails.customerId?.split(":")[1]?.trim()}/${postDetails.savingId}`,
+      
+        endpoint,
         {
           paidDays: {
             dates: [postDetails.startDate, postDetails.endDate],
@@ -229,6 +288,7 @@ const PostingForm = ({
       );
     },
     onSuccess(response: AxiosResponse<postSavingsResponse, any>) {
+      
       setPostingResponse(response.data);
       setPostingResponse(
         (prev) =>
@@ -240,6 +300,7 @@ const PostingForm = ({
       console.log(response.data);
     },
     onError(error: AxiosError<any, any>) {
+      setPostingResponse(error.response?.data)
       setPostingResponse(
         (prev) =>
           ({
@@ -247,12 +308,14 @@ const PostingForm = ({
             ["status"]: "failed",
           }) as postSavingsResponse,
       );
-      console.log(error.response);
+
+      console.log(error?.response?.data);
     },
   });
 
   const onSubmitHandler = () => {
     console.log(postDetails);
+    console.log(postDetails.customerId)
     postSavings();
     onSubmit("confirmation");
   };
@@ -269,7 +332,7 @@ const PostingForm = ({
     ),
   );
   const uniqueCustomerIds = Array.from(customerIds);
-
+  console.log(uniqueCustomerIds)
   return (
     <form className="mx-auto w-[85%] space-y-3" onSubmit={onSubmitHandler}>
       <div className="items-center gap-6  md:flex">
@@ -329,6 +392,7 @@ const PostingForm = ({
           </span>
         </div>
       </div>
+      
       {postDetails.postingType === "individual" ? (
         <div className="items-center gap-6 md:flex">
           <label
@@ -346,11 +410,11 @@ const PostingForm = ({
             <option defaultValue={"Select a user"} className="hidden">
               Select a user
             </option>
-            {uniqueCustomerIds.map((customer, index) => {
+            {groups?.map((group: customer) => {
               return (
                 <>
-                  <option key={index} className="capitalize">
-                    {customer}
+                  <option key={group._id} value={group._id} className="capitalize">
+                    {group.firstName} {group.lastName}
                   </option>
                 </>
               );
@@ -365,32 +429,40 @@ const PostingForm = ({
         // />
         <div className="items-center gap-6 md:flex">
           <label
-            htmlFor="chooseGroup"
+            htmlFor="groupId"
             className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
           >
             Choose Group:
           </label>
           <select
-            id="chooseGroup"
-            name="chooseGroup"
+            id="groupId"
+            name="groupId"
             className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
             defaultValue={"Select a category"}
-            onChange={handleChange}
+            onChange={handleGroupChange}
             required
           >
-            <option className="hidden">Select a group</option>
-            <option className="capitalize">Emergency Savers</option>
-            <option className="capitalize">1 Million AJO</option>
+            <option defaultValue={"Select a user"} className="hidden">
+              Select a group
+            </option>
+            {groups?.map((option: any) => (
+              <option key={option._id} value={option._id}>{option.groupName} {option.lastName}</option>
+            ))}
+            
           </select>
         </div>
       )}
-      {filteredSavingIds && (
+
+    {postDetails.postingType === "individual" ? (
+
+    
+      filteredArray && (
         <div className="items-center gap-6 md:flex">
           <label
             htmlFor="savingId"
             className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
           >
-            Choose Saving:
+            Purpose:
           </label>
           <select
             id="savingId"
@@ -416,10 +488,10 @@ const PostingForm = ({
               }));
             }}
           >
-            <option defaultValue={"Select a user"} className="hidden">
-              Select a user
+            <option defaultValue={"Select a Purpose"} className="hidden">
+              Select a Purpose
             </option>
-            {filteredSavingIds.map((savingId, index) => {
+            {filteredArray.map((savingId, index) => {
               return (
                 <>
                   <option key={index} className="capitalize">
@@ -452,7 +524,7 @@ const PostingForm = ({
             })}
           </select>
         </div>
-      )}
+      )) : ""}
       <div className="items-center gap-6 md:flex">
         <label
           htmlFor="amount"
@@ -653,6 +725,7 @@ const PostConfirmation = ({
   postingResponse: postSavingsResponse | undefined;
   status: "success" | "failed" | undefined;
 }) => {
+  console.log(postingResponse)
   const postingCreation: string | undefined = Date();
   const formattedPostingDate = new Date(postingCreation);
   const timeOfPosting = formattedPostingDate.toLocaleTimeString("en-US", {
@@ -726,7 +799,7 @@ const PostConfirmation = ({
         </div>
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Narration:</p>
-          <p className="text-sm text-[#7D7D7D]">{postingResponse?.narrative}</p>
+          <p className="text-sm text-[#7D7D7D]">{postingResponse?.message}</p>
         </div>
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Status:</p>

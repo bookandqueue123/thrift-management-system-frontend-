@@ -27,6 +27,7 @@ export type customer = {
   meansOfID: "NIN" | "Passport";
   photo: File;
   userType: string;
+  groupName: string;
 };
 
 export type setSavingsResponse = {
@@ -50,6 +51,7 @@ export type setSavingsResponse = {
 
 export type postSavingsResponse = {
   paymentMode: "cash" | "online";
+  message: string;
   narrative: string;
   purposeName: string;
   amount: 50000;
