@@ -479,7 +479,7 @@ console.log(postingMessage)
   });
   return (
     <div className="mx-auto h-full w-[75%] bg-ajo_offWhite py-8">
-      <p className="mb-8 text-center text-3xl font-bold text-black">Posting</p>
+      <p className="mb-8 text-center text-3xl font-bold text-black">Group Created Successfully</p>
       <div className="space-y-4">
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">
