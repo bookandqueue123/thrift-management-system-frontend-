@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import TanstackProvider from "../../providers/TanstackProvider";
 
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const montserrat = Montserrat({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -19,7 +21,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={montserrat.className}>
         <TanstackProvider>
-          <div>{children}</div>
+          <div>
+            <ToastContainer/>
+            {children}</div>
         </TanstackProvider>
       </body>
     </html>
