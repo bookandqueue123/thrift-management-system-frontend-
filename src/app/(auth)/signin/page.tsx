@@ -2,6 +2,13 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import Link from 'next/link';
+import { useMutation } from '@tanstack/react-query';
+import { signInProps } from '@/types';
+import { client } from '@/api/hooks/useAuth';
+import { AxiosError, AxiosResponse } from "axios";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import SuccessToaster, { ErrorToaster } from '@/components/toast';
 
 // export const metadata = {
 //   title: 'SignIn',
@@ -9,6 +16,42 @@ import Link from 'next/link';
 // };
 
 const SignInForm = () => {
+  const router = useRouter()
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState("")
+  const {mutate: UserSignIn, isPending, isError} = useMutation({
+    mutationKey: ["set Savings"],
+    mutationFn: async (values: signInProps) => {
+     
+      return client.post(`/api/auth/login`, {
+      
+        
+        emailOrPhoneNumber: values.email,
+        password: values.password,
+        
+      
+      })
+    },
+    
+    onSuccess(response: AxiosResponse<any, any>) {
+      setShowSuccessToast(true)
+      console.log(response.data);
+      console.log(response)
+      router.push('/merchant')
+      setSuccessMessage((response as any).response.data.message);
+      console.log(successMessage)
+    },
+    onError(error : AxiosError<any, any>){
+      setShowErrorToast(true)
+      setErrorMessage(error.response?.data.message)
+      // setErrorMessage(error.data)
+  
+    }
+    
+  })
+
   return (
     <Formik
       initialValues={{
@@ -20,16 +63,21 @@ const SignInForm = () => {
       validationSchema={Yup.object({
         email: Yup.string()
           .email('Invalid email address')
-          .required('Required'),
-        password: Yup.string().required('Required'),
+          .required('Email is Required'),
+        password: Yup.string().required('Password is required'),
       })}
       onSubmit={(values, { setSubmitting }) => {
-        // Handle form submission here
-        console.log(values);
-        setSubmitting(false);
+       UserSignIn(values)
+        setTimeout(() => {
+         
+           
+          setSubmitting(false);
+        }, 400);
+
       }}
     >
-      <Form className="mt-8">
+      {({isSubmitting}) => (
+        <Form className="mt-8">
         <div className="mb-8">
           <div className="mb-3">
             <label htmlFor="email" className="m-0 text-xs font-medium text-white">
@@ -96,11 +144,17 @@ const SignInForm = () => {
 
         <button
           type="submit"
-          className="bg-ajo_blue w-full rounded-md py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
-        >
-          LogIn
+          className="bg-ajo_blue w-full rounded-md py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500 "
+          disabled={isSubmitting}>
+          {isSubmitting ? 'Logging in...' : 'Log in'}
         </button>
+
+        
+        {/* Conditionally render SuccessToaster component */}
+        {showSuccessToast && <SuccessToaster message={"Sign in successfull!"} />}
+           {showErrorToast && errorMessage && errorMessage && <ErrorToaster message={errorMessage? errorMessage : "Error creating organization"} />}
       </Form>
+      )}
     </Formik>
   );
 };

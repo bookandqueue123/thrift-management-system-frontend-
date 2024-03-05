@@ -194,3 +194,10 @@ export interface MerchantSignUpProps {
   role:             string;
   confirmPassword: string
 }
+
+export interface signInProps{
+  email: string,
+  userCategory: string,
+  password: string,
+  rememberPassword: boolean,
+}
