@@ -81,6 +81,9 @@ const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) 
     frequency: "",
     group: ""
   });
+  
+
+
   const handleOptionChange = (e:React.ChangeEvent<HTMLSelectElement> ) => {
     const selectedId = e.target.value;
     const selectedOption = users?.find(option => option._id === selectedId);
@@ -177,9 +180,11 @@ const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) 
 
   const onSubmitHandler = () => {
     
-    postNamedGroups();
+      postNamedGroups();
     
     // onSubmit("confirmation");
+   
+    
   };
   return (
     <div>
@@ -264,23 +269,7 @@ const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) 
           </span>
         </div>
       </div>
-      {/* <div className="items-center gap-6 md:flex">
-        <label
-          htmlFor="savingsName"
-          className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
-        >
-          Savings Name:
-        </label>
-        <input
-          id="savingsName"
-          name="savingsName"
-          type="text"
-          placeholder="state name"
-          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-          onChange={handleChange}
-          required
-        />
-      </div> */}
+     
       <div className="items-center gap-6 md:flex">
         <label
           htmlFor="purposeName"

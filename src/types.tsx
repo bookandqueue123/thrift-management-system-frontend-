@@ -183,3 +183,14 @@ export type savingsFilteredById = {
   specificDates: any[];
   id: string;
 };
+
+
+export interface MerchantSignUpProps {
+  organisationName: string;
+  phoneNumber:      string;
+  email:            string;
+  password:         string;
+  prefferedUrl:     string;
+  role:             string;
+  confirmPassword: string
+}
