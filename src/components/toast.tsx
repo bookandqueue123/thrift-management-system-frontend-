@@ -1,7 +1,7 @@
 import { toast } from "react-toastify";
 
 const SuccessToaster = ({message}: {message: string}) => {
-   
+   console.log('toast')
   toast.success(message, {
     position: "top-right",
     autoClose: 7000, // Close the toaster after 5 seconds
