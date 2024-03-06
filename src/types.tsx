@@ -201,3 +201,14 @@ export interface signInProps{
   password: string,
   rememberPassword: boolean,
 }
+export interface CustomerSignUpProps {
+  firstName:    string;
+  lastName:     string;
+  otherName:    string;
+  phoneNumber:  string;
+  email:        string;
+  password:     string;
+  // role:         string;
+  // organisation: string;
+  confirmPassword: string
+}

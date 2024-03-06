@@ -50,7 +50,7 @@ const MerchantForm = () => {
   };
 
   const {mutate: MerchantSignUp, isPending, isError} = useMutation({
-    mutationKey: ["set Savings"],
+    mutationKey: ["Merchant sign up"],
     mutationFn: async (values: MerchantSignUpProps) => {
      
       return client.post(`/api/auth/register`, {
@@ -151,7 +151,7 @@ const MerchantForm = () => {
             </div>
 
             <div className="mb-3">
-              <label htmlFor="prefferedUrl" className="m-0 text-xs font-medium text-white">Preferred prefferedUrl <span className="font-base font-semibold text-[#FF0000]">*</span></label>
+              <label htmlFor="prefferedUrl" className="m-0 text-xs font-medium text-white">Preferred  <span className="font-base font-semibold text-[#FF0000]">*</span></label>
               <Field type="string" name="prefferedUrl" id="prefferedUrl" className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]" />
               <ErrorMessage name="prefferedUrl" component="div" className="text-red-500" />
             </div>
@@ -173,7 +173,7 @@ const MerchantForm = () => {
           </button>
 
            {/* Conditionally render SuccessToaster component */}
-           {showSuccessToast && successMessage && <SuccessToaster message={successMessage ? successMessage : "Form submitted successfully!"} />}
+           {showSuccessToast && successMessage && <SuccessToaster message={successMessage ? successMessage : "Account Created successfully!"} />}
            {showErrorToast && errorMessage && errorMessage && <ErrorToaster message={errorMessage? errorMessage : "Error creating organization"} />}
         </Form>
       )}
