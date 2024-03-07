@@ -20,7 +20,11 @@ const validationSchema = Yup.object().shape({
     .email('Invalid email')
     .required('Email is required'),
   phoneNumber: Yup.string()
-    .matches(/^\+234\d{10}$/, 'Invalid phone number')
+    // .matches(/^\+234\d{10}$/, 'Invalid phone number')
+    .matches(
+      /^(?:\+234\d{10}|\d{11})$/,
+      'Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long'
+    )
     .required('Phone number is required'),
     prefferedUrl: Yup.string()
   .required(),
@@ -105,13 +109,13 @@ const MerchantForm = () => {
           <div className="mb-8">
          
             <div className="mb-3">
-              <label htmlFor="organisation-name" className="m-0 text-xs font-medium text-white">Organisation Name</label>
+              <label htmlFor="organisation-name" className="m-0 text-xs font-medium text-white">Organisation Name <span className="font-base font-semibold text-[#FF0000]">*</span></label>
               <Field type="text" name="organisationName" id="organisation-name" className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]" />
               <ErrorMessage name="organisationName" component="div" className="text-red-500" />
             </div>
 
             <div className="mb-3">
-              <label htmlFor="email" className="m-0 text-xs font-medium text-white">Email Address</label>
+              <label htmlFor="email" className="m-0 text-xs font-medium text-white">Email Address <span className="font-base font-semibold text-[#FF0000]">*</span></label>
               <Field type="email" name="email" id="email" className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]" />
               <ErrorMessage name="email" component="div" className="text-red-500" />
             </div>
@@ -119,7 +123,7 @@ const MerchantForm = () => {
             <div className="mb-3">
               <label htmlFor="phoneNumber" className="m-0 text-xs font-medium text-white">Contact Number <span className="font-base font-semibold text-[#FF0000]">*</span></label>
               <div className="mt-1 flex w-full gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-                <span className="flex h-full w-1/5 select-none items-center gap-2 text-gray-400 sm:text-sm">
+                {/* <span className="flex h-full w-1/5 select-none items-center gap-2 text-gray-400 sm:text-sm">
                   <svg
                     width="20"
                     height="16"
@@ -144,14 +148,14 @@ const MerchantForm = () => {
                     />
                   </svg>
                   +234
-                </span>
+                </span> */}
                 <Field type="tel" name="phoneNumber" id="phoneNumber" className="w-4/5 bg-transparent outline-none" />
               </div>
               <ErrorMessage name="phoneNumber" component="div" className="text-red-500" />
             </div>
 
             <div className="mb-3">
-              <label htmlFor="prefferedUrl" className="m-0 text-xs font-medium text-white">Preferred  <span className="font-base font-semibold text-[#FF0000]">*</span></label>
+              <label htmlFor="prefferedUrl" className="m-0 text-xs font-medium text-white">Preferred Url <span className="font-base font-semibold text-[#FF0000]">*</span></label>
               <Field type="string" name="prefferedUrl" id="prefferedUrl" className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]" />
               <ErrorMessage name="prefferedUrl" component="div" className="text-red-500" />
             </div>

@@ -209,6 +209,6 @@ export interface CustomerSignUpProps {
   email:        string;
   password:     string;
   // role:         string;
-  // organisation: string;
+   organization: string;
   confirmPassword: string
 }

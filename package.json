@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.2.1",
     "@tanstack/react-query": "^5.20.5",
     "@tanstack/react-query-devtools": "^5.21.0",
     "@types/yup": "^0.32.0",
