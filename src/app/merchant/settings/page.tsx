@@ -1,5 +1,5 @@
 "use client";
-import { client } from "@/api/hooks/useAuth";
+import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton } from "@/components/Buttons";
 import { MultiSelectDropdown } from "@/components/Dropdowns";
 import Modal from "@/components/Modal";
@@ -10,6 +10,7 @@ import Image from "next/image";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 const Settings = () => {
+  
   const [modalState, setModalState] = useState(false);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
     "form",
@@ -69,6 +70,7 @@ interface SetUpSavingsProps{
   closeModal: Dispatch<SetStateAction<boolean>>;
 }
 const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) => {
+  const { client } = useAuth();
   const [selectedOptions, setSelectedOptions] = useState<customer[]>([]);
   const [displayConfirmationModal, setDisplayConfirmationMedal] = useState(false)
   const [saveDetails, setSaveDetails] = useState({

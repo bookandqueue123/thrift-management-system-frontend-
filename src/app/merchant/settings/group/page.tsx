@@ -10,7 +10,7 @@ import DummyGroups from "@/api/dummyGroups.json";
 import Image from "next/image";
 import { MultiSelectDropdown } from "@/components/Dropdowns";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { client } from "@/api/hooks/useAuth";
+import { useAuth } from "@/api/hooks/useAuth";
 import { customer, postSavingsResponse } from "@/types";
 import { AxiosError, AxiosResponse } from "axios";
 
@@ -150,6 +150,7 @@ const CreateGroupForm = ({
   postingMessage,
   setPostingResponse,
 }: iCreateGroupProps) => {
+  const { client } = useAuth();
   const [selectedOptions, setSelectedOptions] = useState<customer[]>([]);
 
   const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -268,6 +269,10 @@ const CreateGroupForm = ({
       {({ isSubmitting }) => (
         <Form className="mx-auto mt-12 w-[90%] space-y-3 md:w-[60%]">
           {/** Group Name Field */}
+
+          <div>
+
+          
           <div className="items-center gap-6 md:flex">
             <label htmlFor="groupName" className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white">
               Group Name:
@@ -279,25 +284,39 @@ const CreateGroupForm = ({
               placeholder="E.g 1million Goal"
               className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
             />
-            <ErrorMessage name="groupName" component="div" className="text-red-500" />
+            
+          </div>
+          <div className="items-center gap-6 md:flex">
+            <div className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"></div>
+            <ErrorMessage name="groupName" component="div" className="text-red-500 w-full" />
+          </div>
           </div>
 
           {/** Group Description Field */}
+         
+         <div className="">
           <div className="items-center gap-6 md:flex">
             <label htmlFor="groupDescription" className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white">
               Group description:
-            </label>
+            </label> 
+            
             <Field
               id="groupDescription"
               name="groupDescription"
               type="text"
               placeholder="Describe..."
               className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-            />
-            <ErrorMessage name="groupDescription" component="div" className="text-red-500" />
+            /> 
+           
+          </div>
+          <div className="items-center gap-6 md:flex">
+          <div className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"></div>
+              <ErrorMessage name="groupDescription" component="div" className="text-red-500 w-full" />
+          </div>
           </div>
 
           {/** Savings Purpose Field */}
+          <div>
           <div className="items-center gap-6 md:flex">
             <label htmlFor="savingsPurpose" className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white">
               Savings Purpose:
@@ -309,8 +328,14 @@ const CreateGroupForm = ({
               placeholder="Purpose...."
               className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
             />
-            <ErrorMessage name="savingsPurpose" component="div" className="text-red-500" />
+            
           </div>
+          <div className="items-center gap-6 md:flex">
+          <div className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"></div>
+            <ErrorMessage name="savingsPurpose" component="div" className="text-red-500 w-full" />
+          </div>
+          </div>
+          
 
           {/* Add Customers Field */}
            {/* Add Customers Field */}
@@ -328,6 +353,8 @@ const CreateGroupForm = ({
                   <option key={option._id} value={option._id}>{option.firstName} {option.lastName}</option>
                 ))}
               </select>
+
+              
               <div className="space-x-1 space-y-2">
                 {selectedOptions.map((option, index) => (
                   <div key={index} className="inline-block mr-2 mb-2">

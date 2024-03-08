@@ -4,7 +4,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { usePathname } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
-import { client } from '@/api/hooks/useAuth';
+import { useAuth} from '@/api/hooks/useAuth';
 import { MerchantSignUpProps } from '@/types';
 import SuccessToaster, { ErrorToaster } from '@/components/toast';
 import { useRouter } from 'next/navigation';
@@ -38,6 +38,7 @@ const validationSchema = Yup.object().shape({
 });
 
 const MerchantForm = () => {
+  const { client } = useAuth();
   const router = useRouter()
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
@@ -71,10 +72,15 @@ const MerchantForm = () => {
     
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true)
+       router.push('/signin')
       console.log(response.data);
-      router.push('/signin')
+     
       setSuccessMessage((response as any).response.data.message);
-      console.log(successMessage)
+       
+      // setTimeout(() => {
+        
+      // }, 4000)
+     
     },
     onError(error : AxiosError<any, any>){
       setShowErrorToast(true)
@@ -94,12 +100,11 @@ const MerchantForm = () => {
        
         
         MerchantSignUp(values)
-        setTimeout(() => {
-          // alert(JSON.stringify(values, null, 2));
+        
            setShowSuccessToast(false)
            setShowErrorToast(false)
           setSubmitting(false);
-        }, 400);
+        
        
         
       }}
@@ -107,7 +112,7 @@ const MerchantForm = () => {
       {({ isSubmitting }) => (
         <Form className="mt-8">
           <div className="mb-8">
-         
+        
             <div className="mb-3">
               <label htmlFor="organisation-name" className="m-0 text-xs font-medium text-white">Organisation Name <span className="font-base font-semibold text-[#FF0000]">*</span></label>
               <Field type="text" name="organisationName" id="organisation-name" className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]" />
@@ -177,7 +182,7 @@ const MerchantForm = () => {
           </button>
 
            {/* Conditionally render SuccessToaster component */}
-           {showSuccessToast && successMessage && <SuccessToaster message={successMessage ? successMessage : "Account Created successfully!"} />}
+           {showSuccessToast  && <SuccessToaster message={successMessage ? successMessage : "Account Created successfully!"} />}
            {showErrorToast && errorMessage && errorMessage && <ErrorToaster message={errorMessage? errorMessage : "Error creating organization"} />}
         </Form>
       )}
