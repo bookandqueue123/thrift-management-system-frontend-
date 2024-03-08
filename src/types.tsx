@@ -212,3 +212,21 @@ export interface CustomerSignUpProps {
    organization: string;
   confirmPassword: string
 }
+
+export interface getOrganizationProps {
+  userType:         string;
+  groupMember:      any[];
+  isArchieve:       boolean;
+  savingIdentities: any[];
+  _id:              string;
+  email:            string;
+  phoneNumber:      string;
+  organisationName: string;
+  accountNumber:    string;
+  role:             string;
+  prefferedUrl:     string;
+  kycVerified:      boolean;
+  createdAt:        Date;
+  updatedAt:        Date;
+  __v:              number;
+}

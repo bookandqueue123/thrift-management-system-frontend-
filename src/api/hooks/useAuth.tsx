@@ -1,15 +1,63 @@
+// import { useSelector } from "react-redux";
+// import axios from "axios";
+// import { selectToken } from '@/slices/OrganizationIdSlice'; // assuming you have a selector defined
+
+// const BASE_URL = "https://thrift.schoolkiatest.com.ng";
+
+// import { useSelector } from "react-redux";
+// const token = useSelector(selectToken);
+ 
+// export const client = axios.create({
+//   baseURL: BASE_URL,
+//   headers: {
+//     Authorization: `Bearer ${token}`, // Replace with your actual token
+//   },
+// });
+
+
 import axios from "axios";
+import { selectToken } from '@/slices/OrganizationIdSlice'; // assuming you have a selector defined
+import { useSelector } from "react-redux";
+
 const BASE_URL = "https://thrift.schoolkiatest.com.ng";
 
-const token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1Y2EwMWE1MmM4ZmFiYmM5MmFlZDUxMyIsImlhdCI6MTcwOTIwMzY1Mn0.84Y8GUssPIfbjrsWj0_q8QnNjCRFW9N_OpZXBeEVilE";
+export const useAuth = () => {
+  const token = useSelector(selectToken);
 
-export const client = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    Authorization: `Bearer ${token}`, // Replace with your actual token
-  },
-});
+  const client = axios.create({
+    baseURL: BASE_URL,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return { client };
+};
+
+
+// export const client = axios.create({
+//   baseURL: BASE_URL,
+// });
+
+// export const setAuthToken = (token: string) => {
+//   if (token) {
+//     client.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+//   } else {
+//     delete client.defaults.headers.common["Authorization"];
+//   }
+// };
+
+// export const ConfigureClient = () => {
+//   const token = useSelector(selectToken);
+//   setAuthToken(token);
+//   console.log(token)
+// };
+
+
+
+
+
+
 
 // {
 //     "email": "kanmiairs@gmail.com",

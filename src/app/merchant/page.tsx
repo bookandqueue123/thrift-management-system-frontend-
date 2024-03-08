@@ -1,3 +1,4 @@
+'use client'
 import DummyTransactions from "@/api/dummyTransactions.json";
 import { FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
@@ -6,8 +7,15 @@ import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { StatusIndicator } from "@/components/StatusIndicator";
-
+import { useDispatch, useSelector } from "react-redux";
+import { selectOrganizationId, selectToken } from '@/slices/OrganizationIdSlice';
 const MerchantDashboard = () => {
+  
+const organizationId = useSelector(selectOrganizationId)
+const token = useSelector(selectToken)
+console.log(token)
+  
+  console.log(organizationId)
   const organization = {
     Name: "First Savers Cooperative",
     totalAmtCollected: 203935,

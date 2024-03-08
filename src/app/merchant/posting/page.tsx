@@ -4,7 +4,7 @@ import { SearchInput } from "@/components/Forms";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 // import DummyCustomers from "@/api/dummyCustomers.json";
-import { client } from "@/api/hooks/useAuth";
+import { useAuth } from "@/api/hooks/useAuth";
 import Modal from "@/components/Modal";
 import {
   allSavingsResponse,
@@ -18,9 +18,12 @@ import { formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { group } from "console";
+import {  useSelector } from "react-redux";
+import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 
 const Posting = () => {
+  const organizationId = useSelector(selectOrganizationId)
+  const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
     "form",
@@ -41,7 +44,7 @@ const Posting = () => {
     staleTime: 5000,
     queryFn: async () => {
       return client
-        .get("/api/saving/get-savings?organisation=65ca01a52c8fabbc92aed513", config)
+        .get(`/api/saving/get-savings?organisation=${organizationId}`, config)
         .then((response: AxiosResponse<allSavingsResponse, any>) => {
           console.log("allSavingsSuccess: ", response.data);
           return response.data;
@@ -164,7 +167,11 @@ const PostingForm = ({
   Savings: void | allSavingsResponse | undefined;
   setPostingResponse: Dispatch<SetStateAction<postSavingsResponse | undefined>>;
 }) => {
-  console.log(Savings)
+  const organizationId = useSelector(selectOrganizationId)
+  console.log(organizationId)
+
+  const { client } = useAuth();
+  
   const [filteredSavingIds, setFilteredSavingIds] =
     useState<savingsFilteredById[]>();
   const [groupId, setGroupId] = useState()
@@ -246,7 +253,7 @@ const PostingForm = ({
     queryKey: ["allgroups", postDetails.postingType],
     queryFn: async () => {
       return client
-        .get(`/api/user?organisation=65ca01a52c8fabbc92aed513&userType=${postDetails.postingType}`, {})
+        .get(`/api/user?organisation=${organizationId}&userType=${postDetails.postingType}`, {})
         .then((response) => {
           console.log(response.data)
           return response.data;

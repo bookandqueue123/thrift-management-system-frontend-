@@ -308,8 +308,8 @@ import * as Yup from 'yup';
 import { CustomButton } from '@/components/Buttons';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { client } from '@/api/hooks/useAuth';
-import { CustomerSignUpProps, customer } from '@/types';
+import { useAuth } from '@/api/hooks/useAuth';
+import { CustomerSignUpProps, customer, getOrganizationProps } from '@/types';
 import { AxiosError, AxiosResponse } from 'axios';
 import SuccessToaster, { ErrorToaster } from '@/components/toast';
 
@@ -334,7 +334,7 @@ const validationSchema = Yup.object().shape({
     )
     .required('Phone number is required'),
   email: Yup.string().email('Invalid email address').required('Email is required'),
-  password: Yup.string().required('Password is required'),
+  password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('password')], 'Passwords must match')
     .required('Confirm Password is required'),
@@ -343,6 +343,7 @@ const validationSchema = Yup.object().shape({
 
 
 const Page = () => {
+  const { client } = useAuth();
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -362,6 +363,7 @@ const Page = () => {
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
       setSuccessMessage(response.data.message);
+      console.log(response)
       router.push('/signin');
     },
     onError(error: AxiosError<any, any>) {
@@ -385,13 +387,13 @@ const Page = () => {
   //   }
   // };
 
-  const {data: groups, isLoading: isUserLoading, isError: getGroupError} = useQuery({
-    queryKey: ["allgroups", ],
+  const {data: organizations, isLoading: isUserLoading, isError: getGroupError} = useQuery({
+    queryKey: ["allOrganizations", ],
     queryFn: async () => {
       return client
-        .get(`/api/user?userType=group`, {})
+        .get(`/api/user?role=organisation`, {})
         .then((response) => {
-          console.log(response.data)
+          
           return response.data;
         })
         .catch((error) => {
@@ -514,7 +516,7 @@ const Page = () => {
 
           {/* Organization Search Input */}
           {
-            groups && (
+             (
               <div className="mb-3">
             <label htmlFor="organization" className="m-0 text-xs font-medium text-white">
               Organization <span className="font-base font-semibold text-[#FF0000]">*</span>
@@ -526,9 +528,9 @@ const Page = () => {
               className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
             >
               <option value="">Select Organization</option>
-              {groups?.map((org:customer) => (
+              {organizations?.map((org:getOrganizationProps) => (
                 <option key={org._id} value={org._id}>
-                  {org.groupName}
+                  {org.organisationName}
                 </option>
               ))}
             </Field>

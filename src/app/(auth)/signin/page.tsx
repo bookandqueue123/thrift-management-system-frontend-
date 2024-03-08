@@ -4,11 +4,16 @@ import * as Yup from 'yup';
 import Link from 'next/link';
 import { useMutation } from '@tanstack/react-query';
 import { signInProps } from '@/types';
-import { client } from '@/api/hooks/useAuth';
+import { useAuth } from '@/api/hooks/useAuth';
 import { AxiosError, AxiosResponse } from "axios";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import SuccessToaster, { ErrorToaster } from '@/components/toast';
+
+import { setAuthData } from '@/slices/OrganizationIdSlice';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { selectOrganizationId, selectToken } from '@/slices/OrganizationIdSlice';
 
 // export const metadata = {
 //   title: 'SignIn',
@@ -16,6 +21,11 @@ import SuccessToaster, { ErrorToaster } from '@/components/toast';
 // };
 
 const SignInForm = () => {
+  const { client } = useAuth();
+  // const organizationId = useSelector(selectOrganizationId)
+  
+
+  const dispatch = useDispatch()
   const router = useRouter()
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
@@ -26,22 +36,24 @@ const SignInForm = () => {
     mutationFn: async (values: signInProps) => {
      
       return client.post(`/api/auth/login`, {
-      
-        
         emailOrPhoneNumber: values.email,
         password: values.password,
-        
-      
       })
     },
     
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true)
-      console.log(response.data);
-      console.log(response)
       router.push('/merchant')
+      console.log(234)
+      //  dispatch(setOrganizationId(response.data._id));
+      dispatch(setAuthData({ organizationId: response.data._id, token: response.data.token }));
+      
       setSuccessMessage((response as any).response.data.message);
-      console.log(successMessage)
+       
+      setTimeout(() => {
+       
+      }, 3500)
+      
     },
     onError(error : AxiosError<any, any>){
       setShowErrorToast(true)
@@ -51,7 +63,7 @@ const SignInForm = () => {
     }
     
   })
-
+  
   return (
     <Formik
       initialValues={{
