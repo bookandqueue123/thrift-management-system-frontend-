@@ -22,7 +22,7 @@ import { selectOrganizationId, selectToken } from '@/slices/OrganizationIdSlice'
 
 const SignInForm = () => {
   const { client } = useAuth();
-  // const organizationId = useSelector(selectOrganizationId)
+   const organizationId = useSelector(selectOrganizationId)
   
 
   const dispatch = useDispatch()
@@ -43,11 +43,13 @@ const SignInForm = () => {
     
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true)
-      router.push('/merchant')
+      console.log(response)
+       router.push('/merchant')
       console.log(234)
       //  dispatch(setOrganizationId(response.data._id));
       dispatch(setAuthData({ organizationId: response.data._id, token: response.data.token }));
       
+      console.log(organizationId)
       setSuccessMessage((response as any).response.data.message);
        
       setTimeout(() => {
@@ -55,6 +57,8 @@ const SignInForm = () => {
       }, 3500)
       
     },
+    
+
     onError(error : AxiosError<any, any>){
       setShowErrorToast(true)
       setErrorMessage(error.response?.data.message)
@@ -105,7 +109,7 @@ const SignInForm = () => {
             <ErrorMessage name="email" component="div" className="text-red-500 text-xs" />
           </div>
 
-          <div className="mb-3">
+          {/* <div className="mb-3">
             <label htmlFor="userCategory" className="m-0 text-xs font-medium text-white">
               User Category
             </label>
@@ -118,7 +122,7 @@ const SignInForm = () => {
               <option value="Customer">Customer</option>
               <option value="Merchant">Merchant</option>
             </Field>
-          </div>
+          </div> */}
 
           <div className="mb-3">
             <div className="flex items-center justify-between">

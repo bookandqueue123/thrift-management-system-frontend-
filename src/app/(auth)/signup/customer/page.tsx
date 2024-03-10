@@ -353,11 +353,21 @@ const Page = () => {
   const router = useRouter();
 
   const { mutate: CustomerSignUp, isPending, isError } = useMutation({
+    
     mutationKey: ['customer sign up'],
     mutationFn: async (values: CustomerSignUpProps) => {
       return client.post(`/api/auth/register`, {
-        ...values,
-        role: 'customer',
+        
+        firstName: values.firstName,
+        lastName: values.lastName,
+        otherName: values.otherName,
+        phoneNumber: values.phoneNumber,
+        email: values.email,
+        password: values.password,
+        role: "customer",
+        organisation: values.organization
+      
+       
       });
     },
     onSuccess(response: AxiosResponse<any, any>) {
@@ -407,7 +417,8 @@ const Page = () => {
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={(values, { setSubmitting }) => {
-        CustomerSignUp(values);
+        console.log(values)
+         CustomerSignUp(values);
         setTimeout(() => {
           setShowSuccessToast(false);
           setShowErrorToast(false);

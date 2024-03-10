@@ -3,11 +3,13 @@ import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton } from "@/components/Buttons";
 import { MultiSelectDropdown } from "@/components/Dropdowns";
 import Modal from "@/components/Modal";
+import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 import { customer } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Axios, AxiosResponse } from "axios";
 import Image from "next/image";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 const Settings = () => {
   
@@ -70,6 +72,8 @@ interface SetUpSavingsProps{
   closeModal: Dispatch<SetStateAction<boolean>>;
 }
 const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) => {
+  const organizationId = useSelector(selectOrganizationId)
+  console.log(organizationId)
   const { client } = useAuth();
   const [selectedOptions, setSelectedOptions] = useState<customer[]>([]);
   const [displayConfirmationModal, setDisplayConfirmationMedal] = useState(false)
@@ -124,8 +128,8 @@ const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) 
       queryFn: async () => {
   
         const endpoint = saveDetails.savingsType === "named group" 
-      ? `/api/user?organisation=65ca01a52c8fabbc92aed513&userType=group`
-      : `/api/user?organisation=65ca01a52c8fabbc92aed513&userType=individual`;
+      ? `/api/user?organisation=${organizationId}&userType=group`
+      : `/api/user?organisation=${organizationId}&userType=individual`;
   
       
         return client
@@ -154,7 +158,7 @@ const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) 
           startDate: saveDetails.startDate,
           endDate: saveDetails.endDate,
           collectionDate: saveDetails.collectionDate,
-          organisation: "65ca01a52c8fabbc92aed513",
+          organisation: organizationId,
           frequency: saveDetails.frequency,
           users: selectedIds,
           groups: ""

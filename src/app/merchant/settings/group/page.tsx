@@ -144,12 +144,16 @@ interface iCreateGroupProps{
 
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import { useSelector } from "react-redux";
+import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 
 const CreateGroupForm = ({
   onSubmit,
   postingMessage,
   setPostingResponse,
 }: iCreateGroupProps) => {
+  const organizationId = useSelector(selectOrganizationId)
+  console.log(organizationId)
   const { client } = useAuth();
   const [selectedOptions, setSelectedOptions] = useState<customer[]>([]);
 
@@ -173,7 +177,7 @@ const CreateGroupForm = ({
     queryKey: ["allUsers"],
     queryFn: async () => {
       return client
-        .get(`/api/user?organisation=65ca01a52c8fabbc92aed513&userType=individual`, {})
+        .get(`/api/user?organisation=${organizationId}&userType=individual`, {})
         .then((response: AxiosResponse<customer[], any>) => {
           
           return response.data;
@@ -196,7 +200,7 @@ const CreateGroupForm = ({
         return client.post(`/api/user/create-group`, {
           groupName: groupName,
           groupMember: selectedOptions,
-          organisation: "65ca01a52c8fabbc92aed513"
+          organisation: organizationId
         })
       },
 
