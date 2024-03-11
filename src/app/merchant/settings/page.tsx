@@ -174,7 +174,7 @@ const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) 
         organisation: organizationId,
         frequency: saveDetails.frequency,
        
-         groups: "65eeb08ec48c4be6acb633b8"
+         group: groupId
 
      
       }
