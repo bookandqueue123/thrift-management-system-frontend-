@@ -272,9 +272,7 @@ const PostingForm = ({
  
   const { mutate: postSavings } = useMutation({
     mutationFn: async () => {
-      console.log(postDetails)
-      console.log(postDetails.postingType)
-      console.log(postDetails.customerId)
+      
       const endpoint = postDetails.postingType === "individual" 
     ? `/api/saving/post-savings?userId=${postDetails.customerId}&savingId=${postDetails.savingId}`
     : `/api/saving/post-savings?userId=${groupId}`;
