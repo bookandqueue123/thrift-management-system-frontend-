@@ -85,7 +85,7 @@ const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) 
     endDate: "",
     collectionDate: "",
     frequency: "",
-    group: ""
+    // group: 
   });
   
 
@@ -145,28 +145,46 @@ const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) 
       }
     })
  
+   
   
   const selectedIds = selectedOptions.map(option => option._id);
-
+ const groupId = (selectedIds[0])
+  console.log(selectedIds)
   const {mutate: postNamedGroups} = useMutation({
     mutationFn: async () => {
-      return client.post(
-        `/api/saving`,
-        {
-          purposeName: saveDetails.purposeName,
-          amount: 1000,
-          startDate: saveDetails.startDate,
-          endDate: saveDetails.endDate,
-          collectionDate: saveDetails.collectionDate,
-          organisation: organizationId,
-          frequency: saveDetails.frequency,
-          users: selectedIds,
-          groups: ""
+      const unNamedPayload = {
+        
+        purposeName: saveDetails.purposeName,
+        amount: saveDetails.amount,
+        startDate: saveDetails.startDate,
+        endDate: saveDetails.endDate,
+        collectionDate: saveDetails.collectionDate,
+        organisation: organizationId,
+        frequency: saveDetails.frequency,
+        users: selectedIds,
+ 
+      }
+      const namedPayload = {
+       
+        purposeName: saveDetails.purposeName,
+        amount: saveDetails.amount,
+        startDate: saveDetails.startDate,
+        endDate: saveDetails.endDate,
+        collectionDate: saveDetails.collectionDate,
+        organisation: organizationId,
+        frequency: saveDetails.frequency,
+       
+         groups: "65eeb08ec48c4be6acb633b8"
 
-        }
+     
+      }
+      const payload = saveDetails.savingsType === "named group"? namedPayload : unNamedPayload
+      return client.post(
+        `/api/saving`, payload
       )
     },
     onSuccess: (response) => {
+      console.log(response)
       console.log('User created successfully');
       setContent("confirmation")
       setDisplayConfirmationMedal(true)
@@ -175,6 +193,7 @@ const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) 
       
     },
     onError: (error) => {
+      console.log(saveDetails.amount)
       // setContent("confirmation")
       // setDisplayConfirmationMedal(true)
       console.error('Error creating user:', error);
@@ -185,8 +204,10 @@ const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) 
 
 
   const onSubmitHandler = () => {
-    
-      postNamedGroups();
+   console.log(saveDetails)
+   console.log(organizationId)
+   console.log(selectedIds)
+   postNamedGroups();
     
     // onSubmit("confirmation");
    
@@ -305,7 +326,7 @@ const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) 
             id="chosenGroup"
             name="chosenGroup"
             className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
-            onChange={handleChange}
+            onChange={handleOptionChange}
             required
           >
             <option className="hidden lowercase text-opacity-10">
@@ -381,7 +402,7 @@ const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) 
 
       <div className="items-center gap-6 md:flex">
         <label
-          htmlFor="amount"
+           htmlFor="amount"
           className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
         >
           Savings Amount:
@@ -393,11 +414,12 @@ const SetUpSavingsForm = ({setContent, content, closeModal}: SetUpSavingsProps) 
           type="text"
           className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
           onChange={(event) => {
+           
             const input = event.target.value.replace(/\D/g, "");
             const formatted = Number(input).toLocaleString();
             setSaveDetails((prev) => ({
               ...prev,
-              ["amount"]: formatted,
+              ["amount"]: input,
             }));
           }}
           required
