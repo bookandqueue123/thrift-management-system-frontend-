@@ -171,4 +171,8 @@ const CustomerDashboard = () => {
   );
 };
 
-export default CustomerDashboard;
+export default function Customer(){
+  return(
+    <CustomerDashboard/>
+  )
+}
