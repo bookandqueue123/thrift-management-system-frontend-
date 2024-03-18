@@ -16,7 +16,7 @@ const WithdrawalFormScema = Yup.object().shape({
 const WithdrawalForm = () => {
   return (
     <div className="flex  bg-red-500">
-      {/* <Formik
+      <Formik
         initialValues={{
           accountName: "",
           selectedAccountPurpose: "",
@@ -119,7 +119,7 @@ const WithdrawalForm = () => {
             
           </div>
         </Form>
-      </Formik> */}
+      </Formik>
     </div>
   );
 };
