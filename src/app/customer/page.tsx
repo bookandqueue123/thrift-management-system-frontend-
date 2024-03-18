@@ -51,6 +51,11 @@ const CustomerDashboard = () => {
 
   console.log(user);
 
+  if (!id) {
+    // If id is not available yet, display loading indicator
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
       {LoggedInUser && !LoggedInUser.kycVerified && (
