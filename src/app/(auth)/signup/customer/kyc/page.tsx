@@ -560,7 +560,7 @@ import { ErrorMessage, Field, Form, Formik } from "formik";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
 const Kyc = () => {
@@ -715,6 +715,10 @@ const Kyc = () => {
   // console.log(getIndicatorColor(prevSection));
 
   // console.log(kycSection);
+  if (!id) {
+    // If id is not available yet, display loading indicator
+    return <div>Loading...</div>;
+  }
   return (
     <>
       <div className="mx-auto mb-10 mt-8 w-[90%] align-middle">
@@ -1333,4 +1337,13 @@ const Kyc = () => {
   );
 };
 
-export default Kyc;
+export default function Page(){
+  return(
+    <div>
+          <Suspense>
+      <Kyc/>
+    </Suspense>
+    </div>
+
+  )
+}
