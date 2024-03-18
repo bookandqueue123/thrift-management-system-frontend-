@@ -1,8 +1,7 @@
-import React from 'react';
 
 interface DateRangeComponentProps{
-    startDateString: Date,
-     endDateString: Date
+    startDateString: Date | string,
+     endDateString: Date | string
 }
 const DateRangeComponent = ({ startDateString, endDateString }: DateRangeComponentProps) => {
   const startDate = new Date(startDateString);
