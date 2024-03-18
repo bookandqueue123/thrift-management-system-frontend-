@@ -230,3 +230,23 @@ export interface getOrganizationProps {
   updatedAt:        Date;
   __v:              number;
 }
+
+export interface UpdateKycProps {
+  country:         string;
+  state:           string;
+  lga:             string;
+  city:            string;
+  popularMarket:   string;
+  nok:             string;
+  nokRelationship: string;
+  nokPhone:        string;
+  homeAddress:     string;
+  userType:        string;
+  photo:           null;
+  meansOfID:       string;
+  meansOfIDPhoto:  null;
+  nin:             string;
+  bvn:             string;
+  organisation:    string;
+  bankAcctNo: string
+}
