@@ -75,7 +75,7 @@ const Page = () => {
       setShowSuccessToast(true);
       setSuccessMessage(response.data.message);
       console.log(response);
-      router.push(`/signup/customer/kyc?userId=${response.data._id}`);
+      router.push(`/signin`);
     },
     onError(error: AxiosError<any, any>) {
       setShowErrorToast(true);
