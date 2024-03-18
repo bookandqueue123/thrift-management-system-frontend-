@@ -10,7 +10,9 @@ import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { useQuery } from "@tanstack/react-query";
+import { Session } from "inspector";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 const CustomerDashboard = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -173,6 +175,12 @@ const CustomerDashboard = () => {
 
 export default function Customer(){
   return(
-    <CustomerDashboard/>
+    <div>
+       <Suspense>
+          <CustomerDashboard/>
+    </Suspense>
+    </div>
+   
+
   )
 }
