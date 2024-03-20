@@ -250,3 +250,68 @@ export interface UpdateKycProps {
   organisation:    string;
   bankAcctNo: string
 }
+
+export interface WithdrawalProps {
+  _id:                 string;
+  saving:              string;
+  user:                User;
+  amount:              number;
+  status:              string;
+  paymentConfirmation: string;
+  organisation:        Organisation;
+  withdrawalRequest:   string;
+  createdAt:           Date;
+  updatedAt:           Date;
+  __v:                 number;
+}
+
+export interface Organisation {
+  isVerified:       boolean;
+  _id:              string;
+  email:            string;
+  phoneNumber:      string;
+  organisationName: string;
+  password:         string;
+  userType:         string;
+  groupMember:      any[];
+  role:             string;
+  prefferedUrl:     string;
+  kycVerified:      boolean;
+  isArchieve:       boolean;
+  savingIdentities: any[];
+  createdAt:        Date;
+  updatedAt:        Date;
+  __v:              number;
+}
+
+export interface User {
+  isVerified:       boolean;
+  _id:              string;
+  firstName:        string;
+  lastName:         string;
+  otherName:        string;
+  email:            string;
+  phoneNumber:      string;
+  password:         string;
+  accountNumber:    string;
+  userType:         string;
+  groupMember:      any[];
+  role:             string;
+  kycVerified:      boolean;
+  isArchieve:       boolean;
+  savingIdentities: string[];
+  organisation:     string;
+  createdAt:        Date;
+  updatedAt:        Date;
+  __v:              number;
+} 
+
+export interface CountryAndStateProps {
+  country: string;
+  states:  StateProps[];
+}
+
+export interface StateProps {
+  name: string;
+  lgas: string[];
+}
