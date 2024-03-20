@@ -8,14 +8,15 @@ import TransactionsTable from "@/components/Tables";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import { useDispatch, useSelector } from "react-redux";
-import { selectOrganizationId, selectToken } from '@/slices/OrganizationIdSlice';
+import { selectOrganizationId, selectToken, selectUser } from '@/slices/OrganizationIdSlice';
 const MerchantDashboard = () => {
   
 const organizationId = useSelector(selectOrganizationId)
-const token = useSelector(selectToken)
-console.log(token)
+// const token = useSelector(selectToken)
+// const user = useSelector(selectUser)
+// console.log(user)
   
-  console.log(organizationId)
+//   console.log(organizationId)
   const organization = {
     Name: "First Savers Cooperative",
     totalAmtCollected: 203935,

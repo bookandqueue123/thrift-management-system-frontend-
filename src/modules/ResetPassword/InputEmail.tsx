@@ -1,5 +1,10 @@
+import { useAuth } from "@/api/hooks/useAuth";
+import { useMutation } from "@tanstack/react-query";
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import { useState } from "react";
+import { AxiosError, AxiosResponse } from "axios";
 import * as Yup from "yup";
+import SuccessToaster, { ErrorToaster } from "@/components/toast";
 
 const validationSchema = Yup.object({
   email: Yup.string().email("Invalid email address").required("Required"),
@@ -10,10 +15,45 @@ const initialValues = {
 };
 
 const InputEmail: React.FC = () => {
+  const { client } = useAuth();
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
   const handleSubmit = (values: any) => {
     // Handle form submission here
     console.log(values);
   };
+
+  const {
+    mutate: ResetPassword,
+    isPending,
+    isError,
+  } = useMutation({
+    mutationKey: ["reset password"],
+    mutationFn: async (values: {email: string}) => {
+      return client.post(`/api/auth/forgot-password`, {
+        email: values.email,
+        
+      });
+    },
+
+    onSuccess(response: AxiosResponse<any, any>) {
+      setShowSuccessToast(true);
+      console.log(response);
+     
+      setSuccessMessage((response as any).response.data.message);
+
+      setTimeout(() => {}, 3500);
+    },
+
+    onError(error: AxiosError<any, any>) {
+      setShowErrorToast(true);
+      setErrorMessage(error.response?.data.message);
+      // setErrorMessage(error.data)
+    },
+  });
 
   return (
     <>
@@ -30,7 +70,7 @@ const InputEmail: React.FC = () => {
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={(values, { setSubmitting }) => {
-              handleSubmit(values);
+              ResetPassword(values);
               setSubmitting(false);
             }}
           >
@@ -63,6 +103,17 @@ const InputEmail: React.FC = () => {
                 >
                   {isSubmitting ? "submitting..." : "Submit"}
                 </button>
+
+                {showSuccessToast && (
+            <SuccessToaster message={"A link has been sent to your email!"} />
+          )}
+          {showErrorToast && errorMessage && errorMessage && (
+            <ErrorToaster
+              message={
+                errorMessage ? errorMessage : "Failed"
+              }
+            />
+          )}
               </Form>
             )}
           </Formik>

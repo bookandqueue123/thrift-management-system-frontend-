@@ -33,6 +33,12 @@ export const StatusIndicator = ({
           textClass: "text-successText",
           btn: "",
         };
+        case "paid":
+        return {
+          bgClass: "bg-successBg",
+          textClass: "text-successText",
+          btn: "",
+        };
       case "failed":
         return {
           bgClass: "bg-failedBg",

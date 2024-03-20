@@ -553,33 +553,58 @@
 import { useAuth } from "@/api/hooks/useAuth";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import { UpdateKycProps, getOrganizationProps } from "@/types";
+import { CountryAndStateProps, StateProps, UpdateKycProps, getOrganizationProps } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import StatesAndLGAs from "@/api/statesAndLGAs.json"
 import * as Yup from "yup";
-const Kyc = () => {
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
-  const [showErrorToast, setShowErrorToast] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const organizationId = useSelector(selectOrganizationId);
 
+const Kyc = () => {
+  
   const searchParams = useSearchParams();
+  
   const id = searchParams.get("id");
 
   const { client } = useAuth();
   const router = useRouter();
+//   useEffect(() => {
+//     console.log("first load")
+//     // This effect will run when the component is mounted or updated
+//     setTimeout(() => {
+//       router.push(`/signup/customer/kyc?id=${id}`); // Reload the page
+//       console.log("refreshing")
+//     }, 3000)
+    
+// }, [router, id]);
+
+
+
+
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedStateArray, setselectedStateArray] = useState<StateProps[]>([]);
+  const [selectedState, setSelectedState] = useState("")
+  const [selectedLGA, setSelectedLGA] = useState('');
+  const organizationId = useSelector(selectOrganizationId);
+  const [selectedLGAArray, setSelectesLGAArray] = useState<string[]>([])
+  
+ 
+  
   const [kycSection, setKycSection] = useState<
     "personal" | "next of kin" | "identification" | "final"
   >("personal");
 
   const [filledSection, setFilledSection] = useState<string[]>([]);
+
 
   const initialValues: UpdateKycProps = {
     country: "",
@@ -601,12 +626,72 @@ const Kyc = () => {
     userType: "individual",
   };
 
+  const MyEffectComponent = ({ formikValues }: {formikValues: any}) => {
+    useEffect(() => {
+      // This function will run whenever the value of 'formikValues.myField' changes
+      setSelectedCountry(formikValues.country);
+      setSelectedState(formikValues.state)
+    }, [formikValues]); // Add 'formikValues.myField' as a dependency
+  
+    return null; // Since this is a utility component, it doesn't render anything
+  };
+  
+
+  useEffect(() => {
+    const filteredStates = StatesAndLGAs.find(country => country.country === selectedCountry)?.states || [];
+
+    
+    setselectedStateArray(filteredStates)
+    
+  }, [selectedCountry])
+
+  useEffect(() => {
+    // Find the Country object in the dataset
+    const CountryObject = StatesAndLGAs.find(countryData => countryData.country === selectedCountry);
+    if (CountryObject) {
+      const stateObject = CountryObject.states.find(state => state.name === selectedState);
+      // If state is found, return its LGAs
+      if (stateObject) {
+        console.log(stateObject.lgas)
+        setSelectesLGAArray(stateObject.lgas);
+      } else {
+        // If state is not found, return an empty array
+       
+      }
+    } 
+  }, [selectedCountry, selectedState])
+  function getLGAsByState(stateName:string) {
+    // Find the Country object in the dataset
+    const CountryObject = StatesAndLGAs.find(countryData => countryData.country === selectedCountry);
+  
+    // If Country object is found, find the state by its name
+    if (CountryObject) {
+      const stateObject = CountryObject.states.find(state => state.name === stateName);
+      // If state is found, return its LGAs
+      if (stateObject) {
+        console.log(stateObject.lgas)
+        setSelectesLGAArray(stateObject.lgas);
+      } else {
+        // If state is not found, return an empty array
+        return [];
+      }
+    } else {
+      // If Nigeria object is not found, return null or handle the error accordingly
+      return null;
+    }
+  }
+  // useEffect(() => {
+  //   const filteredLG
+  // })
+console.log(selectedLGAArray)
+  
+  console.log(selectedStateArray)
   const {
     mutate: kycUpdate,
     isPending,
     isError,
   } = useMutation({
-    mutationKey: ["kyc update"],
+    mutationKey: ["kyc update",],
     mutationFn: async (values: UpdateKycProps) => {
       const formData = new FormData();
 
@@ -683,9 +768,9 @@ const Kyc = () => {
       case "next of kin":
         setKycSection("identification");
         break;
-      case "identification":
-        setKycSection("final");
-        break;
+      // case "identification":
+      //   setKycSection("final");
+      //   break;
       default:
         break;
     }
@@ -715,10 +800,10 @@ const Kyc = () => {
   // console.log(getIndicatorColor(prevSection));
 
   // console.log(kycSection);
-  if (!id) {
-    // If id is not available yet, display loading indicator
-    return <div>Loading...</div>;
-  }
+  // if (!id) {
+  //   // If id is not available yet, display loading indicator
+  //   return <div>Loading...</div>;
+  // }
   return (
     <>
       <div className="mx-auto mb-10 mt-8 w-[90%] align-middle">
@@ -773,33 +858,33 @@ const Kyc = () => {
       </div>
       <Formik
         initialValues={initialValues}
-        validationSchema={Yup.object({
-          country: Yup.string().required("Required"),
-          state: Yup.string().required("Required"),
-          lga: Yup.string().required("Required"),
-          city: Yup.string().required("Required"),
-          popularMarket: Yup.string().required("Required"),
-          nok: Yup.string().required("Required"),
-          nokRelationship: Yup.string().required("Required"),
-          nokPhone: Yup.string().required("Required"),
-          homeAddress: Yup.string().required("Required"),
-          photo: Yup.mixed().required("Required"),
-          meansOfID: Yup.string().required("Required"),
-          meansOfIDPhoto: Yup.mixed().required("Required"),
-          nin: Yup.string().required("Required"),
-          bvn: Yup.string().required("Required"),
-          bankAcctNo: Yup.string().required("Required"),
-          // organisation: Yup.string().required("Required"),
-        })}
+        // validationSchema={Yup.object({
+        //   country: Yup.string().required("Required"),
+        //   state: Yup.string().required("Required"),
+        //   lga: Yup.string().required("Required"),
+        //   city: Yup.string().required("Required"),
+        //   popularMarket: Yup.string().required("Required"),
+        //   nok: Yup.string().required("Required"),
+        //   nokRelationship: Yup.string().required("Required"),
+        //   nokPhone: Yup.string().required("Required"),
+        //   homeAddress: Yup.string().required("Required"),
+        //   photo: Yup.mixed().required("Required"),
+        //   meansOfID: Yup.string().required("Required"),
+        //   meansOfIDPhoto: Yup.mixed().required("Required"),
+        //   nin: Yup.string().optional(),
+        //   bvn: Yup.string().optional(),
+        //   bankAcctNo: Yup.string().required("Required"),
+        //   // organisation: Yup.string().required("Required"),
+        // })}
         onSubmit={(values, { setSubmitting }) => {
           setTimeout(() => {
-            kycUpdate(values);
+            // kycUpdate(values);
             console.log(values);
             setSubmitting(false);
           }, 400);
         }}
       >
-        {({ isSubmitting, handleSubmit, values, errors, setFieldValue }) => (
+        {({ isSubmitting, handleChange, handleSubmit, values, errors, setFieldValue }) => (
           <Form
             className="mt-8"
             onSubmit={handleSubmit}
@@ -818,11 +903,22 @@ const Kyc = () => {
                       Country of Residence
                     </label>
                     <Field
+                      onChange={handleChange}
+                      as='select'
                       isInvalid={!!errors.country}
                       name="country"
-                      type="text"
+                      id="country"
+                      // type="text"
+                      placeholder="country"
                       className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                    />
+                    >
+                      <option>Select Country</option>
+                      {StatesAndLGAs && StatesAndLGAs.map((countries) => (
+                        <option key={countries.country} value={countries.country}>
+                        {countries.country }
+                      </option>
+                      ))}
+                    </Field>
                     <ErrorMessage
                       name="country"
                       component="div"
@@ -839,10 +935,20 @@ const Kyc = () => {
                       State
                     </label>
                     <Field
+                      as="select"
+                      id="state"
                       name="state"
-                      type="text"
+                      // type="text"
                       className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                    />
+                    >
+                      <option>Select State</option>
+                      
+                      {selectedStateArray && selectedStateArray.map((state) => (
+                        <option key={state.name} value={state.name}>
+                          {state.name}
+                        </option>
+                      ))}
+                    </Field>
                     <ErrorMessage
                       name="state"
                       component="div"
@@ -857,10 +963,25 @@ const Kyc = () => {
                       Local Government Area (lga)
                     </label>
                     <Field
+                      as="select"
+                      id="lga"
                       name="lga"
-                      type="text"
+                      // type="text"
                       className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                    />
+                    >
+                      <option>Select LGA</option>
+
+                      {selectedLGAArray && selectedLGAArray.map((lga) => (
+                        <option key={lga} value={lga}>
+                          {lga}
+                        </option>
+                      ))}
+                      {/* {selectedLGAArray && selectedStateArray.map((lga) => (
+                        <option>
+
+                        </option>
+                      )) } */}
+                    </Field>
                     <ErrorMessage
                       name="lga"
                       component="div"
@@ -1019,7 +1140,7 @@ const Kyc = () => {
                         accept="image/*"
                       />
                       <label htmlFor="photo" className="cursor-pointer">
-                        <p className="text-center">
+                        <p className="text-center text-white">
                           Drag n drop an image here, or click to select one
                         </p>
                       </label>
@@ -1055,6 +1176,11 @@ const Kyc = () => {
                         International Passport
                       </option>
                       <option value="Utility Bill">Utility Bill</option>
+                      <option value="Utility Bill">NIN</option>
+                      <option value="Utility Bill">Drivers License</option>
+                      <option value="Utility Bill">Voters Card</option>
+                      <option value="Utility Bill">Association Membership ID</option>
+                      <option value="Utility Bill">School ID</option>
                     </Field>
                     <ErrorMessage
                       name="meansOfID"
@@ -1101,7 +1227,7 @@ const Kyc = () => {
                         accept="image/*"
                       />
                       <label htmlFor="image" className="cursor-pointer">
-                        <p className="text-center">
+                        <p className="text-center text-white">
                           Drag n drop an image here, or click to select one
                         </p>
                       </label>
@@ -1300,7 +1426,7 @@ const Kyc = () => {
                 </svg>
                 Previous
               </button>
-              {kycSection !== "final" ? (
+              {kycSection !== "identification" ? (
                 <button
                   type="button"
                   className="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
@@ -1321,15 +1447,16 @@ const Kyc = () => {
             </div>
             {/* <SuccessToaster message="hey" /> */}
             {showSuccessToast && (
-              <SuccessToaster message={"Sign in successfull!"} />
+              <SuccessToaster message={"Profile completed successfull!"} />
             )}
             {showErrorToast && errorMessage && errorMessage && (
               <ErrorToaster
                 message={
-                  errorMessage ? errorMessage : "Error creating organization"
+                  errorMessage ? errorMessage : "Error completing profile"
                 }
               />
             )}
+            <MyEffectComponent formikValues={values} />
           </Form>
         )}
       </Formik>
@@ -1337,13 +1464,19 @@ const Kyc = () => {
   );
 };
 
+function KYCFallBack(){
+  return <>Loading...</>
+}
+
+export const dynamic = 'force-dynamic'
 export default function Page(){
   return(
     <div>
-          <Suspense>
+      <Suspense fallback={<KYCFallBack/>}>
       <Kyc/>
     </Suspense>
     </div>
 
   )
 }
+

@@ -2,26 +2,33 @@
 import DummyTransactions from "@/api/dummyTransactions.json";
 import { useAuth } from "@/api/hooks/useAuth";
 import Alert from "@/components/Alert";
-import { FilterDropdown } from "@/components/Buttons";
+import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
 import { SearchInput } from "@/components/Forms";
+import Modal from "@/components/Modal";
 import PaginationBar from "@/components/Pagination";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { useQuery } from "@tanstack/react-query";
 import { Session } from "inspector";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import Link from "next/link";
+import { useRouter,  } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useSelector } from "react-redux";
+import { selectUser } from "@/slices/OrganizationIdSlice";
 const CustomerDashboard = () => {
+  const [modalState, setModalState] = useState(true);
+  const [modalContent, setModalContent] = useState<"form" | "confirmation">(
+    "form",
+  );
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const id = searchParams.get("id");
+  
+   const id = useSelector(selectUser)
+  
   const { client } = useAuth();
-  console.log(id);
-  if (!id) {
-    router.push("/signin");
-  }
+  
+ 
   const {
     data: LoggedInUser,
     isLoading: isUserLoading,
@@ -41,7 +48,7 @@ const CustomerDashboard = () => {
         });
     },
   });
-  console.log(LoggedInUser);
+  
 
   const user = {
     firstName: "Dare",
@@ -53,24 +60,61 @@ const CustomerDashboard = () => {
 
   console.log(user);
 
-  if (!id) {
-    // If id is not available yet, display loading indicator
-    return <div>Loading...</div>;
-  }
+  // if (!id) {
+  //   // If id is not available yet, display loading indicator
+  //   return <div>Loading...</div>;
+  // }
+
+  const ProfileSetupComplete = () => {
+    return (
+      <div className="flex flex-col justify-center items-center text-white mt-16">
+        <h1 className="text-4xl font-bold mb-8 text-center">
+          Profile Setup Incomplete
+        </h1>
+        <p className="text-lg text-gray-400 mb-8 text-center">
+          Complete Your Registration
+        </p>
+
+        
+        <CustomButton
+            type="button"
+            label="Complete Your Profile"
+            style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+             onButtonClick={() => router.push(`signup/customer/kyc?id=${id}`)}
+          />
+       
+      </div>
+    );
+  };
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
       {LoggedInUser && !LoggedInUser.kycVerified && (
-        <Alert
-          content="Please upload your KYC documents to ensure uninterrupted service. Thank you."
+        <>
+        {/* <Alert
+          content="Complete your registration."
           endpoint={`signup/customer/kyc?id=${id}`}
           buttonLabel="upload Kyc Details"
           // variant={hasKyc ? "success" : "error"}
           variant="error"
-        />
+        /> */}
+        {modalState && (
+          <Modal
+          setModalState={setModalState}
+          
+        >
+          <ProfileSetupComplete
+          
+          />
+        </Modal>
+        )}
+        
+        </>
+        
       )}
 
       <div className="mb-4 space-y-2">
+      
         <h6 className="text-base font-bold text-ajo_offWhite opacity-60">
           Dashboard
         </h6>
@@ -173,10 +217,13 @@ const CustomerDashboard = () => {
   );
 };
 
+function CustomerFallBack(){
+  return <>Loading...</>
+}
 export default function Customer(){
   return(
     <div>
-       <Suspense>
+       <Suspense fallback={<CustomerFallBack/>}>
           <CustomerDashboard/>
     </Suspense>
     </div>
