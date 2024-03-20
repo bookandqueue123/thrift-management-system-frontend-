@@ -2,7 +2,7 @@ import axios from "axios";
 const BASE_URL = "https://thrift.schoolkiatest.com.ng";
 
 const token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1ZDA2YzI4ODZiMzk2Yjc2ZWJiNzM2ZCIsImlhdCI6MTcwODMzNjg5MX0.JQ1l47phQxd5z5-wB93oTL1w-NKD4cuNudXug7zGbn0";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1ZDA2YzI4ODZiMzk2Yjc2ZWJiNzM2ZCIsImlhdCI6MTcwODg5MjMwN30.9xJ0nHLUksWpiR4--KnIULzuNch7ZvIYTL0n7VzHer4";
 
 export const client = axios.create({
   baseURL: BASE_URL,

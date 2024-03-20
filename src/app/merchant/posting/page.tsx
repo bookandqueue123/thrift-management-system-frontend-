@@ -50,7 +50,6 @@ const Posting = () => {
     },
   });
 
-  // allCustomers.push(postDetails);
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -214,7 +213,7 @@ const PostingForm = ({
   const { mutate: postSavings } = useMutation({
     mutationFn: async () => {
       return client.post(
-        `/api/saving/${postDetails.customerId?.split(":")[1]?.trim()}/${postDetails.savingId}`,
+        `/api/saving/post-savings?userId=${postDetails.customerId?.split(":")[1]?.trim()}&savingId=${postDetails.savingId}`,
         {
           paidDays: {
             dates: [postDetails.startDate, postDetails.endDate],
@@ -222,9 +221,6 @@ const PostingForm = ({
           },
           paymentMode: postDetails.paymentMode,
           narrative: postDetails.narrative,
-          // purposeName: postDetails.purposeName,
-          // startDate: postDetails.startDate,
-          // endDate: postDetails.endDate,
         },
       );
     },
