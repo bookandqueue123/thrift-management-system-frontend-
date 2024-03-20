@@ -27,6 +27,7 @@ export type customer = {
   meansOfID: "NIN" | "Passport";
   photo: File;
   userType: string;
+  groupName: string;
 };
 
 export type setSavingsResponse = {
@@ -50,6 +51,7 @@ export type setSavingsResponse = {
 
 export type postSavingsResponse = {
   paymentMode: "cash" | "online";
+  message: string;
   narrative: string;
   purposeName: string;
   amount: 50000;
@@ -181,3 +183,70 @@ export type savingsFilteredById = {
   specificDates: any[];
   id: string;
 };
+
+
+export interface MerchantSignUpProps {
+  organisationName: string;
+  phoneNumber:      string;
+  email:            string;
+  password:         string;
+  prefferedUrl:     string;
+  role:             string;
+  confirmPassword: string
+}
+
+export interface signInProps{
+  email: string,
+  userCategory: string,
+  password: string,
+  rememberPassword: boolean,
+}
+export interface CustomerSignUpProps {
+  firstName:    string;
+  lastName:     string;
+  otherName:    string;
+  phoneNumber:  string;
+  email:        string;
+  password:     string;
+  // role:         string;
+   organization: string;
+  confirmPassword: string
+}
+
+export interface getOrganizationProps {
+  userType:         string;
+  groupMember:      any[];
+  isArchieve:       boolean;
+  savingIdentities: any[];
+  _id:              string;
+  email:            string;
+  phoneNumber:      string;
+  organisationName: string;
+  accountNumber:    string;
+  role:             string;
+  prefferedUrl:     string;
+  kycVerified:      boolean;
+  createdAt:        Date;
+  updatedAt:        Date;
+  __v:              number;
+}
+
+export interface UpdateKycProps {
+  country:         string;
+  state:           string;
+  lga:             string;
+  city:            string;
+  popularMarket:   string;
+  nok:             string;
+  nokRelationship: string;
+  nokPhone:        string;
+  homeAddress:     string;
+  userType:        string;
+  photo:           null;
+  meansOfID:       string;
+  meansOfIDPhoto:  null;
+  nin:             string;
+  bvn:             string;
+  organisation:    string;
+  bankAcctNo: string
+}

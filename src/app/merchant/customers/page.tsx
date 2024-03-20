@@ -3,7 +3,7 @@ import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import { SearchInput } from "@/components/Forms";
 import TransactionsTable from "@/components/Tables";
 // import DummyCustomers from "@/api/dummyCustomers.json";
-import { client } from "@/api/hooks/useAuth";
+import { useAuth } from "@/api/hooks/useAuth";
 import Modal from "@/components/Modal";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import { customer, setSavingsResponse } from "@/types";
@@ -14,6 +14,7 @@ import { Dispatch, SetStateAction, useState } from "react";
 import Image from "next/image";
 
 const Customers = () => {
+  const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
     "form",
@@ -187,6 +188,7 @@ const SavingsSettings = ({
   content: "form" | "confirmation";
   closeModal: Dispatch<SetStateAction<boolean>>;
 }) => {
+  const { client } = useAuth();
   const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
     queryKey: ["customerInfo"],
     queryFn: async () => {
@@ -254,6 +256,7 @@ const SavingsSettings = ({
   };
 
   return (
+    
     <div>
       {content === "confirmation" ? (
         <div className="mx-auto mt-[10%] flex h-full w-1/2 flex-col items-center justify-center space-y-8">
@@ -375,7 +378,7 @@ const SavingsSettings = ({
                 onChange={handleChange}
                 required
               >
-                <option disabled className="hidden">
+                <option className="hidden">
                   Select frequency
                 </option>
                 <option className="capitalize">daily</option>

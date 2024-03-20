@@ -4,10 +4,13 @@ import { SearchInput } from "@/components/Forms";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 // import DummyCustomers from "@/api/dummyCustomers.json";
-import { client } from "@/api/hooks/useAuth";
+import { useAuth } from "@/api/hooks/useAuth";
+import DateRangeComponent from "@/components/DateArrayFile";
 import Modal from "@/components/Modal";
+import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 import {
   allSavingsResponse,
+  customer,
   postSavingsResponse,
   savingsFilteredById,
 } from "@/types";
@@ -16,8 +19,11 @@ import { formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 const Posting = () => {
+  const organizationId = useSelector(selectOrganizationId);
+  const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
     "form",
@@ -38,7 +44,7 @@ const Posting = () => {
     staleTime: 5000,
     queryFn: async () => {
       return client
-        .get("/api/saving/get-savings", config)
+        .get(`/api/saving/get-savings?organisation=${organizationId}`, config)
         .then((response: AxiosResponse<allSavingsResponse, any>) => {
           console.log("allSavingsSuccess: ", response.data);
           return response.data;
@@ -160,8 +166,13 @@ const PostingForm = ({
   Savings: void | allSavingsResponse | undefined;
   setPostingResponse: Dispatch<SetStateAction<postSavingsResponse | undefined>>;
 }) => {
+  const organizationId = useSelector(selectOrganizationId);
+
+  const { client } = useAuth();
+
   const [filteredSavingIds, setFilteredSavingIds] =
     useState<savingsFilteredById[]>();
+  const [groupId, setGroupId] = useState("");
   const [postDetails, setPostDetails] = useState({
     postingType: "individual",
     customerId: "",
@@ -175,6 +186,55 @@ const PostingForm = ({
     todayPayment: "no",
     // status: "",
   });
+  console.log(postDetails.savingId);
+  const [filteredArray, setFilteredArray] = useState<savingsFilteredById[]>([]);
+  const [groupSavings, setGroupSavings] = useState<savingsFilteredById[]>([]);
+
+  useEffect(() => {
+    // Define a function to filter the array based on postDetails.customerId
+    const filterArray = () => {
+      if (Savings?.savings) {
+        // Check if Savings?.savings is not undefined or null
+        const filtered = Savings.savings.filter(
+          (item) => item.user._id === groupId,
+        );
+        console.log(groupId);
+        setGroupSavings(filtered);
+      } else {
+        // Handle case where Savings?.savings is undefined or null
+        setGroupSavings([]); // Set filteredArray to an empty array
+      }
+    };
+
+    filterArray(); // Call the filterArray function
+  }, [Savings, groupId]); // Add dependencies to useEffect
+
+  console.log(groupSavings);
+  useEffect(() => {
+    // Define a function to filter the array based on postDetails.customerId
+    const filterArray = () => {
+      let filterKey = "";
+      if (postDetails.postingType === "individual") {
+        filterKey = postDetails.customerId;
+      } else {
+        filterKey = groupId;
+      }
+      console.log(filterKey);
+      if (Savings?.savings) {
+        // Check if Savings?.savings is not undefined or null
+        const filtered = Savings.savings.filter(
+          (item) => item.user._id === filterKey,
+        );
+        setFilteredArray(filtered);
+      } else {
+        // Handle case where Savings?.savings is undefined or null
+        setFilteredArray([]); // Set filteredArray to an empty array
+      }
+    };
+    filterArray(); // Call the filterArray function
+  }, [Savings, postDetails.customerId, groupId, postDetails.postingType]); // Add dependencies to useEffect
+
+  console.log(filteredArray);
 
   useEffect(() => {
     if (postDetails.customerId) {
@@ -184,11 +244,16 @@ const PostingForm = ({
         ) ?? [];
       setFilteredSavingIds(savingsIds ?? undefined);
     }
-  }, [postDetails.customerId, Savings?.savings]);
+  }, [postDetails.customerId]);
+
+  console.log(filteredSavingIds);
 
   const handleChange = (e: { target: { name: any; value: any } }) => {
     const { name, value } = e.target;
     setPostDetails((prev) => ({ ...prev, [name]: value }));
+  };
+  const handleGroupChange = (e: any) => {
+    setGroupId(e.target.value);
   };
 
   useEffect(() => {
@@ -198,31 +263,72 @@ const PostingForm = ({
       let month = date.getMonth();
       let year = date.getFullYear();
 
-      console.log(`${day}/${month + 1}/${year}`);
+      console.log(`${year}-${month + 1}-${day}`);
       setPostDetails((prev) => ({
         ...prev,
-        ["startDate"]: `${day}/${month + 1}/${year}`,
+        ["startDate"]: `${year}-${month + 1}-${day}`,
       }));
       setPostDetails((prev) => ({
         ...prev,
-        ["endDate"]: `${day}/${month + 1}/${year}`,
+        ["endDate"]: `${year}-${month + 1}-${day}`,
       }));
     }
   }, [postDetails.todayPayment]);
 
+  const {
+    data: groups,
+    isLoading: isUserLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["allgroups", postDetails.postingType],
+    queryFn: async () => {
+      return client
+        .get(
+          `/api/user?organisation=${organizationId}&userType=${postDetails.postingType}`,
+          {},
+        )
+        .then((response) => {
+          console.log(response.data);
+          return response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+          throw error;
+        });
+    },
+  });
+
   const { mutate: postSavings } = useMutation({
     mutationFn: async () => {
-      return client.post(
-        `/api/saving/post-savings?userId=${postDetails.customerId?.split(":")[1]?.trim()}&savingId=${postDetails.savingId}`,
-        {
-          paidDays: {
-            dates: [postDetails.startDate, postDetails.endDate],
-            amount: Number(postDetails.amount.replace(",", "")),
-          },
-          paymentMode: postDetails.paymentMode,
-          narrative: postDetails.narrative,
+      const datesInRange = DateRangeComponent({
+        startDateString: postDetails.startDate,
+        endDateString: postDetails.endDate,
+      });
+
+      const singleDay = [postDetails.startDate];
+
+      const dateValue =
+        postDetails.todayPayment === "yes"
+          ? singleDay
+          : datesInRange.length === 0
+            ? singleDay
+            : datesInRange;
+
+      const endpoint =
+        postDetails.postingType === "individual"
+          ? `/api/saving/post-savings?userId=${postDetails.customerId}&savingId=${postDetails.savingId}`
+          : `/api/saving/post-savings?userId=${groupId}`;
+      return client.post(endpoint, {
+        paidDays: {
+          dates: dateValue,
+          amount: Number(postDetails.amount.replace(",", "")),
         },
-      );
+        paymentMode: postDetails.paymentMode,
+        narrative: postDetails.narrative,
+        // purposeName: postDetails.purposeName,
+        // startDate: postDetails.startDate,
+        // endDate: postDetails.endDate,
+      });
     },
     onSuccess(response: AxiosResponse<postSavingsResponse, any>) {
       setPostingResponse(response.data);
@@ -236,6 +342,7 @@ const PostingForm = ({
       console.log(response.data);
     },
     onError(error: AxiosError<any, any>) {
+      setPostingResponse(error.response?.data);
       setPostingResponse(
         (prev) =>
           ({
@@ -243,12 +350,14 @@ const PostingForm = ({
             ["status"]: "failed",
           }) as postSavingsResponse,
       );
-      console.log(error.response);
+
+      console.log(error?.response?.data);
     },
   });
 
   const onSubmitHandler = () => {
     console.log(postDetails);
+    console.log(postDetails.customerId);
     postSavings();
     onSubmit("confirmation");
   };
@@ -265,7 +374,7 @@ const PostingForm = ({
     ),
   );
   const uniqueCustomerIds = Array.from(customerIds);
-
+  console.log(uniqueCustomerIds);
   return (
     <form className="mx-auto w-[85%] space-y-3" onSubmit={onSubmitHandler}>
       <div className="items-center gap-6  md:flex">
@@ -325,6 +434,7 @@ const PostingForm = ({
           </span>
         </div>
       </div>
+
       {postDetails.postingType === "individual" ? (
         <div className="items-center gap-6 md:flex">
           <label
@@ -342,11 +452,15 @@ const PostingForm = ({
             <option defaultValue={"Select a user"} className="hidden">
               Select a user
             </option>
-            {uniqueCustomerIds.map((customer, index) => {
+            {groups?.map((group: customer) => {
               return (
                 <>
-                  <option key={index} className="capitalize">
-                    {customer}
+                  <option
+                    key={group._id}
+                    value={group._id}
+                    className="capitalize"
+                  >
+                    {group.firstName} {group.lastName}
                   </option>
                 </>
               );
@@ -361,32 +475,59 @@ const PostingForm = ({
         // />
         <div className="items-center gap-6 md:flex">
           <label
-            htmlFor="chooseGroup"
+            htmlFor="groupId"
             className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
           >
             Choose Group:
           </label>
           <select
-            id="chooseGroup"
-            name="chooseGroup"
+            id="groupId"
+            name="groupId"
             className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
             defaultValue={"Select a category"}
-            onChange={handleChange}
+            onChange={handleGroupChange}
             required
           >
-            <option className="hidden">Select a group</option>
-            <option className="capitalize">Emergency Savers</option>
-            <option className="capitalize">1 Million AJO</option>
+            <option defaultValue={"Select a user"} className="hidden">
+              Select a group
+            </option>
+            {groups?.map((option: any) => (
+              //   <span key={option._id} className="flex items-center justify-between">
+              //   <span>Purpose: {option.purposeName + " | "}</span>
+              //   <span>
+              //     Amount: {AmountFormatter(option.amount) + " | "}
+              //   </span>
+              //   <span>Frequency: {option.frequency + " | "}</span>
+              //   <span>
+              //     Start Date:
+              //     {formatToDateAndTime(option.startDate, "date") +
+              //       " | "}
+              //   </span>
+              //   <span>
+              //     End Date:
+              //     {formatToDateAndTime(option.endDate, "date") +
+              //       " | "}
+              //   </span>
+              //   <span>
+              //     Id:
+              //     {option.id}
+              //   </span>
+              // </span>
+              <option key={option._id} value={option._id}>
+                {option.groupName} {option.lastName}
+              </option>
+            ))}
           </select>
         </div>
       )}
-      {filteredSavingIds && (
+
+      {filteredArray && (
         <div className="items-center gap-6 md:flex">
           <label
             htmlFor="savingId"
             className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
           >
-            Choose Saving:
+            Purpose:
           </label>
           <select
             id="savingId"
@@ -397,8 +538,10 @@ const PostingForm = ({
               // handleChange(e);
               const { value } = e.target;
               let firstPart = value.split("|")[0];
-              let lastPart = value.split("|")[5];
+              let lastPart = value.split("|")[6];
 
+              console.log(firstPart);
+              console.log(lastPart);
               let purpose = firstPart.split(":")[1];
               let selectedId = lastPart.split(":")[1];
 
@@ -412,10 +555,10 @@ const PostingForm = ({
               }));
             }}
           >
-            <option defaultValue={"Select a user"} className="hidden">
-              Select a user
+            <option defaultValue={"Select a Purpose"} className="hidden">
+              Select a Purpose
             </option>
-            {filteredSavingIds.map((savingId, index) => {
+            {filteredArray.map((savingId, index) => {
               return (
                 <>
                   <option key={index} className="capitalize">
@@ -436,6 +579,18 @@ const PostingForm = ({
                           {formatToDateAndTime(savingId.endDate, "date") +
                             " | "}
                         </span>
+                        {/* <span>
+                           last paid:
+                           {formatToDateAndTime(savingId.endDate, "date")}
+
+                        </span> */}
+
+                        <span>
+                          Last Paid:{" "}
+                          {formatToDateAndTime(savingId.updatedAt, "date") +
+                            " | "}
+                        </span>
+
                         <span>
                           Id:
                           {savingId.id}
@@ -642,6 +797,470 @@ const PostingForm = ({
   );
 };
 
+// import { Formik, Form, Field, ErrorMessage } from 'formik';
+// import * as Yup from 'yup';
+// import SuccessToaster, { ErrorToaster } from "@/components/toast";
+//  // Assuming you have a CustomButton component
+
+// const PostingForm = (
+//   {
+//       onSubmit,
+//       Savings,
+//       setPostingResponse,
+//     }: {
+//       onSubmit: Dispatch<SetStateAction<"form" | "confirmation">>;
+//       Savings: void | allSavingsResponse | undefined;
+//       setPostingResponse: Dispatch<SetStateAction<postSavingsResponse | undefined>>;
+//     }
+// ) => {
+//   const organizationId = useSelector(selectOrganizationId);
+//   const { client } = useAuth();
+
+//   const [showSuccessToast, setShowSuccessToast] = useState(false);
+//   const [showErrorToast, setShowErrorToast] = useState(false);
+//   const [successMessage, setSuccessMessage] = useState('');
+//   const [errorMessage, setErrorMessage] = useState('');
+//   // const [filteredArray, setFilteredArray] = useState<savingsFilteredById[]>([]);
+//   const initialValues = {
+//     postingType: 'individual',
+//     customerId: '',
+//     purposeName: '',
+//     amount: '',
+//     startDate: '',
+//     endDate: '',
+//     savingId: '',
+//     paymentMode: '',
+//     narrative: '',
+//     todayPayment: 'no',
+//   };
+//   const [filteredArray, setFilteredArray] = useState<savingsFilteredById[]>([]);
+//   const [customerId, setCustomerId] = useState<string>(''); // Added state for customerId
+
+//   useEffect(() => {
+//     // Compare customerId with Savings.customer_id and filter the array
+//     if (customerId && Savings) {
+//       const filteredData = Savings.savings.filter(saving => saving.user._id === customerId);
+//       setFilteredArray(filteredData);
+//     } else {
+//       setFilteredArray([]);
+//     }
+//   }, [customerId, Savings]);
+
+//   //   useEffect(() => {
+//   //   // Define a function to filter the array based on postDetails.customerId
+//   //   const filterArray = () => {
+//   //     if (Savings?.savings) { // Check if Savings?.savings is not undefined or null
+//   //       const filtered = Savings.savings.filter(item => item.user._id === postDetails.customerId);
+//   //       setFilteredArray(filtered);
+//   //     } else {
+//   //       // Handle case where Savings?.savings is undefined or null
+//   //       setFilteredArray([]); // Set filteredArray to an empty array
+//   //     }
+//   //   };
+
+//   //    filterArray(); // Call the filterArray function
+//   //  }, [Savings, postDetails.customerId]);
+
+//   const validationSchema = Yup.object().shape({
+//     customerId: Yup.string().required('Customer ID is required'),
+//     amount: Yup.number().required('Amount is required').positive('Amount must be positive'),
+//     // startDate: Yup.date().when('todayPayment', {
+//     //   is: 'no',
+//     //   then: Yup.date().required('Start date is required'),
+//     //   otherwise: Yup.date(),
+//     // }),
+//     // endDate: Yup.date().when('todayPayment', {
+//     //   is: 'no',
+//     //   then: Yup.date().required('End date is required').min(Yup.ref('startDate'), 'End date must be after start date'),
+//     //   otherwise: Yup.date(),
+//     // }),
+//     paymentMode: Yup.string().required('Payment mode is required'),
+//     // narrative: Yup.string().required('Narrative is required'),
+//   });
+
+//     const {data: groups, isLoading: isUserLoading, isError} = useQuery({
+//     queryKey: ["allgroups", initialValues.postingType],
+//     queryFn: async () => {
+//       return client
+//         .get(`/api/user?organisation=${organizationId}&userType=group`, {})
+//         .then((response) => {
+
+//           return response.data;
+//         })
+//         .catch((error) => {
+//           console.log(error);
+//           throw error;
+//         })
+//     }
+//   })
+//   const {data: users, isLoading: getUserLoading, isError:getUserError} = useQuery({
+//     queryKey: ["allUsers",],
+//     queryFn: async () => {
+//       return client
+//         .get(`/api/user?organisation=${organizationId}&userType=individual`, {})
+//         .then((response) => {
+
+//           return response.data;
+//         })
+//         .catch((error) => {
+//           console.log(error);
+//           throw error;
+//         })
+//     }
+//   })
+
+//     const { mutate: postSavings } = useMutation({
+//     mutationFn: async (values) => {
+
+//       const endpoint = values.postingType === "individual"
+//     ? `/api/saving/post-savings?userId=${values.customerId}&savingId=${values.savingId}`
+//     : `/api/saving/post-savings?userId=${values.customerId}`;
+//       return client.post(
+
+//         endpoint,
+//         {
+//           paidDays: {
+//             dates: [values.startDate, values.endDate],
+//             amount: Number(values.amount.replace(",", "")),
+//           },
+//           paymentMode: values.paymentMode,
+//           narrative: values.narrative,
+//           // purposeName: postDetails.purposeName,
+//           // startDate: postDetails.startDate,
+//           // endDate: postDetails.endDate,
+//         },
+//       );
+//     },
+//     onSuccess(response: AxiosResponse<postSavingsResponse, any>) {
+
+//       setPostingResponse(response.data);
+//       setPostingResponse(
+//         (prev) =>
+//           ({
+//             ...prev,
+//             ["status"]: "success",
+//           }) as postSavingsResponse,
+//       );
+//       console.log(response.data);
+//     },
+//     onError(error: AxiosError<any, any>) {
+//       setPostingResponse(error.response?.data)
+//       setPostingResponse(
+//         (prev) =>
+//           ({
+//             ...prev,
+//             ["status"]: "failed",
+//           }) as postSavingsResponse,
+//       );
+
+//       console.log(error?.response?.data);
+//     },
+//   });
+
+//   const onSubmitHandler = (values) => {
+//     console.log(values);
+//     console.log(values.customerId)
+//     postSavings(values);
+//     onSubmit("confirmation");
+//   };
+
+//   return (
+
+//     <Formik initialValues={initialValues}
+//     validationSchema={validationSchema}
+
+//     // validateOnBlur={true}
+//     onSubmit={(values, { setSubmitting }) => {
+//       onSubmitHandler(values)
+
+//      }}
+//      >
+//       {({ isSubmitting, errors, touched, values, setFieldValue, handleChange, handleSubmit}) => (
+//         <Form className="mx-auto w-[85%] space-y-3" onSubmit={handleSubmit}>
+//           {/* Posting Type */}
+
+//           <div className="items-center gap-6 md:flex">
+//             <label htmlFor="postingType" className="m-0 w-[16%] text-xs font-medium text-white">
+//               Posting Type:
+//             </label>
+//             <div id="postingType" className="my-3 flex w-[80%] items-center justify-start gap-8">
+//               <span className="flex items-center gap-2">
+//                 <Field
+
+//                   id="individual"
+//                   name="postingType"
+//                   type="radio"
+//                   value="individual"
+//                   className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
+//                   checked={values.postingType === 'individual'}
+//                   onChange={() => setFieldValue('postingType', 'individual')}
+//                   required
+//                 />
+//                 <label
+//                   htmlFor="individual"
+//                   className="m-0 cursor-pointer whitespace-nowrap text-sm font-medium capitalize text-ajo_offWhite"
+//                 >
+//                   Individual
+//                 </label>
+//               </span>
+//               <span className="flex items-center gap-2">
+//                 <Field
+//                   id="group"
+//                   name="postingType"
+//                   type="radio"
+//                   value="group"
+//                   className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
+//                   checked={values.postingType === 'group'}
+//                   onChange={() => setFieldValue('postingType', 'group')}
+//                   required
+//                 />
+//                 <label
+//                   htmlFor="group"
+//                   className="m-0 cursor-pointer whitespace-nowrap text-sm font-medium capitalize text-ajo_offWhite"
+//                 >
+//                   Group
+//                 </label>
+//               </span>
+//             </div>
+//           </div>
+
+//           {/* Customer ID */}
+
+//           <div className="items-center w-full gap-6 md:flex">
+
+//             <label htmlFor="customerId" className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white">
+//               {values.postingType === 'individual' ? 'Customer ID:' : 'Choose Group:'}
+//             </label>
+//              <div className="w-[95%]">
+//               <div className="">
+//                 <Field
+//                   onClick={(e) => {
+//                     setCustomerId(e.target.value);
+//                     // setFilteredArray(e.target.value); // Assuming setSelectedId is a function in your code
+//                   }}
+//                   handleChange
+//                   name="customerId"
+//                   id="customerId"
+//                   as="select"
+//                   className="w-full  rounded-lg border-0 bg-[#F3F4F6] p-3 text-[#7D7D7D]"
+//                 >
+//                   <option value="" disabled>Select {values.postingType === 'individual' ? 'a user' : 'a group'}</option>
+//                   {values.postingType === 'individual' ?
+//                     users?.map((option) => (
+//                       <option
+//                       // onClick={console.log(option._id)}
+//                       key={option._id} value={option._id}>{option.groupName} {option.lastName}</option>
+//                     ))
+//                     :
+//                     groups?.map((option) => (
+//                       <option key={option._id} value={option._id}>{option.groupName} {option.lastName}</option>
+//                     ))
+//                   }
+//                 </Field>
+//             </div>
+//             <ErrorMessage name="customerId" component="div" className="text-red-500 text-xs" />
+//             </div>
+//         </div>
+
+//           {values.postingType === 'individual' && (
+//             <div className="items-center gap-6 md:flex">
+//               <label htmlFor="savingId" className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white">
+//                 Purpose:
+//               </label>
+//               <div className="w-[95%]">
+//               <div className="">
+//               <Field name="savingId" as="select" className="w-full rounded-lg border-0 bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+//                 <option value="" disabled>Select a Purpose</option>
+//                 {filteredArray.map((savingId, index) => (
+//                   <option key={index} value={savingId.id}>
+//                     {savingId.purposeName} | Amount: {AmountFormatter(savingId.amount)} | Frequency: {savingId.frequency} | Start Date: {formatToDateAndTime(savingId.startDate, 'date')} | End Date: {formatToDateAndTime(savingId.endDate, 'date')}
+//                   </option>
+//                 ))}
+//               </Field>
+//               </div>
+//               <ErrorMessage name="savingId" component="div" className="text-red-500 text-xs" />
+//               </div>
+//             </div>
+//           )}
+
+//         <div className="items-center gap-6 md:flex">
+//          <label
+//           htmlFor="amount"
+//           className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+//           >
+//           Amount:
+//           </label>
+
+//           <div className="w-[95%]">
+//             <div>
+//               <Field
+//                 id="amount"
+//                 name="amount"
+//                 type="text"
+//                 className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+//                 onChange={handleChange}
+//                 required
+//               />
+//             </div>
+//           <ErrorMessage name="amount" component="div" className="text-red-500 text-xs" />
+//         </div>
+//       </div>
+
+//       <div className="items-center gap-6 md:flex">
+//       <label
+//         htmlFor="check-group"
+//         className="m-0 w-[16%] text-xs font-medium text-white"
+//       >
+//         Is this payment for today?
+//       </label>
+//       <div id="check-group" className="my-3 flex w-[80%] items-center justify-start gap-8">
+//         <span className="flex items-center gap-2">
+//           <Field
+//             component="input" // Use Formik's Field with component set to 'input'
+//             type="radio"
+//             id="yes"
+//             name="todayPayment"
+//             value="yes"
+//             className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
+//             onChange={handleChange} // Use handleChange for form updates
+//             checked={values.todayPayment === "yes"}
+//             required
+//           />
+//           <label htmlFor="yes" className="m-0 cursor-pointer whitespace-nowrap text-sm font-medium text-ajo_offWhite">
+//             Yes
+//           </label>
+//         </span>
+//         <span className="flex items-center gap-2">
+//           <Field
+//             component="input" // Use Formik's Field with component set to 'input'
+//             type="radio"
+//             id="no"
+//             name="todayPayment"
+//             value="no"
+//             className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
+//             onChange={handleChange} // Use handleChange for form updates
+//             checked={values.todayPayment === "no"}
+//             required
+//           />
+//           <label htmlFor="no" className="m-0 cursor-pointer whitespace-nowrap text-sm font-medium text-ajo_offWhite">
+//             No
+//           </label>
+//         </span>
+//       </div>
+//     </div>
+
+//            {values.todayPayment === "no" && (
+//         <>
+//           <p className="text-sm text-ajo_offWhite text-opacity-60">
+//             Payment Coverage Tenure (Kindly select the date range this payment
+//             is to cover)
+//           </p>
+//           <div className="flex w-full items-center justify-between gap-x-8">
+//             <div className="w-[50%] items-center gap-6 md:flex md:w-[60%]">
+//               <label
+//                 htmlFor="startDate"
+//                 className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white md:w-[40%]"
+//               >
+//                 Start Date:
+//               </label>
+//               <input
+//                 id="startDate"
+//                 name="startDate"
+//                 type="date"
+//                 className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+//                 onChange={handleChange}
+//                 required
+//               />
+//             </div>
+//             <div className="w-[50%] items-center gap-6 md:flex md:w-[40%]">
+//               <label
+//                 htmlFor="endDate"
+//                 className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+//               >
+//                 End Date:
+//               </label>
+//               <input
+//                 id="endDate"
+//                 name="endDate"
+//                 type="date"
+//                 className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+//                 onChange={handleChange}
+//                 required
+//               />
+//             </div>
+//           </div>
+//         </>
+//       )}
+
+//         <div className="items-center gap-6 md:flex">
+
+//          <label
+//           htmlFor="paymentMode"
+//           className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+//         >
+//           Payment Mode:
+//           </label>
+//         <div className="w-[95%]">
+//           <div>
+//             <Field
+//               as="select"
+//               id="paymentMode"
+//               name="paymentMode"
+//               className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 capitalize text-[#7D7D7D]"
+//               defaultValue={"Select a category"}
+//               onChange={handleChange}
+//               // required
+//             >
+//               <option disabled defaultValue={"Filter"} className="hidden">
+//                 Select a category
+//               </option>
+//               <option className="capitalize">online</option>
+//               <option className="capitalize">cash</option>
+//             </Field>
+//           </div>
+//            <ErrorMessage name="paymentMode" component="div" className="text-red-500 text-xs" />
+//         </div>
+
+//       </div>
+//       <div className="items-center gap-6 pb-4 md:flex">
+//         <label
+//           htmlFor="narrative"
+//           className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+//         >
+//           Narration:
+//         </label>
+//         <textarea
+//           id="narrative"
+//           name="narrative"
+//           rows={3}
+//           className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-sm text-[#7D7D7D]"
+//           onChange={handleChange}
+//         ></textarea>
+//       </div>
+
+//       <div className="flex items-center">
+//          <span className="invisible w-[20%]">Submit</span>
+//          <div className="flex justify-center md:w-[80%]">
+//          <CustomButton
+//             type="submit"
+//             label="Submit"
+//             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite hover:bg-indigo-500 focus:bg-indigo-500 md:w-[60%]"
+//             // disabled={isSubmitting}
+//           />
+
+//         </div>
+//       </div>
+
+//           {/* Toast Messages */}
+//           {showSuccessToast && <SuccessToaster message={successMessage || 'Account Created successfully!'} />}
+//           {showErrorToast && <ErrorToaster message={errorMessage || 'Error creating organization'} />}
+
+//         </Form>
+//       )}
+//     </Formik>
+//   );
+// };
+
 const PostConfirmation = ({
   postingResponse,
   status,
@@ -649,6 +1268,7 @@ const PostConfirmation = ({
   postingResponse: postSavingsResponse | undefined;
   status: "success" | "failed" | undefined;
 }) => {
+  console.log(postingResponse);
   const postingCreation: string | undefined = Date();
   const formattedPostingDate = new Date(postingCreation);
   const timeOfPosting = formattedPostingDate.toLocaleTimeString("en-US", {
@@ -722,7 +1342,7 @@ const PostConfirmation = ({
         </div>
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Narration:</p>
-          <p className="text-sm text-[#7D7D7D]">{postingResponse?.narrative}</p>
+          <p className="text-sm text-[#7D7D7D]">{postingResponse?.message}</p>
         </div>
         <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Status:</p>

@@ -1,4 +1,6 @@
+"use client";
 import DummyTransactions from "@/api/dummyTransactions.json";
+import { useAuth } from "@/api/hooks/useAuth";
 import Alert from "@/components/Alert";
 import { FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
@@ -7,26 +9,67 @@ import PaginationBar from "@/components/Pagination";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import AmountFormatter from "@/utils/AmountFormatter";
-
+import { useQuery } from "@tanstack/react-query";
+import { Session } from "inspector";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 const CustomerDashboard = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
+  const { client } = useAuth();
+  console.log(id);
+  if (!id) {
+    router.push("/signin");
+  }
+  const {
+    data: LoggedInUser,
+    isLoading: isUserLoading,
+    isError: getGroupError,
+  } = useQuery({
+    queryKey: ["user", id],
+
+    queryFn: async () => {
+      return client
+        .get(`/api/user/${id}`, {})
+        .then((response) => {
+          return response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+          throw error;
+        });
+    },
+  });
+  console.log(LoggedInUser);
+
   const user = {
     firstName: "Dare",
     lastName: "Olanrewaju",
     acctBalance: 203935,
     nextWithdrawalDate: new Date("2024-02-12"),
-    hasKyc: false,
+    hasKyc: true,
   };
+
+  console.log(user);
+
+  if (!id) {
+    // If id is not available yet, display loading indicator
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
-      {!user.hasKyc && (
+      {LoggedInUser && !LoggedInUser.kycVerified && (
         <Alert
           content="Please upload your KYC documents to ensure uninterrupted service. Thank you."
-          endpoint="signup/customer/kyc"
+          endpoint={`signup/customer/kyc?id=${id}`}
           buttonLabel="upload Kyc Details"
-          variant={user.hasKyc ? "success" : "error"}
+          // variant={hasKyc ? "success" : "error"}
+          variant="error"
         />
       )}
+
       <div className="mb-4 space-y-2">
         <h6 className="text-base font-bold text-ajo_offWhite opacity-60">
           Dashboard
@@ -130,6 +173,14 @@ const CustomerDashboard = () => {
   );
 };
 
-export default CustomerDashboard;
+export default function Customer(){
+  return(
+    <div>
+       <Suspense>
+          <CustomerDashboard/>
+    </Suspense>
+    </div>
+   
 
-
+  )
+}
