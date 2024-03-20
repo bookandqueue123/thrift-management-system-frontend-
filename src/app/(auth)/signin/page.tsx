@@ -232,7 +232,7 @@ const SignInPage = () => {
         <SignInForm />
         <div className="mt-6 justify-center md:flex md:gap-1">
           <p className="text-center text-sm font-semibold text-white">
-            Don’t have an account yet?
+            Dont have an account yet?
           </p>
           <Link href="/">
             <p className="text-center text-sm font-semibold text-ajo_orange hover:underline focus:underline">
