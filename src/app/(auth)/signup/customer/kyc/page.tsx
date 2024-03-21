@@ -552,7 +552,7 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 import { CountryAndStateProps, StateProps, UpdateKycProps, getOrganizationProps } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -566,6 +566,8 @@ import StatesAndLGAs from "@/api/statesAndLGAs.json"
 import * as Yup from "yup";
 
 const Kyc = () => {
+  
+  const userId = useSelector(selectUser)
   
   const searchParams = useSearchParams();
   
@@ -683,9 +685,7 @@ const Kyc = () => {
   // useEffect(() => {
   //   const filteredLG
   // })
-console.log(selectedLGAArray)
-  
-  console.log(selectedStateArray)
+
   const {
     mutate: kycUpdate,
     isPending,
@@ -724,7 +724,7 @@ console.log(selectedLGAArray)
 
       console.log(formData);
       // Make the API call with formData
-      return client.put(`/api/user/${id}`, formData);
+      return client.put(`/api/user/${userId}`, formData);
     },
 
     onSuccess(response) {
@@ -858,27 +858,27 @@ console.log(selectedLGAArray)
       </div>
       <Formik
         initialValues={initialValues}
-        // validationSchema={Yup.object({
-        //   country: Yup.string().required("Required"),
-        //   state: Yup.string().required("Required"),
-        //   lga: Yup.string().required("Required"),
-        //   city: Yup.string().required("Required"),
-        //   popularMarket: Yup.string().required("Required"),
-        //   nok: Yup.string().required("Required"),
-        //   nokRelationship: Yup.string().required("Required"),
-        //   nokPhone: Yup.string().required("Required"),
-        //   homeAddress: Yup.string().required("Required"),
-        //   photo: Yup.mixed().required("Required"),
-        //   meansOfID: Yup.string().required("Required"),
-        //   meansOfIDPhoto: Yup.mixed().required("Required"),
-        //   nin: Yup.string().optional(),
-        //   bvn: Yup.string().optional(),
-        //   bankAcctNo: Yup.string().required("Required"),
-        //   // organisation: Yup.string().required("Required"),
-        // })}
+        validationSchema={Yup.object({
+          country: Yup.string().required("Required"),
+          state: Yup.string().required("Required"),
+          lga: Yup.string().required("Required"),
+          city: Yup.string().required("Required"),
+          popularMarket: Yup.string().required("Required"),
+          nok: Yup.string().required("Required"),
+          nokRelationship: Yup.string().required("Required"),
+          nokPhone: Yup.string().required("Required"),
+          homeAddress: Yup.string().required("Required"),
+          photo: Yup.mixed().required("Required"),
+          meansOfID: Yup.string().required("Required"),
+          meansOfIDPhoto: Yup.mixed().required("Required"),
+          nin: Yup.string().optional(),
+          bvn: Yup.string().optional(),
+          bankAcctNo: Yup.string().required("Required"),
+          // organisation: Yup.string().required("Required"),
+        })}
         onSubmit={(values, { setSubmitting }) => {
           setTimeout(() => {
-            // kycUpdate(values);
+            kycUpdate(values);
             console.log(values);
             setSubmitting(false);
           }, 400);
