@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import ResponseModal from "@/components/ResponseModal";
 import Alert from "@/components/Alert";
+import Modal from "@/components/Modal";
 
 
 const WithdrawalFormScema = Yup.object().shape({
@@ -42,17 +43,21 @@ const WithdrawalForm = () => {
     narration: "",
   }
   const router = useRouter()
+  
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [displayModal, setdisplayModal] = useState("")
+
+  
+  
   const [selectedNameId, setSelectNameId] = useState("")
   const [filteredArray, setFilteredArray] = useState<savingsFilteredById[]>([]);
   const { client } = useAuth();
   const userId = useSelector(selectUser);
   const organisationId = useSelector(selectOrganizationId)
+  
   const {
     data: allUsers,
     isLoading: isUserLoading,
@@ -103,46 +108,51 @@ const WithdrawalForm = () => {
     return null; // Since this is a utility component, it doesn't render anything
   };
 
+  const {mutate: withdrawalMutation} = useMutation({
+    mutationKey: ['withdrwawal Form'],
 
-
-  const {
-    mutate: WithdrawerMutation,
-    isPending: isWithdrawalPending,
-    isError: isWithdrawalError,
-  } = useMutation({
-    mutationKey: ["withdrawal mutation"],
-    mutationFn: async (values :withdrawValuesProps) => {
-      console.log(values)
+    mutationFn: async (values: withdrawValuesProps) => {
+      
       return client.post(`/api/withdrawal/${userId}`, {
         amount: values.amount,
         savingId: values.selectedAccountPurpose
+      })
+    },
+
+    onSuccess(response){
+      setShowSuccessToast(true);
     
-    });
     },
-
-    onSuccess(response: AxiosResponse<any, any>) {
-     
-      console.log(response.status);
-      console.log(showSuccessToast)
-      if(response.status === 201){
-        setdisplayModal("yes")
-        setShowSuccessToast(true)
-        console.log(showSuccessToast)
-        console.log(displayModal)
-      }
-      console.log(showSuccessToast)
-      setSuccessMessage((response as any).response.data.message);
-
-      setTimeout(() => {}, 3500);
-    },
-
-    onError(error: AxiosError<any, any>) {
+    onError(error){
       console.log(error)
-      setShowErrorToast(true);
-      setErrorMessage(error.response?.data.message);
-      // setErrorMessage(error.data)
-    },
-  });
+    }
+
+  })
+
+
+  // const {
+  //   mutate: WithdrawerMutation,
+  //   isPending: isWithdrawalPending,
+  //   isError: isWithdrawalError,
+  // } = useMutation({
+  //   mutationKey: ["withdrawal mutation"],
+  //   mutationFn: async (values :withdrawValuesProps) => {
+  //     console.log(values)
+  //     return client.post(`/api/withdrawal/${userId}`, {
+  //       amount: values.amount,
+  //       savingId: values.selectedAccountPurpose
+    
+  //   });
+  //   },
+
+  //   onSuccess(response: AxiosResponse<any, any>) {
+    
+  //   },
+
+  //   onError(error: AxiosError<any, any>) {
+      
+  //   },
+  // });
   
   useEffect(() => {
     if(allSavings?.savings){
@@ -162,27 +172,55 @@ const WithdrawalForm = () => {
     
     
     <div className="flex  bg-pendingBg  mb-8 rounded-md">
-      {successMessage === "yes" && (
-        <ResponseModal
+     
+        {/* <ResponseModal
         heading="Request Received"
         message="Dear Customer your account will be created within 24 hours after initiation of withdrawal"
         route='/customer'
         />
-      )}
+      */}
       <Formik
         initialValues={initialValues}
         validationSchema={WithdrawalFormScema}
         onSubmit={(values, { setSubmitting }) => {
-          WithdrawerMutation(values)
+          withdrawalMutation(values)
           
-          setShowSuccessToast(false)
-          setShowErrorToast(false)
+         
           setSubmitting(false)
         }}
       >
         
         {({ values, handleChange, isSubmitting}) => (
           <>
+          {
+            showSuccessToast && (
+              <Modal
+                setModalState={setShowSuccessToast}
+              >
+                <ResponseModal
+            heading="Request Received"
+            message="Dear Customer your account will be created within 24 hours after initiation of withdrawal"
+            route='/customer'
+            />
+              </Modal>
+
+    
+            )
+          }
+          {/* {showSuccessToast && (
+            <ResponseModal
+            heading="Request Received"
+            message="Dear Customer your account will be created within 24 hours after initiation of withdrawal"
+            route='/customer'
+            />
+          )}
+          {showErrorToast && errorMessage && errorMessage && (
+            <ResponseModal
+            heading="Request Failed"
+            message="Error When Submiting"
+            route='/customer'
+            />
+          )} */}
           <Form className="bg-red w-full rounded-lg p-4">
           <div className="flex flex-col  text">
           <div className="text-white">
@@ -293,13 +331,7 @@ const WithdrawalForm = () => {
 
                 {/* {showSuccessToast && successMessage && ()} */}
                 {/* <SuccessToaster message={"Withdrawal successfull!"} /> */}
-          {showErrorToast && errorMessage && errorMessage && (
-            <ErrorToaster
-              message={
-                errorMessage ? errorMessage : "Error creating Withdrawal"
-              }
-            />
-          )}
+         
 
               </div>
             </div>
