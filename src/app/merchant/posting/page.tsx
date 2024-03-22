@@ -715,7 +715,7 @@ const PostingForm = ({
                 Start Date:
               </label>
               <input
-                disabled
+               
                 id="startDate"
                 name="startDate"
                 type="date"
