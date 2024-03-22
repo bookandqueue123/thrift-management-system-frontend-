@@ -198,8 +198,9 @@ const WithdrawalForm = () => {
                 setModalState={setShowSuccessToast}
               >
                 <ResponseModal
+                label="Go to Home"
             heading="Request Received"
-            message="Dear Customer your account will be created within 24 hours after initiation of withdrawal"
+            message="Dear Customer your account will be credited within 24 hours after initiation of withdrawal"
             route='/customer'
             />
               </Modal>

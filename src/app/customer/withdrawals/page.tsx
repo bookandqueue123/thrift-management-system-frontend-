@@ -10,7 +10,7 @@ const Withdrawal = () => {
     <div className="mx-16 " >
       <div className="mt-8">
         <Alert
-          content="Dear Customer your account will be created within 24 hours after initiation of withdrawal"
+          content="Dear Customer your account will be credited within 24 hours after initiation of withdrawal"
           endpoint={``}
           buttonLabel=""
           // variant={hasKyc ? "success" : "error"}

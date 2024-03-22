@@ -72,13 +72,13 @@ const CustomerDashboard = () => {
           Profile Setup Incomplete
         </h1>
         <p className="text-lg text-gray-400 mb-8 text-center">
-          Complete Your Registration
+          Ensure Uninterrupted Service by Uploading Your KYC
         </p>
 
         
         <CustomButton
             type="button"
-            label="Complete Your Profile"
+            label="Upload KYC document"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
              onButtonClick={() => router.push(`signup/customer/kyc?id=${id}`)}
           />
