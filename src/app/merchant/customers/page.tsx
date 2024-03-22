@@ -34,7 +34,7 @@ const Customers = () => {
     queryKey: ["allCustomers"],
     queryFn: async () => {
       return client
-        .get("/api/user?role=customer", {})
+        .get("/api/user?role=customer", {})  //populate this based onthee org
         .then((response: AxiosResponse<customer[], any>) => {
           console.log(response);
           return response.data;

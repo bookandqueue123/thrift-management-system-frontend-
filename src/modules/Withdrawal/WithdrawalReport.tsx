@@ -13,10 +13,14 @@ import StatusBadge, { Badge } from "@/components/StatusBadge";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/slices/OrganizationIdSlice";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import { useState } from "react";
 
 export default function WithdrawalReport(){
+  const [withdrawalData, setWithdrawalData] = useState<WithdrawalProps[]>([])
     const userId = useSelector(selectUser)
     const router = useRouter();
+    const [paymentConfirmation, setpaymentConfirmation] = useState("")
+
     const { client } = useAuth();
 
     // const {mutate: uploadReceipt} = useMutation({
@@ -56,37 +60,42 @@ export default function WithdrawalReport(){
     // };
 
 
-    const { mutate: UpdateWithdrawalConfirmation } = useMutation({
-      mutationFn: async (withdrawalId) => {
-
-        
-        return client.put(`/api/withdrawal/${withdrawalId}`, {
-          withdrawalRequest: "confirmed",
-          status: "paid"
+    const { mutate: UpdateCofirmationStatus } = useMutation({
+      mutationFn: async (updatedConfirmationPaymentRow: WithdrawalProps) => {
+        console.log(updatedConfirmationPaymentRow)
+  
+        console.log(updatedConfirmationPaymentRow.paymentConfirmation)
+        return client.put(`/api/withdrawal/${updatedConfirmationPaymentRow._id}`, {
+          paymentConfirmation: updatedConfirmationPaymentRow.paymentConfirmation
+          // status: "paid"
         });
+
       },
       onSuccess(response: AxiosResponse<any>) {
         console.log(response)
-        router.push('/merchant/settings/withdrawals')
+        // router.push('/merchant/settings/withdrawals')
         router.refresh()
       },
       onError(error: AxiosError<any, any>) {
       
   
-        console.log(error?.response?.data);
+        console.log(error);
       },
     });
+
+    
 
     const {
         data: withdrawals,
         isLoading: isWithdrawalLoading,
         isError: withDrawerError,
       } = useQuery({
-        queryKey: ["allWithdrawals"],
+        queryKey: ["allWithdrawals", withdrawalData],
         queryFn: async () => {
           return client
             .get(`/api/withdrawal?user=${userId}`, {})
             .then((response) => {
+              setWithdrawalData(response.data)
               return response.data;
             })
             .catch((error) => {
@@ -97,6 +106,19 @@ export default function WithdrawalReport(){
       });
      console.log(withdrawals)
 
+     const handleStatus = (index: number) =>{
+      console.log(index)
+      const newData = [...withdrawalData]
+      console.log(newData)
+      newData[index].paymentConfirmation = newData[index].paymentConfirmation === 'unconfirmed' ? 'confirmed' : 'unconfirmed';
+      
+      setWithdrawalData(newData)
+      console.log(withdrawalData)
+      // updateStatus(newData[index])
+      UpdateCofirmationStatus(newData[index])
+
+
+    }
      
     return(
         <div className="mt-16">
@@ -119,7 +141,10 @@ export default function WithdrawalReport(){
                 "Narration",
                 "Reference ID",
                 "Status",
-                "Confirmation Status"
+                "Payment Confirmation ",
+                "Withdrawer Request",
+                "Evidence of payment"
+
               ]}
             />
           </span>
@@ -137,10 +162,11 @@ export default function WithdrawalReport(){
             "Narration",
             "Reference ID",
             "Status",
-            "Confirmation Status",
+            "Payment Confirmation",
+            // "Withdrawal Request",
               "Upload Evidence of Receipt"
           ]}
-            content={withdrawals?.map((withdrawal:WithdrawalProps, index:string) => (
+            content={withdrawals?.map((withdrawal:WithdrawalProps, index:number) => (
               <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {withdrawal.user.accountNumber}
@@ -170,10 +196,25 @@ export default function WithdrawalReport(){
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   <StatusBadge status={withdrawal.status}/>
                 </td>
+
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                {/* <StatusBadge status={withdrawal.paymentConfirmation} /> */}
-                <Badge status={withdrawal.paymentConfirmation} onClick={() => console.log(12)}/>
+                
+                
+                {/* <Badge status={withdrawal.paymentConfirmation} onClick={() => console.log(12)}/> */}
+                <div className="">
+                    <button 
+                    // className=""
+                        onClick={() => handleStatus(index)}>
+                      {withdrawal.paymentConfirmation === 'confirmed' ? 'Confirmed' : 'Unconfirmed'}
+                    </button>
+                  </div>
                 </td>
+
+                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
+                
+                <Badge status={withdrawal.withdrawalRequest} onClick={(() => "")}/>
+                </td> */}
+
 
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                 
@@ -196,7 +237,7 @@ export default function WithdrawalReport(){
                   <input
                     type="file"
                     className="hidden"
-                    // onChange={()}
+                    //  onChange={() => (UpdateWithdrawalConfirmation(withdrawal))}
                     accept="image/*,.pdf,.doc,.docx,.txt" // Accept images and common document formats
                   />
                 </label>

@@ -2,7 +2,7 @@ import { useRouter } from "next/navigation";
 import { CustomButton } from "./Buttons";
 
 
-const ResponseModal = ({heading, message, route}: {heading: string, message: string, route: string}) => {
+const ResponseModal = ({heading, message, route, label}: {heading: string, message: string, route: string, label: string}) => {
     const router = useRouter()
     return (
       <div className="flex flex-col justify-center items-center text-white mt-16">
@@ -16,7 +16,7 @@ const ResponseModal = ({heading, message, route}: {heading: string, message: str
         
         <CustomButton
             type="button"
-            label="Complete Your Profile"
+            label= {label}
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
              onButtonClick={() => router.push(route)}
           />
