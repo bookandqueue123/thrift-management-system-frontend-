@@ -2,7 +2,7 @@
 import { ErrorMessage, Field, Form, Formik,  } from "formik";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/api/hooks/useAuth";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
@@ -10,6 +10,8 @@ import { allSavingsResponse, savingsFilteredById } from "@/types";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
+import ResponseModal from "@/components/ResponseModal";
+import Alert from "@/components/Alert";
 
 
 const WithdrawalFormScema = Yup.object().shape({
@@ -45,10 +47,12 @@ const WithdrawalForm = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [displayModal, setdisplayModal] = useState("")
   const [selectedNameId, setSelectNameId] = useState("")
   const [filteredArray, setFilteredArray] = useState<savingsFilteredById[]>([]);
   const { client } = useAuth();
-  const organizationId = useSelector(selectOrganizationId);
+  const userId = useSelector(selectUser);
+  const organisationId = useSelector(selectOrganizationId)
   const {
     data: allUsers,
     isLoading: isUserLoading,
@@ -58,7 +62,7 @@ const WithdrawalForm = () => {
     queryFn: async () => {
       return client
         .get(
-          `/api/user?organisation=${organizationId}`,
+          `/api/user?organisation=${organisationId}`,
           {},
         )
         .then((response) => {
@@ -77,7 +81,7 @@ const WithdrawalForm = () => {
     staleTime: 5000,
     queryFn: async () => {
       return client
-        .get(`/api/saving/get-savings?organisation=${organizationId}`)
+        .get(`/api/saving/get-savings?organisation=${organisationId}`)
         .then((response: AxiosResponse<allSavingsResponse, any>) => {
           
           return response.data;
@@ -100,6 +104,7 @@ const WithdrawalForm = () => {
   };
 
 
+
   const {
     mutate: WithdrawerMutation,
     isPending: isWithdrawalPending,
@@ -108,7 +113,7 @@ const WithdrawalForm = () => {
     mutationKey: ["withdrawal mutation"],
     mutationFn: async (values :withdrawValuesProps) => {
       console.log(values)
-      return client.post(`/api/withdrawal/${organizationId}`, {
+      return client.post(`/api/withdrawal/${userId}`, {
         amount: values.amount,
         savingId: values.selectedAccountPurpose
     
@@ -116,16 +121,23 @@ const WithdrawalForm = () => {
     },
 
     onSuccess(response: AxiosResponse<any, any>) {
-      
-      setShowSuccessToast(true);
-      console.log(response);
-      
+     
+      console.log(response.status);
+      console.log(showSuccessToast)
+      if(response.status === 201){
+        setdisplayModal("yes")
+        setShowSuccessToast(true)
+        console.log(showSuccessToast)
+        console.log(displayModal)
+      }
+      console.log(showSuccessToast)
       setSuccessMessage((response as any).response.data.message);
 
       setTimeout(() => {}, 3500);
     },
 
     onError(error: AxiosError<any, any>) {
+      console.log(error)
       setShowErrorToast(true);
       setErrorMessage(error.response?.data.message);
       // setErrorMessage(error.data)
@@ -144,13 +156,27 @@ const WithdrawalForm = () => {
 
 
   return (
+    <div>
+     
+    
+    
+    
     <div className="flex  bg-pendingBg  mb-8 rounded-md">
+      {successMessage === "yes" && (
+        <ResponseModal
+        heading="Request Received"
+        message="Dear Customer your account will be created within 24 hours after initiation of withdrawal"
+        route='/customer'
+        />
+      )}
       <Formik
         initialValues={initialValues}
         validationSchema={WithdrawalFormScema}
         onSubmit={(values, { setSubmitting }) => {
           WithdrawerMutation(values)
-          console.log(values);
+          
+          setShowSuccessToast(false)
+          setShowErrorToast(false)
           setSubmitting(false)
         }}
       >
@@ -161,6 +187,7 @@ const WithdrawalForm = () => {
           <div className="flex flex-col  text">
           <div className="text-white">
             <div className="sm:flex sm:space-x-4">
+              
               <div className="w-full sm:w-1/2 md:p-4">
                 <label htmlFor="accountName" className="block font-medium">
                   Account Name
@@ -264,9 +291,8 @@ const WithdrawalForm = () => {
                   {isSubmitting ? "Submitting..." : "Submit"}
                 </button>
 
-                {showSuccessToast && (
-            <SuccessToaster message={"Withdrawal successfull!"} />
-          )}
+                {/* {showSuccessToast && successMessage && ()} */}
+                {/* <SuccessToaster message={"Withdrawal successfull!"} /> */}
           {showErrorToast && errorMessage && errorMessage && (
             <ErrorToaster
               message={
@@ -289,6 +315,7 @@ const WithdrawalForm = () => {
 
         )}
       </Formik>
+    </div>
     </div>
   );
 };

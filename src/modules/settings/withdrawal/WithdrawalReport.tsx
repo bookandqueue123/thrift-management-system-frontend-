@@ -1,63 +1,20 @@
-import PaginationBar from "@/components/Pagination";
-import { StatusIndicator } from "@/components/StatusIndicator";
-import DummyTransactions from "@/api/dummyTransactions.json";
-import TransactionsTable from "@/components/Tables";
-import AmountFormatter from "@/utils/AmountFormatter";
-import { CustomButton, FilterDropdown } from "@/components/Buttons";
-import { SearchInput } from "@/components/Forms";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/api/hooks/useAuth";
-import { WithdrawalProps } from "@/types";
+import { FilterDropdown } from "@/components/Buttons";
+import { SearchInput } from "@/components/Forms";
+import PaginationBar from "@/components/Pagination";
 import StatusBadge, { Badge } from "@/components/StatusBadge";
-import { useSelector } from "react-redux";
-import { selectUser } from "@/slices/OrganizationIdSlice";
+import TransactionsTable from "@/components/Tables";
+import { WithdrawalProps } from "@/types";
+import AmountFormatter from "@/utils/AmountFormatter";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import DummyTransactions from "@/api/dummyTransactions.json";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
-
-export default function WithdrawalReport(){
-    const userId = useSelector(selectUser)
-    const router = useRouter();
+import { useRouter } from "next/navigation";
+export default function WithDrawalReportSettings(){
     const { client } = useAuth();
-
-    // const {mutate: uploadReceipt} = useMutation({
-    //   mutationKey: ['upload receipy'],
-    //   mutationFn: async(e) => {
-
-    //     const file = e.target.files[0];
-    //   if (!file) return; // If no file is selected, do nothing
-    //   try {
-    //     const formData = new FormData();
-    //     formData.append('file', file);
-  
-    //     // Send the file to the backend
-    //     return client.post(`/api/withdrawal/${withdrawalId}`)
-        
-
-    //   }
-    // })
-
-    // const handleFileUpload = async (e) => {
-    //   const file = e.target.files[0];
-    //   if (!file) return; // If no file is selected, do nothing
-    //   try {
-    //     const formData = new FormData();
-    //     formData.append('file', file);
-  
-    //     // Send the file to the backend
-    //     const response = await axios.post('/api/upload', formData, {
-    //       headers: {
-    //         'Content-Type': 'multipart/form-data',
-    //       },
-    //     });
-    //     console.log('File uploaded:', response.data);
-    //   } catch (error) {
-    //     console.error('Error uploading file:', error);
-    //   }
-    // };
-
-
+    const router = useRouter()
     const { mutate: UpdateWithdrawalConfirmation } = useMutation({
-      mutationFn: async (withdrawalId) => {
+      mutationFn: async (withdrawalId: string) => {
 
         
         return client.put(`/api/withdrawal/${withdrawalId}`, {
@@ -76,7 +33,6 @@ export default function WithdrawalReport(){
         console.log(error?.response?.data);
       },
     });
-
     const {
         data: withdrawals,
         isLoading: isWithdrawalLoading,
@@ -85,8 +41,10 @@ export default function WithdrawalReport(){
         queryKey: ["allWithdrawals"],
         queryFn: async () => {
           return client
-            .get(`/api/withdrawal?user=${userId}`, {})
+            .get(`/api/withdrawal`, {})
             .then((response) => {
+
+                console.log(response)
               return response.data;
             })
             .catch((error) => {
@@ -95,20 +53,17 @@ export default function WithdrawalReport(){
             });
         },
       });
-     console.log(withdrawals)
-
-     
+      
+      // const handleBadgeClick = (savingId) => {
+      //   console.log('Badge clicked!', savingId); // You can replace this with any function you want to run
+      // };
     return(
-        <div className="mt-16">
-             <section>
+        <div>
+            <section className="mt-4">
+                <h1 className="text-xxl text-white mb-8">Settings</h1>
         <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          
           <span className="md:flex items-center gap-3">
-            <p className="text-white">Withdrawal Report</p>
-            <SearchInput />
-            
-             
-          </span>
-          <span className="flex items-center gap-3">
             
             <FilterDropdown
               options={[
@@ -122,12 +77,19 @@ export default function WithdrawalReport(){
                 "Confirmation Status"
               ]}
             />
+            <SearchInput />
+            
+             
+          </span>
+          <span className="flex items-center gap-3">
+            
+          <p className="text-white">Export Withdrawal Report</p>
           </span>
           
         </div>
 
         <div>
-            {withdrawals && 
+            {/* {withdrawals &&  */}
         <TransactionsTable
             headers={[
             "Customer Account",
@@ -137,9 +99,7 @@ export default function WithdrawalReport(){
             "Narration",
             "Reference ID",
             "Status",
-            "Confirmation Status",
-              "Upload Evidence of Receipt"
-          ]}
+            "Confirmation Status"]}
             content={withdrawals?.map((withdrawal:WithdrawalProps, index:string) => (
               <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
@@ -171,41 +131,13 @@ export default function WithdrawalReport(){
                   <StatusBadge status={withdrawal.status}/>
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                {/* <StatusBadge status={withdrawal.paymentConfirmation} /> */}
-                <Badge status={withdrawal.paymentConfirmation} onClick={() => console.log(12)}/>
+                {/* <StatusBadge status={withdrawal.withdrawalRequest} /> */}
+                <Badge status={withdrawal.withdrawalRequest} onClick={(() => UpdateWithdrawalConfirmation(withdrawal._id))}/>
                 </td>
-
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                
-                <label className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center cursor-pointer">
-                  <svg
-                    className="w-6 h-6 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    ></path>
-                  </svg>
-                  Upload
-                  <input
-                    type="file"
-                    className="hidden"
-                    // onChange={()}
-                    accept="image/*,.pdf,.doc,.docx,.txt" // Accept images and common document formats
-                  />
-                </label>
-
-                </td>
-
               </tr>
             ))}
-          />}
+          />
+          {/* } */}
           <PaginationBar apiResponse={DummyTransactions} />
         </div>
       </section>
