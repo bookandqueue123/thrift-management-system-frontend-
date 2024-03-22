@@ -26,7 +26,7 @@ const Posting = () => {
   const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
-    "form",
+    "confirmation",
   );
   const [postingResponse, setPostingResponse] = useState<postSavingsResponse>();
 

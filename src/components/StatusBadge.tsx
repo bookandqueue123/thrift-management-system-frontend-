@@ -17,6 +17,10 @@ const StatusBadge = ({ status }:{status: string}) => {
       statusText = 'Pending';
       textColor = '#FF535B'; 
       break;
+    case 'unpaid':
+      statusText = 'Unpaid';
+      textColor = '#FF535B'; 
+      break;  
     case 'confirmed':
       statusText = 'Confirmed';
       break;
@@ -53,3 +57,55 @@ const getStatusColor = (status: string) => {
 };
 
 export default StatusBadge;
+
+
+
+export interface BadgeProps{
+  status: string,
+  onClick: () => void
+}
+
+export const Badge = ({ status, onClick }: BadgeProps) => {
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    }
+  };
+
+  let badgeText = '';
+  let badgeColor = '';
+  let color = ''
+
+  switch (status) {
+    case 'pending':
+    case 'unconfirmed':
+      badgeText = 'Unconfirmed';
+      badgeColor = 'rgba(234, 171, 64, 0.24)';
+      color = 'rgba(203, 138, 20, 1)'
+      break;
+    case 'paid':
+    case 'confirmed':
+      badgeText = 'Confirmed';
+      badgeColor = 'green';
+      break;
+    default:
+      badgeText = 'Unknown';
+      badgeColor = 'gray';
+  }
+
+  return (
+    <div
+      onClick={handleClick}
+      style={{
+        padding: '5px 10px',
+        borderRadius: '5px',
+        backgroundColor: badgeColor,
+        color: color,
+        cursor: 'pointer' ,
+      }}
+    >
+      {badgeText}
+    </div>
+  );
+};
+
