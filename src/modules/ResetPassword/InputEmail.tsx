@@ -5,6 +5,7 @@ import { useState } from "react";
 import { AxiosError, AxiosResponse } from "axios";
 import * as Yup from "yup";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
+import { useRouter } from "next/navigation";
 
 const validationSchema = Yup.object({
   email: Yup.string().email("Invalid email address").required("Required"),
@@ -15,6 +16,7 @@ const initialValues = {
 };
 
 const InputEmail: React.FC = () => {
+  const router = useRouter()
   const { client } = useAuth();
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
@@ -42,7 +44,7 @@ const InputEmail: React.FC = () => {
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
       console.log(response);
-     
+    //  router.push('/change-password')
       setSuccessMessage((response as any).response.data.message);
 
       setTimeout(() => {}, 3500);
