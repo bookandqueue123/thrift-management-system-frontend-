@@ -1,7 +1,7 @@
 import { useAuth } from "@/api/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { ErrorMessage, Field, Form, Formik } from "formik";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { AxiosError, AxiosResponse } from "axios";
 import * as Yup from "yup";
@@ -23,7 +23,7 @@ interface ChangePasswordProps{
 export default function ChangePassword() {
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
-  
+  const router = useRouter()
   const { client } = useAuth();
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
@@ -46,7 +46,7 @@ export default function ChangePassword() {
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
       console.log(response);
-     
+      router.push('signin')
       setSuccessMessage((response as any).response.data.message);
 
       setTimeout(() => {}, 3500);
