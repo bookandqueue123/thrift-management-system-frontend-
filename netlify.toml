@@ -10,11 +10,6 @@
 [context.staging]
   environment = { NODE_ENV = "staging" }
 
-[[redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
-
 [[plugins]]
 package = "@netlify/plugin-nextjs"
 
