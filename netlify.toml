@@ -2,7 +2,7 @@
 
 [build]
   command = "npm run build"
-  publish = "out"
+  publish = ".next"
 
 [context.production]
   environment = { NODE_ENV = "production" }
