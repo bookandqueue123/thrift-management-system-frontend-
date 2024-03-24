@@ -6,7 +6,7 @@
 
 // import { useSelector } from "react-redux";
 // const token = useSelector(selectToken);
- 
+
 // export const client = axios.create({
 //   baseURL: BASE_URL,
 //   headers: {
@@ -19,7 +19,9 @@ import axios from "axios";
 import { selectToken } from '@/slices/OrganizationIdSlice'; // assuming you have a selector defined
 import { useSelector } from "react-redux";
 
-const BASE_URL = "https://thrift.schoolkiatest.com.ng";
+const apiUrl = process.env.BACKEND_API;
+console.log(apiUrl);
+const BASE_URL = apiUrl;
 
 export const useAuth = () => {
   const token = useSelector(selectToken);
