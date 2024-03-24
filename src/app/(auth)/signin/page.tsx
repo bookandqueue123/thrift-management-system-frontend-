@@ -13,7 +13,7 @@ import * as Yup from "yup";
 import { setAuthData } from "@/slices/OrganizationIdSlice";
 import { useDispatch, useSelector } from "react-redux";
 
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 
 // export const metadata = {
 //   title: 'SignIn',
@@ -23,13 +23,14 @@ import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 const SignInForm = () => {
   const { client } = useAuth();
   const organizationId = useSelector(selectOrganizationId);
-
+  const user = useSelector(selectUser)
   const dispatch = useDispatch();
   const router = useRouter();
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  
   const {
     mutate: UserSignIn,
     isPending,
@@ -37,6 +38,7 @@ const SignInForm = () => {
   } = useMutation({
     mutationKey: ["set Savings"],
     mutationFn: async (values: signInProps) => {
+      
       return client.post(`/api/auth/login`, {
         emailOrPhoneNumber: values.email,
         password: values.password,
@@ -44,10 +46,13 @@ const SignInForm = () => {
     },
 
     onSuccess(response: AxiosResponse<any, any>) {
+      
       setShowSuccessToast(true);
+      
       console.log(response);
+      
       if (response.data.role === "customer") {
-        router.push(`/customer?id=${response.data._id}`);
+         router.push(`/customer`);
       } else if (response.data.role === "organisation") {
         router.push("/merchant");
       }
@@ -57,6 +62,7 @@ const SignInForm = () => {
           setAuthData({
             organizationId: response.data.organisation,
             token: response.data.token,
+            user: response.data._id
           }),
         );
       } else if (response.data.role === "organisation") {
@@ -64,13 +70,16 @@ const SignInForm = () => {
           setAuthData({
             organizationId: response.data._id,
             token: response.data.token,
+            user: response.data._id
           }),
         );
       }
 
       console.log(organizationId);
+      
+      console.log(user)
 
-      console.log(234);
+      
       //  dispatch(setOrganizationId(response.data._id));
 
       setSuccessMessage((response as any).response.data.message);
@@ -153,7 +162,7 @@ const SignInForm = () => {
                 >
                   Password
                 </label>
-                <Link href="">
+                <Link href="/reset-password">
                   <span className="m-0 text-xs font-medium text-ajo_orange hover:underline focus:underline">
                     Forgot Password?
                   </span>
@@ -227,7 +236,7 @@ const SignInPage = () => {
         <SignInForm />
         <div className="mt-6 justify-center md:flex md:gap-1">
           <p className="text-center text-sm font-semibold text-white">
-            Don’t have an account yet?
+            Dont have an account yet?
           </p>
           <Link href="/">
             <p className="text-center text-sm font-semibold text-ajo_orange hover:underline focus:underline">

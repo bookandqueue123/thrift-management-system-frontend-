@@ -26,7 +26,7 @@ const Posting = () => {
   const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
-    "form",
+    "confirmation",
   );
   const [postingResponse, setPostingResponse] = useState<postSavingsResponse>();
 
@@ -538,7 +538,7 @@ const PostingForm = ({
               // handleChange(e);
               const { value } = e.target;
               let firstPart = value.split("|")[0];
-              let lastPart = value.split("|")[6];
+              let lastPart = value.split("|")[5];
 
               console.log(firstPart);
               console.log(lastPart);
@@ -585,11 +585,7 @@ const PostingForm = ({
 
                         </span> */}
 
-                        <span>
-                          Last Paid:{" "}
-                          {formatToDateAndTime(savingId.updatedAt, "date") +
-                            " | "}
-                        </span>
+                        
 
                         <span>
                           Id:
@@ -718,6 +714,7 @@ const PostingForm = ({
                 Start Date:
               </label>
               <input
+               
                 id="startDate"
                 name="startDate"
                 type="date"

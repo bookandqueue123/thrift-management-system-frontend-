@@ -1,0 +1,223 @@
+import { useAuth } from "@/api/hooks/useAuth";
+import { FilterDropdown } from "@/components/Buttons";
+import { SearchInput } from "@/components/Forms";
+import PaginationBar from "@/components/Pagination";
+import StatusBadge, { Badge } from "@/components/StatusBadge";
+import TransactionsTable from "@/components/Tables";
+import { WithdrawalProps } from "@/types";
+import AmountFormatter from "@/utils/AmountFormatter";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import DummyTransactions from "@/api/dummyTransactions.json";
+import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+export default function WithDrawalReportSettings(){
+  const [withdrawalData, setWithdrawalData] = useState<WithdrawalProps[]>([])
+
+  const [status, setStatus] = useState("");
+    const { client } = useAuth();
+    const router = useRouter()
+
+    const { mutate: UpdateWithdrawalConfirmation } = useMutation({
+      mutationFn: async (withdrawalId: string) => {
+
+        
+        return client.put(`/api/withdrawal/${withdrawalId}`, {
+          withdrawalRequest: "confirmed",
+          status: "paid"
+        });
+      },
+      onSuccess(response: AxiosResponse<any>) {
+        
+        console.log(response)
+        router.push('/merchant/settings/withdrawals')
+        router.refresh()
+      },
+      onError(error: AxiosError<any, any>) {
+      
+  
+        console.log(error?.response?.data);
+      },
+    });
+    const {
+        data: withdrawals,
+        isLoading: isWithdrawalLoading,
+        isError: withDrawerError,
+      } = useQuery({
+        queryKey: ["allWithdrawals",],
+        queryFn: async () => {
+          return client
+            .get(`/api/withdrawal`, {})
+            .then((response) => {
+
+              setWithdrawalData(response.data)
+              return response.data;
+            })
+            .catch((error) => {
+              console.log(error);
+              throw error;
+            });
+        },
+      });
+      
+      // const handleBadgeClick = (savingId) => {
+      //   console.log('Badge clicked!', savingId); // You can replace this with any function you want to run
+      // };
+
+
+      // const handleStatusClick = (e, id) => {
+      //   const updatedStatusString = e.target.value === 'unpaid' ? 'paid' : 'unpaid';
+      //   console.log(updateStatus)
+      //   setStatus(updatedStatusString);
+        
+      //   // Call function to send updated status to backend
+      //   updateStatus(id);
+      // };
+    
+      const { mutate: updateStatus } = useMutation({
+        mutationKey: [withdrawalData],
+        mutationFn: async ( UpdatedStatusRow: WithdrawalProps) => {
+          console.log(UpdatedStatusRow)
+          console.log(UpdatedStatusRow.status)
+          return client.put(`/api/withdrawal/${UpdatedStatusRow._id}`, {
+           
+            status: UpdatedStatusRow.status,
+            withdrawalRequest: "confirmed",
+          });
+        },
+        onSuccess(response: AxiosResponse<any>) {
+          
+          console.log(response)
+          // router.push('/merchant/settings/withdrawals')
+          router.refresh()
+        },
+        onError(error: AxiosError<any, any>) {
+        
+    
+          console.log(error?.response?.data);
+        },
+      });
+
+      const handleStatus = (index: number) =>{
+        const newData = [...withdrawalData]
+        newData[index].status = newData[index].status === 'paid' ? 'unpaid' : 'paid';
+        setWithdrawalData(newData)
+        
+        updateStatus(newData[index])
+
+  
+      }
+    return(
+        <div>
+            <section className="mt-4">
+                <h1 className="text-xxl text-white mb-8">Settings</h1>
+        <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          
+          <span className="md:flex items-center gap-3">
+            
+            <FilterDropdown
+              options={[
+                "Customer Account",
+                "Saving Purpose",
+                "Transaction Date & Time",
+                "Amount",
+                "Narration",
+                "Reference ID",
+                "Status",
+                "Withdrawal Request",
+                "Payment Confirmation"
+                
+              ]}
+            />
+            <SearchInput />
+            
+             
+          </span>
+          <span className="flex items-center gap-3">
+            
+          <p className="text-white">Export Withdrawal Report</p>
+          </span>
+          
+        </div>
+
+        <div>
+            {/* {withdrawals &&  */}
+        <TransactionsTable
+            headers={[
+            "Customer Account",
+            "Saving Purpose",
+            "Transaction Date & Time",
+            "Amount",
+            "Narration",
+            "Reference ID",
+            "Status",
+            "Withdrawal Request",
+          
+            "Payment Confirmation "]}
+            content={withdrawals?.map((withdrawal:WithdrawalProps, index:number) => (
+              <tr className="" key={index}>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {withdrawal.user.accountNumber}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {withdrawal.saving}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {withdrawal.updatedAt ? 
+                    new Date(withdrawal.updatedAt).toLocaleDateString() : 
+                    'Invalid Date'} {withdrawal.updatedAt ? 
+                        new Date(withdrawal.updatedAt).toLocaleTimeString() : 
+                        'Invalid Date'}
+
+                </td>
+
+
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {AmountFormatter(Number(withdrawal.amount))} NGN
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {withdrawal._id}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+
+                 {/* <Badge status={withdrawal.status} onClick={() => ""}/>  */}
+                  
+                  <div className="">
+                    <button 
+                        onClick={() => handleStatus(index)}>
+                      {withdrawal.status === 'paid' ? 'Paid' : 'Unpaid'}
+                    </button>
+                  </div>
+                 
+                  
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {/* <StatusBadge status={withdrawal.withdrawalRequest} /> */}
+                <Badge status={withdrawal.withdrawalRequest} onClick={(() => "")}/>
+                </td>
+
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                
+                
+                {/* <Badge status={withdrawal.paymentConfirmation} onClick={() => console.log(12)}/> */}
+                <div className="">
+                    <button 
+                        // onClick={() => handleStatus(index)}
+                        >
+                      {withdrawal.paymentConfirmation === 'confirmed' ? 'Confirmed' : 'Unconfirmed'}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          />
+          {/* } */}
+          <PaginationBar apiResponse={DummyTransactions} />
+        </div>
+      </section>
+        </div>
+    )
+}

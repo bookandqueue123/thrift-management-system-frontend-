@@ -79,11 +79,13 @@ const isClient = typeof window !== 'undefined';
 // Retrieve organizationId and token from localStorage, if available
 interface initialStateProps{
   organizationId: string | null,
-  token: string | null
+  token: string | null,
+  user: string | null
 }
 const initialState:initialStateProps = {
   organizationId: isClient ? localStorage.getItem('organizationId') || null : null,
   token: isClient ? localStorage.getItem('token') || null : null,
+  user: isClient ? localStorage.getItem('user') || null : null,
 };
 
 export const authSlice = createSlice({
@@ -91,22 +93,26 @@ export const authSlice = createSlice({
   initialState,
   reducers: {
     setAuthData: (state, action) => {
-      const { organizationId, token } = action.payload;
+      const { organizationId, token, user } = action.payload;
       state.organizationId = organizationId;
       state.token = token;
+      state.user = user
       // Save organizationId and token to localStorage if in client-side environment
       if (isClient) {
         localStorage.setItem('organizationId', organizationId);
         localStorage.setItem('token', token);
+        localStorage.setItem('user', user)
       }
     },
     clearAuthData: (state) => {
       state.organizationId = null;
       state.token = null;
+      state.user = null
       // Clear organizationId and token from localStorage if in client-side environment
       if (isClient) {
         localStorage.removeItem('organizationId');
         localStorage.removeItem('token');
+        localStorage.removeItem('user')
       }
     },
   },
@@ -116,5 +122,5 @@ export const { setAuthData, clearAuthData } = authSlice.actions;
 
 export const selectOrganizationId = (state: { auth: { organizationId: string; }; }) => state.auth.organizationId;
 export const selectToken = (state: { auth: { token: string; }; }) => state.auth.token;
-
+export const selectUser = (state: { auth: { user: string; }; }) => state.auth.user;
 export default authSlice.reducer;

@@ -149,9 +149,11 @@ export const Sidebar = ({
     "dashboard",
     "customers",
     "posting",
+    
     "location",
     "history",
     "analytics",
+    "withdrawals",
   ];
 
   const MenuBtn = ({
