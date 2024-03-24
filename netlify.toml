@@ -1,6 +1,6 @@
 # netlify.toml
 [build]
-  command = "next build && next export"
+  command = "npm run build"
   publish = "out"
 
 [context.production]
