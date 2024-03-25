@@ -234,21 +234,23 @@ export default function WithDrawalReportSettings(){
                 </td>
 
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                <Link target="_blank" href={withdrawal.paymentEvidence}>
-                <button
-                style={{
-                  borderRadius: '5px',
-                  padding: '8px',
-                  paddingRight: '16px',
-                  paddingLeft: '16px',
-                  backgroundColor: '#F2F2F2',
-                  color: 'black'
-                }}
-                //  onClick={() => router.push(withdrawal.paymentEvidence)}
-                 >
-                  View Evidence
-                  </button>
-                </Link>
+                {withdrawal.paymentEvidence ? (
+                  <Link target="_blank" href={withdrawal.paymentEvidence}>
+                  <button
+                  style={{
+                    borderRadius: '5px',
+                    padding: '8px',
+                    paddingRight: '16px',
+                    paddingLeft: '16px',
+                    backgroundColor: '#F2F2F2',
+                    color: 'black'
+                  }}
+                  //  onClick={() => router.push(withdrawal.paymentEvidence)}
+                   >
+                    View Evidence
+                    </button>
+                  </Link>
+                ): 'No Evidence'}
                 
                 </td>
               </tr>
