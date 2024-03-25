@@ -1,8 +1,8 @@
 # netlify.toml
 
 [build]
-    command = "npm run build && npm run export"
-    publish = "out"
+    command = "npm run build"
+    publish = ".next"
 
 [context.production]
   environment = { NODE_ENV = "production" }
