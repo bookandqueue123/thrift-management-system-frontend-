@@ -209,7 +209,7 @@ const PostingForm = ({
     filterArray(); // Call the filterArray function
   }, [Savings, groupId]); // Add dependencies to useEffect
 
-  console.log(groupSavings);
+  
   useEffect(() => {
     // Define a function to filter the array based on postDetails.customerId
     const filterArray = () => {
@@ -219,7 +219,7 @@ const PostingForm = ({
       } else {
         filterKey = groupId;
       }
-      console.log(filterKey);
+      
       if (Savings?.savings) {
         // Check if Savings?.savings is not undefined or null
         const filtered = Savings.savings.filter(
@@ -263,7 +263,7 @@ const PostingForm = ({
       let month = date.getMonth();
       let year = date.getFullYear();
 
-      console.log(`${year}-${month + 1}-${day}`);
+      
       setPostDetails((prev) => ({
         ...prev,
         ["startDate"]: `${year}-${month + 1}-${day}`,
@@ -288,7 +288,7 @@ const PostingForm = ({
           {},
         )
         .then((response) => {
-          console.log(response.data);
+         
           return response.data;
         })
         .catch((error) => {
@@ -317,7 +317,7 @@ const PostingForm = ({
       const endpoint =
         postDetails.postingType === "individual"
           ? `/api/saving/post-savings?userId=${postDetails.customerId}&savingId=${postDetails.savingId}`
-          : `/api/saving/post-savings?userId=${groupId}`;
+          : `/api/saving/post-savings?userId=${groupId}&savingId=${postDetails.savingId}`;
       return client.post(endpoint, {
         paidDays: {
           dates: dateValue,
@@ -339,7 +339,7 @@ const PostingForm = ({
             ["status"]: "success",
           }) as postSavingsResponse,
       );
-      console.log(response.data);
+      
     },
     onError(error: AxiosError<any, any>) {
       setPostingResponse(error.response?.data);
@@ -356,8 +356,7 @@ const PostingForm = ({
   });
 
   const onSubmitHandler = () => {
-    console.log(postDetails);
-    console.log(postDetails.customerId);
+    
     postSavings();
     onSubmit("confirmation");
   };
@@ -540,8 +539,7 @@ const PostingForm = ({
               let firstPart = value.split("|")[0];
               let lastPart = value.split("|")[5];
 
-              console.log(firstPart);
-              console.log(lastPart);
+              
               let purpose = firstPart.split(":")[1];
               let selectedId = lastPart.split(":")[1];
 
