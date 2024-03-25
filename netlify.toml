@@ -1,10 +1,5 @@
 # netlify.toml
 
-[build]
-  command = "npm run build"
-  publish = ".next"
-
-
 [context.production]
   environment = { NODE_ENV = "production" }
 
