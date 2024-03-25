@@ -10,14 +10,22 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import DummyTransactions from "@/api/dummyTransactions.json";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { SetStateAction, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 export default function WithDrawalReportSettings(){
   const [withdrawalData, setWithdrawalData] = useState<WithdrawalProps[]>([])
 
   const [status, setStatus] = useState("");
+  const [imageURL, setImageURL] = useState("");
+
+ 
     const { client } = useAuth();
     const router = useRouter()
-
+    
+    const handleViewImage = (imageURL: string) => {
+        setImageURL(imageURL);
+      };
     const { mutate: UpdateWithdrawalConfirmation } = useMutation({
       mutationFn: async (withdrawalId: string) => {
 
@@ -49,7 +57,7 @@ export default function WithDrawalReportSettings(){
           return client
             .get(`/api/withdrawal`, {})
             .then((response) => {
-
+              console.log(response)
               setWithdrawalData(response.data)
               return response.data;
             })
@@ -152,8 +160,9 @@ export default function WithDrawalReportSettings(){
             "Reference ID",
             "Status",
             "Withdrawal Request",
-          
-            "Payment Confirmation "]}
+            "Payment Confirmation ",
+            "Evidence of Payment"
+          ]}
             content={withdrawals?.map((withdrawal:WithdrawalProps, index:number) => (
               <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
@@ -187,6 +196,12 @@ export default function WithDrawalReportSettings(){
                   
                   <div className="">
                     <button 
+                    style={{
+                      borderRadius: '5px',
+                      padding: '4px',
+                      backgroundColor: withdrawal.status === 'paid' ? 'green' : '#FF535B',
+                      color: withdrawal.status === 'paid' ? 'white' : 'white'
+                    }}
                         onClick={() => handleStatus(index)}>
                       {withdrawal.status === 'paid' ? 'Paid' : 'Unpaid'}
                     </button>
@@ -203,17 +218,48 @@ export default function WithDrawalReportSettings(){
                 
                 
                 {/* <Badge status={withdrawal.paymentConfirmation} onClick={() => console.log(12)}/> */}
-                <div className="">
+                  <div className="">
                     <button 
+                    style={{
+                      borderRadius: '5px',
+                      padding: '4px',
+                      // backgroundColor: withdrawal.status === 'paid' ? 'green' : '#FF535B',
+                      color: withdrawal.paymentConfirmation === 'confirmed' ? 'green' : '#FF535B'
+                    }}
                         // onClick={() => handleStatus(index)}
                         >
                       {withdrawal.paymentConfirmation === 'confirmed' ? 'Confirmed' : 'Unconfirmed'}
                     </button>
                   </div>
                 </td>
+
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                <Link target="_blank" href={withdrawal.paymentEvidence}>
+                <button
+                style={{
+                  borderRadius: '5px',
+                  padding: '8px',
+                  paddingRight: '16px',
+                  paddingLeft: '16px',
+                  backgroundColor: '#F2F2F2',
+                  color: 'black'
+                }}
+                //  onClick={() => router.push(withdrawal.paymentEvidence)}
+                 >
+                  View Evidence
+                  </button>
+                </Link>
+                
+                </td>
               </tr>
             ))}
           />
+          {imageURL && (
+        <div>
+          <Image width={1000} height={1000} src={imageURL} alt="Evidence" />
+          <button onClick={() => setImageURL("")}>Close</button>
+        </div>
+      )}
           {/* } */}
           <PaginationBar apiResponse={DummyTransactions} />
         </div>
