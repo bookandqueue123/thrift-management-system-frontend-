@@ -14,8 +14,15 @@ import { useSelector } from "react-redux";
 import { selectUser } from "@/slices/OrganizationIdSlice";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { useState } from "react";
+import { FiUpload } from "react-icons/fi";
+import Modal from "@/components/Modal";
+import Image from "next/image";
 
 export default function WithdrawalReport(){
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<any>(null);
+  const [withdrawalId, setWithdrawalId] = useState("")
+ 
   const [withdrawalData, setWithdrawalData] = useState<WithdrawalProps[]>([])
     const userId = useSelector(selectUser)
     const router = useRouter();
@@ -23,22 +30,57 @@ export default function WithdrawalReport(){
 
     const { client } = useAuth();
 
-    // const {mutate: uploadReceipt} = useMutation({
-    //   mutationKey: ['upload receipy'],
-    //   mutationFn: async(e) => {
-
-    //     const file = e.target.files[0];
-    //   if (!file) return; // If no file is selected, do nothing
-    //   try {
-    //     const formData = new FormData();
-    //     formData.append('file', file);
+ const handleUploadBtnClick = (withdrawalId: string) => {
+    setIsModalOpen(true);
+    setWithdrawalId(withdrawalId)
+  };
+    const handleImageChange = (event: { target: { files: FileList | null; }; }) => {
+      if(event.target.files){
+         const file = event.target.files[0];
+      setSelectedImage(file);
+      }
+     
+    };
   
-    //     // Send the file to the backend
-    //     return client.post(`/api/withdrawal/${withdrawalId}`)
+    const handleSubmit = () => {
+      // Logic to handle image submission
+     
+      setIsModalOpen(false);
+      if (!selectedImage) {
+        alert('Please select an image.');
+        return;
+      }
+      uploadReceipt()
+    
+      
+    };
+
+    const {mutate: uploadReceipt} = useMutation({
+      mutationKey: ['upload receipt'],
+      mutationFn: async() => {
+
+    
+        const formData = new FormData();
+        formData.append('paymentEvidence', selectedImage);
+  
+        // Send the file to the backend
+        return client.put(`/api/withdrawal/${withdrawalId}`, formData)
         
 
-    //   }
-    // })
+    
+      },
+      onSuccess(response: AxiosResponse<any>) {
+        alert('Receipt submitted successfully!');
+        console.log(response)
+        // router.push('/merchant/settings/withdrawals')
+        
+      },
+      onError(error: AxiosError<any, any>) {
+      
+  
+        console.log(error);
+      },
+    })
 
     // const handleFileUpload = async (e) => {
     //   const file = e.target.files[0];
@@ -122,7 +164,8 @@ export default function WithdrawalReport(){
      
     return(
         <div className="mt-16">
-             <section>
+    
+        <section>
         <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <span className="md:flex items-center gap-3">
             <p className="text-white">Withdrawal Report</p>
@@ -203,7 +246,12 @@ export default function WithdrawalReport(){
                 {/* <Badge status={withdrawal.paymentConfirmation} onClick={() => console.log(12)}/> */}
                 <div className="">
                     <button 
-                    // className=""
+                    style={{
+                      borderRadius: '5px',
+                      padding: '4px',
+                       backgroundColor: withdrawal.paymentConfirmation === 'confirmed' ? 'green' : '#FF535B',
+                      color: withdrawal.paymentConfirmation === 'confirmed' ? 'white' : 'white'
+                    }}
                         onClick={() => handleStatus(index)}>
                       {withdrawal.paymentConfirmation === 'confirmed' ? 'Confirmed' : 'Unconfirmed'}
                     </button>
@@ -218,28 +266,26 @@ export default function WithdrawalReport(){
 
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                 
-                <label className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded flex items-center cursor-pointer">
-                  <svg
-                    className="w-6 h-6 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                    ></path>
-                  </svg>
+                <label className="bg-[#F2F2F2] hover:bg-white text-[#090E2C] font-bold py-2 px-4 rounded flex items-center cursor-pointer">
+                
+                {/* <span className="ml-4 mr-4">
+                  <FiUpload/>
+                </span>
+                
                   Upload
                   <input
                     type="file"
                     className="hidden"
                     //  onChange={() => (UpdateWithdrawalConfirmation(withdrawal))}
                     accept="image/*,.pdf,.doc,.docx,.txt" // Accept images and common document formats
-                  />
+                  /> */}
+
+<button
+                className="  font-bold  rounded"
+                onClick={() => handleUploadBtnClick(withdrawal._id)}
+              >
+                Upload Evidence
+              </button>
                 </label>
 
                 </td>
@@ -247,6 +293,61 @@ export default function WithdrawalReport(){
               </tr>
             ))}
           />}
+           {/* Modal */}
+          
+      {isModalOpen && (
+        <div className="fixed z-10 inset-0 overflow-y-auto bg-dark text-white">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+              &#8203;
+            </span>
+
+            <div
+              className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="modal-headline"
+            >
+              <div className="bg-dark px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
+                      Upload Evidence
+                    </h3>
+                    <div className="mt-5">
+                      <input type="file" onChange={handleImageChange} className="mt-2" accept="image/*" />
+                      {selectedImage && (
+                        <Image width={500} height={500} src={URL.createObjectURL(selectedImage)} alt="Selected" className="mt-4 mx-auto" style={{ maxWidth: '200px' }} />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  onClick={handleSubmit}
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Submit
+                </button>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
           <PaginationBar apiResponse={DummyTransactions} />
         </div>
       </section>
