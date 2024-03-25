@@ -7,8 +7,8 @@
 [context.production]
   environment = { NODE_ENV = "production" }
 
-[context.staging]
-  environment = { NODE_ENV = "staging" }
+[context.test]
+  environment = { NODE_ENV = "test" }
 
 [[plugins]]
 package = "@netlify/plugin-nextjs"
