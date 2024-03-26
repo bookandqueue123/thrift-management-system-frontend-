@@ -15,7 +15,7 @@ import {
   savingsFilteredById,
 } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
-import { formatToDateAndTime } from "@/utils/TimeStampFormatter";
+import { extractDate, formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
@@ -331,6 +331,7 @@ const PostingForm = ({
       });
     },
     onSuccess(response: AxiosResponse<postSavingsResponse, any>) {
+      console.log(response)
       setPostingResponse(response.data);
       setPostingResponse(
         (prev) =>
@@ -342,6 +343,7 @@ const PostingForm = ({
       
     },
     onError(error: AxiosError<any, any>) {
+      console.log(error)
       setPostingResponse(error.response?.data);
       setPostingResponse(
         (prev) =>
@@ -1256,6 +1258,8 @@ const PostingForm = ({
 //   );
 // };
 
+import html2pdf from 'html2pdf.js'; // Add this line
+
 const PostConfirmation = ({
   postingResponse,
   status,
@@ -1263,7 +1267,62 @@ const PostConfirmation = ({
   postingResponse: postSavingsResponse | undefined;
   status: "success" | "failed" | undefined;
 }) => {
-  console.log(postingResponse);
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('html2pdf.js').then((module) => {
+        const html2pdf = module.default;
+        const element = document.getElementById('postConfirmationContent');
+        if (element) {
+          html2pdf()
+            .from(element)
+            .toPdf()
+            .output('blob')
+            .then((blob: SetStateAction<Blob | null>) => {
+              setPdfBlob(blob);
+            });
+        }
+      });
+    }
+  }, []);
+
+  const handleDownload = () => {
+    if (pdfBlob) {
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'post_confirmation.pdf';
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }
+  };
+
+  const handleShare = async () => {
+    handleDownload()
+    if (navigator.share && pdfBlob) {
+      const file = new File([pdfBlob], 'post_confirmation.pdf', { type: 'application/pdf' });
+      const shareData = {
+        files: [file],
+      };
+
+      try {
+        await navigator.share(shareData);
+      } catch (error) {
+        console.error('Error sharing:', error);
+      }
+    } else {
+      console.error('Web Share API not supported or PDF Blob not available');
+    }
+  };
+
+  if (!postingResponse) {
+    return <div className="text-white">Loading...</div>;
+  }
+
+  
   const postingCreation: string | undefined = Date();
   const formattedPostingDate = new Date(postingCreation);
   const timeOfPosting = formattedPostingDate.toLocaleTimeString("en-US", {
@@ -1292,57 +1351,90 @@ const PostConfirmation = ({
     day: "2-digit",
   });
   return (
-    <div className="mx-auto h-full w-[75%] bg-ajo_offWhite py-8">
+    
+    <div id="postConfirmationContent" className="mx-auto h-full w-[75%] bg-ajo_offWhite py-8">
       <p className="mb-8 text-center text-3xl font-bold text-black">Posting</p>
       <div className="space-y-4">
-        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+        <div className="mx-8 flex  ">
           <p className="text-sm font-semibold text-[#7D7D7D]">
-            Transaction Id:
+            Organisation Name:
           </p>
-          <p className="text-sm text-[#7D7D7D]">{postingResponse?._id}</p>
+          <p className="text-sm ml-4 text-[#7D7D7D]"></p>
         </div>
-        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+
+        <div className="mx-8 flex  ">
+          <p className="text-sm font-semibold text-[#7D7D7D]">
+            Customer Name:
+          </p>
+          <p className="text-sm ml-4 text-[#7D7D7D]"></p>
+        </div>
+
+        <div className="mx-8 flex  ">
+          <p className="text-sm font-semibold text-[#7D7D7D]">
+            Customer Account Number:
+          </p>
+          <p className="text-sm ml-4 text-[#7D7D7D]"></p>
+        </div>
+
+        
+
+        <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Amount:</p>
-          <p className="text-sm text-[#7D7D7D]">
-            {postingResponse?.amount} NGN
+          <p className="text-sm ml-4 text-[#7D7D7D]">
+            {postingResponse?.updatedSaving ? postingResponse?.updatedSaving.amount: ""} NGN
           </p>
         </div>
-        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+
+
+        <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Time:</p>
-          <p className="text-sm text-[#7D7D7D]">{timeOfPosting}</p>
+          <p className="text-sm ml-4 text-[#7D7D7D]">{postingResponse.updatedSaving ? formatToDateAndTime(postingResponse.updatedSaving.updatedAt) : ""}</p>
         </div>
-        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+
+        <div className="mx-8 flex ">
+          <p className="text-sm font-semibold text-[#7D7D7D]">Posted by:</p>
+          <p className="text-sm ml-4 text-[#7D7D7D]">{postingResponse.updatedSaving ? postingResponse.updatedSaving._id : ""}</p>
+        </div>
+
+        
+
+        <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Purpose:</p>
-          <p className="text-sm capitalize text-[#7D7D7D]">
-            {postingResponse?.purposeName}
+          <p className="text-sm ml-4 capitalize text-[#7D7D7D]">
+            {postingResponse?.updatedSaving ? postingResponse?.updatedSaving.purposeName : ""}
           </p>
         </div>
+
+        
+
+
         {/* <div className="mx-auto flex items-center justify-between md:w-[40%]">
           <p className="text-sm font-semibold text-[#7D7D7D]">Payment:</p>
           <p className="text-sm text-[#7D7D7D]">{postingResponse.}</p>
         </div> */}
-        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+        <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Start Date:</p>
-          <p className="text-sm text-[#7D7D7D]">{formattedStartDate}</p>
+          <p className="text-sm ml-4 text-[#7D7D7D]">{postingResponse.updatedSaving ? extractDate(postingResponse.updatedSaving.startDate) : ""}</p>
         </div>
-        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+
+        <div className="mx-8 flex">
           <p className="text-sm font-semibold text-[#7D7D7D]">End Date:</p>
-          <p className="text-sm text-[#7D7D7D]">{formattedEndDate}</p>
+          <p className="text-sm ml-4 text-[#7D7D7D]">{postingResponse.updatedSaving ? extractDate(postingResponse.updatedSaving.endDate) : ""}</p>
         </div>
-        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+        <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Payment Mode:</p>
-          <p className="text-sm text-[#7D7D7D]">
-            {postingResponse?.paymentMode}
+          <p className="text-sm ml-4 text-[#7D7D7D]">
+          
           </p>
         </div>
-        <div className="mx-auto flex items-center justify-between md:w-[40%]">
+        <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Narration:</p>
-          <p className="text-sm text-[#7D7D7D]">{postingResponse?.message}</p>
+          <p className="text-sm ml-4 text-[#7D7D7D]">{postingResponse?.message}</p>
         </div>
-        <div className="mx-auto flex items-center justify-between md:w-[40%]">
-          <p className="text-sm font-semibold text-[#7D7D7D]">Status:</p>
+        <div className="mx-8 flex ">
+          <p className="text-sm  font-semibold text-[#7D7D7D]">Status:</p>
           <p
-            className={`text-sm font-bold ${status === "success" ? "text-successText" : "text-errorText"}`}
+            className={`text-sm ml-4 font-bold ${status === "success" ? "text-successText" : "text-errorText"}`}
           >
             {status === "success" ? "Payment Successful" : "Payment Failed"}
           </p>
@@ -1350,16 +1442,17 @@ const PostConfirmation = ({
       </div>
       <div className="mx-auto my-8 flex items-center justify-center gap-x-8 px-8 md:w-[50%]">
         <CustomButton
+        
           type="button"
           label="Download"
           style="rounded-md bg-ajo_offWhite border border-ajo_blue py-3 px-9 text-sm text-ajo_blue hover:text-ajo_offWhite focus:text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 w-1/2"
-          // onButtonClick={() => onSubmit("confirmation")}
+          onButtonClick={() => handleDownload()}
         />
         <CustomButton
           type="button"
           label="Share"
           style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 w-1/2"
-          // onButtonClick={() => onSubmit("confirmation")}
+         onButtonClick={() => handleShare()}
         />
       </div>
       <div className="bg-ajo_orange px-8 py-4">

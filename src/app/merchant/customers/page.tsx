@@ -7,19 +7,23 @@ import { useAuth } from "@/api/hooks/useAuth";
 import Modal from "@/components/Modal";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import { customer, setSavingsResponse } from "@/types";
-import { formatToDateAndTime } from "@/utils/TimeStampFormatter";
+import { extractDate, formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { Dispatch, SetStateAction, useState } from "react";
 import Image from "next/image";
+import { useSelector } from "react-redux";
+import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 
 const Customers = () => {
+
   const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
     "form",
   );
   const [customerToBeEdited, setCustomerToBeEdited] = useState("");
+  const organisationId = useSelector(selectOrganizationId)
 
   const [openDropdown, setOpenDropdown] = useState<number>(0);
   const toggleDropdown = (val: number) => {
@@ -34,7 +38,7 @@ const Customers = () => {
     queryKey: ["allCustomers"],
     queryFn: async () => {
       return client
-        .get("/api/user?role=customer", {})  //populate this based onthee org
+        .get(`/api/user?role=customer&organisation=${organisationId}&userType=individual`, {})  //populate this based onthee org
         .then((response: AxiosResponse<customer[], any>) => {
           console.log(response);
           return response.data;
@@ -95,7 +99,7 @@ const Customers = () => {
                   {customer.firstName + " " + customer.lastName || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {formatToDateAndTime(customer.createdAt) || "----"}
+                  {extractDate(customer.createdAt) || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {customer.email || "----"}

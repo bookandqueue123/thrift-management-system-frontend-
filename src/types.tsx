@@ -49,34 +49,75 @@ export type setSavingsResponse = {
   id: string;
 };
 
-export type postSavingsResponse = {
-  paymentMode: "cash" | "online";
-  message: string;
-  narrative: string;
-  purposeName: string;
-  amount: 50000;
-  startDate: string;
-  endDate: string;
-  frequency: "daily";
-  paidDays: [
-    {
-      datesPaid: string[];
-      amount: 50000;
-      dayOfpayment: string;
-      _id: string;
-    },
-  ];
-  user: string;
-  isPaid: "unpaid" | "paid";
-  _id: string;
-  createdAt: string;
-  updatedAt: string;
-  __v: 0;
-  savedDates: [];
-  specificDates: string[];
-  id: string;
+// export type postSavingsResponse = {
+//   paymentMode: "cash" | "online";
+//   message: string;
+//   narrative: string;
+//   purposeName: string;
+//   amount: 50000;
+//   startDate: string;
+//   endDate: string;
+//   frequency: "daily";
+//   paidDays: [
+//     {
+//       datesPaid: string[];
+//       amount: 50000;
+//       dayOfpayment: string;
+//       _id: string;
+//     },
+//   ];
+//   user: string;
+//   isPaid: "unpaid" | "paid";
+//   _id: string;
+//   createdAt: string;
+//   updatedAt: string;
+//   __v: 0;
+//   savedDates: [];
+//   specificDates: string[];
+//   id: string;
+//   status: "failed" | "success" | undefined;
+// };
+
+export interface postSavingsResponse {
   status: "failed" | "success" | undefined;
-};
+  message:       string;
+  updatedSaving: UpdatedSaving;
+}
+
+export interface UpdatedSaving {
+  _id:              string;
+  purposeName:      string;
+  amount:           number;
+  startDate:        Date;
+  endDate:          Date;
+  frequency:        string;
+  user:             string;
+  organisation:     string;
+  isPaid:           string;
+  paidDays:         PaidDay[];
+  createdAt:        Date;
+  updatedAt:        Date;
+  __v:              number;
+  totalAmountSaved: number;
+  savedDates:       Date[];
+  specificDates:    Date[];
+  adminFee:         number;
+  totalBalance:     number;
+  id:               string;
+}
+
+export interface PaidDay {
+  dayOfCollection: Date;
+  datesPaid:       Date[];
+  amount:          number;
+  dayOfpayment?:   Date;
+  paymentMode:     string;
+  status:          string;
+  reference:       string;
+  _id:             string;
+  narration?:      string;
+}
+
 
 export type allSavingsResponse = {
   savings: [
