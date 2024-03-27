@@ -252,6 +252,8 @@ export interface UpdateKycProps {
 }
 
 export interface WithdrawalProps {
+  paymentEvidence: string;
+  evidence: string;
   _id:                 string;
   saving:              string;
   user:                User;
