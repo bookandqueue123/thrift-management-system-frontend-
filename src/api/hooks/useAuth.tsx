@@ -14,10 +14,9 @@
 //   },
 // });
 
-
 import axios from "axios";
-import { selectToken } from '@/slices/OrganizationIdSlice'; // assuming you have a selector defined
-import { useSelector } from "react-redux";
+import { clearAuthData, selectToken } from "@/slices/OrganizationIdSlice"; // assuming you have a selector defined
+import { useDispatch, useSelector } from "react-redux";
 
 const apiUrl = process.env.BACKEND_API;
 // console.log(apiUrl);
@@ -25,6 +24,7 @@ const BASE_URL = apiUrl;
 
 export const useAuth = () => {
   const token = useSelector(selectToken);
+  const dispatch = useDispatch();
 
   const client = axios.create({
     baseURL: BASE_URL,
@@ -33,9 +33,12 @@ export const useAuth = () => {
     },
   });
 
-  return { client };
+  async function SignOut() {
+    console.log("signed out succesfully");
+    dispatch(clearAuthData());
+  }
+  return { client, SignOut };
 };
-
 
 // export const client = axios.create({
 //   baseURL: BASE_URL,
@@ -54,12 +57,6 @@ export const useAuth = () => {
 //   setAuthToken(token);
 //   console.log(token)
 // };
-
-
-
-
-
-
 
 // {
 //     "email": "kanmiairs@gmail.com",

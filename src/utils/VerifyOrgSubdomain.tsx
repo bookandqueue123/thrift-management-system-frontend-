@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import preferredUrls from "@/api/dummyPreferredUrls.json";
 import { useUrl } from "@/api/hooks/useUrl";
 
-const VerifyOrgSubdomain: React.FC = () => {
+const VerifyOrgSubdomain = () => {
   const { preferredUrl, setPreferredUrl } = useUrl();
   const router = useRouter();
 

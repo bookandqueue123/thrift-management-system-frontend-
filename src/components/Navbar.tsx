@@ -10,6 +10,7 @@ import {
 } from "react";
 import AvatarDropdown from "./Dropdowns";
 import { useRouter } from "next/router";
+import { useAuth } from "@/api/hooks/useAuth";
 
 const CustomerNavbar = () => {
   // const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
@@ -131,9 +132,7 @@ export const Sidebar = ({
   onShow: boolean;
   setShow: Dispatch<SetStateAction<boolean>>;
 }) => {
-  const SignOut = () => {
-    console.log("signed out succesfully");
-  };
+  const { SignOut } = useAuth();
 
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
 
@@ -149,7 +148,7 @@ export const Sidebar = ({
     "dashboard",
     "customers",
     "posting",
-    
+
     "location",
     "history",
     "analytics",

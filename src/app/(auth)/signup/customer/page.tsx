@@ -45,7 +45,7 @@ const validationSchema = Yup.object().shape({
 });
 
 const Page = () => {
-  VerifyOrgSubdomain();
+  // VerifyOrgSubdomain();
   const { client } = useAuth();
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
