@@ -54,7 +54,12 @@ const SignInForm = () => {
       if (response.data.role === "customer") {
          router.push(`/customer`);
       } else if (response.data.role === "organisation") {
-        router.push("/merchant");
+        if(response.data.kycVerified) {
+          router.push("/merchant");
+        } else{
+          router.push("/welcome")
+
+        }
       }
 
       if (response.data.role === "customer") {
