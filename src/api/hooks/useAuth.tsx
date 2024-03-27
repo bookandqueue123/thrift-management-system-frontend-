@@ -20,7 +20,7 @@ import { selectToken } from '@/slices/OrganizationIdSlice'; // assuming you have
 import { useSelector } from "react-redux";
 
 const apiUrl = process.env.BACKEND_API;
-console.log(apiUrl);
+// console.log(apiUrl);
 const BASE_URL = apiUrl;
 
 export const useAuth = () => {
