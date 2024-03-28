@@ -6,7 +6,7 @@ import TransactionsTable from "@/components/Tables";
 import { useAuth } from "@/api/hooks/useAuth";
 import Modal from "@/components/Modal";
 import { StatusIndicator } from "@/components/StatusIndicator";
-import { customer, setSavingsResponse } from "@/types";
+import { CustomerSignUpProps, customer, setSavingsResponse } from "@/types";
 import { extractDate, formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
@@ -14,9 +14,20 @@ import { Dispatch, SetStateAction, useState } from "react";
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
+import DatePicker from 'react-datepicker'
+import { CiExport } from "react-icons/ci";
+import { MdKeyboardArrowLeft } from "react-icons/md";
+import { MdKeyboardArrowRight } from "react-icons/md"
+// import 'react-datepicker/dist/react-datepicker.css';
 
 const Customers = () => {
-
+  const PAGE_SIZE = 2;
+  const [searchResult, setSearchResult] = useState('');
+  const [filteredCustomers, setFilteredCustomer] = useState<customer[]>([])
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [currentPage, setCurrentPage] = useState(1)
+  
   const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
@@ -26,6 +37,16 @@ const Customers = () => {
   const organisationId = useSelector(selectOrganizationId)
 
   const [openDropdown, setOpenDropdown] = useState<number>(0);
+  const handleFromDateChange = (event: { target: { value: SetStateAction<string>; }; }) => {
+    setFromDate(event.target.value);
+    
+  };
+
+  const handleToDateChange = (event: { target: { value: SetStateAction<string>; }; }) => {
+    setToDate(event.target.value);
+    
+    handleDateFilter()
+  };
   const toggleDropdown = (val: number) => {
     if (openDropdown === val) {
       setOpenDropdown(0);
@@ -34,6 +55,7 @@ const Customers = () => {
     }
   };
 
+  
   const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
     queryKey: ["allCustomers"],
     queryFn: async () => {
@@ -41,7 +63,9 @@ const Customers = () => {
         .get(`/api/user?role=customer&organisation=${organisationId}&userType=individual`, {})  //populate this based onthee org
         .then((response: AxiosResponse<customer[], any>) => {
           console.log(response);
+          setFilteredCustomer(response.data)
           return response.data;
+          
         })
         .catch((error: AxiosError<any, any>) => {
           console.log(error);
@@ -49,30 +73,86 @@ const Customers = () => {
         });
     },
   });
+  const handleSearch = (value: SetStateAction<string>) => {
+    setSearchResult(value);
+    
 
+    if(allCustomers){
+      const filtered = allCustomers.filter(item =>
+        String(item.accountNumber).includes(String(value))
+    );
+    // Update the filtered data state
+    setFilteredCustomer(filtered);
+    }
+    
+  };
+  const handleDateFilter = () => {
+    // Filter the data based on the date range
+    if(allCustomers){
+    const filtered = allCustomers.filter(item => {
+      const itemDate = new Date(item.createdAt); // Convert item date to Date object
+      const startDateObj = new Date(fromDate);
+      const endDateObj = new Date(toDate);
+
+      return itemDate >= startDateObj && itemDate <= endDateObj;
+    });
+
+    // Update the filtered data state
+    setFilteredCustomer(filtered);
+  }
+  };
+
+
+  console.log(filteredCustomers)
+  const paginatedCustomers = filteredCustomers?.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+  let totalPages = 0
+  if(allCustomers){
+     totalPages = Math.ceil(allCustomers.length / PAGE_SIZE);
+  }
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      (setCurrentPage(currentPage - 1));
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+     (setCurrentPage(currentPage + 1));
+    }
+  };
+
+  
   const AddCustomer = () => {};
+  
+  
   return (
     <>
       <div className="mb-4 space-y-2">
-        <p className="text-base font-bold text-ajo_offWhite text-opacity-60">
+        <p className="text-base text-2xl font-bold text-ajo_offWhite text-opacity-60">
           Customers
         </p>
       </div>
       <section>
         <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <span className="flex items-center gap-3">
-            <SearchInput />
+            
             <FilterDropdown
               options={[
-                "Timestamp",
-                "Name",
-                "Email",
-                "Phone",
-                "Channel",
-                "Amount",
-                "Status",
+                "Account Number",
+                // "Timestamp",
+                // "Name",
+                // "Email",
+                // "Phone",
+                // "Channel",
+                // "Amount",
+                // "Status",
               ]}
             />
+            <SearchInput onSearch={handleSearch}/>
           </span>
           <CustomButton
             type="button"
@@ -82,21 +162,60 @@ const Customers = () => {
           />
         </div>
 
+        <div className="">
+          <p className="text-white text-xl">Customer List</p>
+          
+            <div className="md:flex justify-between my-8">
+              <div className="flex items-center">
+                <p className="mr-2 font-lg text-white">Select range from:</p>
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={handleFromDateChange}
+                  className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+                />
+
+
+                <p className="mx-2 text-white">to</p>
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={handleToDateChange}
+                  className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div className="flex mt-4">
+                <button className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
+                <button className="px-4 py-2 text-white rounded-md border-none bg-transparent relative">
+                  
+                  <u>Export as Excel</u>
+                </button>
+              </div>
+          </div>
+        </div>
+
         <div>
           <TransactionsTable
             headers={[
               "Customer Name",
+              "Account Number",
               "Account Created On",
               "Email Address",
               "Phone Number",
+              "Country",
               "State",
               "Local Govt Area",
+              "City/Town",
+              "organisation",
               "Action",
             ]}
-            content={allCustomers?.map((customer, index) => (
+            content={paginatedCustomers?.map((customer, index) => (
               <tr className="" key={index + 1}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {customer.firstName + " " + customer.lastName || "----"}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {customer.accountNumber}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {extractDate(customer.createdAt) || "----"}
@@ -108,11 +227,21 @@ const Customers = () => {
                   {customer.phoneNumber || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {customer.country || "----"}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {customer.state || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {customer.lga || "----"}
                 </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {customer.city || "----"}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {customer.organisation || "----"}
+                </td>
+                
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   <StatusIndicator
                     label={`Actions`}
@@ -172,6 +301,58 @@ const Customers = () => {
               />
             </Modal>
           )}
+          <div className="flex justify-center">
+          {/* <div className="flex items-center  space-x-2">
+            <button
+              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={goToPreviousPage}
+            >
+              <MdKeyboardArrowLeft />
+            </button>
+
+            <button
+              className="p-2 bg-white text-blue-500 rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={() => setCurrentPage(currentPage)}
+            >
+              {currentPage}
+            </button>
+
+            <button
+              className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={() =>(setCurrentPage(currentPage + 1))}
+            >
+              {currentPage + 1}
+            </button>
+            <button
+              className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={() =>(setCurrentPage(currentPage + 2))}
+            >
+              {currentPage + 2}
+            </button>
+
+            <button
+              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={goToNextPage}
+            >
+              <MdKeyboardArrowRight />
+            </button> */}
+
+              {/* <button
+                className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+                onClick={() => dispatch(setCurrentPage(currentPage + 6))}
+              >
+                {currentPage + 6}
+              </button> */}
+
+            {/* <button
+              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={goToNextPage}
+            >
+              <ChevronRightIcon className="w-4 h-4 cursor-pointer" />
+            </button>            */}
+        {/* </div> */}
+          </div>
+
           {/* <PaginationBar apiResponse={allCustomers !== undefined && allCustom} /> */}
         </div>
       </section>
