@@ -15,7 +15,7 @@ const CustomerNavbar = () => {
   // const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
   const [DropdownMenuIsOpen, setDropdownMenuIsOpen] = useState(false);
 
-  const endpoints = ["dashboard", "wallet", "withdrawals", "transactions"];
+  const endpoints = ["dashboard","withdrawals", "transactions"];
 
   return (
     <nav className="border-ajo_offWhite border-opacity-40 md:border-b">

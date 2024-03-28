@@ -137,7 +137,7 @@ export default function WithDrawalReportSettings(){
                 
               ]}
             />
-            <SearchInput />
+            <SearchInput onSearch={() => ("")}/>
             
              
           </span>
