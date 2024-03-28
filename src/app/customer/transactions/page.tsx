@@ -15,7 +15,7 @@ const Transactions = () => {
             Recent Transactions
           </p>
           <span className="flex items-center gap-3">
-            <SearchInput />
+            <SearchInput onSearch={() => ("")}/>
             <FilterDropdown
               options={[
                 "Timestamp",
