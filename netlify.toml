@@ -1,0 +1,15 @@
+# netlify.toml
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+
+[context.production]
+  environment = { NODE_ENV = "production" }
+
+[context.test]
+  environment = { NODE_ENV = "test" }
+
+[[plugins]]
+package = "@netlify/plugin-nextjs"
