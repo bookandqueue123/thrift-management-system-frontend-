@@ -1,10 +1,7 @@
-import { NextResponse } from "next/server";
-import { store } from "../store/store";
+import { NextRequest, NextResponse } from "next/server";
+import { store } from "./store/store";
 
-export async function middleware(request: {
-  nextUrl: { pathname: any };
-  url: string | URL | undefined;
-}) {
+export async function middleware(request: NextRequest) {
   console.log("Middleware triggered:", request.nextUrl.pathname);
   const { pathname } = request.nextUrl;
   console.log(pathname);
