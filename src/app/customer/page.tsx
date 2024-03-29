@@ -14,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Session } from "inspector";
 import Link from "next/link";
 import { useRouter,  } from "next/navigation";
-import { Suspense, useState } from "react";
+import { ChangeEvent, Suspense, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/slices/OrganizationIdSlice";
 const CustomerDashboard = () => {
@@ -65,6 +65,20 @@ const CustomerDashboard = () => {
   //   // If id is not available yet, display loading indicator
   //   return <div>Loading...</div>;
   // }
+
+  // const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+  //   setSearchResult(e.target.value);
+  //   console.log(e.target.value)
+
+  //   if(allCustomers){
+  //     const filtered = allCustomers.filter(item =>
+  //       String(item.accountNumber).includes(String(e.target.value))
+  //   );
+  //   // Update the filtered data state
+  //   setFilteredCustomer(filtered);
+  //   }
+    
+  // };
 
   const ProfileSetupComplete = () => {
     return (
@@ -172,7 +186,34 @@ const CustomerDashboard = () => {
           Recent Transactions
         </p>
         <span className="flex items-center gap-3">
-          <SearchInput />
+          {/* <SearchInput onSearch={() => ("")}/> */}
+
+          {/* <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
+      <input
+      onChange={(e) => console.log(123)}
+        type="search"
+        placeholder="Search"
+        className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
+      />
+      <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+        <circle
+          cx="8.60996"
+          cy="8.10312"
+          r="7.10312"
+          stroke="#EAEAFF"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M13.4121 13.4121L16.9997 16.9997"
+          stroke="#EAEAFF"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </form> */}
           <FilterDropdown
             options={[
               "Timestamp",

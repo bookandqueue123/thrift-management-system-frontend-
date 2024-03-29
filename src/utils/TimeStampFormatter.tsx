@@ -32,3 +32,23 @@ export function extractDate(dateString: string | Date): string {
   const day = date.getDate();
   return `${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`;
 }
+
+export function extractTime(dateString: string | Date): string {
+  console.log(dateString);
+
+  // Create a Date object from the provided dateString
+  const date = new Date(dateString);
+
+  // Extract hours, minutes, and seconds
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+
+  // Format the time string with leading zeros where necessary
+  const formattedHours = hours < 10 ? '0' + hours : hours;
+  const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+  const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
+
+  // Return the formatted time string
+  return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+}
