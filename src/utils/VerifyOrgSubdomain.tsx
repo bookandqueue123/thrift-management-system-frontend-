@@ -55,7 +55,7 @@ const VerifyOrgSubdomain = () => {
       } else {
         console.log("No matching URL found.");
         setPreferredUrl("");
-        router.push("/not-found");
+        router.push("/404");
       }
 
     }
