@@ -8,9 +8,9 @@ const Banner = () => {
     <section className="mb-4 md:mb-0 md:w-1/2">
       <Link href="/" tabIndex={-1}>
         <Image
-          src="/Ajo.svg"
+          src="/MAXWELL.png"
           alt="Ajo Logo"
-          className="relative -left-[2rem] -top-[1rem] m-0"
+          className="relative -left-[-1.5rem] -top-[-1rem] m-0"
           width={158}
           height={140}
           loading="eager"
@@ -18,7 +18,7 @@ const Banner = () => {
         />
       </Link>
 
-      <div className="mx-4 mt-4">
+      <div className="mx-4 mt-8">
         <span className="mb-4 flex items-center gap-2">
           <Image
             src="/ellipse.svg"
