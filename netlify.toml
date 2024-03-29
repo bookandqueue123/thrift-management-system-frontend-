@@ -4,6 +4,7 @@
   command = "npm run build"
   publish = ".next"
 
+
 [context.production]
   environment = { NODE_ENV = "production" }
 
@@ -12,6 +13,3 @@
 
 [[plugins]]
 package = "@netlify/plugin-nextjs"
-
-[build.environment]
-  NETLIFY_NEXT_PLUGIN_SKIP = "true"
