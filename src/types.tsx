@@ -85,6 +85,10 @@ export interface postSavingsResponse {
 }
 
 export interface UpdatedSaving {
+  postedBy: any;
+  amountPaid: string;
+  saving: any;
+  paymentMode: string;
   _id:              string;
   purposeName:      string;
   amount:           number;
