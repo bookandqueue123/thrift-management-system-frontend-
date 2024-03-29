@@ -32,7 +32,7 @@ export const useAuth = () => {
     if (!token) {
       router.push("/signin");
     }
-  }, [token, router]);
+  }, [token]);
 
   const client = axios.create({
     baseURL: BASE_URL,
