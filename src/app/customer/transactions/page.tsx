@@ -1,6 +1,6 @@
 import DummyTransactions from "@/api/dummyTransactions.json";
 import { FilterDropdown } from "@/components/Buttons";
-import { SearchInput } from "@/components/Forms";
+
 import PaginationBar from "@/components/Pagination";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
