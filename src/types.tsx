@@ -173,6 +173,7 @@ export type savings = {
   id: string;
 }
 export type allSavingsResponse = {
+  [x: string]: any;
   savings: [
     {
       _id: string;

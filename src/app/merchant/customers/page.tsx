@@ -58,7 +58,7 @@ const validationSchema = Yup.object().shape({
 });
 
 const Customers = () => {
-  const PAGE_SIZE = 2;
+  const PAGE_SIZE = 4;
 
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
