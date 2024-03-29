@@ -18,7 +18,7 @@ const Transactions = () => {
             {/* <SearchInput onSearch={() => ("")}/> */}
             <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
       <input
-      onChange={(e) => console.log(12)}
+      onChange={() => console.log(12)}
         type="search"
         placeholder="Search"
         className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
