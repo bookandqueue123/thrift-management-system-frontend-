@@ -10,7 +10,7 @@ import { CustomerSignUpProps, customer, setSavingsResponse } from "@/types";
 import { extractDate, formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
-import { Dispatch, SetStateAction, useState } from "react";
+import { ChangeEvent, Dispatch, SetStateAction, useState } from "react";
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
@@ -116,13 +116,13 @@ const Customers = () => {
         });
     },
   });
-  const handleSearch = (value: SetStateAction<string>) => {
-    setSearchResult(value);
-    
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchResult(e.target.value);
+    console.log(e.target.value)
 
     if(allCustomers){
       const filtered = allCustomers.filter(item =>
-        String(item.accountNumber).includes(String(value))
+        String(item.accountNumber).includes(String(e.target.value))
     );
     // Update the filtered data state
     setFilteredCustomer(filtered);
@@ -602,7 +602,34 @@ const Customers = () => {
                 // "Status",
               ]}
             />
-            <SearchInput onSearch={handleSearch}/>
+            {/* <SearchInput onSearch={handleSearch}/> */}
+
+            <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
+      <input
+      onChange={(e) => handleSearch(e)}
+        type="search"
+        placeholder="Search"
+        className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
+      />
+      <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+        <circle
+          cx="8.60996"
+          cy="8.10312"
+          r="7.10312"
+          stroke="#EAEAFF"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M13.4121 13.4121L16.9997 16.9997"
+          stroke="#EAEAFF"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </form>
           </span>
           <CustomButton
             type="button"
