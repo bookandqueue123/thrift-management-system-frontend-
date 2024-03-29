@@ -23,14 +23,14 @@ import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 const SignInForm = () => {
   const { client } = useAuth();
   const organizationId = useSelector(selectOrganizationId);
-  const user = useSelector(selectUser)
+  const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const router = useRouter();
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  
+
   const {
     mutate: UserSignIn,
     isPending,
@@ -38,7 +38,6 @@ const SignInForm = () => {
   } = useMutation({
     mutationKey: ["set Savings"],
     mutationFn: async (values: signInProps) => {
-      
       return client.post(`/api/auth/login`, {
         emailOrPhoneNumber: values.email,
         password: values.password,
@@ -46,13 +45,12 @@ const SignInForm = () => {
     },
 
     onSuccess(response: AxiosResponse<any, any>) {
-      
       setShowSuccessToast(true);
-      
+
       console.log(response);
-      
+
       if (response.data.role === "customer") {
-         router.push(`/customer`);
+        router.push(`/customer`);
       } else if (response.data.role === "organisation") {
         router.push("/merchant");
       }
@@ -62,7 +60,7 @@ const SignInForm = () => {
           setAuthData({
             organizationId: response.data.organisation,
             token: response.data.token,
-            user: response.data._id
+            user: response.data._id,
           }),
         );
       } else if (response.data.role === "organisation") {
@@ -70,16 +68,15 @@ const SignInForm = () => {
           setAuthData({
             organizationId: response.data._id,
             token: response.data.token,
-            user: response.data._id
+            user: response.data._id,
           }),
         );
       }
 
       console.log(organizationId);
-      
-      console.log(user)
 
-      
+      console.log(user);
+
       //  dispatch(setOrganizationId(response.data._id));
 
       setSuccessMessage((response as any).response.data.message);

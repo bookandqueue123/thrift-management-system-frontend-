@@ -4,12 +4,14 @@ import { useAuth } from "@/api/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { redirect, usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import preferredUrls from "@/api/dummyPreferredUrls.json";
+// import preferredUrls from "@/api/dummyPreferredUrls.json";
 import { useUrl } from "@/api/hooks/useUrl";
 
 const VerifyOrgSubdomain = () => {
+  console.log("Verifying Subdomain");
   const { preferredUrl, setPreferredUrl } = useUrl();
   const router = useRouter();
+  const { client } = useAuth();
 
   const [currentUrl, setCurrentUrl] = useState("");
   useEffect(() => {
@@ -18,20 +20,46 @@ const VerifyOrgSubdomain = () => {
     setCurrentUrl(hostUrl);
   }, [setPreferredUrl]);
 
-  useEffect(() => {
-    const foundOrganization = preferredUrls.organizations.find((org) => {
-      if (org.preferred_url === currentUrl) {
-        console.log("currentUrl", currentUrl);
-        setPreferredUrl(org.preferred_url);
-      } else {
-        setPreferredUrl("");
-      }
+  console.log("currentUrl", currentUrl);
+
+  const { data: allOrganizations, isLoading: isLoadingAllOrganizations } =
+    useQuery({
+      queryKey: ["allOrganizations"],
+      queryFn: async () => {
+        return client
+          .get(`/api/user/get-url`)
+          .then((response) => {
+            return response.data;
+          })
+          .catch((error) => {
+            console.log(error);
+            throw error;
+          });
+      },
     });
 
-    if (!foundOrganization) {
-      router.push("/not-found");
+  useEffect(() => {
+    if (allOrganizations) {
+      const foundOrganization = allOrganizations.find(
+        (org: { prefferedUrl: string }) => org.prefferedUrl === currentUrl,
+      );
+
+      if (foundOrganization) {
+        console.log("Matched URL:", foundOrganization.prefferedUrl);
+        setPreferredUrl(foundOrganization.prefferedUrl);
+      } else {
+        console.log("No matching URL found.");
+        setPreferredUrl("");
+        // router.push("/not-found");
+      }
+
+      // if (!foundOrganization) {
+      //   router.push("/not-found");
+      // }
     }
-  }, [preferredUrl, router, setPreferredUrl, currentUrl]);
+
+    
+  }, [preferredUrl, router, setPreferredUrl, currentUrl, allOrganizations]);
 
   console.log("preferredUrl", preferredUrl);
   return null;

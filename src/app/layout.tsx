@@ -8,6 +8,7 @@ import { store } from "../../store/store";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { PreferredUrlProvider } from "@/api/hooks/useUrl";
+import VerifyOrgSubdomain from "@/utils/VerifyOrgSubdomain";
 const montserrat = Montserrat({ subsets: ["latin"] });
 
 // export const metadata: Metadata = {
