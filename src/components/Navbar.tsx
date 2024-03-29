@@ -229,7 +229,8 @@ export const Sidebar = ({
                 {label === "settings" ? (
                   <Link
                     href="/merchant/settings"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault()
                       setSettingsDropdownIsOpen(!settingsDropdownIsOpen);
                     }}
                   >
