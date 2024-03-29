@@ -14,10 +14,20 @@ const VerifyOrgSubdomain = () => {
   const { client } = useAuth();
 
   const [currentUrl, setCurrentUrl] = useState("");
+  // useEffect(() => {
+  //   const hostUrl: string =
+  //     typeof window !== "undefined" ? window.location.origin : "";
+  //   setCurrentUrl(hostUrl);
+  // }, [setPreferredUrl]);
+
   useEffect(() => {
-    const hostUrl: string =
-      typeof window !== "undefined" ? window.location.origin : "";
-    setCurrentUrl(hostUrl);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      const hostname = url.hostname;
+      console.log("hostname", hostname)
+      const subdomain = hostname.split(".")[0];
+      setCurrentUrl(subdomain);
+    }
   }, [setPreferredUrl]);
 
   console.log("currentUrl", currentUrl);
