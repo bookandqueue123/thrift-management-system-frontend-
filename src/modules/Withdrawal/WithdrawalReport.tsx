@@ -170,7 +170,7 @@ export default function WithdrawalReport(){
           <span className="md:flex items-center gap-3">
             <p className="text-white">Withdrawal Report</p>
             {/* <SearchInput onSearch={() => ("")}/> */}
-            <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
+            {/* <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
       <input
       onChange={(e) => console.log(12)}
         type="search"
@@ -195,7 +195,7 @@ export default function WithdrawalReport(){
           strokeLinejoin="round"
         />
       </svg>
-    </form>
+    </form> */}
             
              
           </span>

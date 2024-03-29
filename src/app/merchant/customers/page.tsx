@@ -604,7 +604,7 @@ const Customers = () => {
             />
             {/* <SearchInput onSearch={handleSearch}/> */}
 
-            <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
+            {/* <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
       <input
       onChange={(e) => handleSearch(e)}
         type="search"
@@ -629,7 +629,7 @@ const Customers = () => {
           strokeLinejoin="round"
         />
       </svg>
-    </form>
+    </form> */}
           </span>
           <CustomButton
             type="button"

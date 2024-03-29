@@ -188,7 +188,7 @@ const CustomerDashboard = () => {
         <span className="flex items-center gap-3">
           {/* <SearchInput onSearch={() => ("")}/> */}
 
-          <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
+          {/* <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
       <input
       onChange={(e) => console.log(123)}
         type="search"
@@ -213,7 +213,7 @@ const CustomerDashboard = () => {
           strokeLinejoin="round"
         />
       </svg>
-    </form>
+    </form> */}
           <FilterDropdown
             options={[
               "Timestamp",
