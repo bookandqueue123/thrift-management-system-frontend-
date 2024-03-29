@@ -240,7 +240,7 @@ export const Sidebar = ({
                   <span
                     onClick={() => {
                       SignOut();
-                      router.replace("/");
+                      // router.replace("/");
                     }}
                   >
                     {label}
