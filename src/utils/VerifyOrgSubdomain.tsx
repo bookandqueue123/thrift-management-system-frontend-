@@ -14,11 +14,6 @@ const VerifyOrgSubdomain = () => {
   const { client } = useAuth();
 
   const [currentUrl, setCurrentUrl] = useState("");
-  // useEffect(() => {
-  //   const hostUrl: string =
-  //     typeof window !== "undefined" ? window.location.origin : "";
-  //   setCurrentUrl(hostUrl);
-  // }, [setPreferredUrl]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -60,12 +55,9 @@ const VerifyOrgSubdomain = () => {
       } else {
         console.log("No matching URL found.");
         setPreferredUrl("");
-        // router.push("/not-found");
+        router.push("/not-found");
       }
 
-      // if (!foundOrganization) {
-      //   router.push("/not-found");
-      // }
     }
 
     
