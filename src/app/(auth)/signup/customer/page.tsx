@@ -4,6 +4,7 @@ import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton } from "@/components/Buttons";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { CustomerSignUpProps, getOrganizationProps } from "@/types";
+import VerifyOrgSubdomain from "@/utils/VerifyOrgSubdomain";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
@@ -44,6 +45,7 @@ const validationSchema = Yup.object().shape({
 });
 
 const Page = () => {
+  // VerifyOrgSubdomain();
   const { client } = useAuth();
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);

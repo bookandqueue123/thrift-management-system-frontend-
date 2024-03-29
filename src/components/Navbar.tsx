@@ -1,15 +1,10 @@
 "use client";
+import { useAuth } from "@/api/hooks/useAuth";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Dispatch,
-  ReactElement,
-  ReactHTML,
-  SetStateAction,
-  useState,
-} from "react";
+import { Dispatch, ReactElement, SetStateAction, useState } from "react";
 import AvatarDropdown from "./Dropdowns";
-import { useRouter } from "next/router";
+import { redirect, useRouter } from "next/navigation";
 
 const CustomerNavbar = () => {
   // const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
@@ -131,9 +126,8 @@ export const Sidebar = ({
   onShow: boolean;
   setShow: Dispatch<SetStateAction<boolean>>;
 }) => {
-  const SignOut = () => {
-    console.log("signed out succesfully");
-  };
+  const { SignOut } = useAuth();
+  const router = useRouter();
 
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
 
@@ -149,7 +143,7 @@ export const Sidebar = ({
     "dashboard",
     "customers",
     "posting",
-    
+
     "location",
     "history",
     "analytics",
@@ -226,21 +220,31 @@ export const Sidebar = ({
               );
             })}
           </div>
-          <div className="w-full cursor-pointer">
+          <span className="w-full cursor-pointer">
             {["settings", "sign out"].map((label) => (
-              <Link
+              <div
                 key={label}
-                href={label === "settings" ? "/merchant/settings" : "/"}
                 className="relative flex w-full cursor-pointer items-center gap-x-4 rounded-lg px-4 py-2 text-start text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
-                onClick={() => {
-                  if (label !== "settings") {
-                    SignOut();
-                  } else {
-                    setSettingsDropdownIsOpen(!settingsDropdownIsOpen);
-                  }
-                }}
               >
-                {label}
+                {label === "settings" ? (
+                  <Link
+                    href="/merchant/settings"
+                    onClick={() => {
+                      setSettingsDropdownIsOpen(!settingsDropdownIsOpen);
+                    }}
+                  >
+                    {label}
+                  </Link>
+                ) : (
+                  <span
+                    onClick={() => {
+                      SignOut();
+                      router.replace("/");
+                    }}
+                  >
+                    {label}
+                  </span>
+                )}
 
                 {label === "settings" && (
                   <Image
@@ -250,27 +254,26 @@ export const Sidebar = ({
                     height={6}
                   />
                 )}
+
                 {label === "settings" && settingsDropdownIsOpen && (
                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
-                    {["location", "group"].map((label) => (
-                      <Link
-                        key={label}
-                        onClick={() => {}}
-                        href={
-                          label === "location"
-                            ? "/merchant/settings/location"
-                            : "/merchant/settings/group"
-                        }
-                        className={` block cursor-pointer whitespace-nowrap  px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
-                      >
-                        {label + " settings"}
-                      </Link>
-                    ))}
+                    <Link
+                      href={`/merchant/settings/location`}
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      location settings
+                    </Link>
+                    <Link
+                      href="/merchant/settings/group"
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      group settings
+                    </Link>
                   </div>
                 )}
-              </Link>
+              </div>
             ))}
-          </div>
+          </span>
         </nav>
       </div>
       {/* <!-- Mobile menu button--> */}

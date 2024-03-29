@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 
 const isProd = process.env.NODE_ENV === "production";
+
+console.log("production", isProd);
+console.log("isProdValue", process.env.NODE_ENV)
+
 const nextConfig = {
   images: {
     domains: ["images.unsplash.com"],
