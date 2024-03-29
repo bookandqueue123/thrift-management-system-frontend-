@@ -1,0 +1,14 @@
+export default function NotFound() {
+  return (
+    <div className="flex h-screen items-center justify-center bg-ajo_offWhite">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-ajo_darkBlue">
+          404 - Page Not Found
+        </h1>
+        <p className="mt-4 text-ajo_darkBlue">
+          The page you are looking for does not exist.
+        </p>
+      </div>
+    </div>
+  );
+}
