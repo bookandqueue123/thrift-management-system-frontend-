@@ -85,6 +85,10 @@ export interface postSavingsResponse {
 }
 
 export interface UpdatedSaving {
+  postedBy: any;
+  amountPaid: string;
+  saving: any;
+  paymentMode: string;
   _id:              string;
   purposeName:      string;
   amount:           number;
@@ -118,8 +122,58 @@ export interface PaidDay {
   narration?:      string;
 }
 
-
+export type savings = {
+  _id: string;
+  purposeName: string;
+  amount: number;
+  startDate: string;
+  endDate: string;
+  frequency: string;
+  user: {
+    groupMember: any[];
+    isArchieve: boolean;
+    savingIdentities: any[];
+    _id: string;
+    firstName: string;
+    lastName: string;
+    otherName: string;
+    email: string;
+    homeAddress: string;
+    phoneNumber: string;
+    country: string;
+    state: string;
+    lga: string;
+    city: string;
+    popularMarket: string;
+    nok: string;
+    nokRelationship: string;
+    nokPhone: string;
+    nin: number;
+    bvn: number;
+    meansOfIDPhoto: File;
+    meansOfID: string;
+    photo: File;
+    accountNumber: number;
+    userType: string;
+    role: "customer" | "merchant" | "organization";
+    kycVerified: boolean;
+    organisation: string;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  };
+  organisation: string;
+  isPaid: string;
+  paidDays: any[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  savedDates: any[];
+  specificDates: any[];
+  id: string;
+}
 export type allSavingsResponse = {
+  [x: string]: any;
   savings: [
     {
       _id: string;

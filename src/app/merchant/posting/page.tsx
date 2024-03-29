@@ -7,6 +7,8 @@ import TransactionsTable from "@/components/Tables";
 import { useAuth } from "@/api/hooks/useAuth";
 import DateRangeComponent from "@/components/DateArrayFile";
 import Modal from "@/components/Modal";
+import { MdKeyboardArrowLeft } from "react-icons/md";
+import { MdKeyboardArrowRight } from "react-icons/md"
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 import {
   allSavingsResponse,
@@ -14,20 +16,26 @@ import {
   postSavingsResponse,
   savingsFilteredById,
 } from "@/types";
+import { CiExport } from "react-icons/ci";
 import AmountFormatter from "@/utils/AmountFormatter";
-import { extractDate, formatToDateAndTime } from "@/utils/TimeStampFormatter";
+import { extractDate, extractTime, formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 const Posting = () => {
+  const PAGE_SIZE = 2;
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const organizationId = useSelector(selectOrganizationId);
   const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
+  const [filteredSavings, setFilteredSavings] = useState<allSavingsResponse[]>([])
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
     "confirmation",
   );
+  const [currentPage, setCurrentPage] = useState(1)
   const [postingResponse, setPostingResponse] = useState<postSavingsResponse>();
 
   interface CustomAxiosRequestConfig extends AxiosRequestConfig {
@@ -45,8 +53,9 @@ const Posting = () => {
     queryFn: async () => {
       return client
         .get(`/api/saving/get-savings?organisation=${organizationId}`, config)
-        .then((response: AxiosResponse<allSavingsResponse, any>) => {
+        .then((response) => {
           console.log("allSavingsSuccess: ", response.data);
+          setFilteredSavings(response.data.savings)
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -56,6 +65,78 @@ const Posting = () => {
     },
   });
 
+
+
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    // setSearchResult(e.target.value);
+    console.log(e.target.value)
+
+    console.log(allSavings.savings)
+    if(allSavings){
+      const filtered = allSavings.savings.filter((item: {
+        [x: string]: any; accountNumber: any; 
+}) =>
+        String(item.user.accountNumber).includes(String(e.target.value))
+    );
+    // Update the filtered data state
+    setFilteredSavings(filtered);
+    }
+    
+  };
+  
+  const handleDateFilter = () => {
+    // Filter the data based on the date range
+    if(allSavings){
+    const filtered = allSavings.savings.filter((item: { createdAt: string | number | Date; }) => {
+      const itemDate = new Date(item.createdAt); // Convert item date to Date object
+      const startDateObj = new Date(fromDate);
+      const endDateObj = new Date(toDate);
+
+      return itemDate >= startDateObj && itemDate <= endDateObj;
+    });
+
+    // Update the filtered data state
+    setFilteredSavings(filtered);
+  }
+  };
+
+  const handleFromDateChange = (event: { target: { value: SetStateAction<string>; }; }) => {
+    setFromDate(event.target.value);
+    
+  };
+
+  const handleToDateChange = (event: { target: { value: SetStateAction<string>; }; }) => {
+    setToDate(event.target.value);
+    
+    handleDateFilter()
+  };
+
+
+
+  const paginatedSavings = filteredSavings?.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+  let totalPages = 0
+  if(allSavings){
+     totalPages = Math.ceil(allSavings.savings.length / PAGE_SIZE);
+  }
+
+  const goToPreviousPage = () => {
+    
+    if (currentPage > 1) {
+      (setCurrentPage(currentPage - 1));
+    }
+  };
+
+  const goToNextPage = () => {
+ 
+    if (currentPage < totalPages) {
+     (setCurrentPage(currentPage + 1));
+    }
+  };
+
+  console.log(paginatedSavings)
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -63,10 +144,41 @@ const Posting = () => {
           Posting
         </p>
       </div>
+      <div className="mb-4">
+          <p className="text-white text-xl">Customer List</p>
+          
+            
+        </div>
       <section>
         <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <span className="flex items-center gap-3">
-            <SearchInput />
+            {/* <SearchInput onSearch={() => ("")}/> */}
+            <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
+      <input
+      onChange={handleSearch}
+        type="search"
+        placeholder="Search"
+        className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
+      />
+      <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+        <circle
+          cx="8.60996"
+          cy="8.10312"
+          r="7.10312"
+          stroke="#EAEAFF"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M13.4121 13.4121L16.9997 16.9997"
+          stroke="#EAEAFF"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </form>
             <FilterDropdown
               options={[
                 "Timestamp",
@@ -109,26 +221,68 @@ const Posting = () => {
           )}
         </div>
 
+        <div className="md:flex justify-between my-8">
+              <div className="flex items-center">
+                <p className="mr-2 font-lg text-white">Select range from:</p>
+                <input
+                  type="date"
+                  value={fromDate}
+                   onChange={handleFromDateChange}
+                  className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+                />
+
+
+                <p className="mx-2 text-white">to</p>
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={handleToDateChange}
+                  className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div className="flex mt-4">
+                <button className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
+                <button className="px-4 py-2 text-white rounded-md border-none bg-transparent relative">
+                  
+                  <u>Export as Excel</u>
+                </button>
+              </div>
+          </div>
+
         <div>
           <TransactionsTable
             headers={[
               "Customer Name",
+              "Account Number",
               "Transaction ID",
+              "Purpose",
               "Email Address",
               "Phone Number",
+              "Time",
               "State",
               "Local Govt Area",
+              "Posted By",
+              "Payment Mode",
+              "Status",
+              "Start Date",
+              "End Date",
               "Action",
             ]}
-            content={allSavings?.savings?.map((savings, index) => (
+            content={paginatedSavings?.map((savings, index) => (
               <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {savings.user.firstName + " " + savings.user.lastName ||
                     "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {savings.user.accountNumber || "----"}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {/* {customer.transaction_id || "----"} */}
                   {savings._id || "-----"}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {savings.purposeName || "-----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {savings.user.email}
@@ -137,19 +291,87 @@ const Posting = () => {
                   {savings.user.phoneNumber}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {extractTime(savings.updatedAt || "-----")}
+                </td>
+
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {savings.user.state || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {savings.user.lga || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  Posted By
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  Payment Mode
+                </td>
+               
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {savings.isPaid || "----"}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {extractDate(savings.startDate) || "----"}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {extractDate(savings.endDate) || "----"}
+                </td> 
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
                   <StatusIndicator label={"View Details"} />
                 </td>
               </tr>
             ))}
           />
+
+
+            <div className="flex justify-center items-center  space-x-2">
+            <button
+              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={goToPreviousPage}
+            >
+              <MdKeyboardArrowLeft />
+            </button>
+
+            <button
+              className="p-2  text-blue-500 rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={() => setCurrentPage(currentPage)}
+            >
+              {currentPage}
+            </button>
+
+            <button
+              className="p-2  rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={() =>(setCurrentPage(currentPage + 1))}
+            >
+              {currentPage + 1}
+            </button>
+            <button
+              className="p-2  rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={() =>(setCurrentPage(currentPage + 2))}
+            >
+              {currentPage + 2}
+            </button>
+
+            <button
+              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={goToNextPage}
+            >
+              <MdKeyboardArrowRight />
+            </button> 
+
+              {/* <button
+                className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+                onClick={() => dispatch(setCurrentPage(currentPage + 6))}
+              >
+                {currentPage + 6}
+              </button> */}
+
+                    
+         </div>
           {/* <PaginationBar apiResponse={DummyCustomers} /> */}
         </div>
+
+        
       </section>
     </>
   );
@@ -1267,6 +1489,7 @@ const PostConfirmation = ({
   postingResponse: postSavingsResponse | undefined;
   status: "success" | "failed" | undefined;
 }) => {
+  console.log(postingResponse)
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
 
   useEffect(() => {
@@ -1357,21 +1580,21 @@ const PostConfirmation = ({
       <div className="space-y-4">
         <div className="mx-8 flex  ">
           <p className="text-sm font-semibold text-[#7D7D7D]">
-            Organisation Name:
+            Organisation Name: {postingResponse.updatedSaving ? postingResponse.updatedSaving.postedBy.organisationName: ""}
           </p>
           <p className="text-sm ml-4 text-[#7D7D7D]"></p>
         </div>
 
         <div className="mx-8 flex  ">
           <p className="text-sm font-semibold text-[#7D7D7D]">
-            Customer Name:
+            Customer Name: 
           </p>
           <p className="text-sm ml-4 text-[#7D7D7D]"></p>
         </div>
 
         <div className="mx-8 flex  ">
           <p className="text-sm font-semibold text-[#7D7D7D]">
-            Customer Account Number:
+            Customer Account Number: {postingResponse.updatedSaving ? postingResponse.updatedSaving.postedBy.accountNumber : ""}
           </p>
           <p className="text-sm ml-4 text-[#7D7D7D]"></p>
         </div>
@@ -1381,19 +1604,19 @@ const PostConfirmation = ({
         <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Amount:</p>
           <p className="text-sm ml-4 text-[#7D7D7D]">
-            {postingResponse?.updatedSaving ? postingResponse?.updatedSaving.amount: ""} NGN
+            {postingResponse?.updatedSaving ? postingResponse?.updatedSaving.amountPaid: ""} NGN
           </p>
         </div>
 
 
         <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Time:</p>
-          <p className="text-sm ml-4 text-[#7D7D7D]">{postingResponse.updatedSaving ? formatToDateAndTime(postingResponse.updatedSaving.updatedAt) : ""}</p>
+          <p className="text-sm ml-4 text-[#7D7D7D]">{postingResponse.updatedSaving ? extractTime(postingResponse.updatedSaving.saving.updatedAt) : ""}</p>
         </div>
 
         <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Posted by:</p>
-          <p className="text-sm ml-4 text-[#7D7D7D]">{postingResponse.updatedSaving ? postingResponse.updatedSaving._id : ""}</p>
+          <p className="text-sm ml-4 text-[#7D7D7D]">{postingResponse.updatedSaving ? postingResponse.updatedSaving.postedBy.organisationName : ""}</p>
         </div>
 
         
@@ -1401,7 +1624,7 @@ const PostConfirmation = ({
         <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Purpose:</p>
           <p className="text-sm ml-4 capitalize text-[#7D7D7D]">
-            {postingResponse?.updatedSaving ? postingResponse?.updatedSaving.purposeName : ""}
+            {postingResponse?.updatedSaving ? postingResponse?.updatedSaving.saving.purposeName : ""}
           </p>
         </div>
 
@@ -1414,15 +1637,15 @@ const PostConfirmation = ({
         </div> */}
         <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Start Date:</p>
-          <p className="text-sm ml-4 text-[#7D7D7D]">{postingResponse.updatedSaving ? extractDate(postingResponse.updatedSaving.startDate) : ""}</p>
+          <p className="text-sm ml-4 text-[#7D7D7D]">{postingResponse.updatedSaving ? extractDate(postingResponse.updatedSaving.saving.startDate) : ""}</p>
         </div>
 
         <div className="mx-8 flex">
           <p className="text-sm font-semibold text-[#7D7D7D]">End Date:</p>
-          <p className="text-sm ml-4 text-[#7D7D7D]">{postingResponse.updatedSaving ? extractDate(postingResponse.updatedSaving.endDate) : ""}</p>
+          <p className="text-sm ml-4 text-[#7D7D7D]">{postingResponse.updatedSaving ? extractDate(postingResponse.updatedSaving.saving.endDate) : ""}</p>
         </div>
         <div className="mx-8 flex ">
-          <p className="text-sm font-semibold text-[#7D7D7D]">Payment Mode:</p>
+          <p className="text-sm font-semibold text-[#7D7D7D]">Payment Mode: {postingResponse.updatedSaving ? postingResponse.updatedSaving.paymentMode : ""}</p>
           <p className="text-sm ml-4 text-[#7D7D7D]">
           
           </p>
