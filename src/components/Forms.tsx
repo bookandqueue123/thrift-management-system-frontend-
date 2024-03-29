@@ -2,13 +2,13 @@
 import React from "react";
 
 
-export const SearchInput = ({ onSearch }: {onSearch: (value: any) => void}) => {
+export const SearchInput = () => {
   // const [searchedCharcter, setSearchedCharacter] = useState()
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // setSearchedCharacter(value);
     // Call the callback function passed from the parent
-    onSearch(value);
+    // onSearch(value);
   }
   return (
     <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
