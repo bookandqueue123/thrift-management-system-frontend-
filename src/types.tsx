@@ -297,6 +297,7 @@ export interface signInProps{
   rememberPassword: boolean,
 }
 export interface CustomerSignUpProps {
+  [x: string]: any;
   firstName:    string;
   lastName:     string;
   otherName:    string;
