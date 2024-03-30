@@ -17,6 +17,10 @@ import { useRouter,  } from "next/navigation";
 import { ChangeEvent, Suspense, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectUser } from "@/slices/OrganizationIdSlice";
+
+
+
+
 const CustomerDashboard = () => {
   const [modalState, setModalState] = useState(true);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
@@ -81,6 +85,7 @@ const CustomerDashboard = () => {
   // };
 
   const ProfileSetupComplete = () => {
+    
     return (
       <div className="flex flex-col justify-center items-center text-white mt-16">
         <h1 className="text-4xl font-bold mb-8 text-center">

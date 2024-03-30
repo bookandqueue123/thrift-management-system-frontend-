@@ -1,3 +1,4 @@
+import useRedirect from "@/api/hooks/useRedirect";
 import CustomerNavbar from "@/components/Navbar";
 import type { Metadata } from "next";
 
@@ -11,7 +12,8 @@ export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}) {
+  }) {
+  useRedirect()
   return (
     <html lang="en">
       <body>
