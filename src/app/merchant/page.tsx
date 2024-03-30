@@ -6,11 +6,11 @@ import { DashboardCard } from "@/components/Cards";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
-import { savings } from "@/types";
+import { customer, savings } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { extractDate, extractTime } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
-import { AxiosError } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 const MerchantDashboard = () => {
@@ -21,6 +21,7 @@ const MerchantDashboard = () => {
     [],
   );
   const [totalAmtCollected, setTotalAmtCollected] = useState(0);
+  const [totalCustomers, setTotalCustomers] = useState(0);
   const organizationId = useSelector(selectOrganizationId);
   // const token = useSelector(selectToken)
   const user = useSelector(selectUser);
@@ -47,6 +48,26 @@ const MerchantDashboard = () => {
           });
       },
     });
+
+  const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
+    queryKey: ["allCustomers"],
+    queryFn: async () => {
+      return client
+        .get(
+          `/api/user?role=customer&organisation=${organizationId}&userType=individual`,
+          {},
+        ) //populate this based onthee org
+        .then((response: AxiosResponse<customer[], any>) => {
+          console.log(response);
+          setTotalCustomers(response.data.length);
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          console.log(error);
+          throw error;
+        });
+    },
+  });
 
   // console.log(filteredTransactions);
   const paginatedTransactions = filteredTransactions.slice(
@@ -98,9 +119,9 @@ const MerchantDashboard = () => {
         </p>
         <p className="text-sm text-ajo_offWhite">
           Welcome, <span className="font-bold">{organization.Name}</span>
-        <p className="mt-0 text-sm font-bold text-ajo_orange ">
-          {organization.accountNumber}
-        </p>
+          <p className="mt-0 text-sm font-bold text-ajo_orange ">
+            {organization.accountNumber}
+          </p>
         </p>
       </div>
 
