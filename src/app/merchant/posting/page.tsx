@@ -25,7 +25,7 @@ import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from "reac
 import { useSelector } from "react-redux";
 
 const Posting = () => {
-  const PAGE_SIZE = 2;
+  const PAGE_SIZE = 5;
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const organizationId = useSelector(selectOrganizationId);
