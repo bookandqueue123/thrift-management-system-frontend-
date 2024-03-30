@@ -8,7 +8,7 @@ import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 import { customer, savings } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
-import { extractDate, extractTime } from "@/utils/TimeStampFormatter";
+
 import { useQuery } from "@tanstack/react-query";
 
 import { allSavingsResponse, customer, savings } from "@/types";
@@ -20,7 +20,7 @@ import { MdKeyboardArrowLeft } from "react-icons/md";
 import { MdKeyboardArrowRight } from "react-icons/md"
 
 import { AxiosError, AxiosResponse } from "axios";
-import { useState } from "react";
+
 import { useSelector } from "react-redux";
 
 const MerchantDashboard = () => {
@@ -38,23 +38,6 @@ const organizationId = useSelector(selectOrganizationId)
   
 //   console.log(organizationId)
 
-const { data: allTransactions, isLoading: isLoadingallTransactions } = useQuery({
-  queryKey: ["allTransactions"],
-  staleTime: 5000,
-  queryFn: async () => {
-    return client
-      .get(`/api/saving/get-savings?organisation=${organizationId}`)
-      .then((response) => {
-        console.log( response);
-        setFilteredTransactions(response.data.savings)
-        return response.data;
-      })
-      .catch((error: AxiosError<any, any>) => {
-        console.log(error.response);
-        throw error;
-      });
-  },
-});
 
 const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
   // setSearchResult(e.target.value);
@@ -89,13 +72,11 @@ const handleDateFilter = () => {
 }
 };
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [filteredTransactions, setFilteredTransactions] = useState<savings[]>(
-    [],
-  );
+
+ 
   const [totalAmtCollected, setTotalAmtCollected] = useState(0);
   const [totalCustomers, setTotalCustomers] = useState(0);
-  const organizationId = useSelector(selectOrganizationId);
+  
   // const token = useSelector(selectToken)
   const user = useSelector(selectUser);
   console.log(user);
@@ -166,7 +147,7 @@ if(allTransactions){
   // }
 
 
-  let totalPages = 0;
+
   if (allTransactions) {
     totalPages = Math.ceil(allTransactions.length / PAGE_SIZE);
   }
@@ -195,11 +176,7 @@ const handleToDateChange = (event: { target: { value: SetStateAction<string>; };
   };
 
 
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
+ 
 
   // console.log("paginatedTransactions" + paginatedTransactions);
   const organization = {
