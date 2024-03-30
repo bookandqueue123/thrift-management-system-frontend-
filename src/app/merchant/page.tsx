@@ -69,7 +69,7 @@ const MerchantDashboard = () => {
     },
   });
 
-  // console.log(filteredTransactions);
+  console.log(filteredTransactions);
   const paginatedTransactions = filteredTransactions.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
@@ -231,38 +231,50 @@ const MerchantDashboard = () => {
               "Amount",
               "Status",
             ]}
-            content={paginatedTransactions.map((transaction, index) => (
-              <tr className="" key={index}>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {extractDate(transaction.createdAt)}{" "}
-                  {extractTime(transaction.createdAt)}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {transaction._id}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {transaction.user.firstName} {transaction.user.lastName}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {transaction.user.email}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {transaction.user.phoneNumber}
-                </td>
+            content={
+              filteredTransactions?.length === 0 ? (
+                <tr> 
+                  <p className="text-center text-sm font-semibold text-ajo_offWhite relative left-[80%] md:left-[250%] ">
+                    No Transactions yet
+                  </p>
+                </tr>
+              ) : (
+                paginatedTransactions.map((transaction, index) => (
+                  <tr className="" key={index}>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {extractDate(transaction.createdAt)}{" "}
+                      {extractTime(transaction.createdAt)}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {transaction._id}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {transaction.user.firstName} {transaction.user.lastName}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {transaction.user.email}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {transaction.user.phoneNumber}
+                    </td>
 
-                <td className="whitespace-nowrap px-6 py-4 text-sm">Channel</td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {AmountFormatter(Number(transaction.amount))} NGN
-                </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      Channel
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {AmountFormatter(Number(transaction.amount))} NGN
+                    </td>
 
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {transaction.isPaid}
-                </td>
-                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {transaction.isPaid}
+                    </td>
+                    {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                   <StatusIndicator label={transaction.transactionStatus} />
                 </td> */}
-              </tr>
-            ))}
+                  </tr>
+                ))
+              )
+            }
           />
           <PaginationBar apiResponse={DummyTransactions} />
         </div>
@@ -272,3 +284,6 @@ const MerchantDashboard = () => {
 };
 
 export default MerchantDashboard;
+
+
+
