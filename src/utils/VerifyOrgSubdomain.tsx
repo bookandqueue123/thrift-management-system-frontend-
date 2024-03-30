@@ -19,7 +19,7 @@ const VerifyOrgSubdomain = () => {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       const hostname = url.hostname;
-      console.log("hostname", hostname)
+      console.log("hostname", hostname);
       const subdomain = hostname.split(".")[0];
       setCurrentUrl(subdomain);
     }
@@ -49,7 +49,7 @@ const VerifyOrgSubdomain = () => {
         (org: { prefferedUrl: string }) => org.prefferedUrl === currentUrl,
       );
 
-      if (foundOrganization) {
+      if (foundOrganization || currentUrl === "staging") {
         console.log("Matched URL:", foundOrganization.prefferedUrl);
         setPreferredUrl(foundOrganization.prefferedUrl);
       } else {
@@ -57,10 +57,7 @@ const VerifyOrgSubdomain = () => {
         setPreferredUrl("");
         router.push("/not-found");
       }
-
     }
-
-    
   }, [preferredUrl, router, setPreferredUrl, currentUrl, allOrganizations]);
 
   console.log("preferredUrl", preferredUrl);

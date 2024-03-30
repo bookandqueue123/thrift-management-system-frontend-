@@ -1,92 +1,92 @@
-'use client'
+"use client";
 import DummyTransactions from "@/api/dummyTransactions.json";
+import { useAuth } from "@/api/hooks/useAuth";
 import { FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
-import { SearchInput } from "@/components/Forms";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { savings } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
-import { StatusIndicator } from "@/components/StatusIndicator";
-import { useDispatch, useSelector } from "react-redux";
-import { selectOrganizationId, selectToken, selectUser } from '@/slices/OrganizationIdSlice';
-import { useAuth } from "@/api/hooks/useAuth";
-import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import { extractDate, extractTime } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
-import { allSavingsResponse, customer, savings } from "@/types";
+import { AxiosError } from "axios";
 import { useState } from "react";
-import { extractDate, extractTime, formatToDateAndTime } from "@/utils/TimeStampFormatter";
-import { Badge } from "@/components/StatusBadge";
+import { useSelector } from "react-redux";
 const MerchantDashboard = () => {
   const PAGE_SIZE = 2;
   const { client } = useAuth();
-  const [currentPage, setCurrentPage] = useState(1)
-  const [filteredTransactions, setFilteredTransactions] = useState<savings[]>([])
-const organizationId = useSelector(selectOrganizationId)
-// const token = useSelector(selectToken)
-// const user = useSelector(selectUser)
-// console.log(user)
-  
-//   console.log(organizationId)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filteredTransactions, setFilteredTransactions] = useState<savings[]>(
+    [],
+  );
+  const [totalAmtCollected, setTotalAmtCollected] = useState(0);
+  const organizationId = useSelector(selectOrganizationId);
+  // const token = useSelector(selectToken)
+  const user = useSelector(selectUser);
+  console.log(user);
 
-const { data: allTransactions, isLoading: isLoadingallTransactions } = useQuery({
-  queryKey: ["allTransactions"],
-  staleTime: 5000,
-  queryFn: async () => {
-    return client
-      .get(`/api/saving/get-savings?organisation=${organizationId}`)
-      .then((response) => {
-        console.log( response);
-        setFilteredTransactions(response.data.savings)
-        return response.data;
-      })
-      .catch((error: AxiosError<any, any>) => {
-        console.log(error.response);
-        throw error;
-      });
-  },
-});
+  //   console.log(organizationId)
 
+  const { data: allTransactions, isLoading: isLoadingAllTransactions } =
+    useQuery({
+      queryKey: ["allTransactions"],
+      staleTime: 5000,
+      queryFn: async () => {
+        return client
+          .get(`/api/saving/get-savings?organisation=${organizationId}`)
+          .then((response) => {
+            console.log(response);
+            setFilteredTransactions(response.data.savings);
+            setTotalAmtCollected(response.data.totalAmountCollected);
+            return response.data;
+          })
+          .catch((error: AxiosError<any, any>) => {
+            console.log(error.response);
+            throw error;
+          });
+      },
+    });
 
+  // console.log(filteredTransactions);
+  const paginatedTransactions = filteredTransactions.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+  // let paginatedTransactions: any[];
+  // if (Array.isArray(filteredTransactions)) {
+  //   paginatedTransactions = filteredTransactions.slice(
+  //     (currentPage - 1) * PAGE_SIZE,
+  //     currentPage * PAGE_SIZE
+  //   );
+  // } else {
+  //   // Handle the case where filteredTransactions is not an array
+  //   // For example, assign an empty array to paginatedTransactions
+  //   paginatedTransactions = [];
+  // }
 
-console.log(filteredTransactions)
-const paginatedTransactions = filteredTransactions.slice(
-  (currentPage - 1) * PAGE_SIZE,
-  currentPage * PAGE_SIZE
-);
-// let paginatedTransactions: any[];
-// if (Array.isArray(filteredTransactions)) {
-//   paginatedTransactions = filteredTransactions.slice(
-//     (currentPage - 1) * PAGE_SIZE,
-//     currentPage * PAGE_SIZE
-//   );
-// } else {
-//   // Handle the case where filteredTransactions is not an array
-//   // For example, assign an empty array to paginatedTransactions
-//   paginatedTransactions = [];
-// }
-
-let totalPages = 0
-if(allTransactions){
-   totalPages = Math.ceil(allTransactions.length / PAGE_SIZE);
-}
-
-const goToPreviousPage = () => {
-  if (currentPage > 1) {
-    (setCurrentPage(currentPage - 1));
+  let totalPages = 0;
+  if (allTransactions) {
+    totalPages = Math.ceil(allTransactions.length / PAGE_SIZE);
   }
-};
 
-const goToNextPage = () => {
-  if (currentPage < totalPages) {
-   (setCurrentPage(currentPage + 1));
-  }
-};
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
-console.log(paginatedTransactions)
+  // console.log("paginatedTransactions" + paginatedTransactions);
   const organization = {
-    Name: "First Savers Cooperative",
-    totalAmtCollected: 203935,
+    Name: user?.organisationName,
+    accountNumber: user?.accountNumber,
+    totalAmtCollected: totalAmtCollected,
     totalCustomers: 500,
     pendingPayout: 250,
   };
@@ -98,6 +98,9 @@ console.log(paginatedTransactions)
         </p>
         <p className="text-sm text-ajo_offWhite">
           Welcome, <span className="font-bold">{organization.Name}</span>
+        <p className="mt-0 text-sm font-bold text-ajo_orange ">
+          {organization.accountNumber}
+        </p>
         </p>
       </div>
 
@@ -124,7 +127,7 @@ console.log(paginatedTransactions)
             </div>
           }
           bottomValueTopText="Total Amount Collected"
-          bottomValueBottomText={`N${AmountFormatter(organization.totalAmtCollected)}`}
+          bottomValueBottomText={`₦${AmountFormatter(organization.totalAmtCollected)}`}
         />
         <DashboardCard
           illustrationName="cards"
@@ -197,17 +200,21 @@ console.log(paginatedTransactions)
             *Please Scroll sideways to view all content
           </p>
           <TransactionsTable
-            headers={["TransactionDate", 
-                      "Reference", 
-                      "Customer Name", 
-                      "Email Address", 
-                      "Phone Number",
-                      "Channel",
-                       "Amount", "Status"]}
+            headers={[
+              "TransactionDate",
+              "Reference",
+              "Customer Name",
+              "Email Address",
+              "Phone Number",
+              "Channel",
+              "Amount",
+              "Status",
+            ]}
             content={paginatedTransactions.map((transaction, index) => (
               <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {extractDate(transaction.createdAt)} {extractTime(transaction.createdAt)}
+                  {extractDate(transaction.createdAt)}{" "}
+                  {extractTime(transaction.createdAt)}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {transaction._id}
@@ -222,15 +229,13 @@ console.log(paginatedTransactions)
                   {transaction.user.phoneNumber}
                 </td>
 
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  Channel
-                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">Channel</td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {AmountFormatter(Number(transaction.amount))} NGN
                 </td>
 
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                {transaction.isPaid}
+                  {transaction.isPaid}
                 </td>
                 {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                   <StatusIndicator label={transaction.transactionStatus} />

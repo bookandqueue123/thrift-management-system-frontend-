@@ -5,10 +5,10 @@ export default function NotFound() {
     <div className="flex h-screen items-center justify-center bg-ajo_offWhite">
       <div className="text-center">
         <h1 className="text-4xl font-bold text-ajo_darkBlue">
-          404 - Page Not Found
+          404 - Organization or Account or Page Not Found
         </h1>
         <p className="mt-4 text-ajo_darkBlue">
-          The page you are looking for does not exist.
+          The page Or Account or Organization you are looking for does not exist. Please contact your the Finkia admin for it to be activated
         </p>
         <Link
           href="/"

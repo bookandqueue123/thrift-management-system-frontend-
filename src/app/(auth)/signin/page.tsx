@@ -61,7 +61,8 @@ const SignInForm = () => {
           setAuthData({
             organizationId: response.data.organisation,
             token: response.data.token,
-            user: response.data._id,
+            user: response.data,
+            userId: response.data._id,
           }),
         );
       } else if (response.data.role === "organisation") {
@@ -69,7 +70,8 @@ const SignInForm = () => {
           setAuthData({
             organizationId: response.data._id,
             token: response.data.token,
-            user: response.data._id,
+            user: response.data,
+            userId: response.data._id,
           }),
         );
       }
