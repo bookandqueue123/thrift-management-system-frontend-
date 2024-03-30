@@ -6,7 +6,7 @@ import { DashboardCard } from "@/components/Cards";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
-import { customer, savings } from "@/types";
+
 import AmountFormatter from "@/utils/AmountFormatter";
 
 import { useQuery } from "@tanstack/react-query";
