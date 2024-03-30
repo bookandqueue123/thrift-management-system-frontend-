@@ -8,10 +8,12 @@ const useRedirect = () => {
   const router = useRouter();
 
   React.useEffect(() => {
+    console.log("redirection fxn is running");
+    console.log("token", token);
     if (!token) {
       router.replace("/signin");
     }
-  }, [router, token]);
+  }, [token]);
 };
 
 export default useRedirect;
