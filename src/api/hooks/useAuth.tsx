@@ -1,20 +1,6 @@
-// import { useSelector } from "react-redux";
-// import axios from "axios";
-// import { selectToken } from '@/slices/OrganizationIdSlice'; // assuming you have a selector defined
 
-// const BASE_URL = "https://thrift.schoolkiatest.com.ng";
-
-// import { useSelector } from "react-redux";
-// const token = useSelector(selectToken);
-
-// export const client = axios.create({
-//   baseURL: BASE_URL,
-//   headers: {
-//     Authorization: `Bearer ${token}`, // Replace with your actual token
-//   },
-// });
 import React from "react";
-import { clearAuthData, selectToken } from "@/slices/OrganizationIdSlice"; // assuming you have a selector defined
+import { clearAuthData, selectToken } from "@/slices/OrganizationIdSlice";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,12 +13,6 @@ export const useAuth = () => {
   const token = useSelector(selectToken);
   const dispatch = useDispatch();
   const router = useRouter();
-
-  // React.useEffect(() => {
-  //   if (!token) {
-  //     router.push("/signin");
-  //   }
-  // }, [token, router]);
 
   const client = axios.create({
     baseURL: BASE_URL,
@@ -67,16 +47,3 @@ export const useAuth = () => {
 //   console.log(token)
 // };
 
-// {
-//     "email": "kanmiairs@gmail.com",
-//     "phoneNumber": "09054234567",
-//     "organisationName": "Blast Saint",
-//     "password": "$2b$10$.XIktuoS58/AblNhymDQ2.aQrA1ZeODUK/MozikoRYSmEYknpr8a6",
-//     "role": "organisation",
-//     "prefferedUrl": "raoatech@ajo.com",
-//     "kycVerified": false,
-//     "_id": "65d06c2886b396b76ebb736d",
-//     "createdAt": "2024-02-17T08:19:52.893Z",
-//     "updatedAt": "2024-02-17T08:19:52.893Z",
-//     "__v": 0
-// }

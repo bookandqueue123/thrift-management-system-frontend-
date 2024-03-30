@@ -1,4 +1,5 @@
 "use client";
+import useRedirect from "@/api/hooks/useRedirect";
 import AvatarDropdown from "@/components/Dropdowns";
 import { Sidebar } from "@/components/Navbar";
 import { useState } from "react";
@@ -12,7 +13,8 @@ export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}) {
+  }) {
+  useRedirect()
   const [ShowSidebar, setShowSidebar] = useState(false);
 
   const toggleLeftPadding = () => {
@@ -23,7 +25,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <main className={`w-full px-4 md:px-12 ${leftPadding} bg-ajo_darkBlue min-h-screen`}>
+        <main
+          className={`w-full px-4 md:px-12 ${leftPadding} min-h-screen bg-ajo_darkBlue`}
+        >
           {/* <section> */}
           <Sidebar onShow={ShowSidebar} setShow={setShowSidebar} />
           <div className="flex justify-end py-6">

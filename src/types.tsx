@@ -383,25 +383,26 @@ export interface Organisation {
 }
 
 export interface User {
-  isVerified:       boolean;
-  _id:              string;
-  firstName:        string;
-  lastName:         string;
-  otherName:        string;
-  email:            string;
-  phoneNumber:      string;
-  password:         string;
-  accountNumber:    string;
-  userType:         string;
-  groupMember:      any[];
-  role:             string;
-  kycVerified:      boolean;
-  isArchieve:       boolean;
+  isVerified: boolean;
+  _id: string;
+  firstName: string;
+  lastName: string;
+  otherName: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  accountNumber: string;
+  userType: string;
+  groupMember: any[];
+  role: string;
+  kycVerified: boolean;
+  isArchieve: boolean;
   savingIdentities: string[];
-  organisation:     string;
-  createdAt:        Date;
-  updatedAt:        Date;
-  __v:              number;
+  organisation: string;
+  organisationName: string;
+  createdAt: Date;
+  updatedAt: Date;
+  __v: number;
 } 
 
 export interface CountryAndStateProps {

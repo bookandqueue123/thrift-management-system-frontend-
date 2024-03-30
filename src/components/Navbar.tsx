@@ -229,7 +229,8 @@ export const Sidebar = ({
                 {label === "settings" ? (
                   <Link
                     href="/merchant/settings"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault()
                       setSettingsDropdownIsOpen(!settingsDropdownIsOpen);
                     }}
                   >
@@ -239,7 +240,7 @@ export const Sidebar = ({
                   <span
                     onClick={() => {
                       SignOut();
-                      router.replace("/");
+                      // router.replace("/");
                     }}
                   >
                     {label}
