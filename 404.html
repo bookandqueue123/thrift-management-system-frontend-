@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 - Page Not Found</title>
+  <style>
+  body {
+    background-color: #F2F0FF; /* ajo_offWhite */
+    font-family: sans-serif;
+    margin: 0;
+  }
+  
+  .flex {
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .text-center {
+    text-align: center;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #221C3E; /* ajo_darkBlue */
+  }
+  
+  p {
+    margin-top: 1rem;
+    color: #221C3E; /* ajo_darkBlue */
+  }
+  
+  .ripple {
+    display: inline-block;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: #fff;
+    background-color: #2D55FB; /* ajo_blue */
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .ripple:hover {
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  .ripple:focus {
+    outline: 0;
+  }
+  </style>
+</head>
+<body>
+  <div class="flex">
+    <div class="text-center">
+      <h1 class="text-4xl font-bold text-ajo_darkBlue">404 - Organization or Account or Page Not Found</h1>
+      <p class="mt-4 text-ajo_darkBlue">The organization or account or page you are looking for does not exist. Please contact the Finkia admin for it to be activated</p>
+      <a class="ripple mt-6 inline-block rounded-md bg-ajo_blue px-6 py-2 text-center text-sm font-semibold leading-6 text-white shadow transition hover:shadow-lg focus:outline-none" href="/">Go Home</a>
+    </div>
+  </div>
+</body>
+</html>
