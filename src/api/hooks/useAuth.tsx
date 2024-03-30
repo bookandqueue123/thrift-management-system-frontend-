@@ -28,11 +28,11 @@ export const useAuth = () => {
   const dispatch = useDispatch();
   const router = useRouter();
 
-  // React.useEffect(() => {
-  //   if (!token) {
-  //     router.push("/signin");
-  //   }
-  // }, []);
+  React.useEffect(() => {
+    if (!token) {
+      router.push("/signin");
+    }
+  }, [router, token]);
 
   const client = axios.create({
     baseURL: BASE_URL,
