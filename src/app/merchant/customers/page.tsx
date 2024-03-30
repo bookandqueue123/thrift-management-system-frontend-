@@ -347,13 +347,14 @@ const Customers = () => {
                           setModalState(true)
                           setModalContent("form")
                           setModalToShow("view")
-                          console.log("View Customer");
+                          setCustomerToBeEdited(customer._id);  console.log("View Customer");
                         },
                         () => {
                           setModalToShow("edit")
                           setModalState(true)
                           setModalContent('form')
-                          console.log("Edit Customer");
+                          
+                          setCustomerToBeEdited(customer._id);
                         },
                         () => {
                           setModalState(true);
@@ -475,6 +476,7 @@ const SavingsSettings = ({
   content,
   closeModal,
 }: ShowModalProps) => {
+  
   const { client } = useAuth();
   const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
     queryKey: ["customerInfo"],
@@ -757,6 +759,24 @@ const ViewCustomer = ({
   closeModal,
 }: ShowModalProps) => {
 
+  console.log(customerId)
+
+  const { client } = useAuth();
+  const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
+    queryKey: ["customerInfo"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user/${customerId}`)
+        .then((response: AxiosResponse<customer, any>) => {
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          console.log(error.response ?? error.message);
+          throw error;
+        });
+    },
+  });
+console.log(customerInfo)
   return(
     <div >
      
@@ -776,15 +796,15 @@ const ViewCustomer = ({
           </div>
           <div className="w-5/6 flex flex-wrap ml-4">
             <div className="w-full md:w-1/2 mb-2 ">
-              <p className="text-gray-600 font-semibold">Name: <span className="font-normal">Olanrewaju Adeyanju Oluwagbemilekenibitiapaeniyankoto</span></p>
+              <p className="text-gray-600 font-semibold">Name: <span className="font-normal">{customerInfo ? customerInfo.firstName : ""}  {customerInfo ? customerInfo.lastName : ""}</span></p>
               {/* <p className="text-gray-900">John Doe</p> */}
             </div>
             <div className="w-full md:w-1/2 mb-2  pl-8">
-              <p className="text-gray-600 font-semibold">Phone Number: <span className="font-normal pl-8">123-456-7890</span></p>
+              <p className="text-gray-600 font-semibold">Phone Number: <span className="font-normal pl-8">{customerInfo ? customerInfo.phoneNumber: ""}</span></p>
               {/* <p className="text-gray-900">123-456-7890</p> */}
             </div>
             <div className="w-full md:w-1/2 mb-2">
-              <p className="text-gray-600 font-semibold">Email Address: <span className="font-normal">johndoe@example.com</span></p>
+              <p className="text-gray-600 font-semibold">Email Address: <span className="font-normal">{customerInfo ? customerInfo.email : ""}</span></p>
               {/* <p className="text-gray-900">johndoe@example.com</p> */}
             </div>
             <div className="w-full md:w-1/2 mb-2 pl-8">

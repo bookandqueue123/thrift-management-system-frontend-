@@ -51,7 +51,10 @@ const SignInForm = () => {
       console.log(response);
 
       if (response.data.role === "customer") {
-        router.push(`/customer`);
+        if(user){
+          router.push(`/customer`);
+        }
+        
       } else if (response.data.role === "organisation") {
         router.push("/merchant");
       }

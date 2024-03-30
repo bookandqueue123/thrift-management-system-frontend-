@@ -16,7 +16,7 @@ import Link from "next/link";
 import { useRouter,  } from "next/navigation";
 import { ChangeEvent, Suspense, useState } from "react";
 import { useSelector } from "react-redux";
-import { selectUser } from "@/slices/OrganizationIdSlice";
+import { selectUserId } from "@/slices/OrganizationIdSlice";
 
 
 
@@ -28,7 +28,7 @@ const CustomerDashboard = () => {
   );
   const router = useRouter();
   
-   const id = useSelector(selectUser)
+   const id = useSelector(selectUserId)
   
   const { client } = useAuth();
   
@@ -65,10 +65,10 @@ const CustomerDashboard = () => {
 
   
 
-  // if (!id) {
-  //   // If id is not available yet, display loading indicator
-  //   return <div>Loading...</div>;
-  // }
+  if (!id) {
+    // If id is not available yet, display loading indicator
+    return <div>Loading...</div>;
+  }
 
   // const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
   //   setSearchResult(e.target.value);
