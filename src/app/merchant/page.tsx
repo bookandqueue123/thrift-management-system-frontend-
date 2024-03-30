@@ -291,6 +291,7 @@ const handleToDateChange = (event: { target: { value: SetStateAction<string>; };
           </span>
         </div>
 
+        <div className="md:flex justify-between">
         <div className="flex items-center">
                 <p className="mr-2 font-lg text-white">Select range from:</p>
                 <input
@@ -316,6 +317,7 @@ const handleToDateChange = (event: { target: { value: SetStateAction<string>; };
                   <u>Export as Excel</u>
                 </button>
               </div>
+        </div>
 
         <div>
           <p className="pl-2 text-xs text-ajo_offWhite">
