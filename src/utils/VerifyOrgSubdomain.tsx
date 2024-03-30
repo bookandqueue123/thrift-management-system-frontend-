@@ -46,7 +46,7 @@ const VerifyOrgSubdomain = () => {
   useEffect(() => {
     if (allOrganizations) {
       const foundOrganization = allOrganizations.find(
-        (org: { prefferedUrl: string }) => org.prefferedUrl === currentUrl,
+        (org: { prefferedUrl: string }) => org.prefferedUrl.toLowerCase() === currentUrl.toLowerCase(),
       );
 
       if (foundOrganization) {
