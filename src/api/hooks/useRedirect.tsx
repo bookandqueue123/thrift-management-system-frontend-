@@ -1,7 +1,7 @@
 import React from "react";
-import { selectToken } from "@/slices/OrganizationIdSlice";
 import { useRouter } from "next/navigation";
-import {useSelector } from "react-redux";
+import { useSelector } from "react-redux";
+import { selectToken } from "@/slices/OrganizationIdSlice";
 
 const useRedirect = () => {
   const token = useSelector(selectToken);
