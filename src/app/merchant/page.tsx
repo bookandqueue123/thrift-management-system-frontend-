@@ -359,16 +359,7 @@ const handleToDateChange = (event: { target: { value: SetStateAction<string>; };
                       "Channel",
                        "Amount", "Status"]}
 
-<!--             headers={[
-              "TransactionDate",
-              "Reference",
-              "Customer Name",
-              "Email Address",
-              "Phone Number",
-              "Channel",
-              "Amount",
-              "Status",
-            ]} -->
+          
 
             content={paginatedTransactions.map((transaction, index) => (
               <tr className="" key={index}>
