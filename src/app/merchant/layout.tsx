@@ -13,7 +13,8 @@ export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}) {
+  }) {
+  useRedirect()
   const [ShowSidebar, setShowSidebar] = useState(false);
 
   const toggleLeftPadding = () => {

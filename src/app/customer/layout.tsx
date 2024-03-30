@@ -15,7 +15,6 @@ export default function RootLayout({
   children: React.ReactNode;
   }) {
   useRedirect()
-  console.log('i am running where useRedirect is')
   return (
     <html lang="en">
       <body>
