@@ -49,7 +49,7 @@ const VerifyOrgSubdomain = () => {
         (org: { prefferedUrl: string }) => org.prefferedUrl === currentUrl,
       );
 
-      if (foundOrganization || currentUrl === "staging") {
+      if (foundOrganization) {
         console.log("Matched URL:", foundOrganization.prefferedUrl);
         setPreferredUrl(foundOrganization.prefferedUrl);
       } else {
