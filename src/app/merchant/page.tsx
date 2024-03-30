@@ -108,7 +108,7 @@ const MerchantDashboard = () => {
     Name: user?.organisationName,
     accountNumber: user?.accountNumber,
     totalAmtCollected: totalAmtCollected,
-    totalCustomers: 500,
+    totalCustomers: totalCustomers,
     pendingPayout: 250,
   };
   return (
