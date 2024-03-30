@@ -20,7 +20,7 @@ import { CiExport } from "react-icons/ci";
 import { MdKeyboardArrowLeft } from "react-icons/md";
 import { MdKeyboardArrowRight } from "react-icons/md"
 const MerchantDashboard = () => {
-  const PAGE_SIZE = 2;
+  const PAGE_SIZE = 5;
   const { client } = useAuth();
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
