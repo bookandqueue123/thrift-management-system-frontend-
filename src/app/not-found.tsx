@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="flex h-screen items-center justify-center bg-ajo_offWhite">
+    <div className="flex h-screen items-center justify-center bg-ajo_offWhite px-[10%]">
       <div className="text-center">
         <h1 className="text-4xl font-bold text-ajo_darkBlue">
           404 - Organization or Account or Page Not Found
