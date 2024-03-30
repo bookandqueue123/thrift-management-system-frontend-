@@ -1580,14 +1580,14 @@ const PostConfirmation = ({
       <div className="space-y-4">
         <div className="mx-8 flex  ">
           <p className="text-sm font-semibold text-[#7D7D7D]">
-            Organisation Name: {postingResponse.updatedSaving ? postingResponse.updatedSaving.postedBy.organisationName: ""}
+            Organisation Name: {postingResponse.updatedSaving ? postingResponse.updatedSaving.postedBy.organisationName: ""} 
           </p>
           <p className="text-sm ml-4 text-[#7D7D7D]"></p>
         </div>
 
         <div className="mx-8 flex  ">
           <p className="text-sm font-semibold text-[#7D7D7D]">
-            Customer Name: 
+            Customer Name: {postingResponse.updatedSaving ? postingResponse.updatedSaving.saving.user.firstName : ""} {postingResponse.updatedSaving ? postingResponse.updatedSaving.saving.user.lastName : ""} 
           </p>
           <p className="text-sm ml-4 text-[#7D7D7D]"></p>
         </div>

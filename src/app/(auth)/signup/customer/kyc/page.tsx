@@ -552,7 +552,7 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
-import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectUserId } from "@/slices/OrganizationIdSlice";
 import { CountryAndStateProps, StateProps, UpdateKycProps, getOrganizationProps } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -567,7 +567,7 @@ import * as Yup from "yup";
 
 const Kyc = () => {
   
-  const userId = useSelector(selectUser)
+  const userId = useSelector(selectUserId)
   
   const searchParams = useSearchParams();
   
