@@ -244,7 +244,7 @@ const Customers = () => {
         </div>
 
         <div className="">
-          <p className="text-white text-xl">Customer List</p>
+         
           
             <div className="md:flex justify-between my-8">
               <div className="flex items-center">
@@ -274,6 +274,8 @@ const Customers = () => {
               </div>
           </div>
         </div>
+
+        <p className="text-white text-xl mb-2">Customer List</p>
 
         <div>
           <TransactionsTable
@@ -975,34 +977,34 @@ const EditCustomer = ({customerId,
           }, 400);
         }}
       >
-{({ isSubmitting, values, setFieldValue }) => (
-  <Form encType="multipart/form-data"
-  name="IdImage" className="mt-8 w-full">
-    <div className="mb-8">
-      <div className="flex w-full items-center justify-between gap-4">
-        <div className="mb-3 w-full">
-          <label
-            htmlFor="firstName"
-            className="m-0 text-normal font-bold "
-          >
-            First Name{" "}
-            <span className="font-base font-semibold text-[#FF0000]">
-              *
-            </span>
-          </label>
-          <Field
-         
-            id="firstName"
-            name="firstName"
-            type="text"
-            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-          />
-          <ErrorMessage
-            name="firstName"
-            component="div"
-            className="text-red-500"
-          />
-        </div>
+      {({ isSubmitting, values, setFieldValue }) => (
+        <Form encType="multipart/form-data"
+        name="IdImage" className="mt-8 w-full">
+          <div className="mb-8">
+            <div className="flex w-full items-center justify-between gap-4">
+              <div className="mb-3 w-full">
+                <label
+                  htmlFor="firstName"
+                  className="m-0 text-normal font-bold "
+                >
+                  First Name{" "}
+                  <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
+               </label>
+                <Field
+              
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                />
+                <ErrorMessage
+                  name="firstName"
+                  component="div"
+                  className="text-red-500"
+                />
+              </div>
         <div className="mb-3 w-full">
           <label
             htmlFor="lastName"
