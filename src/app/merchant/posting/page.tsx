@@ -144,41 +144,37 @@ const Posting = () => {
           Posting
         </p>
       </div>
-      <div className="mb-4">
-          <p className="text-white text-xl">Customer List</p>
-          
-            
-        </div>
+      
       <section>
         <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <span className="flex items-center gap-3">
             {/* <SearchInput onSearch={() => ("")}/> */}
             <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
-      <input
-      onChange={handleSearch}
-        type="search"
-        placeholder="Search"
-        className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
-      />
-      <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-        <circle
-          cx="8.60996"
-          cy="8.10312"
-          r="7.10312"
-          stroke="#EAEAFF"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M13.4121 13.4121L16.9997 16.9997"
-          stroke="#EAEAFF"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </form>
+            <input
+            onChange={handleSearch}
+              type="search"
+              placeholder="Search"
+              className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
+            />
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+            <circle
+              cx="8.60996"
+              cy="8.10312"
+              r="7.10312"
+              stroke="#EAEAFF"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M13.4121 13.4121L16.9997 16.9997"
+              stroke="#EAEAFF"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          </form>
             <FilterDropdown
               options={[
                 "Timestamp",
@@ -222,24 +218,24 @@ const Posting = () => {
         </div>
 
         <div className="md:flex justify-between my-8">
-              <div className="flex items-center">
-                <p className="mr-2 font-lg text-white">Select range from:</p>
-                <input
-                  type="date"
-                  value={fromDate}
-                   onChange={handleFromDateChange}
-                  className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                />
+          <div className="flex items-center">
+            <p className="mr-2 font-lg text-white">Select range from:</p>
+            <input
+              type="date"
+              value={fromDate}
+                onChange={handleFromDateChange}
+              className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+            />
 
 
-                <p className="mx-2 text-white">to</p>
-                <input
-                  type="date"
-                  value={toDate}
-                  onChange={handleToDateChange}
-                  className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                />
-              </div>
+            <p className="mx-2 text-white">to</p>
+            <input
+              type="date"
+              value={toDate}
+              onChange={handleToDateChange}
+              className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+            />
+            </div>
               <div className="flex mt-4">
                 <button className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
                 <button className="px-4 py-2 text-white rounded-md border-none bg-transparent relative">
@@ -248,6 +244,10 @@ const Posting = () => {
                 </button>
               </div>
           </div>
+
+          <div className="mb-4">
+        <p className="text-white text-xl">Posted Payment</p>
+      </div>
 
         <div>
           <TransactionsTable
