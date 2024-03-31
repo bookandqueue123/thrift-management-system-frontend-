@@ -11,7 +11,7 @@ import { useAuth } from "@/api/hooks/useAuth";
 import { WithdrawalProps } from "@/types";
 import StatusBadge, { Badge } from "@/components/StatusBadge";
 import { useSelector } from "react-redux";
-import { selectUser } from "@/slices/OrganizationIdSlice";
+import {  selectUserId } from "@/slices/OrganizationIdSlice";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { useState } from "react";
 import { FiUpload } from "react-icons/fi";
@@ -24,7 +24,7 @@ export default function WithdrawalReport(){
   const [withdrawalId, setWithdrawalId] = useState("")
  
   const [withdrawalData, setWithdrawalData] = useState<WithdrawalProps[]>([])
-    const userId = useSelector(selectUser)
+    const userId = useSelector(selectUserId)
     const router = useRouter();
     const [paymentConfirmation, setpaymentConfirmation] = useState("")
 
