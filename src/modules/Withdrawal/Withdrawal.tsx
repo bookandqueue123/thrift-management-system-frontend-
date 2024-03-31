@@ -123,8 +123,10 @@ const WithdrawalForm = () => {
       setShowSuccessToast(true);
     
     },
-    onError(error){
+    onError(error:any){
       console.log(error)
+     setShowErrorToast(true)
+     setErrorMessage(error.response.data.message)
     }
 
   })
@@ -199,10 +201,26 @@ const WithdrawalForm = () => {
               >
                 <ResponseModal
                 label="Go to Home"
-            heading="Request Received"
-            message="Dear Customer your account will be credited within 24 hours after initiation of withdrawal"
-            route='/customer'
-            />
+                heading="Request Received"
+                message="Dear Customer your account will be credited within 24 hours after initiation of withdrawal"
+                route='/customer'
+                />
+              </Modal>
+
+    
+            )
+          }
+          {
+            showErrorToast && (
+              <Modal
+                setModalState={setShowErrorToast}
+              >
+                <ResponseModal
+                label="Try again"
+                heading="Request Failed"
+                message={errorMessage || "Unable to make withdrawal"}
+                route='/customer/withdrawals'
+                />
               </Modal>
 
     
