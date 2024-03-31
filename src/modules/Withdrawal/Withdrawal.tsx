@@ -2,7 +2,7 @@
 import { ErrorMessage, Field, Form, Formik,  } from "formik";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
-import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectUserId } from "@/slices/OrganizationIdSlice";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/api/hooks/useAuth";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
@@ -55,7 +55,7 @@ const WithdrawalForm = () => {
   const [selectedNameId, setSelectNameId] = useState("")
   const [filteredArray, setFilteredArray] = useState<savingsFilteredById[]>([]);
   const { client } = useAuth();
-  const userId = useSelector(selectUser);
+  const userId = useSelector(selectUserId);
   const organisationId = useSelector(selectOrganizationId)
   
   const {

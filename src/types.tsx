@@ -25,7 +25,7 @@ export type customer = {
   bvn: number;
   meansOfIDPhoto: File;
   meansOfID: "NIN" | "Passport";
-  photo: File;
+  photo: File | any;
   userType: string;
   groupName: string;
 };

@@ -776,7 +776,7 @@ const ViewCustomer = ({
         });
     },
   });
-console.log(customerInfo)
+
   return(
     <div >
      
@@ -787,7 +787,7 @@ console.log(customerInfo)
         <div className="p-6 md:flex ">
           <div className="md:w-1/6 mr-6 ">
             <Image
-              src={passport}
+              src={customerInfo ? customerInfo?.photo : ""}
               alt="Customer"
               width={200}
               height={100}
@@ -808,11 +808,11 @@ console.log(customerInfo)
               {/* <p className="text-gray-900">johndoe@example.com</p> */}
             </div>
             <div className="w-full md:w-1/2 mb-2 pl-8">
-              <p className="text-gray-600 font-semibold">Country of Residence: <span className="font-normal">United States</span></p>
+              <p className="text-gray-600 font-semibold">Country of Residence: <span className="font-normal">{customerInfo ? customerInfo.country : "N/A"}</span></p>
               {/* <p className="text-gray-900">United States</p> */}
             </div>
             <div className="w-full mb-4">
-              <p className="text-gray-600 font-semibold">Home Address: <span className="font-normal">123 Main St, City</span></p>
+              <p className="text-gray-600 font-semibold">Home Address: <span className="font-normal">{customerInfo ? customerInfo.homeAddress : "N/A"}</span></p>
               {/* <p className="text-gray-900">123 Main St, City</p> */}
             </div>
           </div>
@@ -823,25 +823,25 @@ console.log(customerInfo)
         <div className="p-6">
           <div className="flex flex-wrap mb-4">
             <div className="w-full sm:w-1/3">
-              <p className="text-gray-600 font-semibold">State: <span className="font-normal">Califonia</span></p>
+              <p className="text-gray-600 font-semibold">State: <span className="font-normal">{customerInfo ? customerInfo.state : "N/A"}</span></p>
               {/* <p className="text-gray-900">California</p> */}
             </div>
             <div className="w-full sm:w-1/3">
-              <p className="text-gray-600 font-semibold">LGA: <span className="font-normal">Ojodu</span></p>
+              <p className="text-gray-600 font-semibold">LGA: <span className="font-normal">{customerInfo ? customerInfo.lga : "N/A"}</span></p>
               {/* <p className="text-gray-900">Local Government Area</p> */}
             </div>
             <div className="w-full sm:w-1/3">
-              <p className="text-gray-600 font-semibold">City: <span className="font-normal">Ojodu</span></p>
+              <p className="text-gray-600 font-semibold">City: <span className="font-normal">{customerInfo ? customerInfo.city : "N/A"}</span></p>
               {/* <p className="text-gray-900">City Name</p> */}
             </div>
           </div>
           <div className="flex flex-wrap mb-4">
             <div className="w-full sm:w-1/3">
-              <p className="text-gray-600 font-semibold">NIN: <span className="font-normal">12345678</span></p>
+              <p className="text-gray-600 font-semibold">NIN: <span className="font-normal">{customerInfo ? customerInfo.nin : "N/A"}</span></p>
               {/* <p className="text-gray-900">1234567890</p> */}
             </div>
             <div className="w-full sm:w-1/3">
-              <p className="text-gray-600 font-semibold">BVN: <span className="font-normal">1234567</span></p>
+              <p className="text-gray-600 font-semibold">BVN: <span className="font-normal">{customerInfo ? customerInfo.bvn : "N/A"}</span></p>
               {/* <p className="text-gray-900">1234567890</p> */}
             </div>
           </div>
@@ -855,22 +855,22 @@ console.log(customerInfo)
 
           <div>
             <div className="w-full  mb-4 ">
-              <p className="font-bold">Name: <span className="font-normal">Olanrewaju Adeyanju Oluwagbemilekenibitiapaeniyankoto</span></p>
+              <p className="font-bold">Name: <span className="font-normal">{customerInfo ? customerInfo.nok : "N/A"}</span></p>
               {/* <p className="text-gray-900">John Doe</p> */}
             </div>
 
             <div className="w-full  mb-4 ">
-              <p className=" font-bold">Phone Number: <span className="font-normal pl-8">123-456-7890</span></p>
+              <p className=" font-bold">Phone Number: <span className="font-normal pl-8">{customerInfo ? customerInfo.nokPhone : "N/A"}</span></p>
               {/* <p className="text-gray-900">123-456-7890</p> */}
             </div>
 
             <div className="w-full  mb-4 ">
-              <p className=" font-bold">Relationship: <span className="font-normal pl-8">123-456-7890</span></p>
+              <p className=" font-bold">Relationship: <span className="font-normal pl-8">{customerInfo ? customerInfo.nokRelationship : "N/A"}</span></p>
               {/* <p className="text-gray-900">123-456-7890</p> */}
             </div>
 
             <div className="w-full  mb-4 ">
-              <p className=" font-bold">Home Address: <span className="font-normal pl-8">123-456-7890</span></p>
+              <p className=" font-bold">Home Address: <span className="font-normal pl-8">{ "N/A"}</span></p>
               {/* <p className="text-gray-900">123-456-7890</p> */}
             </div>
           </div>
@@ -908,13 +908,29 @@ const EditCustomer = ({customerId,
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  
+  const { client } = useAuth();
+  const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
+    queryKey: ["customerInfo"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user/${customerId}`)
+        .then((response: AxiosResponse<customer, any>) => {
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          console.log(error.response ?? error.message);
+          throw error;
+        });
+    },
+  });
   return (
     <div className="mx-auto w-[100%] mt-8 p-4 bg-white shadow-md rounded-md overflow-hidden">
     <div>
       <div className="p-6 md:flex ">
         <div className="md:w-1/6 mr-6 ">
           <Image
-            src={passport}
+            src={customerInfo ? customerInfo.photo : "/placeholder.png"}
             alt="Customer"
             width={200}
             height={100}
@@ -930,7 +946,24 @@ const EditCustomer = ({customerId,
 
         <div className="w-5/6 flex flex-wrap mx-16 ">
         <Formik
-        initialValues={initialValues}
+        initialValues={{
+          firstName: customerInfo?.firstName,
+          lastName: customerInfo?.lastName,
+          otherName: customerInfo?.otherName,
+          phoneNumber: customerInfo?.phoneNumber,
+          email: customerInfo?.email,
+          homeAddress: customerInfo?.homeAddress,
+          countryOfResidence: customerInfo?.country,
+          state: customerInfo?.state,
+          lga: customerInfo?.lga,
+          city: customerInfo?.city,
+          organisation: customerInfo?.organisation,
+          meansOfIDPhoto: null,
+          nin: customerInfo?.nin,
+          bvn: customerInfo?.bvn,
+          ninslip: null
+
+        }}
         validationSchema={validationSchema}
         onSubmit={(values, { setSubmitting }) => {
           console.log(values);
@@ -958,6 +991,7 @@ const EditCustomer = ({customerId,
             </span>
           </label>
           <Field
+         
             id="firstName"
             name="firstName"
             type="text"
@@ -1190,7 +1224,7 @@ const EditCustomer = ({customerId,
           htmlFor="city"
           className="m-0 text-normal font-bold "
         >
-          Home Address{" "}
+          City{" "}
           <span className="font-base font-semibold text-[#FF0000]">
             *
           </span>
@@ -1214,25 +1248,25 @@ const EditCustomer = ({customerId,
       {
         <div className="mb-3">
           <label
-            htmlFor="organization"
+            htmlFor="organisation"
             className="m-0 text-xs font-medium text-white"
           >
-            Organization{" "}
+            Organisation{" "}
             <span className="font-base font-semibold text-[#FF0000]">
               *
             </span>
           </label>
           <Field
             as="select"
-            id="organization"
-            name="organization"
+            id="organisation"
+            name="organisation"
             className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
           >
-            <option value="">Select Organization</option>
+            <option value="">Select Organisation</option>
             
           </Field>
           <ErrorMessage
-            name="organization"
+            name="organisation"
             component="div"
             className="text-red-500"
           />
@@ -1240,7 +1274,7 @@ const EditCustomer = ({customerId,
       }
 
    
-      <div className="mb-3">
+      {/* <div className="mb-3">
         <label
           htmlFor="password"
           className="m-0 text-xs font-medium text-white"
@@ -1261,9 +1295,9 @@ const EditCustomer = ({customerId,
           component="div"
           className="text-red-500"
         />
-      </div>
+      </div> */}
 
-      <div className="mb-3">
+      {/* <div className="mb-3">
         <label
           htmlFor="image"
           className="text-md block font-medium "
@@ -1301,7 +1335,7 @@ const EditCustomer = ({customerId,
         <div className="text-xs text-red-600">
           <ErrorMessage name="meansOfIDPhoto" />
         </div>
-      </div>
+      </div> */}
 
       <div className="mb-3">
               <label
@@ -1341,8 +1375,8 @@ const EditCustomer = ({customerId,
             </div>
 
             <div className="flex items-center">
-      {/* Image preview */}
-      <div className="mr-4">
+      
+      {/* <div className="mr-4">
          {values.ninslip && values.ninslip[0] ? 
         <Image
           src={URL.createObjectURL(values.ninslip[0])} // Display placeholder image or actual image URL
@@ -1354,7 +1388,7 @@ const EditCustomer = ({customerId,
         />
         :
         <Image
-        src={ninslip} // Display placeholder image or actual image URL
+        src={values.meansOfIDPhoto} // Display placeholder image or actual image URL
         alt="ninslip"
         className="max-w-full"
         style={{ maxWidth: "100%" }}
@@ -1367,7 +1401,7 @@ const EditCustomer = ({customerId,
        
         
       </div>
-      {/* Change doc button and file input */}
+      
       <div>
         <label htmlFor="ninslip" className="cursor-pointer bg-gray-300 hover:bg-gray-400  text-white px-4 py-2 rounded-md">
           Change Doc
@@ -1384,7 +1418,7 @@ const EditCustomer = ({customerId,
           />
         </label>
         {isSubmitting && <span className="ml-2">Uploading...</span>}
-      </div>
+      </div> */}
     </div>
 
             
