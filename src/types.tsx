@@ -353,10 +353,11 @@ export interface UpdateKycProps {
 }
 
 export interface WithdrawalProps {
+  paymentMode: string | number | readonly string[] | undefined;
   paymentEvidence: string;
   evidence: string;
   _id:                 string;
-  saving:              string;
+  // saving:              string;
   user:                User;
   amount:              number;
   status:              string;
@@ -366,6 +367,7 @@ export interface WithdrawalProps {
   createdAt:           Date;
   updatedAt:           Date;
   __v:                 number;
+  saving: savings
 }
 
 export interface Organisation {
