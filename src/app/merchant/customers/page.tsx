@@ -6,11 +6,11 @@ import TransactionsTable from "@/components/Tables";
 import { useAuth } from "@/api/hooks/useAuth";
 import Modal from "@/components/Modal";
 import { StatusIndicator } from "@/components/StatusIndicator";
-import { CustomerSignUpProps, UpdateKycProps, customer, getOrganizationProps, setSavingsResponse } from "@/types";
+import { CustomerSignUpProps, StateProps, UpdateKycProps, customer, getOrganizationProps, setSavingsResponse } from "@/types";
 import { extractDate, formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
-import { ChangeEvent, Dispatch, SetStateAction, useState } from "react";
+import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from "react";
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
@@ -23,6 +23,7 @@ import ninslip from "../../../../public/NIN.svg"
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
+import StatesAndLGAs from "@/api/statesAndLGAs.json"
 // import 'react-datepicker/dist/react-datepicker.css';
 
 const initialValues: CustomerSignUpProps = {
@@ -880,7 +881,7 @@ const ViewCustomer = ({
           </div>
           </div>
           
-          <div className="w-[40%] border p-6 ml-8">
+          {/* <div className="w-[40%] border p-6 ml-8">
           <p className="text-xl mt-2 mb-8 font-bold">Next of Kin Details</p>
 
           <div className="">
@@ -893,7 +894,7 @@ const ViewCustomer = ({
             />
           </div>
 
-          </div>
+          </div> */}
         </div>
       </div>
       </div>
@@ -913,7 +914,12 @@ const EditCustomer = ({customerId,
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [selectedLGAArray, setSelectesLGAArray] = useState<string[]>([])
   
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedStateArray, setselectedStateArray] = useState<StateProps[]>([]);
+  const [selectedState, setSelectedState] = useState("")
+
   const { client } = useAuth();
   const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
     queryKey: ["customerInfo"],
@@ -1005,6 +1011,38 @@ const EditCustomer = ({customerId,
       setErrorMessage(error.response?.data.message);
     },
   })
+  const MyEffectComponent = ({ formikValues }: {formikValues: any}) => {
+    useEffect(() => {
+      // This function will run whenever the value of 'formikValues.myField' changes
+      setSelectedCountry(formikValues.country);
+      setSelectedState(formikValues.state)
+    }, [formikValues]); // Add 'formikValues.myField' as a dependency
+  
+    return null; // Since this is a utility component, it doesn't render anything
+  };
+  useEffect(() => {
+    const filteredStates = StatesAndLGAs.find(country => country.country === selectedCountry)?.states || [];
+
+    
+    setselectedStateArray(filteredStates)
+    
+  }, [selectedCountry])
+
+  useEffect(() => {
+    // Find the Country object in the dataset
+    const CountryObject = StatesAndLGAs.find(countryData => countryData.country === selectedCountry);
+    if (CountryObject) {
+      const stateObject = CountryObject.states.find(state => state.name === selectedState);
+      // If state is found, return its LGAs
+      if (stateObject) {
+        console.log(stateObject.lgas)
+        setSelectesLGAArray(stateObject.lgas);
+      } else {
+        // If state is not found, return an empty array
+       
+      }
+    } 
+  }, [selectedCountry, selectedState])
   return (
     <div className="mx-auto w-[100%] mt-8 p-4 bg-white shadow-md rounded-md overflow-hidden">
     <div>
@@ -1073,7 +1111,7 @@ const EditCustomer = ({customerId,
           }, 400);
         }}
       >
-      {({ isSubmitting, values, setFieldValue }) => (
+      {({ isSubmitting, values,errors, handleChange, setFieldValue }) => (
         <Form encType="multipart/form-data"
         name="IdImage" className="mt-8 w-full">
         <div className="p-6 md:flex ">
@@ -1305,78 +1343,93 @@ const EditCustomer = ({customerId,
           htmlFor="country"
           className="m-0 text-normal font-bold "
         >
-          Country of Residence{" "}
-          <span className="font-base font-semibold text-[#FF0000]">
-            *
-          </span>
+          Country of Residence
         </label>
-        <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-          
-          <Field
-            id="country"
-            name="country"
-            type="text"
-            className="bg-transparent outline-none"
-          />
-        </div>
+        <Field
+          onChange={handleChange}
+          as='select'
+          isInvalid={!!errors.country}
+          name="country"
+          id="country"
+          // type="text"
+          placeholder="country"
+          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+        >
+          <option>Select Country</option>
+          {StatesAndLGAs && StatesAndLGAs.map((countries) => (
+            <option key={countries.country} value={countries.country}>
+            {countries.country }
+          </option>
+          ))}
+        </Field>
         <ErrorMessage
           name="country"
           component="div"
-          className="text-red-500"
+          className="text-xs text-red-500"
         />
       </div>
 
       <div className="mb-3">
-        <label
-          htmlFor="state"
-          className="m-0 text-normal font-bold "
-        >
-          State{" "}
-          <span className="font-base font-semibold text-[#FF0000]">
-            *
-          </span>
-        </label>
-        <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-          
+          <label
+            htmlFor="state"
+            className="m-0 text-normal font-bold "
+          >
+            State
+          </label>
           <Field
+            as="select"
             id="state"
             name="state"
-            type="text"
-            className="bg-transparent outline-none"
+            // type="text"
+            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+          >
+            <option>Select State</option>
+            
+            {selectedStateArray && selectedStateArray.map((state) => (
+              <option key={state.name} value={state.name}>
+                {state.name}
+              </option>
+            ))}
+          </Field>
+          <ErrorMessage
+            name="state"
+            component="div"
+            className="text-xs text-red-500"
           />
         </div>
-        <ErrorMessage
-          name="state"
-          component="div"
-          className="text-red-500"
-        />
-      </div>
-
-      <div className="mb-3">
-        <label
-          htmlFor="lga"
-          className="m-0 text-normal font-bold "
-        >
-          LGA{" "}
-          <span className="font-base font-semibold text-[#FF0000]">
-            *
-          </span>
-        </label>
-        <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-          
+        <div className="mb-3">
+          <label
+            htmlFor="lga"
+            className="m-0 text-normal font-bold"
+          >
+            Local Government Area (lga)
+          </label>
           <Field
+            as="select"
             id="lga"
             name="lga"
-            type="text"
-            className="bg-transparent outline-none"
+            // type="text"
+            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+          >
+            <option>Select LGA</option>
+
+            {selectedLGAArray && selectedLGAArray.map((lga) => (
+              <option key={lga} value={lga}>
+                {lga}
+              </option>
+            ))}
+            {/* {selectedLGAArray && selectedStateArray.map((lga) => (
+              <option>
+
+              </option>
+            )) } */}
+          </Field>
+          <ErrorMessage
+            name="lga"
+            component="div"
+            className="text-xs text-red-500"
           />
         </div>
-        <ErrorMessage
-          name="lga"
-          component="div"
-          className="text-red-500"
-        />
-      </div>
 
       <div className="mb-3">
         <label
@@ -1416,6 +1469,7 @@ const EditCustomer = ({customerId,
                   </span>
                 </label>
                 <Field
+                  disabled
                   as="select"
                   id="organisation"
                   name="organisation"
@@ -1591,7 +1645,9 @@ const EditCustomer = ({customerId,
       <ErrorToaster
         message={errorMessage || "Error Updating User"}
       />
-    )} </div>
+    )} 
+     <MyEffectComponent formikValues={values} />
+    </div>
      </div>
   </Form>
     )}
