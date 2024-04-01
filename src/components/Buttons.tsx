@@ -43,18 +43,16 @@ export const CustomButton = ({
   style,
   onButtonClick,
   label,
+  disabled,
 }: {
   type: "button" | "submit";
   style: string;
   onButtonClick?: () => void;
   label: string;
+  disabled?: boolean;
 }) => {
   return (
-    <button
-      type={type}
-      className={style}
-      onClick={onButtonClick}
-    >
+    <button type={type} className={style} onClick={onButtonClick} disabled={disabled}>
       {label}
     </button>
   );
