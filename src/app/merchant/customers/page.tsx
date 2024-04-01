@@ -502,6 +502,7 @@ interface ShowModalProps {
   content: "form" | "confirmation";
   closeModal: Dispatch<SetStateAction<boolean>>;
 }
+
 const SavingsSettings = ({
   customerId,
   setContent,
@@ -542,6 +543,8 @@ const SavingsSettings = ({
     collectionDate: "",
     frequency: "",
   };
+
+
   // Input Validation States
   const [formValues, setFormValues] = useState<FormValues>(initialValues);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
@@ -615,7 +618,6 @@ const SavingsSettings = ({
       throw error;
     },
   });
-  // console.log(saveDetails.users);
 
   const onSubmitHandler = (e: React.FormEvent) => {
     e.preventDefault();
@@ -635,7 +637,6 @@ const SavingsSettings = ({
       return newErrors;
     });
 
-    console.log(!!formErrors);
 
     if (isValid) {
       console.log("Form is valid, submitting...");
