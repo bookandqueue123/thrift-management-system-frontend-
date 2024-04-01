@@ -788,7 +788,7 @@ const ViewCustomer = ({
     <div className="mx-auto w-[100%] mt-8 p-4 bg-white shadow-md rounded-md overflow-hidden">
         {/* Image and First Batch of Details Section */}
         <p className="text-xl mt-2 mb-8 font-bold">Customer Details</p>
-        <div className="border rounded-lg">
+        <div className="md:border rounded-lg">
         <div className="p-6 md:flex ">
           <div className="md:w-1/6 mr-6 ">
             <Image
@@ -799,20 +799,20 @@ const ViewCustomer = ({
               className="rounded-md"
             />
           </div>
-          <div className="w-5/6 flex flex-wrap ml-4">
-            <div className="w-full md:w-1/2 mb-2 ">
+          <div className="w-5/6 flex flex-wrap md:ml-4">
+            <div className="w-full md:w-1/2 mb-2 mt-2">
               <p className="text-gray-600 font-semibold">Name: <span className="font-normal">{customerInfo ? customerInfo.firstName : ""}  {customerInfo ? customerInfo.lastName : ""}</span></p>
               {/* <p className="text-gray-900">John Doe</p> */}
             </div>
-            <div className="w-full md:w-1/2 mb-2  pl-8">
-              <p className="text-gray-600 font-semibold">Phone Number: <span className="font-normal pl-8">{customerInfo ? customerInfo.phoneNumber: ""}</span></p>
+            <div className="w-full md:w-1/2 mb-2  md:pl-8">
+              <p className="text-gray-600 font-semibold">Phone Number: <span className="font-normal md:pl-8">{customerInfo ? customerInfo.phoneNumber: ""}</span></p>
               {/* <p className="text-gray-900">123-456-7890</p> */}
             </div>
             <div className="w-full md:w-1/2 mb-2">
               <p className="text-gray-600 font-semibold">Email Address: <span className="font-normal">{customerInfo ? customerInfo.email : ""}</span></p>
               {/* <p className="text-gray-900">johndoe@example.com</p> */}
             </div>
-            <div className="w-full md:w-1/2 mb-2 pl-8">
+            <div className="w-full md:w-1/2 mb-2 md:pl-8">
               <p className="text-gray-600 font-semibold">Country of Residence: <span className="font-normal">{customerInfo ? customerInfo.country : "N/A"}</span></p>
               {/* <p className="text-gray-900">United States</p> */}
             </div>
@@ -855,7 +855,7 @@ const ViewCustomer = ({
       
       <div className=" mt-8 rounded-lg">
         <div className="md:flex ">
-          <div className="w-[60%] border p-6 rounded-lg">
+          <div className="w-[60%] md:border p-6 rounded-lg">
           <p className="text-xl mt-2 mb-8 font-bold">Next of Kin Details</p>
 
           <div>
@@ -1150,7 +1150,7 @@ const EditCustomer = ({customerId,
  
       </div>
 
-      <div>
+      <div >
         <label htmlFor="photo" className="mt-4 cursor-pointer bg-gray-300 hover:bg-gray-400  text-white px-4 py-2 rounded-md">
           Change 
           <input
@@ -1174,9 +1174,9 @@ const EditCustomer = ({customerId,
               <span>Download</span>
             </button> */}
         </div>
-        <div className="w-5/6 flex flex-wrap mx-16 ">
+        <div className="w-5/6 flex flex-wrap md:mx-16 mt-8">
           <div className="mb-8">
-            <div className="flex w-full items-center justify-between gap-4">
+            <div className="md:flex w-full md:items-center justify-between gap-4">
               <div className="mb-3 w-full">
                 <label
                   htmlFor="firstName"

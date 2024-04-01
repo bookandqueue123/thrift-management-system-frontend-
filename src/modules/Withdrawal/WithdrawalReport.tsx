@@ -137,6 +137,7 @@ export default function WithdrawalReport(){
           return client
             .get(`/api/withdrawal?user=${userId}`, {})
             .then((response) => {
+              
               setWithdrawalData(response.data)
               return response.data;
             })
@@ -238,10 +239,10 @@ export default function WithdrawalReport(){
             content={withdrawals?.map((withdrawal:WithdrawalProps, index:number) => (
               <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {withdrawal.user.accountNumber}
+                {withdrawal.user && withdrawal.user.accountNumber}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {withdrawal.saving}
+                  {withdrawal.saving && withdrawal.saving.purposeName}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                 {withdrawal.updatedAt ? 
