@@ -6,7 +6,7 @@ import TransactionsTable from "@/components/Tables";
 import { useAuth } from "@/api/hooks/useAuth";
 import Modal from "@/components/Modal";
 import { StatusIndicator } from "@/components/StatusIndicator";
-import { CustomerSignUpProps, customer, setSavingsResponse } from "@/types";
+import { CustomerSignUpProps, UpdateKycProps, customer, getOrganizationProps, setSavingsResponse } from "@/types";
 import { extractDate, formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
@@ -460,6 +460,8 @@ const Customers = () => {
         </div>
         </div>
       </section>
+
+      
     </>
   );
 };
@@ -902,6 +904,7 @@ const ViewCustomer = ({
   )
 }
 
+
 const EditCustomer = ({customerId,
   setContent,
   content,
@@ -926,27 +929,87 @@ const EditCustomer = ({customerId,
         });
     },
   });
+
+  const {
+    data: organizations,
+    isLoading: isUserLoading,
+    isError: getGroupError,
+  } = useQuery({
+    queryKey: ["allOrganizations"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user?role=organisation`, {})
+        .then((response) => {
+          return response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+          throw error;
+        });
+    },
+  });
+
+  const {mutate: updateUserInfo, isPending, isError} = useMutation({
+    mutationKey: ["user update"],
+    mutationFn: async (values: UpdateKycProps) => {
+      const formData = new FormData();
+
+      formData.append("firstName", values.firstName)
+      formData.append("lastName", values.lastName)
+      formData.append("otherName", values.otherName)
+      formData.append("phoneNumber", values.phoneNumber)
+      formData.append("email", values.email)
+      formData.append("country", values.country);
+      formData.append("state", values.state);
+      formData.append("lga", values.lga);
+      formData.append("city", values.city);
+      // formData.append("popularMarket", values.popularMarket);
+      // formData.append("nok", values.nok);
+      // formData.append("nokRelationship", values.nokRelationship);
+      // formData.append("nokPhone", values.nokPhone);
+      formData.append("homeAddress", values.homeAddress);
+      // formData.append("userType", values.userType);
+      formData.append("organisation", values.organisation);
+      formData.append("nin", values.nin);
+      formData.append("bvn", values.bvn);
+      // formData.append("meansOfID", values.meansOfID);
+      formData.append("bankAcctNo", values.bankAcctNo);
+      // Append images
+      if (values.photo) {
+        formData.append("photo", values.photo[0]); // Assuming photo is an array of File objects
+      }
+      if (!values.photo) {
+        formData.append("photo", customerInfo?.photo); // Assuming photo is an array of File objects
+      }
+      // if (values.meansOfID) {
+      //   formData.append("meansOfID", values.meansOfID[0]);
+      // }
+      if (values.meansOfIDPhoto) {
+        formData.append("meansOfIDPhoto", values.meansOfIDPhoto[0]);
+      }
+      if (values.meansOfIDPhoto) {
+        formData.append("meansOfIDPhoto", customerInfo?.meansOfIDPhoto);
+      }
+
+      return client.put(`/api/user/${customerId}`, formData)
+    },
+    onSuccess(response) {
+      // router.push("/customer");
+      console.log(response);
+      setShowSuccessToast(true);
+      // setSuccessMessage((response as any).response.data.message);
+    },
+    onError(error: AxiosError<any, any>) {
+      console.log(error)
+      setShowErrorToast(true);
+      setErrorMessage(error.response?.data.message);
+    },
+  })
   return (
     <div className="mx-auto w-[100%] mt-8 p-4 bg-white shadow-md rounded-md overflow-hidden">
     <div>
-      <div className="p-6 md:flex ">
-        <div className="md:w-1/6 mr-6 ">
-          <Image
-            src={customerInfo ? customerInfo.photo : "/placeholder.png"}
-            alt="Customer"
-            width={200}
-            height={100}
-            className="rounded-md"
-          />
-
-          <button className="w-full mt-8 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded  items-center">
-            
-            <span>Download</span>
-          </button>
-        </div>
-
-
-        <div className="w-5/6 flex flex-wrap mx-16 ">
+      {customerInfo && (
+       
         <Formik
         initialValues={{
           firstName: customerInfo?.firstName,
@@ -955,21 +1018,54 @@ const EditCustomer = ({customerId,
           phoneNumber: customerInfo?.phoneNumber,
           email: customerInfo?.email,
           homeAddress: customerInfo?.homeAddress,
-          countryOfResidence: customerInfo?.country,
+          country: customerInfo?.country,
           state: customerInfo?.state,
           lga: customerInfo?.lga,
           city: customerInfo?.city,
           organisation: customerInfo?.organisation,
           meansOfIDPhoto: null,
+          photo: null,
           nin: customerInfo?.nin,
           bvn: customerInfo?.bvn,
-          ninslip: null
-
+          ninslip: null,
+          nok: "",
+          nokRelationship: "",
+          nokPhone: "",
+          popularMarket: "",
+           userType: "", 
+           meansOfID: "", 
+           bankAcctNo: ""
+          
         }}
-        validationSchema={validationSchema}
+        validationSchema={Yup.object({
+          firstName: Yup.string().required("Required"),
+          lastName: Yup.string().required("Required"),
+          otherName: Yup.string().optional(),
+          email: Yup.string().required("Required"),
+          homeAddress: Yup.string().required("Required"),
+          country: Yup.string().required("Required"),
+          state: Yup.string().required("Required"),
+          lga: Yup.string().required("Required"),
+          city: Yup.string().required("Required"),
+          
+          organisation: Yup.string().required("Required"),
+          
+        //   meansOfIDPhoto: Yup.mixed().optional(), // For files, use mixed type
+        //   photo: Yup.mixed().optional(),
+        //   nin: Yup.string().optional(), // Assuming nin and bvn are strings
+        //   bvn: Yup.string().optional(),
+        //   ninslip: Yup.mixed().optional(),
+        //   nok: Yup.string().default(''), // Use default value '' for string fields
+        //   nokRelationship: Yup.string().default(''),
+        //   nokPhone: Yup.string().default(''),
+        //   popularMarket: Yup.string().default(''),
+        //   userType: Yup.string().default(''),
+        //   meansOfID: Yup.string().default(''),
+        //   bankAcctNo: Yup.string().default(''),
+        })}
         onSubmit={(values, { setSubmitting }) => {
           console.log(values);
-          
+          updateUserInfo(values)
           setTimeout(() => {
             setShowSuccessToast(false);
             setShowErrorToast(false);
@@ -980,6 +1076,67 @@ const EditCustomer = ({customerId,
       {({ isSubmitting, values, setFieldValue }) => (
         <Form encType="multipart/form-data"
         name="IdImage" className="mt-8 w-full">
+        <div className="p-6 md:flex ">
+          <div className="md:w-1/6 mr-6 ">
+            {/* <Image
+              src={customerInfo ? customerInfo.photo : "/placeholder.png"}
+              alt="Customer"
+              width={200}
+              height={100}
+              className="rounded-md"
+            /> */}
+
+        <div className="">
+      
+      <div className="mb-4 ">
+        {values.photo && values.photo[0] ? 
+        <Image
+          src={URL.createObjectURL(values.photo[0])} // Display placeholder image or actual image URL
+          alt="photo"
+          className="w-full h-auto"
+          style={{ maxWidth: "100%" }}
+          width={500}
+          height={300}
+        />
+        :
+        <Image
+        src={customerInfo.photo} // Display placeholder image or actual image URL
+        alt="photo"
+        className="w-full h-auto"
+        style={{ maxWidth: "100%" }}
+        width={500}
+        height={300}
+        />
+        }
+
+ 
+      </div>
+
+      <div>
+        <label htmlFor="photo" className="mt-4 cursor-pointer bg-gray-300 hover:bg-gray-400  text-white px-4 py-2 rounded-md">
+          Change 
+          <input
+            id="photo"
+            name="photo"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files;
+              setFieldValue("photo", file); // Store the selected file in state
+            }}
+          />
+        </label>
+        {isSubmitting && <span className="ml-2">Uploading...</span>}
+      </div>
+    </div>
+
+            {/* <button className="w-full mt-8 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded  items-center">
+              
+              <span>Download</span>
+            </button> */}
+        </div>
+        <div className="w-5/6 flex flex-wrap mx-16 ">
           <div className="mb-8">
             <div className="flex w-full items-center justify-between gap-4">
               <div className="mb-3 w-full">
@@ -1145,7 +1302,7 @@ const EditCustomer = ({customerId,
 
       <div className="mb-3">
         <label
-          htmlFor="countryOfResidence"
+          htmlFor="country"
           className="m-0 text-normal font-bold "
         >
           Country of Residence{" "}
@@ -1156,14 +1313,14 @@ const EditCustomer = ({customerId,
         <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
           
           <Field
-            id="countryOfResidence"
-            name="countryOfResidence"
+            id="country"
+            name="country"
             type="text"
             className="bg-transparent outline-none"
           />
         </div>
         <ErrorMessage
-          name="countryOfResidence"
+          name="country"
           component="div"
           className="text-red-500"
         />
@@ -1248,56 +1405,36 @@ const EditCustomer = ({customerId,
       </div>
       {/* Organization Search Input */}
       {
-        <div className="mb-3">
-          <label
-            htmlFor="organisation"
-            className="m-0 text-xs font-medium text-white"
-          >
-            Organisation{" "}
-            <span className="font-base font-semibold text-[#FF0000]">
-              *
-            </span>
-          </label>
-          <Field
-            as="select"
-            id="organisation"
-            name="organisation"
-            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-          >
-            <option value="">Select Organisation</option>
-            
-          </Field>
-          <ErrorMessage
-            name="organisation"
-            component="div"
-            className="text-red-500"
-          />
-        </div>
-      }
-
-   
-      {/* <div className="mb-3">
-        <label
-          htmlFor="password"
-          className="m-0 text-xs font-medium text-white"
-        >
-          Password{" "}
-          <span className="font-base font-semibold text-[#FF0000]">
-            *
-          </span>
-        </label>
-        <Field
-          id="password"
-          name="password"
-          type="password"
-          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-        />
-        <ErrorMessage
-          name="password"
-          component="div"
-          className="text-red-500"
-        />
-      </div> */}
+              <div className="mb-3">
+                <label
+                  htmlFor="organisation"
+                  className="m-0 text-xs font-medium"
+                >
+                  Select Organisation i.e Thrift Collector
+                  <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
+                </label>
+                <Field
+                  as="select"
+                  id="organisation"
+                  name="organisation"
+                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                >
+                  <option value="">Select Organization</option>
+                  {organizations?.map((org: getOrganizationProps) => (
+                    <option key={org._id} value={org._id}>
+                      {org.organisationName}
+                    </option>
+                  ))}
+                </Field>
+                <ErrorMessage
+                  name="organisation"
+                  component="div"
+                  className="text-red-500"
+                />
+              </div>
+            }
 
       {/* <div className="mb-3">
         <label
@@ -1378,50 +1515,48 @@ const EditCustomer = ({customerId,
 
             <div className="flex items-center">
       
-      {/* <div className="mr-4">
-         {values.ninslip && values.ninslip[0] ? 
-        <Image
-          src={URL.createObjectURL(values.ninslip[0])} // Display placeholder image or actual image URL
-          alt="ninslip"
-          className="max-w-full"
-          style={{ maxWidth: "100%" }}
-          width={300}
-          height={200}
-        />
-        :
-        <Image
-        src={values.meansOfIDPhoto} // Display placeholder image or actual image URL
-        alt="ninslip"
-        className="max-w-full"
-        style={{ maxWidth: "100%" }}
-        width={300}
-        height={200}
-      />
-         }
+            <div className="mr-4">
+              {values.meansOfIDPhoto && values.meansOfIDPhoto[0] ? 
+              <Image
+                src={URL.createObjectURL(values.meansOfIDPhoto[0])} // Display placeholder image or actual image URL
+                alt="meansOfIDPhoto"
+                className="max-w-full"
+                style={{ maxWidth: "100%" }}
+                width={300}
+                height={200}
+              />
+              :
+              <Image
+              src={customerInfo.meansOfIDPhoto} // Display placeholder image or actual image URL
+              alt="meansOfIDPhoto"
+              className="max-w-full"
+              style={{ maxWidth: "100%" }}
+              width={300}
+              height={200}
+              />
+              }
 
-        
        
-        
-      </div>
+            </div>
       
-      <div>
-        <label htmlFor="ninslip" className="cursor-pointer bg-gray-300 hover:bg-gray-400  text-white px-4 py-2 rounded-md">
-          Change Doc
-          <input
-            id="ninslip"
-            name="ninslip"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files;
-              setFieldValue("ninslip", file); // Store the selected file in state
-            }}
-          />
-        </label>
-        {isSubmitting && <span className="ml-2">Uploading...</span>}
-      </div> */}
-    </div>
+            <div>
+              <label htmlFor="meansOfIDPhoto" className="cursor-pointer bg-gray-300 hover:bg-gray-400  text-white px-4 py-2 rounded-md">
+                Change Doc
+                <input
+                  id="meansOfIDPhoto"
+                  name="meansOfIDPhoto"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(event) => {
+                    const file = event.target.files;
+                    setFieldValue("meansOfIDPhoto", file); // Store the selected file in state
+                  }}
+                />
+              </label>
+              {isSubmitting && <span className="ml-2">Uploading...</span>}
+            </div>
+          </div>
 
             
       
@@ -1449,19 +1584,21 @@ const EditCustomer = ({customerId,
     {/* Toast Messages */}
     {showSuccessToast && (
       <SuccessToaster
-        message={successMessage || "Account Created successfully!"}
+        message={successMessage || "User Updated successfully!"}
       />
     )}
     {showErrorToast && (
       <ErrorToaster
-        message={errorMessage || "Error creating organization"}
+        message={errorMessage || "Error Updating User"}
       />
-    )}
+    )} </div>
+     </div>
   </Form>
-)}
-</Formik>
-        </div>
-      </div>
+    )}
+    </Formik>
+       
+     
+      )}
     </div>
   </div>
   )

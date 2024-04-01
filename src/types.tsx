@@ -23,7 +23,7 @@ export type customer = {
   nokPhone: number;
   nin: number;
   bvn: number;
-  meansOfIDPhoto: File;
+  meansOfIDPhoto: any;
   meansOfID: "NIN" | "Passport";
   photo: File | any;
   userType: string;
@@ -328,6 +328,11 @@ export interface getOrganizationProps {
 }
 
 export interface UpdateKycProps {
+  email?: any;
+  phoneNumber?: any;
+  otherName?: any;
+  lastName?: any;
+  firstName?: any;
   country:         string;
   state:           string;
   lga:             string;
@@ -340,9 +345,9 @@ export interface UpdateKycProps {
   userType:        string;
   photo:           null;
   meansOfID:       string;
-  meansOfIDPhoto:  null;
-  nin:             string;
-  bvn:             string;
+  meansOfIDPhoto:  any;
+  nin:             any;
+  bvn:             any;
   organisation:    string;
   bankAcctNo: string
 }

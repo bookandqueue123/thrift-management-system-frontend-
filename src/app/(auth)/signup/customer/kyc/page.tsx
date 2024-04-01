@@ -626,6 +626,7 @@ const Kyc = () => {
     bankAcctNo: "",
     organisation: "",
     userType: "individual",
+    
   };
 
   const MyEffectComponent = ({ formikValues }: {formikValues: any}) => {
