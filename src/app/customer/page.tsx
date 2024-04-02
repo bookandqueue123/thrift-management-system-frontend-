@@ -14,18 +14,26 @@ import { useQuery } from "@tanstack/react-query";
 import { Session } from "inspector";
 import Link from "next/link";
 import { useRouter,  } from "next/navigation";
-import { ChangeEvent, Suspense, useState } from "react";
+import { ChangeEvent, Suspense, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectUserId } from "@/slices/OrganizationIdSlice";
-
+import { allSavingsResponse } from "@/types";
+import { AxiosError } from "axios";
+import { extractDate, extractTime } from "@/utils/TimeStampFormatter";
+import { MdKeyboardArrowLeft } from "react-icons/md";
+import { MdKeyboardArrowRight } from "react-icons/md"
 
 
 
 const CustomerDashboard = () => {
+  const PAGE_SIZE = 5;
   const [modalState, setModalState] = useState(true);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
     "form",
   );
+  const [customerSavings, setCustomerSavings] = useState<allSavingsResponse[]>([])
+  const [filteredSavings, setFilteredSavings] = useState<allSavingsResponse[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
   const router = useRouter();
   
    const id = useSelector(selectUserId)
@@ -63,13 +71,81 @@ const CustomerDashboard = () => {
     hasKyc: true,
   };
 
+  const { data: allSavings, isLoading: isLoadingAllSavings } = useQuery({
+    queryKey: ["allSavings"],
+    staleTime: 5000,
+    queryFn: async () => {
+      return client
+        .get(`/api/saving/get-savings`)
+        .then((response) => {
+          console.log("allSavingsSuccess: ", response.data);
+          // setFilteredSavings(response.data.savings)
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          console.log(error.response);
+          throw error;
+        });
+    },
+  });
+
+  useEffect(() => {
+    console.log(allSavings)
+    if (allSavings?.savings) {
+      // Check if Savings?.savings is not undefined or null
+      const filtered = allSavings.savings.filter(
+        (item: { user: { _id: string; }; }) => item.user._id === id,
+      );
+      setCustomerSavings(filtered);
+      setFilteredSavings(filtered)
+    } 
+  }, [allSavings, id])
+ 
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    // setSearchResult(e.target.value);
+    console.log(filteredSavings)
+    if(filteredSavings){
+      const filtered = filteredSavings.filter((item) =>
+        String(item.user.accountNumber).includes(String(e.target.value))
+    );
+    // Update the filtered data state
+    setFilteredSavings(filtered);
+    }
+    
+  };
+
+  const paginatedSavings = filteredSavings?.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
   
+  let totalPages = 0
+  if(customerSavings){
+     totalPages = Math.ceil(customerSavings.length / PAGE_SIZE);
+  }
+  
+  const goToPreviousPage = () => {
+    
+    if (currentPage > 1) {
+      (setCurrentPage(currentPage - 1));
+    }
+  };
+
+  const goToNextPage = () => {
+ 
+    if (currentPage < totalPages) {
+     (setCurrentPage(currentPage + 1));
+    }
+  };
+
+  // console.slog(paginatedSavings)
 
   if (!id) {
     // If id is not available yet, display loading indicator
     return <div>Loading...</div>;
   }
 
+  
   // const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
   //   setSearchResult(e.target.value);
   //   console.log(e.target.value)
@@ -172,7 +248,7 @@ const CustomerDashboard = () => {
         bottomValueTopText="Current Savings Balance"
         bottomValueBottomText={`N${AmountFormatter(user.acctBalance)}`}
       />
-      <DashboardCard
+      {/* <DashboardCard
         illustrationName="calendar"
         topValue={
           <p className="text-sm font-semibold text-ajo_offWhite">
@@ -183,7 +259,7 @@ const CustomerDashboard = () => {
         bottomValueBottomText={user.nextWithdrawalDate.toLocaleDateString(
           "en-GB",
         )}
-      />
+      /> */}
     </section>
     <section>
       <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -193,32 +269,32 @@ const CustomerDashboard = () => {
         <span className="flex items-center gap-3">
           {/* <SearchInput onSearch={() => ("")}/> */}
 
-          {/* <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
-      <input
-      onChange={(e) => console.log(123)}
-        type="search"
-        placeholder="Search"
-        className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
-      />
-      <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-        <circle
-          cx="8.60996"
-          cy="8.10312"
-          r="7.10312"
-          stroke="#EAEAFF"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M13.4121 13.4121L16.9997 16.9997"
-          stroke="#EAEAFF"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </form> */}
+                <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
+                <input
+                  onChange={handleSearch}
+                    type="search"
+                    placeholder="Search"
+                    className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
+                  />
+                  <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                    <circle
+                      cx="8.60996"
+                      cy="8.10312"
+                      r="7.10312"
+                      stroke="#EAEAFF"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M13.4121 13.4121L16.9997 16.9997"
+                      stroke="#EAEAFF"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+               </form>
           <FilterDropdown
             options={[
               "Timestamp",
@@ -238,28 +314,97 @@ const CustomerDashboard = () => {
           *Please Scroll sideways to view all content
         </p>
         <TransactionsTable
-          headers={["Date", "Reference", "Channel", "Amount", "Status"]}
-          content={DummyTransactions.map((transaction, index) => (
+          headers={["", "Transaction Date", "Account Number", "Purpose", "Reference", "Customer Name", "email", "Phone Number", "Channel", "Amount", "Status", "Transaction"]}
+          content={paginatedSavings.map((savings, index) => (
             <tr className="" key={index}>
               <td className="whitespace-nowrap px-6 py-4 text-sm">
-                {transaction.transactionDate}
+        <input type="checkbox" className="form-checkbox h-5 w-5 text-indigo-600 transition duration-150 ease-in-out" />
+      </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+              {extractDate(savings.updatedAt || "-----")} {extractTime(savings.updatedAt || "-----")}
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm">
-                {transaction.reference}
+              {savings.user.accountNumber || "----"}
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm">
-                {transaction.channel}
+              {savings.purposeName || "-----"}
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm">
-                {AmountFormatter(Number(transaction.amount))} NGN
+              {savings._id || "-----"}
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm">
-                <StatusIndicator label={transaction.transactionStatus} />
+              {savings.user.firstName + " " + savings.user.lastName ||
+                    "----"}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+              {savings.user.email}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+              {savings.user.phoneNumber}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {/* {transaction.channel} */}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {/* {AmountFormatter(Number(transaction.amount))}  */}
+                {savings.amount} NGN
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+              {savings.isPaid || "----"}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                <button className="bg-white">
+
+                </button>
               </td>
             </tr>
           ))}
         />
-        <PaginationBar apiResponse={DummyTransactions} />
+        <div className="flex justify-center items-center  space-x-2">
+            <button
+              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={goToPreviousPage}
+            >
+              <MdKeyboardArrowLeft />
+            </button>
+
+            <button
+              className="p-2  text-blue-500 rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={() => setCurrentPage(currentPage)}
+            >
+              {currentPage}
+            </button>
+
+            <button
+              className="p-2  rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={() =>(setCurrentPage(currentPage + 1))}
+            >
+              {currentPage + 1}
+            </button>
+            <button
+              className="p-2  rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={() =>(setCurrentPage(currentPage + 2))}
+            >
+              {currentPage + 2}
+            </button>
+
+            <button
+              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={goToNextPage}
+            >
+              <MdKeyboardArrowRight />
+            </button> 
+
+              {/* <button
+                className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+                onClick={() => dispatch(setCurrentPage(currentPage + 6))}
+              >
+                {currentPage + 6}
+              </button> */}
+
+                    
+         </div>
+        {/* <PaginationBar apiResponse={DummyTransactions} /> */}
       </div>
     </section>
           </>

@@ -69,9 +69,7 @@ const Posting = () => {
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
-    console.log(e.target.value)
-
-    console.log(allSavings.savings)
+   
     if(allSavings){
       const filtered = allSavings.savings.filter((item: {
         [x: string]: any; accountNumber: any; 
@@ -466,7 +464,7 @@ const PostingForm = ({
         ) ?? [];
       setFilteredSavingIds(savingsIds ?? undefined);
     }
-  }, [postDetails.customerId]);
+  }, [postDetails.customerId, Savings?.savings]);
 
   console.log(filteredSavingIds);
 
