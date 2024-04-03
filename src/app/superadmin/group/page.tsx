@@ -37,7 +37,7 @@ export default function SuperAdminCustomer(){
         <div>
            <div className="mb-4 space-y-2">
                 <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
-                 Group
+                 Groups
                 </p>
             </div>
 
