@@ -260,7 +260,7 @@ const SetUpSavingsForm = ({
         if (!value.trim()) return "At least one group is required";
         break;
       case "addCustomers":
-        if (!Array.isArray(value) || value.length === 0)
+        if (value.length === 0)
           return "At least one user is required";
         break;
       default:
