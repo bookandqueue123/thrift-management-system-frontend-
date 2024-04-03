@@ -66,8 +66,10 @@ const Posting = () => {
       return client
         .get(`/api/saving/get-savings?organisation=${organizationId}`, config)
         .then((response) => {
+
           console.log("allSavingsSuccess: ", response.data);
           setFilteredSavings(response.data.savings);
+
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
