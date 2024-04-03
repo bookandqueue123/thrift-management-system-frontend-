@@ -30,6 +30,7 @@ import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import { Kyc } from "@/app/(auth)/signup/customer/kyc/page";
+import CreateCustomer from "@/modules/CreateCustomer/CreateCustomer";
 // import 'react-datepicker/dist/react-datepicker.css';
 
 const initialValues: CustomerSignUpProps = {
@@ -186,12 +187,19 @@ const Customers = () => {
   };
 
   // CUstomer Creation Process Starts
-
-  const CreateCustomer = () => {
+  const [userCreated, setUserCreated] = useState(false);
+  const CreateNewCustomer = () => {
     return (
       <Modal setModalState={setModalState} title="Create a new customer">
         <div className="px-[10%]">
-          <Kyc />
+          {userCreated ? (
+            <Kyc />
+          ) : (
+            <CreateCustomer
+              setUserCreated={setUserCreated}
+              organizationId={organisationId}
+            />
+          )}
         </div>
       </Modal>
     );
@@ -257,7 +265,7 @@ const Customers = () => {
               setModalToShow("create-customer");
             }}
           />
-          {modalToShow === "create-customer" && <CreateCustomer />}
+          {modalToShow === "create-customer" && <CreateNewCustomer />}
         </div>
 
         <div className="">
@@ -544,7 +552,6 @@ const SavingsSettings = ({
     frequency: "",
   };
 
-
   // Input Validation States
   const [formValues, setFormValues] = useState<FormValues>(initialValues);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
@@ -637,7 +644,6 @@ const SavingsSettings = ({
     setFormErrors((prevErrors) => {
       return newErrors;
     });
-
 
     if (isValid) {
       console.log("Form is valid, submitting...");
