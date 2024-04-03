@@ -79,15 +79,14 @@ const Posting = () => {
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
-   
-    if(allSavings){
-      const filtered = allSavings.savings.filter((item: {
-        [x: string]: any; accountNumber: any; 
-}) =>
-        String(item.user.accountNumber).includes(String(e.target.value))
-    );
-    // Update the filtered data state
-    setFilteredSavings(filtered);
+
+    if (allSavings) {
+      const filtered = allSavings.savings.filter(
+        (item: { [x: string]: any; accountNumber: any }) =>
+          String(item.user.accountNumber).includes(String(e.target.value)),
+      );
+      // Update the filtered data state
+      setFilteredSavings(filtered);
     }
   };
 
@@ -185,31 +184,31 @@ const Posting = () => {
                 />
               </svg>
             </form>
-            <input
-            onChange={handleSearch}
+            {/* <input
+              onChange={handleSearch}
               type="search"
               placeholder="Search"
               className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
-            />
-          <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-            <circle
-              cx="8.60996"
-              cy="8.10312"
-              r="7.10312"
-              stroke="#EAEAFF"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M13.4121 13.4121L16.9997 16.9997"
-              stroke="#EAEAFF"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          </form>
+            /> */}
+            {/* <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+              <circle
+                cx="8.60996"
+                cy="8.10312"
+                r="7.10312"
+                stroke="#EAEAFF"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M13.4121 13.4121L16.9997 16.9997"
+                stroke="#EAEAFF"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg> */}
+            {/* </form> */}
             <FilterDropdown
               options={[
                 "Timestamp",
@@ -252,6 +251,17 @@ const Posting = () => {
           )}
         </div>
 
+        {/* <div className="my-8 justify-between md:flex">
+          <div className="flex items-center">
+            <p className="font-lg mr-2 text-white">Select range from:</p>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={handleFromDateChange}
+              className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+            />
+          </div>
+        </div> */}
         <div className="my-8 justify-between md:flex">
           <div className="flex items-center">
             <p className="font-lg mr-2 text-white">Select range from:</p>
@@ -261,16 +271,6 @@ const Posting = () => {
               onChange={handleFromDateChange}
               className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
             />
-        <div className="md:flex justify-between my-8">
-          <div className="flex items-center">
-            <p className="mr-2 font-lg text-white">Select range from:</p>
-            <input
-              type="date"
-              value={fromDate}
-                onChange={handleFromDateChange}
-              className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-            />
-
 
             <p className="mx-2 text-white">to</p>
             <input
@@ -1381,16 +1381,25 @@ const PostConfirmation = ({
       <div className="space-y-4">
         <div className="mx-8 flex  ">
           <p className="text-sm font-semibold text-[#7D7D7D]">
-            Organisation Name: {postingResponse.updatedSaving ? postingResponse.updatedSaving.postedBy.organisationName: ""} 
+            Organisation Name:{" "}
+            {postingResponse.updatedSaving
+              ? postingResponse.updatedSaving.postedBy.organisationName
+              : ""}
           </p>
           <p className="ml-4 text-sm text-[#7D7D7D]"></p>
         </div>
 
         <div className="mx-8 flex  ">
           <p className="text-sm font-semibold text-[#7D7D7D]">
-            Customer Name: {postingResponse.updatedSaving ? postingResponse.updatedSaving.saving.user.firstName : ""} {postingResponse.updatedSaving ? postingResponse.updatedSaving.saving.user.lastName : ""} 
+            Customer Name:{" "}
+            {postingResponse.updatedSaving
+              ? postingResponse.updatedSaving.saving.user.firstName
+              : ""}{" "}
+            {postingResponse.updatedSaving
+              ? postingResponse.updatedSaving.saving.user.lastName
+              : ""}
           </p>
-          <p className="text-sm ml-4 text-[#7D7D7D]"></p>
+          <p className="ml-4 text-sm text-[#7D7D7D]"></p>
         </div>
 
         <div className="mx-8 flex  ">
