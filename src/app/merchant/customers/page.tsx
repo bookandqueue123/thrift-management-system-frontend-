@@ -24,6 +24,8 @@ import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import StatesAndLGAs from "@/api/statesAndLGAs.json"
+import CreateCustomer from "@/modules/CreateCustomer/CreateCustomer";
+import { Kyc } from "@/app/(auth)/signup/customer/kyc/page";
 // import 'react-datepicker/dist/react-datepicker.css';
 
 const initialValues: CustomerSignUpProps = {
