@@ -326,11 +326,11 @@ const SetUpSavingsForm = ({
 
     if (isValid) {
       console.log("Form is valid, submitting...");
+      postNamedGroups();
     } else {
       console.log("Form is invalid, showing errors...");
     }
 
-    postNamedGroups();
 
     // onSubmit("confirmation");
   };
