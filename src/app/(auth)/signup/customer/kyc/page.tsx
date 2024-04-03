@@ -564,8 +564,8 @@ import { Suspense, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import StatesAndLGAs from "@/api/statesAndLGAs.json"
 import * as Yup from "yup";
-import { Kyc } from "./kyc";
 
+import { Kyc } from "./kyc";
 
 
 function KYCFallBack(){
