@@ -1,14 +1,13 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton } from "@/components/Buttons";
-import { MultiSelectDropdown } from "@/components/Dropdowns";
 import Modal from "@/components/Modal";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 import { FormErrors, FormValues, customer } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Axios, AxiosResponse } from "axios";
+import { AxiosResponse } from "axios";
 import Image from "next/image";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import { useSelector } from "react-redux";
 
 const Settings = () => {
@@ -97,9 +96,16 @@ const SetUpSavingsForm = ({
       | HTMLSelectElement
       | HTMLTextAreaElement;
     setFormValues({ ...formValues, [name]: value });
-    setFormErrors({ ...formErrors, [name]: validateField(name, value) });
+    setFormErrors({
+      ...formErrors,
+      [name]: validateField(
+        name,
+        value,
+        saveDetails.savingsType as "named group" | "nameless group",
+      ),
+    });
 
-    const selectedId = e.target.value;
+    const selectedId = value;
     const selectedOption = users?.find((option) => option._id === selectedId);
     if (!selectedOptions.some((option) => option._id === selectedOption?._id)) {
       setSelectedOptions([...selectedOptions, selectedOption!]);
@@ -110,24 +116,6 @@ const SetUpSavingsForm = ({
     updatedOptions.splice(index, 1);
     setSelectedOptions(updatedOptions);
   };
-  // const handleChange = (event: { target: { name: any; value: any } }) => {
-  //   // Destructure the 'name' and 'value' from the event target
-  //   const { name, value } = event.target;
-
-  //   // Initialize a variable to hold the processed value (initially, it's the same as the input value)
-  //   let processedValue = value;
-
-  //   // If the input field is 'amount', remove commas and convert it to a number
-  //   if (name === "amount") {
-  //     // Remove commas from the value using a regular expression
-  //     const unformattedValue = value.replace(/,/g, "");
-  //     // Parse the string to a floating point number
-  //     processedValue = parseFloat(unformattedValue);
-  //   }
-
-  //   // Update the state 'saveDetails' with the new value, keeping previous state intact
-  //   setSaveDetails((prev) => ({ ...prev, [name]: processedValue }));
-  // };
 
   const {
     data: users,
@@ -177,7 +165,6 @@ const SetUpSavingsForm = ({
         collectionDate: saveDetails.collectionDate,
         organisation: organizationId,
         frequency: saveDetails.frequency,
-
         group: groupId,
       };
       const payload =
@@ -187,12 +174,12 @@ const SetUpSavingsForm = ({
       return client.post(`/api/saving`, payload);
     },
     onSuccess: (response) => {
-      console.log(response);
+      // console.log(response);
       console.log("User created successfully");
       setContent("confirmation");
       setDisplayConfirmationMedal(true);
       console.log(displayConfirmationModal);
-      console.log(response);
+      // console.log(response);
     },
     onError: (error) => {
       console.log(saveDetails.amount);
@@ -233,7 +220,11 @@ const SetUpSavingsForm = ({
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isTouched, setIsTouched] = useState<{ [key: string]: boolean }>({});
 
-  const validateField = (name: string, value: string) => {
+  const validateField = (
+    name: string,
+    value: string,
+    savingType: "named group" | "nameless group",
+  ) => {
     switch (name) {
       case "purposeName":
         if (!value.trim()) return "Savings purpose is required";
@@ -257,15 +248,23 @@ const SetUpSavingsForm = ({
         // Add specific frequency validation if needed
         break;
       case "chosenGroup":
-        if (!value.trim()) return "At least one group is required";
+        if (savingType === "named group" && !value.trim())
+          return "At least one group is required";
         break;
       case "addCustomers":
-        if (!Array.isArray(value) || value.length === 0)
-          return "At least one user is required";
+        if (selectedIds.length === 0) return "At least one user is required";
         break;
+
       default:
         return "";
     }
+
+    // if (savingType === "named group" && !!formValues.addCustomers === true) {
+    //   return "Groups should be empty for individuals";
+    // }
+    // if (savingType !== "named group" && !!formValues.group === true) {
+    //   return "Customers should be empty for groups";
+    // }
     return "";
   };
 
@@ -275,7 +274,14 @@ const SetUpSavingsForm = ({
       | HTMLSelectElement
       | HTMLTextAreaElement;
     setFormValues({ ...formValues, [name]: value });
-    setFormErrors({ ...formErrors, [name]: validateField(name, value) });
+    setFormErrors({
+      ...formErrors,
+      [name]: validateField(
+        name,
+        value,
+        saveDetails.savingsType as "named group" | "nameless group",
+      ),
+    });
 
     // Initialize a variable to hold the processed value (initially, it's the same as the input value)
     let processedValue = value;
@@ -299,7 +305,14 @@ const SetUpSavingsForm = ({
       | HTMLTextAreaElement;
     setIsTouched({ ...isTouched, [name]: true });
     setFormValues({ ...formValues, [name]: value });
-    setFormErrors({ ...formErrors, [name]: validateField(name, value) });
+    setFormErrors({
+      ...formErrors,
+      [name]: validateField(
+        name,
+        value,
+        saveDetails.savingsType as "named group" | "nameless group",
+      ),
+    });
   };
 
   const onSubmitHandler = (e: React.FormEvent) => {
@@ -313,7 +326,11 @@ const SetUpSavingsForm = ({
     const newErrors: FormErrors = {};
 
     Object.keys(formValues).forEach((key) => {
-      const error = validateField(key, formValues[key]);
+      const error = validateField(
+        key,
+        formValues[key],
+        saveDetails.savingsType as "named group" | "nameless group",
+      );
       if (error) {
         isValid = false;
         newErrors[key] = error;
@@ -326,11 +343,11 @@ const SetUpSavingsForm = ({
 
     if (isValid) {
       console.log("Form is valid, submitting...");
+      postNamedGroups();
     } else {
+      console.log(formErrors);
       console.log("Form is invalid, showing errors...");
     }
-
-    postNamedGroups();
 
     // onSubmit("confirmation");
   };
@@ -512,7 +529,7 @@ const SetUpSavingsForm = ({
                     ))}
                   </select>
 
-                  {(isTouched.addCustomers || formErrors.addCustomers) && (
+                  {(isTouched.addCustomers || formErrors.addCustomers) && selectedIds.length === 0 && (
                     <p className="mt-2 text-sm font-semibold text-red-600">
                       {formErrors.addCustomers}
                     </p>
@@ -568,7 +585,13 @@ const SetUpSavingsForm = ({
                   setFormValues({ ...formValues, [name]: value });
                   setFormErrors({
                     ...formErrors,
-                    [name]: validateField(name, value),
+                    [name]: validateField(
+                      name,
+                      value,
+                      saveDetails.savingsType as
+                        | "named group"
+                        | "nameless group",
+                    ),
                   });
                   const input = event.target.value.replace(/\D/g, "");
                   const formatted = Number(input).toLocaleString();
