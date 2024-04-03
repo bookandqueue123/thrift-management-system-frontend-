@@ -558,6 +558,7 @@ const SavingsSettings = ({
       case "amount":
         if (!value) return "Amount is required";
         if (isNaN(Number(value))) return "Amount must be a number";
+        if (Number(value) <= 0) return "Amount must be greater than zero";
         break;
       case "startDate":
       case "endDate":
