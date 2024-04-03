@@ -54,7 +54,7 @@ const Posting = () => {
       return client
         .get(`/api/saving/get-savings?organisation=${organizationId}`, config)
         .then((response) => {
-          console.log("allSavingsSuccess: ", response.data);
+          console.log("allSavingsSuccess: ", response);
           setFilteredSavings(response.data.savings)
           return response.data;
         })
