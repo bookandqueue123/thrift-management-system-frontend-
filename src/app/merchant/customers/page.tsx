@@ -14,12 +14,12 @@ import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from "reac
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import DatePicker from 'react-datepicker'
+import DatePicker from "react-datepicker";
 import { CiExport } from "react-icons/ci";
 import { MdKeyboardArrowLeft } from "react-icons/md";
-import { MdKeyboardArrowRight } from "react-icons/md"
-import passport from '../../../../public/passport.svg'
-import ninslip from "../../../../public/NIN.svg"
+import { MdKeyboardArrowRight } from "react-icons/md";
+import passport from "../../../../public/passport.svg";
+import ninslip from "../../../../public/NIN.svg";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
@@ -55,7 +55,7 @@ const validationSchema = Yup.object().shape({
       "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
     )
     .required("Phone number is required"),
-    homeAddress: Yup.string().required("Home Address is required"),
+  homeAddress: Yup.string().required("Home Address is required"),
   email: Yup.string()
     .email("Invalid email address")
     .required("Email is required"),
@@ -71,33 +71,36 @@ const validationSchema = Yup.object().shape({
 const Customers = () => {
   const PAGE_SIZE = 5;
 
-  
+  const [searchResult, setSearchResult] = useState("");
+  const [filteredCustomers, setFilteredCustomer] = useState<customer[]>([]);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [searchResult, setSearchResult] = useState('');
-  const [filteredCustomers, setFilteredCustomer] = useState<customer[]>([])
-  const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
-  const [currentPage, setCurrentPage] = useState(1)
-  
   const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
     "form",
   );
-  const [modalToShow, setModalToShow] = useState<"view" | "savings" | "edit" | "">("")
+  const [modalToShow, setModalToShow] = useState<
+    "view" | "savings" | "edit" | "create-customer" | ""
+  >("");
   const [customerToBeEdited, setCustomerToBeEdited] = useState("");
-  const organisationId = useSelector(selectOrganizationId)
+  const organisationId = useSelector(selectOrganizationId);
 
   const [openDropdown, setOpenDropdown] = useState<number>(0);
-  const handleFromDateChange = (event: { target: { value: SetStateAction<string>; }; }) => {
+  const handleFromDateChange = (event: {
+    target: { value: SetStateAction<string> };
+  }) => {
     setFromDate(event.target.value);
-    
   };
 
-  const handleToDateChange = (event: { target: { value: SetStateAction<string>; }; }) => {
+  const handleToDateChange = (event: {
+    target: { value: SetStateAction<string> };
+  }) => {
     setToDate(event.target.value);
-    
-    handleDateFilter()
+
+    handleDateFilter();
   };
   const toggleDropdown = (val: number) => {
     if (openDropdown === val) {
@@ -107,17 +110,18 @@ const Customers = () => {
     }
   };
 
-  
   const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
     queryKey: ["allCustomers"],
     queryFn: async () => {
       return client
-        .get(`/api/user?role=customer&organisation=${organisationId}&userType=individual`, {})  //populate this based onthee org
+        .get(
+          `/api/user?role=customer&organisation=${organisationId}&userType=individual`,
+          {},
+        ) //populate this based onthee org
         .then((response: AxiosResponse<customer[], any>) => {
           console.log(response);
-          setFilteredCustomer(response.data)
+          setFilteredCustomer(response.data);
           return response.data;
-          
         })
         .catch((error: AxiosError<any, any>) => {
           console.log(error);
@@ -127,74 +131,83 @@ const Customers = () => {
   });
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchResult(e.target.value);
-    console.log(e.target.value)
+    console.log(e.target.value);
 
-    if(allCustomers){
-      const filtered = allCustomers.filter(item =>
-        String(item.accountNumber).includes(String(e.target.value))
-    );
-    // Update the filtered data state
-    setFilteredCustomer(filtered);
+    if (allCustomers) {
+      const filtered = allCustomers.filter((item) =>
+        String(item.accountNumber).includes(String(e.target.value)),
+      );
+      // Update the filtered data state
+      setFilteredCustomer(filtered);
     }
-    
   };
   const handleDateFilter = () => {
     // Filter the data based on the date range
-    if(allCustomers){
-    const filtered = allCustomers.filter(item => {
-      const itemDate = new Date(item.createdAt); // Convert item date to Date object
-      const startDateObj = new Date(fromDate);
-      const endDateObj = new Date(toDate);
+    if (allCustomers) {
+      const filtered = allCustomers.filter((item) => {
+        const itemDate = new Date(item.createdAt); // Convert item date to Date object
+        const startDateObj = new Date(fromDate);
+        const endDateObj = new Date(toDate);
 
-      return itemDate >= startDateObj && itemDate <= endDateObj;
-    });
+        return itemDate >= startDateObj && itemDate <= endDateObj;
+      });
 
-    // Update the filtered data state
-    setFilteredCustomer(filtered);
-  }
+      // Update the filtered data state
+      setFilteredCustomer(filtered);
+    }
   };
 
-
-  console.log(filteredCustomers)
+  console.log(filteredCustomers);
   const paginatedCustomers = filteredCustomers?.slice(
     (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+    currentPage * PAGE_SIZE,
   );
-  let totalPages = 0
-  if(allCustomers){
-     totalPages = Math.ceil(allCustomers.length / PAGE_SIZE);
+  let totalPages = 0;
+  if (allCustomers) {
+    totalPages = Math.ceil(allCustomers.length / PAGE_SIZE);
   }
 
   const goToPreviousPage = () => {
     if (currentPage > 1) {
-      (setCurrentPage(currentPage - 1));
+      setCurrentPage(currentPage - 1);
     }
   };
 
   const goToNextPage = () => {
     if (currentPage < totalPages) {
-     (setCurrentPage(currentPage + 1));
+      setCurrentPage(currentPage + 1);
     }
   };
 
-  
-  const AddCustomer = () => {};
-  
-  
+  // CUstomer Creation Process Starts
+  const [userCreated, setUserCreated] = useState(false);
+  const CreateNewCustomer = () => {
+    return (
+      <Modal setModalState={setModalState} title="Create a new customer">
+        <div className="px-[10%]">
+          {userCreated ? (
+            <Kyc />
+          ) : (
+            <CreateCustomer
+              setUserCreated={setUserCreated}
+              organizationId={organisationId}
+            />
+          )}
+        </div>
+      </Modal>
+    );
+  };
+
   return (
     <>
-
-
-
       <div className="mb-4 space-y-2">
-        <p className="text-base text-2xl font-bold text-ajo_offWhite text-opacity-60">
+        <p className="text-2xl text-base font-bold text-ajo_offWhite text-opacity-60">
           Customers
         </p>
       </div>
       <section>
         <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <span className="flex items-center gap-3">
-            
             <FilterDropdown
               options={[
                 "Account Number",
@@ -210,38 +223,42 @@ const Customers = () => {
             {/* <SearchInput onSearch={handleSearch}/> */}
 
             <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
-            <input
-            onChange={handleSearch}
-              type="search"
-              placeholder="Search"
-              className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
-            />
-            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-              <circle
-                cx="8.60996"
-                cy="8.10312"
-                r="7.10312"
-                stroke="#EAEAFF"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <input
+                onChange={handleSearch}
+                type="search"
+                placeholder="Search"
+                className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
               />
-              <path
-                d="M13.4121 13.4121L16.9997 16.9997"
-                stroke="#EAEAFF"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </form>
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                <circle
+                  cx="8.60996"
+                  cy="8.10312"
+                  r="7.10312"
+                  stroke="#EAEAFF"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M13.4121 13.4121L16.9997 16.9997"
+                  stroke="#EAEAFF"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </form>
           </span>
           <CustomButton
             type="button"
             label="Create New Customer"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-            onButtonClick={AddCustomer}
+            onButtonClick={() => {
+              // setModalState(true);
+              setModalToShow("create-customer");
+            }}
           />
+          {modalToShow === "create-customer" && <CreateNewCustomer />}
         </div>
 
         <div className="">
@@ -258,21 +275,25 @@ const Customers = () => {
                 />
 
 
-                <p className="mx-2 text-white">to</p>
-                <input
-                  type="date"
-                  value={toDate}
-                  onChange={handleToDateChange}
-                  className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <div className="flex mt-4">
-                <button className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
-                <button className="px-4 py-2 text-white rounded-md border-none bg-transparent relative">
-                  
-                  <u>Export as Excel</u>
-                </button>
-              </div>
+              <p className="mx-2 text-white">to</p>
+              <input
+                type="date"
+                value={toDate}
+                onChange={handleToDateChange}
+                className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+            <div className="mt-4 flex">
+              <button className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
+                Export as CSV{" "}
+                <span className="ml-2 mt-1">
+                  <CiExport />
+                </span>
+              </button>
+              <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
+                <u>Export as Excel</u>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -290,7 +311,7 @@ const Customers = () => {
               "State",
               "Local Govt Area",
               "City/Town",
-              "organisation",
+              "Organisation",
               "Action",
             ]}
             content={paginatedCustomers?.map((customer, index) => (
@@ -325,7 +346,7 @@ const Customers = () => {
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {customer.organisation || "----"}
                 </td>
-                
+
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   <StatusIndicator
                     label={`Actions`}
@@ -347,21 +368,22 @@ const Customers = () => {
                       ],
                       actions: [
                         () => {
-                          setModalState(true)
-                          setModalContent("form")
-                          setModalToShow("view")
-                          setCustomerToBeEdited(customer._id);  console.log("View Customer");
+                          setModalState(true);
+                          setModalContent("form");
+                          setModalToShow("view");
+                          setCustomerToBeEdited(customer._id);
+                          console.log("View Customer");
                         },
                         () => {
-                          setModalToShow("edit")
-                          setModalState(true)
-                          setModalContent('form')
-                          
+                          setModalToShow("edit");
+                          setModalState(true);
+                          setModalContent("form");
+
                           setCustomerToBeEdited(customer._id);
                         },
                         () => {
                           setModalState(true);
-                          setModalToShow("savings")
+                          setModalToShow("savings");
                           setModalContent("form");
                           setCustomerToBeEdited(customer._id);
                         },
@@ -381,72 +403,85 @@ const Customers = () => {
           {modalState && (
             <Modal
               setModalState={setModalState}
-              title={modalContent === "confirmation" ? "" : modalToShow === "view" ? "View Customer" : modalToShow === "edit" ? "Edit Customer" : modalToShow === "savings" ? "Savings Set Up": ""}
-            >
-              {modalToShow === "view" ? 
-              <ViewCustomer
-                customerId={customerToBeEdited}
-                setContent={setModalContent}
-                content={
-                  modalContent === "confirmation" ? "confirmation" : "form"
-                }
-                closeModal={setModalState}
-              /> 
-               : modalToShow === "savings" ? 
-               <SavingsSettings
-               customerId={customerToBeEdited}
-               setContent={setModalContent}
-               content={
-                 modalContent === "confirmation" ? "confirmation" : "form"
-               }
-               closeModal={setModalState}
-             /> : modalToShow === "edit" ?
-             <EditCustomer
-                customerId={customerToBeEdited}
-                setContent={setModalContent}
-                content={
-                  modalContent === "confirmation" ? "confirmation" : "form"
-                }
-                closeModal={setModalState}
-              /> : ""
+              title={
+                modalContent === "confirmation"
+                  ? ""
+                  : modalToShow === "view"
+                    ? "View Customer"
+                    : modalToShow === "edit"
+                      ? "Edit Customer"
+                      : modalToShow === "savings"
+                        ? "Savings Set Up"
+                        : ""
               }
+            >
+              {modalToShow === "view" ? (
+                <ViewCustomer
+                  customerId={customerToBeEdited}
+                  setContent={setModalContent}
+                  content={
+                    modalContent === "confirmation" ? "confirmation" : "form"
+                  }
+                  closeModal={setModalState}
+                />
+              ) : modalToShow === "savings" ? (
+                <SavingsSettings
+                  customerId={customerToBeEdited}
+                  setContent={setModalContent}
+                  content={
+                    modalContent === "confirmation" ? "confirmation" : "form"
+                  }
+                  closeModal={setModalState}
+                />
+              ) : modalToShow === "edit" ? (
+                <EditCustomer
+                  customerId={customerToBeEdited}
+                  setContent={setModalContent}
+                  content={
+                    modalContent === "confirmation" ? "confirmation" : "form"
+                  }
+                  closeModal={setModalState}
+                />
+              ) : (
+                ""
+              )}
             </Modal>
           )}
           <div className="flex justify-center">
-          <div className="flex justify-center items-center  space-x-2">
-            <button
-              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-              onClick={goToPreviousPage}
-            >
-              <MdKeyboardArrowLeft />
-            </button>
+            <div className="flex items-center justify-center  space-x-2">
+              <button
+                className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+                onClick={goToPreviousPage}
+              >
+                <MdKeyboardArrowLeft />
+              </button>
 
-            <button
-              className="p-2  text-blue-500 rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-              onClick={() => setCurrentPage(currentPage)}
-            >
-              {currentPage}
-            </button>
+              <button
+                className="cursor-pointer  rounded-md p-2 text-blue-500 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+                onClick={() => setCurrentPage(currentPage)}
+              >
+                {currentPage}
+              </button>
 
-            <button
-              className="p-2  rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-              onClick={() =>(setCurrentPage(currentPage + 1))}
-            >
-              {currentPage + 1}
-            </button>
-            <button
-              className="p-2  rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-              onClick={() =>(setCurrentPage(currentPage + 2))}
-            >
-              {currentPage + 2}
-            </button>
+              <button
+                className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                {currentPage + 1}
+              </button>
+              <button
+                className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+                onClick={() => setCurrentPage(currentPage + 2)}
+              >
+                {currentPage + 2}
+              </button>
 
-            <button
-              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-              onClick={goToNextPage}
-            >
-              <MdKeyboardArrowRight />
-            </button> 
+              <button
+                className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+                onClick={goToNextPage}
+              >
+                <MdKeyboardArrowRight />
+              </button>
 
               {/* <button
                 className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
@@ -454,11 +489,9 @@ const Customers = () => {
               >
                 {currentPage + 6}
               </button> */}
-
-                    
-         </div>
-          {/* <PaginationBar apiResponse={DummyCustomers} /> */}
-        </div>
+            </div>
+            {/* <PaginationBar apiResponse={DummyCustomers} /> */}
+          </div>
         </div>
       </section>
 
@@ -469,19 +502,19 @@ const Customers = () => {
 
 export default Customers;
 
-interface ShowModalProps{
+interface ShowModalProps {
   customerId: string;
   setContent: Dispatch<SetStateAction<"form" | "confirmation">>;
   content: "form" | "confirmation";
   closeModal: Dispatch<SetStateAction<boolean>>;
 }
+
 const SavingsSettings = ({
   customerId,
   setContent,
   content,
   closeModal,
 }: ShowModalProps) => {
-  
   const { client } = useAuth();
   const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
     queryKey: ["customerInfo"],
@@ -508,9 +541,63 @@ const SavingsSettings = ({
     users: [] as string[],
   });
 
-  const handleChange = (e: { target: { name: any; value: any } }) => {
+  const initialValues = {
+    purposeName: "",
+    amount: "",
+    startDate: "",
+    endDate: "",
+    collectionDate: "",
+    frequency: "",
+  };
+
+  // Input Validation States
+  const [formValues, setFormValues] = useState<FormValues>(initialValues);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [isTouched, setIsTouched] = useState<{ [key: string]: boolean }>({});
+
+  const validateField = (name: string, value: string) => {
+    switch (name) {
+      case "purposeName":
+        if (!value) return "Savings purpose is required";
+        break;
+      case "amount":
+        if (!value) return "Amount is required";
+        if (isNaN(Number(value))) return "Amount must be a number";
+        if (Number(value) <= 0) return "Amount must be greater than zero";
+        break;
+      case "startDate":
+      case "endDate":
+      case "collectionDate":
+        if (!value) return "Date is required";
+        // To add additional date validation if necessary
+        break;
+      case "frequency":
+        if (!value) return "Frequency is required";
+        break;
+      default:
+        return "";
+    }
+    return "";
+  };
+
+  const handleInputChange = (
+    e:
+      | React.ChangeEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
+    setFormValues({ ...formValues, [name]: value });
+    setFormErrors({ ...formErrors, [name]: validateField(name, value) });
     setSaveDetails((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleInputFocus = (
+    e: React.FocusEvent<HTMLInputElement> | React.FocusEvent<HTMLSelectElement>,
+  ) => {
+    const { name, value } = e.target;
+    setIsTouched({ ...isTouched, [name]: true });
+    setFormValues({ ...formValues, [name]: value });
+    setFormErrors({ ...formErrors, [name]: validateField(name, value) });
   };
 
   const { mutate: setSavings, isPending: isSettingSavings } = useMutation({
@@ -537,9 +624,31 @@ const SavingsSettings = ({
       throw error;
     },
   });
-  // console.log(saveDetails.users);
 
-  const onSubmitHandler = () => {
+  const onSubmitHandler = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    let isValid = true;
+    const newErrors: FormErrors = {};
+
+    Object.keys(formValues).forEach((key) => {
+      const error = validateField(key, formValues[key]);
+      if (error) {
+        isValid = false;
+        newErrors[key] = error;
+      }
+    });
+
+    setFormErrors((prevErrors) => {
+      return newErrors;
+    });
+
+    if (isValid) {
+      console.log("Form is valid, submitting...");
+    } else {
+      console.log("Form is invalid, showing errors...");
+    }
+
     if (!saveDetails.users.includes(customerId)) {
       setSaveDetails((prev) => ({
         ...prev,
@@ -550,7 +659,6 @@ const SavingsSettings = ({
   };
 
   return (
-    
     <div>
       {content === "confirmation" ? (
         <div className="mx-auto mt-[10%] flex h-full w-1/2 flex-col items-center justify-center space-y-8">
@@ -623,15 +731,25 @@ const SavingsSettings = ({
               >
                 Purpose:
               </label>
-              <input
-                id="purposeName"
-                name="purposeName"
-                type="text"
-                placeholder="state reason"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                onChange={handleChange}
-                required
-              />
+              <span className="w-full">
+                <input
+                  id="purposeName"
+                  name="purposeName"
+                  type="text"
+                  value={formValues.purposeName}
+                  placeholder="state reason"
+                  className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  onChange={handleInputChange}
+                  onFocus={handleInputFocus}
+                  required
+                />
+                {isTouched.purposeName ||
+                  (formErrors.purposeName && (
+                    <p className="mt-2 text-sm font-semibold text-red-600">
+                      {formErrors.purposeName}
+                    </p>
+                  ))}
+              </span>
             </div>
             <div className="items-center gap-6 md:flex">
               <label
@@ -640,22 +758,32 @@ const SavingsSettings = ({
               >
                 Savings Amount:
               </label>
-              <input
-                id="amount"
-                name="amount"
-                placeholder="0000.00 NGN"
-                type="text"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                onChange={(event) => {
-                  const input = event.target.value.replace(/\D/g, "");
-                  const formatted = Number(input).toLocaleString();
-                  setSaveDetails((prev) => ({
-                    ...prev,
-                    ["amount"]: formatted,
-                  }));
-                }}
-                required
-              />
+              <span className="w-full">
+                <input
+                  id="amount"
+                  name="amount"
+                  placeholder="0000.00 NGN"
+                  type="text"
+                  className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  onChange={(event) => {
+                    const input = event.target.value.replace(/\D/g, "");
+                    const formatted = Number(input).toLocaleString();
+                    setSaveDetails((prev) => ({
+                      ...prev,
+                      ["amount"]: formatted,
+                    }));
+                    handleInputChange(event);
+                  }}
+                  onFocus={handleInputFocus}
+                  required
+                />
+                {isTouched.amount ||
+                  (formErrors.amount && (
+                    <p className="mt-2 text-sm font-semibold text-red-600">
+                      {formErrors.amount}
+                    </p>
+                  ))}
+              </span>
             </div>
             <div className="items-center gap-6 md:flex">
               <label
@@ -664,22 +792,29 @@ const SavingsSettings = ({
               >
                 Savings Frequency:
               </label>
-              <select
-                id="frequency"
-                name="frequency"
-                className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 capitalize text-[#7D7D7D]"
-                defaultValue={"Select a category"}
-                onChange={handleChange}
-                required
-              >
-                <option className="hidden">
-                  Select frequency
-                </option>
-                <option className="capitalize">daily</option>
-                <option className="capitalize">weekly</option>
-                <option className="capitalize">monthly</option>
-                <option className="capitalize">quarterly</option>
-              </select>
+              <span className="w-full">
+                <select
+                  id="frequency"
+                  name="frequency"
+                  className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 capitalize text-[#7D7D7D]"
+                  defaultValue={"Select a category"}
+                  onChange={handleInputChange}
+                  onFocus={handleInputFocus}
+                  required
+                >
+                  <option className="hidden">Select frequency</option>
+                  <option className="capitalize">daily</option>
+                  <option className="capitalize">weekly</option>
+                  <option className="capitalize">monthly</option>
+                  <option className="capitalize">quarterly</option>
+                </select>
+                {isTouched.frequency ||
+                  (formErrors.frequency && (
+                    <p className="mt-2 text-sm font-semibold text-red-600">
+                      {formErrors.frequency}
+                    </p>
+                  ))}
+              </span>
             </div>
             <p className="mt-6 text-sm text-ajo_offWhite text-opacity-60">
               Savings Duration (Kindly select the range this savings is to last)
@@ -692,14 +827,23 @@ const SavingsSettings = ({
                 >
                   Start Date:
                 </label>
-                <input
-                  id="startDate"
-                  name="startDate"
-                  type="date"
-                  className="bg-right-20 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
-                  onChange={handleChange}
-                  required
-                />
+                <span className="w-full">
+                  <input
+                    id="startDate"
+                    name="startDate"
+                    type="date"
+                    className="bg-right-20 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+                    onChange={handleInputChange}
+                    onFocus={handleInputFocus}
+                    required
+                  />
+                  {isTouched.startDate ||
+                    (formErrors.startDate && (
+                      <p className="mt-2 text-sm font-semibold text-red-600">
+                        {formErrors.startDate}
+                      </p>
+                    ))}
+                </span>
               </div>
               <div className="w-[50%] items-center gap-6 md:flex md:w-[40%]">
                 <label
@@ -708,14 +852,23 @@ const SavingsSettings = ({
                 >
                   End Date:
                 </label>
-                <input
-                  id="endDate"
-                  name="endDate"
-                  type="date"
-                  className="bg-right-20 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
-                  onChange={handleChange}
-                  required
-                />
+                <span className="w-full">
+                  <input
+                    id="endDate"
+                    name="endDate"
+                    type="date"
+                    className="bg-right-20 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+                    onChange={handleInputChange}
+                    onFocus={handleInputFocus}
+                    required
+                  />
+                  {isTouched.endDate ||
+                    (formErrors.endDate && (
+                      <p className="mt-2 text-sm font-semibold text-red-600">
+                        {formErrors.endDate}
+                      </p>
+                    ))}
+                </span>
               </div>
             </div>
             <div className="items-center gap-6 md:flex">
@@ -725,14 +878,23 @@ const SavingsSettings = ({
               >
                 Collection Date:
               </label>
-              <input
-                id="collectionDate"
-                name="collectionDate"
-                type="date"
-                className="bg-right-20 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
-                onChange={handleChange}
-                required
-              />
+              <span className="w-full">
+                <input
+                  id="collectionDate"
+                  name="collectionDate"
+                  type="date"
+                  className="bg-right-20 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+                  onChange={handleInputChange}
+                  onFocus={handleInputFocus}
+                  required
+                />
+                {isTouched.collectionDate ||
+                  (formErrors.collectionDate && (
+                    <p className="mt-2 text-sm font-semibold text-red-600">
+                      {formErrors.collectionDate}
+                    </p>
+                  ))}
+              </span>
             </div>
 
             <div className="flex items-center justify-center pb-12 pt-4">
@@ -740,14 +902,12 @@ const SavingsSettings = ({
               <div className="md:flex md:w-[80%] md:justify-center">
                 <CustomButton
                   type="button"
-                  label="Submit"
-                  style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 md:w-[60%]"
+                  label={isSettingSavings ? "Setting Savings" : "Submit"}
+                  style={`rounded-md ${isSettingSavings ? "bg-gray-400 hover:bg-gray-400 focus:bg-gray-400" : "bg-ajo_blue hover:bg-indigo-500 focus:bg-indigo-500"} py-3 px-9 text-sm text-ajo_offWhite md:w-[60%]`}
                   onButtonClick={onSubmitHandler}
                 />
               </div>
             </div>
-
-            
           </form>
         </>
       )}
@@ -755,16 +915,13 @@ const SavingsSettings = ({
   );
 };
 
-
-
 const ViewCustomer = ({
   customerId,
   setContent,
   content,
   closeModal,
 }: ShowModalProps) => {
-
-  console.log(customerId)
+  console.log(customerId);
 
   const { client } = useAuth();
   const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
@@ -898,18 +1055,18 @@ const ViewCustomer = ({
         </div>
       </div>
       </div>
-
-      
     </div>
 
   )
 }
 
 
-const EditCustomer = ({customerId,
+const EditCustomer = ({
+  customerId,
   setContent,
   content,
-  closeModal,}: ShowModalProps) => {
+  closeModal,
+}: ShowModalProps) => {
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -1223,33 +1380,33 @@ const EditCustomer = ({customerId,
         </div>
       </div>
 
-      <div className="mb-3">
-        <label
-          htmlFor="otherName"
-          className="m-0 text-normal font-bold "
-        >
-          Other Names
-        </label>
-        <Field
-          id="otherName"
-          name="otherName"
-          type="text"
-          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-        />
-      </div>
+                    <div className="mb-3">
+                      <label
+                        htmlFor="otherName"
+                        className="text-normal m-0 font-bold "
+                      >
+                        Other Names
+                      </label>
+                      <Field
+                        id="otherName"
+                        name="otherName"
+                        type="text"
+                        className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                      />
+                    </div>
 
-      <div className="mb-3">
-        <label
-          htmlFor="phoneNumber"
-          className="m-0 text-normal font-bold "
-        >
-          Phone Number{" "}
-          <span className="font-base font-semibold text-[#FF0000]">
-            *
-          </span>
-        </label>
-        <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-          {/* <span className="flex h-full select-none items-center gap-2 text-gray-400 sm:text-sm">
+                    <div className="mb-3">
+                      <label
+                        htmlFor="phoneNumber"
+                        className="text-normal m-0 font-bold "
+                      >
+                        Phone Number{" "}
+                        <span className="font-base font-semibold text-[#FF0000]">
+                          *
+                        </span>
+                      </label>
+                      <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                        {/* <span className="flex h-full select-none items-center gap-2 text-gray-400 sm:text-sm">
           <svg
             width="20"
             height="16"
@@ -1275,68 +1432,67 @@ const EditCustomer = ({customerId,
           </svg>
           +234
         </span> */}
-          <Field
-            id="phoneNumber"
-            name="phoneNumber"
-            type="tel"
-            className="bg-transparent outline-none"
-          />
-        </div>
-        <ErrorMessage
-          name="phoneNumber"
-          component="div"
-          className="text-red-500"
-        />
-      </div>
+                        <Field
+                          id="phoneNumber"
+                          name="phoneNumber"
+                          type="tel"
+                          className="bg-transparent outline-none"
+                        />
+                      </div>
+                      <ErrorMessage
+                        name="phoneNumber"
+                        component="div"
+                        className="text-red-500"
+                      />
+                    </div>
 
-      <div className="mb-3">
-        <label
-          htmlFor="email"
-          className="m-0 text-normal font-bold "
-        >
-          Email address{" "}
-          <span className="font-base font-semibold text-[#FF0000]">
-            *
-          </span>
-        </label>
-        <Field
-          id="email"
-          name="email"
-          type="email"
-          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-        />
-        <ErrorMessage
-          name="email"
-          component="div"
-          className="text-red-500"
-        />
-      </div>
+                    <div className="mb-3">
+                      <label
+                        htmlFor="email"
+                        className="text-normal m-0 font-bold "
+                      >
+                        Email address{" "}
+                        <span className="font-base font-semibold text-[#FF0000]">
+                          *
+                        </span>
+                      </label>
+                      <Field
+                        id="email"
+                        name="email"
+                        type="email"
+                        className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                      />
+                      <ErrorMessage
+                        name="email"
+                        component="div"
+                        className="text-red-500"
+                      />
+                    </div>
 
-      <div className="mb-3">
-        <label
-          htmlFor="homeAddress"
-          className="m-0 text-normal font-bold "
-        >
-          Home Address{" "}
-          <span className="font-base font-semibold text-[#FF0000]">
-            *
-          </span>
-        </label>
-        <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-          
-          <Field
-            id="homeAddress"
-            name="homeAddress"
-            type="text"
-            className="bg-transparent outline-none"
-          />
-        </div>
-        <ErrorMessage
-          name="homeAddress"
-          component="div"
-          className="text-red-500"
-        />
-      </div>
+                    <div className="mb-3">
+                      <label
+                        htmlFor="homeAddress"
+                        className="text-normal m-0 font-bold "
+                      >
+                        Home Address{" "}
+                        <span className="font-base font-semibold text-[#FF0000]">
+                          *
+                        </span>
+                      </label>
+                      <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                        <Field
+                          id="homeAddress"
+                          name="homeAddress"
+                          type="text"
+                          className="bg-transparent outline-none"
+                        />
+                      </div>
+                      <ErrorMessage
+                        name="homeAddress"
+                        component="div"
+                        className="text-red-500"
+                      />
+                    </div>
 
       <div className="mb-3">
         <label
@@ -1530,42 +1686,36 @@ const EditCustomer = ({customerId,
         </div>
       </div> */}
 
-      <div className="mb-3">
-              <label
-                htmlFor="nin"
-                className="m-0 text-xs font-bold "
-              >
-                NIN number
-              </label>
-              <Field
-                name="nin"
-                type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-              <ErrorMessage
-                name="nin"
-                component="div"
-                className="text-xs text-red-500"
-              />
-            </div>
-            <div className="mb-3">
-              <label
-                htmlFor="bvn"
-                className="m-0 text-xs font-bold "
-              >
-                BVN number
-              </label>
-              <Field
-                name="bvn"
-                type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-              <ErrorMessage
-                name="bvn"
-                component="div"
-                className="text-xs text-red-500"
-              />
-            </div>
+                    <div className="mb-3">
+                      <label htmlFor="nin" className="m-0 text-xs font-bold ">
+                        NIN number
+                      </label>
+                      <Field
+                        name="nin"
+                        type="text"
+                        className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                      />
+                      <ErrorMessage
+                        name="nin"
+                        component="div"
+                        className="text-xs text-red-500"
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="bvn" className="m-0 text-xs font-bold ">
+                        BVN number
+                      </label>
+                      <Field
+                        name="bvn"
+                        type="text"
+                        className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                      />
+                      <ErrorMessage
+                        name="bvn"
+                        component="div"
+                        className="text-xs text-red-500"
+                      />
+                    </div>
 
             <div className="flex items-center">
       
@@ -1624,7 +1774,7 @@ const EditCustomer = ({customerId,
      {showErrorToast && errorMessage && errorMessage && <ErrorToaster message={errorMessage? errorMessage : "Error creating organization"} />}
 */}
 
-    {/* Submit Button */}
+                  {/* Submit Button */}
 
     <div className="flex justify-center">
        <CustomButton

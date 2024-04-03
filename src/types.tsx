@@ -421,3 +421,11 @@ export interface StateProps {
   name: string;
   lgas: string[];
 }
+
+export interface FormValues {
+  [key: string]: any;
+}
+
+export interface FormErrors {
+  [key: string]: string;
+}
