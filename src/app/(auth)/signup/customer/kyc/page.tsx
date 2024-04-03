@@ -565,7 +565,7 @@ import { useSelector } from "react-redux";
 import StatesAndLGAs from "@/api/statesAndLGAs.json"
 import * as Yup from "yup";
 
-const Kyc = () => {
+export const Kyc = () => {
   
   const userId = useSelector(selectUserId)
   
