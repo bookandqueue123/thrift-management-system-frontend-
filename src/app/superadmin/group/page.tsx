@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Modal from "@/components/Modal";
 import CreateCustomer from "@/modules/CreateCustomer/CreateCustomer";
-import CreateOranisationGroup from "./create-group/page";
+
 import CreateOranisationGroupForm from "@/modules/superAdmin/createOrganisationGroupForm";
 
 
