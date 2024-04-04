@@ -1,62 +1,68 @@
 'use client'
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
-import TransactionsTable from "@/components/Tables";
-import { CiExport } from "react-icons/ci";
-import { MdModeEditOutline } from "react-icons/md";
-import { MdDelete } from "react-icons/md";
-import { FaFileDownload } from "react-icons/fa";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import Modal from "@/components/Modal";
-import CreateCustomer from "@/modules/CreateCustomer/CreateCustomer";
-import CreateOranisationGroup from "./create-group/page";
-import CreateOranisationGroupForm from "@/modules/superAdmin/createOrganisationGroupForm";
+import TransactionsTable from "@/components/Tables";
+import CreateCommissionForm from "@/modules/superAdmin/CreateCommission";
+import { useState } from "react";
+import { CiExport } from "react-icons/ci";
 
 
 const mockData = [
     {
-      "group_name": "Group A",
-      "account_name": "John Doe",
-      "account_number": "1234567890",
-      "bank_name": "ABC Bank",
-      "group_type": "Type X",
-      "total_group_number": 10
+      "organisation": "ABC Corporation",
+      "organisationIdNo": "123456",
+      "Appliedlowest": 1000,
+      "AdminFeeLowest": 50,
+      "Apliedhigest": 5000,
+      "AdminFeeHiest": 100,
+      "AppliedServiceCharge": 0.5,
+      "serviceCharge": 20,
+      "comment": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+      "action": "View"
     },
     {
-      "group_name": "Group B",
-      "account_name": "Jane Smith",
-      "account_number": "0987654321",
-      "bank_name": "XYZ Bank",
-      "group_type": "Type Y",
-      "total_group_number": 5
+      "organisation": "XYZ Corp",
+      "organisationIdNo": "789012",
+      "Appliedlowest": 2000,
+      "AdminFeeLowest": 70,
+      "Apliedhigest": 6000,
+      "AdminFeeHiest": 120,
+      "AppliedServiceCharge": 0.7,
+      "serviceCharge": 25,
+      "comment": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "action": "Edit"
     },
     {
-      "group_name": "Group C",
-      "account_name": "Alice Johnson",
-      "account_number": "1122334455",
-      "bank_name": "Example Bank",
-      "group_type": "Type Z",
-      "total_group_number": 15
+      "organisation": "Example Corp",
+      "organisationIdNo": "345678",
+      "Appliedlowest": 1500,
+      "AdminFeeLowest": 60,
+      "Apliedhigest": 5500,
+      "AdminFeeHiest": 110,
+      "AppliedServiceCharge": 0.6,
+      "serviceCharge": 22,
+      "comment": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+      "action": "Delete"
     }
-  ];
+  ]
+  
 export default function SuperAdminCustomer(){
-  const router = useRouter()
-  const [showModal, setShowModal] = useState(false)
+    const [showModal, setShowModal] = useState(false)
     return(
-
         <div>
-          {showModal ? (
-            <Modal 
+
+            {showModal ? (
+            <Modal
               setModalState={setShowModal}
-              title="Create Organisation Group">
+              title="Commission">
            
              
-              <CreateOranisationGroupForm/>
+              <CreateCommissionForm/>
             </Modal>
           ) : ""}
            <div className="mb-4 space-y-2">
                 <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
-                 Groups
+                 Commisssion
                 </p>
             </div>
 
@@ -104,11 +110,10 @@ export default function SuperAdminCustomer(){
           </span>
           <CustomButton
             type="button"
-            label="Create Group"
+            label="Create Commission"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
             onButtonClick={() => {
-              setShowModal(true)
-              // router.push("/superadmin/group/create-group")
+                setShowModal(true)
             //   setModalState(true);
             //   setModalContent("form");
             }}
@@ -145,51 +150,58 @@ export default function SuperAdminCustomer(){
           </div>
 
           <div className="mb-4">
-        <p className="text-white text-xl">Existing Group List</p>
+        <p className="text-white text-xl">Commission List</p>
       </div>
 
       <TransactionsTable
         headers={[
-        "Group Name",
-        "Account Name",
-        "Account Number",
-        "Bank Name,",
-        "Group Type", 
-        "Total Group Number",
+        "S/N",
+        "Organisation",
+        "Organisation ID No",
+        "Applied % (lowest range)",
+        "Admin Fee (Lowest range)",
+        "Applied %(Highest range)",
+        "Admin Fee (Highest range)",
+        "Applied Service Charge %",
+        "Service Charge",
+        "Comment",
         "Action"
         ]}
 
-        content={mockData.map((group, index) => (
+        content={mockData.map((organisation, index) => (
             <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {group.group_name}
+                    {index + 1}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {group.account_name}
+                    {organisation.organisation}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {group.account_number}
+                    {organisation.organisationIdNo}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {group.bank_name} customers
+                    {organisation.Appliedlowest}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {group.group_type}
+                    {organisation.AdminFeeLowest} 
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {group.total_group_number}
+                    {organisation.Apliedhigest}
                 </td>
-               
-                <td className="whitespace-nowrap flex px-6 py-4 text-sm">
-                    <div className="">
-                        <MdModeEditOutline />
-                    </div>
-                    <div className="mx-6">
-                        <MdDelete />
-                    </div>
-                    <div className="">
-                        <FaFileDownload />
-                    </div>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {organisation.AdminFeeHiest}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {organisation.AppliedServiceCharge}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {organisation.serviceCharge}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {organisation.comment}
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    
                 </td>
             </tr>
         ))}
