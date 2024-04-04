@@ -8,9 +8,8 @@ import { FaFileDownload } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Modal from "@/components/Modal";
-import CreateCustomer from "@/modules/CreateCustomer/CreateCustomer";
 
-import CreateOranisationGroupForm from "@/modules/superAdmin/createOrganisationGroupForm";
+import CreateOranisationGroupForm from "@/modules/superAdmin/CreateOrganisationGroupForm";
 
 
 const mockData = [
