@@ -1,7 +1,7 @@
 "use client";
 import useRedirect from "@/api/hooks/useRedirect";
 import AvatarDropdown from "@/components/Dropdowns";
-import { Sidebar } from "@/components/Navbar";
+import { Sidebar, SuperAdminSidebar } from "@/components/Navbar";
 import { useState } from "react";
 
 // export const metadata: Metadata = {
@@ -29,7 +29,7 @@ export default function RootLayout({
           className={`w-full px-4 md:px-12 ${leftPadding} min-h-screen bg-ajo_darkBlue`}
         >
           {/* <section> */}
-          <Sidebar onShow={ShowSidebar} setShow={setShowSidebar} />
+          <SuperAdminSidebar onShow={ShowSidebar} setShow={setShowSidebar} />
           <div className="flex justify-end py-6">
             <AvatarDropdown
               avatarImg="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"

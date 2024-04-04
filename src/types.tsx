@@ -23,9 +23,9 @@ export type customer = {
   nokPhone: number;
   nin: number;
   bvn: number;
-  meansOfIDPhoto: File;
+  meansOfIDPhoto: any;
   meansOfID: "NIN" | "Passport";
-  photo: File;
+  photo: File | any;
   userType: string;
   groupName: string;
 };
@@ -80,7 +80,7 @@ export type setSavingsResponse = {
 
 export interface postSavingsResponse {
   status: "failed" | "success" | undefined;
-  message:       string;
+  message: string;
   updatedSaving: UpdatedSaving;
 }
 
@@ -89,37 +89,37 @@ export interface UpdatedSaving {
   amountPaid: string;
   saving: any;
   paymentMode: string;
-  _id:              string;
-  purposeName:      string;
-  amount:           number;
-  startDate:        Date;
-  endDate:          Date;
-  frequency:        string;
-  user:             string;
-  organisation:     string;
-  isPaid:           string;
-  paidDays:         PaidDay[];
-  createdAt:        Date;
-  updatedAt:        Date;
-  __v:              number;
+  _id: string;
+  purposeName: string;
+  amount: number;
+  startDate: Date;
+  endDate: Date;
+  frequency: string;
+  user: string;
+  organisation: string;
+  isPaid: string;
+  paidDays: PaidDay[];
+  createdAt: Date;
+  updatedAt: Date;
+  __v: number;
   totalAmountSaved: number;
-  savedDates:       Date[];
-  specificDates:    Date[];
-  adminFee:         number;
-  totalBalance:     number;
-  id:               string;
+  savedDates: Date[];
+  specificDates: Date[];
+  adminFee: number;
+  totalBalance: number;
+  id: string;
 }
 
 export interface PaidDay {
   dayOfCollection: Date;
-  datesPaid:       Date[];
-  amount:          number;
-  dayOfpayment?:   Date;
-  paymentMode:     string;
-  status:          string;
-  reference:       string;
-  _id:             string;
-  narration?:      string;
+  datesPaid: Date[];
+  amount: number;
+  dayOfpayment?: Date;
+  paymentMode: string;
+  status: string;
+  reference: string;
+  _id: string;
+  narration?: string;
 }
 
 export type savings = {
@@ -171,7 +171,7 @@ export type savings = {
   savedDates: any[];
   specificDates: any[];
   id: string;
-}
+};
 export type allSavingsResponse = {
   [x: string]: any;
   savings: [
@@ -279,136 +279,152 @@ export type savingsFilteredById = {
   id: string;
 };
 
-
 export interface MerchantSignUpProps {
   organisationName: string;
-  phoneNumber:      string;
-  email:            string;
-  password:         string;
-  prefferedUrl:     string;
-  role:             string;
-  confirmPassword: string
+  phoneNumber: string;
+  email: string;
+  password: string;
+  prefferedUrl: string;
+  role: string;
+  confirmPassword: string;
 }
 
-export interface signInProps{
-  email: string,
-  userCategory: string,
-  password: string,
-  rememberPassword: boolean,
+export interface signInProps {
+  email: string;
+  userCategory: string;
+  password: string;
+  rememberPassword: boolean;
 }
 export interface CustomerSignUpProps {
-  firstName:    string;
-  lastName:     string;
-  otherName:    string;
-  phoneNumber:  string;
-  email:        string;
-  password:     string;
+  [x: string]: any;
+  firstName: string;
+  lastName: string;
+  otherName: string;
+  phoneNumber: string;
+  email: string;
+  password: string;
   // role:         string;
-   organization: string;
-  confirmPassword: string
+  organization: string;
+  confirmPassword: string;
 }
 
 export interface getOrganizationProps {
-  userType:         string;
-  groupMember:      any[];
-  isArchieve:       boolean;
+  userType: string;
+  groupMember: any[];
+  isArchieve: boolean;
   savingIdentities: any[];
-  _id:              string;
-  email:            string;
-  phoneNumber:      string;
+  _id: string;
+  email: string;
+  phoneNumber: string;
   organisationName: string;
-  accountNumber:    string;
-  role:             string;
-  prefferedUrl:     string;
-  kycVerified:      boolean;
-  createdAt:        Date;
-  updatedAt:        Date;
-  __v:              number;
+  accountNumber: string;
+  role: string;
+  prefferedUrl: string;
+  kycVerified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  __v: number;
 }
 
 export interface UpdateKycProps {
-  country:         string;
-  state:           string;
-  lga:             string;
-  city:            string;
-  popularMarket:   string;
-  nok:             string;
+  email?: any;
+  phoneNumber?: any;
+  otherName?: any;
+  lastName?: any;
+  firstName?: any;
+  country: string;
+  state: string;
+  lga: string;
+  city: string;
+  popularMarket: string;
+  nok: string;
   nokRelationship: string;
-  nokPhone:        string;
-  homeAddress:     string;
-  userType:        string;
-  photo:           null;
-  meansOfID:       string;
-  meansOfIDPhoto:  null;
-  nin:             string;
-  bvn:             string;
-  organisation:    string;
-  bankAcctNo: string
+  nokPhone: string;
+  homeAddress: string;
+  userType: string;
+  photo: null;
+  meansOfID: string;
+  meansOfIDPhoto: any;
+  nin: any;
+  bvn: any;
+  organisation: string;
+  bankAcctNo: string;
 }
 
 export interface WithdrawalProps {
+  paymentMode: string | number | readonly string[] | undefined;
   paymentEvidence: string;
   evidence: string;
-  _id:                 string;
-  saving:              string;
-  user:                User;
-  amount:              number;
-  status:              string;
+  _id: string;
+  // saving:              string;
+  user: User;
+  amount: number;
+  status: string;
   paymentConfirmation: string;
-  organisation:        Organisation;
-  withdrawalRequest:   string;
-  createdAt:           Date;
-  updatedAt:           Date;
-  __v:                 number;
+  organisation: Organisation;
+  withdrawalRequest: string;
+  createdAt: Date;
+  updatedAt: Date;
+  __v: number;
+  saving: savings;
 }
 
 export interface Organisation {
-  isVerified:       boolean;
-  _id:              string;
-  email:            string;
-  phoneNumber:      string;
+  isVerified: boolean;
+  _id: string;
+  email: string;
+  phoneNumber: string;
   organisationName: string;
-  password:         string;
-  userType:         string;
-  groupMember:      any[];
-  role:             string;
-  prefferedUrl:     string;
-  kycVerified:      boolean;
-  isArchieve:       boolean;
+  password: string;
+  userType: string;
+  groupMember: any[];
+  role: string;
+  prefferedUrl: string;
+  kycVerified: boolean;
+  isArchieve: boolean;
   savingIdentities: any[];
-  createdAt:        Date;
-  updatedAt:        Date;
-  __v:              number;
+  createdAt: Date;
+  updatedAt: Date;
+  __v: number;
 }
 
 export interface User {
-  isVerified:       boolean;
-  _id:              string;
-  firstName:        string;
-  lastName:         string;
-  otherName:        string;
-  email:            string;
-  phoneNumber:      string;
-  password:         string;
-  accountNumber:    string;
-  userType:         string;
-  groupMember:      any[];
-  role:             string;
-  kycVerified:      boolean;
-  isArchieve:       boolean;
+  isVerified: boolean;
+  _id: string;
+  firstName: string;
+  lastName: string;
+  otherName: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  accountNumber: string;
+  userType: string;
+  groupMember: any[];
+  role: string;
+  kycVerified: boolean;
+  isArchieve: boolean;
   savingIdentities: string[];
-  organisation:     string;
-  createdAt:        Date;
-  updatedAt:        Date;
-  __v:              number;
-} 
+  organisation: string;
+  organisationName: string;
+  createdAt: Date;
+  updatedAt: Date;
+  __v: number;
+}
 
 export interface CountryAndStateProps {
   country: string;
-  states:  StateProps[];
+  states: StateProps[];
 }
 
 export interface StateProps {
   name: string;
   lgas: string[];
+}
+
+export interface FormValues {
+  [key: string]: any;
+}
+
+export interface FormErrors {
+  [key: string]: string | string[];
 }
