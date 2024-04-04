@@ -29,7 +29,25 @@ const GroupSettings = () => {
 
   const { client } = useAuth();
 
+  const [modalToShow, setModalToShow] = useState<"edit" | "">("");
+  const [groupToBeEdited, setGroupToBeEdited] = useState("");
   const organizationId = useSelector(selectOrganizationId);
+
+  // const x = {
+  //   _id: "660d706a5ec7052d03a59aa8",
+  //   userType: "group",
+  //   groupName: "Saavy Cooperative",
+  //   groupMember: ["660a72a5c07bfcaf8af26f70"],
+  //   role: "customer",
+  //   kycVerified: false,
+  //   isArchieve: false,
+  //   isVerified: true,
+  //   savingIdentities: [],
+  //   organisation: "6606f556c07bfcaf8af251c0",
+  //   createdAt: "2024-04-03T15:06:18.702Z",
+  //   updatedAt: "2024-04-03T15:06:18.702Z",
+  //   __v: 0,
+  // };
 
   const { data: allGroups, isLoading: isGettingAllGroups } = useQuery({
     queryKey: ["allgroups"],
@@ -37,7 +55,7 @@ const GroupSettings = () => {
       return client
         .get(`/api/user?organisation=${organizationId}&userType=group`, {})
         .then((response) => {
-          console.log("allGroups " + response.data);
+          // console.log("allGroups " + JSON.stringify(response.data));
           return response.data;
         })
         .catch((error) => {
@@ -46,6 +64,14 @@ const GroupSettings = () => {
         });
     },
   });
+
+  const handleGroupActions = (type: "edit" | "", Id: string) => {
+    setModalState(true);
+    setModalContent("form");
+    setModalToShow(type);
+    setGroupToBeEdited(Id);
+    console.log("View Customer");
+  };
   return (
     <>
       <div className="">
@@ -103,27 +129,29 @@ const GroupSettings = () => {
               ]}
               content={
                 isGettingAllGroups ? (
-                  <p className="font-semibold text-sm text-ajo_offWhite">Loading...</p>
+                  <p className="text-sm font-semibold text-ajo_offWhite">
+                    Loading...
+                  </p>
                 ) : (
                   allGroups.map((group: any, index: any) => (
                     <tr className="" key={index}>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {group.groupName}
+                        {group.groupName || "----"}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {group.accountName}
+                        {group.accountName || "----"}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {group.accountNumber}
+                        {group.accountNumber || "----"}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {group.bankName}
+                        {group.bankName || "----"}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {group.groupType}
+                        {group.groupType || "----"}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {group.totalMembers}
+                        {group.groupMember.length || "----"}
                       </td>
                       <td className="flex gap-2 whitespace-nowrap px-6 py-4 text-sm">
                         <Image
@@ -158,6 +186,32 @@ const GroupSettings = () => {
             />
             <PaginationBar apiResponse={DummyGroups.groups} />
           </div>
+          {/* {modalState && (
+            <Modal
+              setModalState={setModalState}
+              title={
+                modalContent === "confirmation"
+                  ? ""
+                  : modalToShow === "edit"
+                    ? "Edit Group"
+                    : ""
+              }
+            >
+              {modalToShow === "edit" ? (
+                // <EditCustomer
+                //   customerId={groupToBeEdited}
+                //   setContent={setModalContent}
+                //   content={
+                //     modalContent === "confirmation" ? "confirmation" : "form"
+                //   }
+                //   closeModal={setModalState}
+                // />
+                <></>
+              ) : (
+                ""
+              )}
+            </Modal>
+          )} */}
         </section>
       </div>
     </>
