@@ -877,7 +877,7 @@ const PostingForm = ({
               <option defaultValue={"Select a user"} className="hidden">
                 Select a user
               </option>
-              {groups?.map((group: customer) => {
+              {groups && groups.length > 0 && groups?.map((group: customer) => {
                 return (
                   <>
                     <option

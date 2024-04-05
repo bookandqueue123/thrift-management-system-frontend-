@@ -49,6 +49,7 @@ import { useQuery } from '@tanstack/react-query';
           })
       }
     })
+    console.log(users)
   
       const selectedIds = selectedOptions.map(option => option._id);
       // console.log('Selected IDs:', selectedIds);
@@ -195,7 +196,7 @@ import { useQuery } from '@tanstack/react-query';
                 //   onChange={handleOptionChange}
                 >
                   <option value="">Select an option</option>
-                  {users?.map((option) => (
+                  {users && users.length > 0 && users?.map((option) => (
                     <option key={option._id} value={option._id}>{option.firstName} {option.lastName}</option>
                   ))}
                 </select>
