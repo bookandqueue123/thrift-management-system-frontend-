@@ -6,6 +6,7 @@ import TransactionsTable from "@/components/Tables";
 import CreateCommissionForm from "@/modules/superAdmin/CreateCommission";
 import ViewCommission from "@/modules/superAdmin/ViewCommission";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CiExport } from "react-icons/ci";
 
@@ -52,6 +53,7 @@ const mockData = [
   
   
 export default function SuperAdminCustomer(){
+  const router = useRouter()
     const [showModal, setShowModal] = useState(false)
     const [openDropdown, setOpenDropdown] = useState<number>(0);
     
@@ -192,48 +194,82 @@ export default function SuperAdminCustomer(){
         ]}
 
         content={mockData.map((organisation, index) => (
-          <Link href={`/superadmin/commission/${organisation.organisation}`} key={index}>
           
-            <tr className="" >
+          
+            <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {index + 1}
+                  <Link href={`/superadmin/commission/${organisation.organisation}`} >
+                  {index + 1}
+                  </Link>
                 </td>
+
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  <Link href={`/superadmin/commission/${organisation.organisation}`} >
                     {organisation.organisation}
+                  </Link>
+                    
                 </td>
+
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
+                <Link href={`/superadmin/commission/${organisation.organisation}`} key={index}>
                     {organisation.organisationIdNo}
+                  </Link>
+                    
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.Appliedlowest}
+                <Link href={`/superadmin/commission/${organisation.organisation}`} key={index}>
+                  {organisation.Appliedlowest}
+                </Link>
+                    
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.AdminFeeLowest} 
+                <Link href={`/superadmin/commission/${organisation.organisation}`} key={index}>
+                  {organisation.AdminFeeLowest}
+                </Link>
+                     
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.Apliedhigest}
+                <Link href={`/superadmin/commission/${organisation.organisation}`} key={index}>
+                  {organisation.Apliedhigest}
+                  </Link>
+                    
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.AdminFeeHiest}
+                <Link href={`/superadmin/commission/${organisation.organisation}`} key={index}>
+                  {organisation.AdminFeeHiest}
+                  </Link>
+                    
+                </td>
+                
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                <Link href={`/superadmin/commission/${organisation.organisation}`} key={index}>
+                  {organisation.AppliedServiceCharge}
+                  </Link>
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.AppliedServiceCharge}
+                  <Link href={`/superadmin/commission/${organisation.organisation}`} key={index}>
+                  {organisation.serviceCharge}
+                  </Link>
+                    
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.serviceCharge}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.comment}
+                    
+
+                    <Link href={`/superadmin/commission/${organisation.organisation}`} key={index}>
+                      {organisation.comment}
+                    </Link>
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                 
 
+                <Link href={`/superadmin/commission/${organisation.organisation}`} key={index}>
                   
+                  </Link>
                 </td>
 
                
             </tr>
-            </Link>
+           
         ))}
       />
       </section>
