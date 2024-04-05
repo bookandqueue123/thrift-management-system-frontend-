@@ -34,21 +34,21 @@ import { useQuery } from '@tanstack/react-query';
     };
     
   
-    const {data: users, isLoading: isUserLoading, isError} = useQuery({
-      queryKey: ["allUsers"],
-      queryFn: async () => {
-        return client
-          .get(`/api/user?organisation=${organizationId}&userType=individual`, {})
-          .then((response: AxiosResponse<customer[], any>) => {
+    // const {data: users, isLoading: isUserLoading, isError} = useQuery({
+    //   queryKey: ["allUsers"],
+    //   queryFn: async () => {
+    //     return client
+    //       .get(`/api/user?organisation=${organizationId}&userType=individual`, {})
+    //       .then((response: AxiosResponse<customer[], any>) => {
             
-            return response.data;
-          })
-          .catch((error) => {
+    //         return response.data;
+    //       })
+    //       .catch((error) => {
            
-            throw error;
-          })
-      }
-    })
+    //         throw error;
+    //       })
+    //   }
+    // })
   
       const selectedIds = selectedOptions.map(option => option._id);
       // console.log('Selected IDs:', selectedIds);
@@ -214,9 +214,9 @@ import { useQuery } from '@tanstack/react-query';
                 //   onChange={handleOptionChange}
                 >
                   <option value="">Select an option</option>
-                  {users?.map((option) => (
+                  {/* {users?.map((option) => (
                     <option key={option._id} value={option._id}>{option.firstName} {option.lastName}</option>
-                  ))}
+                  ))} */}
                 </select>
   
                 

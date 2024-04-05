@@ -1,8 +1,11 @@
 'use client'
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import Modal from "@/components/Modal";
+import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import CreateCommissionForm from "@/modules/superAdmin/CreateCommission";
+import ViewCommission from "@/modules/superAdmin/ViewCommission";
+import Link from "next/link";
 import { useState } from "react";
 import { CiExport } from "react-icons/ci";
 
@@ -45,11 +48,31 @@ const mockData = [
       "action": "Delete"
     }
   ]
+
+  
   
 export default function SuperAdminCustomer(){
     const [showModal, setShowModal] = useState(false)
+    const [openDropdown, setOpenDropdown] = useState<number>(0);
+    
+    const [modalState, setModalState] = useState(false);
+  const [modalContent, setModalContent] = useState<"form" | "confirmation">(
+    "form",
+  );
+  const [modalToShow, setModalToShow] = useState<
+    "view" | "savings" | "edit" | "create-customer" | ""
+  >("");
+  const [customerToBeEdited, setCustomerToBeEdited] = useState({});
+    const toggleDropdown = (val: number) => {
+      if (openDropdown === val) {
+        setOpenDropdown(0);
+      } else {
+        setOpenDropdown(val);
+      }
+    };
     return(
         <div>
+        
 
             {showModal ? (
             <Modal
@@ -169,7 +192,9 @@ export default function SuperAdminCustomer(){
         ]}
 
         content={mockData.map((organisation, index) => (
-            <tr className="" key={index}>
+          <Link href={`/superadmin/commission/${organisation.organisation}`} key={index}>
+          
+            <tr className="" >
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {index + 1}
                 </td>
@@ -201,9 +226,14 @@ export default function SuperAdminCustomer(){
                     {organisation.comment}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    
+                
+
+                  
                 </td>
+
+               
             </tr>
+            </Link>
         ))}
       />
       </section>

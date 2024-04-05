@@ -80,7 +80,7 @@ const WithdrawalForm = () => {
         });
     },
   });
-
+  
   const { data: allSavings, isLoading: isLoadingAllSavings } = useQuery({
     queryKey: ["allSavings"],
     staleTime: 5000,
@@ -261,7 +261,7 @@ const WithdrawalForm = () => {
                   
                 
                   <option value="">Select Account Name</option>
-                  {allUsers?.map((users: any) => (
+                  {allUsers && allUsers.length > 0 && allUsers?.map((users: any) => (
                     <option key={users._id} value={users._id}>
                       {users.firstName} {users.lastName} {users.groupName}
                     </option>
