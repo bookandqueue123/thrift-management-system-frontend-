@@ -111,7 +111,6 @@ const Page = () => {
       return client
         .get(`/api/user?role=organisation`, {})
         .then((response) => {
-          console.log(response)
           return response.data;
         })
         .catch((error) => {
@@ -120,9 +119,6 @@ const Page = () => {
         });
     },
   });
-  console.log(organizations)
-
-  
   return (
     <Formik
       initialValues={initialValues}
@@ -295,7 +291,7 @@ const Page = () => {
                   className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                 >
                   <option value="">Select Organization</option>
-                  {organizations.map((org: getOrganizationProps) => (
+                  {organizations?.map((org: getOrganizationProps) => (
                     <option key={org._id} value={org._id}>
                       {org.organisationName}
                     </option>
