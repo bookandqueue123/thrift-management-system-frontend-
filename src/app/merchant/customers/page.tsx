@@ -10,13 +10,22 @@ import {
   CustomerSignUpProps,
   FormErrors,
   FormValues,
+  StateProps,
+  UpdateKycProps,
   customer,
+  getOrganizationProps,
   setSavingsResponse,
 } from "@/types";
 import { extractDate, formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
-import { ChangeEvent, Dispatch, SetStateAction, useState } from "react";
+import {
+  ChangeEvent,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
@@ -29,8 +38,10 @@ import ninslip from "../../../../public/NIN.svg";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
-import { Kyc } from "@/app/(auth)/signup/customer/kyc/page";
+import StatesAndLGAs from "@/api/statesAndLGAs.json";
 import CreateCustomer from "@/modules/CreateCustomer/CreateCustomer";
+import { Kyc } from "@/app/(auth)/signup/customer/kyc/kyc";
+// import { Kyc } from "@/app/(auth)/signup/customer/kyc/page";
 // import 'react-datepicker/dist/react-datepicker.css';
 
 const initialValues: CustomerSignUpProps = {
@@ -269,8 +280,6 @@ const Customers = () => {
         </div>
 
         <div className="">
-          <p className="text-xl text-white">Customer List</p>
-
           <div className="my-8 justify-between md:flex">
             <div className="flex items-center">
               <p className="font-lg mr-2 text-white">Select range from:</p>
@@ -302,6 +311,8 @@ const Customers = () => {
             </div>
           </div>
         </div>
+
+        <p className="mb-2 text-xl text-white">Customer List</p>
 
         <div>
           <TransactionsTable
@@ -745,12 +756,11 @@ const SavingsSettings = ({
                   onFocus={handleInputFocus}
                   required
                 />
-                {isTouched.purposeName ||
-                  (formErrors.purposeName && (
-                    <p className="mt-2 text-sm font-semibold text-red-600">
-                      {formErrors.purposeName}
-                    </p>
-                  ))}
+                {(isTouched.purposeName || formErrors.purposeName) && (
+                  <p className="mt-2 text-sm font-semibold text-red-600">
+                    {formErrors.purposeName}
+                  </p>
+                )}
               </span>
             </div>
             <div className="items-center gap-6 md:flex">
@@ -779,12 +789,11 @@ const SavingsSettings = ({
                   onFocus={handleInputFocus}
                   required
                 />
-                {isTouched.amount ||
-                  (formErrors.amount && (
-                    <p className="mt-2 text-sm font-semibold text-red-600">
-                      {formErrors.amount}
-                    </p>
-                  ))}
+                {(isTouched.amount || formErrors.amount) && (
+                  <p className="mt-2 text-sm font-semibold text-red-600">
+                    {formErrors.amount}
+                  </p>
+                )}
               </span>
             </div>
             <div className="items-center gap-6 md:flex">
@@ -810,12 +819,11 @@ const SavingsSettings = ({
                   <option className="capitalize">monthly</option>
                   <option className="capitalize">quarterly</option>
                 </select>
-                {isTouched.frequency ||
-                  (formErrors.frequency && (
-                    <p className="mt-2 text-sm font-semibold text-red-600">
-                      {formErrors.frequency}
-                    </p>
-                  ))}
+                {(isTouched.frequency || formErrors.frequency) && (
+                  <p className="mt-2 text-sm font-semibold text-red-600">
+                    {formErrors.frequency}
+                  </p>
+                )}
               </span>
             </div>
             <p className="mt-6 text-sm text-ajo_offWhite text-opacity-60">
@@ -839,12 +847,11 @@ const SavingsSettings = ({
                     onFocus={handleInputFocus}
                     required
                   />
-                  {isTouched.startDate ||
-                    (formErrors.startDate && (
-                      <p className="mt-2 text-sm font-semibold text-red-600">
-                        {formErrors.startDate}
-                      </p>
-                    ))}
+                  {(isTouched.startDate || formErrors.startDate) && (
+                    <p className="mt-2 text-sm font-semibold text-red-600">
+                      {formErrors.startDate}
+                    </p>
+                  )}
                 </span>
               </div>
               <div className="w-[50%] items-center gap-6 md:flex md:w-[40%]">
@@ -864,12 +871,11 @@ const SavingsSettings = ({
                     onFocus={handleInputFocus}
                     required
                   />
-                  {isTouched.endDate ||
-                    (formErrors.endDate && (
-                      <p className="mt-2 text-sm font-semibold text-red-600">
-                        {formErrors.endDate}
-                      </p>
-                    ))}
+                  {(isTouched.endDate || formErrors.endDate) && (
+                    <p className="mt-2 text-sm font-semibold text-red-600">
+                      {formErrors.endDate}
+                    </p>
+                  )}
                 </span>
               </div>
             </div>
@@ -890,12 +896,11 @@ const SavingsSettings = ({
                   onFocus={handleInputFocus}
                   required
                 />
-                {isTouched.collectionDate ||
-                  (formErrors.collectionDate && (
-                    <p className="mt-2 text-sm font-semibold text-red-600">
-                      {formErrors.collectionDate}
-                    </p>
-                  ))}
+                {(isTouched.collectionDate || formErrors.collectionDate) && (
+                  <p className="mt-2 text-sm font-semibold text-red-600">
+                    {formErrors.collectionDate}
+                  </p>
+                )}
               </span>
             </div>
 
@@ -940,25 +945,25 @@ const ViewCustomer = ({
         });
     },
   });
-  console.log(customerInfo);
+
   return (
     <div>
       <div className="mx-auto mt-8 w-[100%] overflow-hidden rounded-md bg-white p-4 shadow-md">
         {/* Image and First Batch of Details Section */}
         <p className="mb-8 mt-2 text-xl font-bold">Customer Details</p>
-        <div className="rounded-lg border">
+        <div className="rounded-lg md:border">
           <div className="p-6 md:flex ">
             <div className="mr-6 md:w-1/6 ">
               <Image
-                src={passport}
+                src={customerInfo ? customerInfo?.photo : ""}
                 alt="Customer"
                 width={200}
                 height={100}
                 className="rounded-md"
               />
             </div>
-            <div className="ml-4 flex w-5/6 flex-wrap">
-              <div className="mb-2 w-full md:w-1/2 ">
+            <div className="flex w-5/6 flex-wrap md:ml-4">
+              <div className="mb-2 mt-2 w-full md:w-1/2">
                 <p className="font-semibold text-gray-600">
                   Name:{" "}
                   <span className="font-normal">
@@ -968,10 +973,10 @@ const ViewCustomer = ({
                 </p>
                 {/* <p className="text-gray-900">John Doe</p> */}
               </div>
-              <div className="mb-2 w-full pl-8  md:w-1/2">
+              <div className="mb-2 w-full md:w-1/2  md:pl-8">
                 <p className="font-semibold text-gray-600">
                   Phone Number:{" "}
-                  <span className="pl-8 font-normal">
+                  <span className="font-normal md:pl-8">
                     {customerInfo ? customerInfo.phoneNumber : ""}
                   </span>
                 </p>
@@ -986,17 +991,21 @@ const ViewCustomer = ({
                 </p>
                 {/* <p className="text-gray-900">johndoe@example.com</p> */}
               </div>
-              <div className="mb-2 w-full pl-8 md:w-1/2">
+              <div className="mb-2 w-full md:w-1/2 md:pl-8">
                 <p className="font-semibold text-gray-600">
                   Country of Residence:{" "}
-                  <span className="font-normal">United States</span>
+                  <span className="font-normal">
+                    {customerInfo ? customerInfo.country : "N/A"}
+                  </span>
                 </p>
                 {/* <p className="text-gray-900">United States</p> */}
               </div>
               <div className="mb-4 w-full">
                 <p className="font-semibold text-gray-600">
                   Home Address:{" "}
-                  <span className="font-normal">123 Main St, City</span>
+                  <span className="font-normal">
+                    {customerInfo ? customerInfo.homeAddress : "N/A"}
+                  </span>
                 </p>
                 {/* <p className="text-gray-900">123 Main St, City</p> */}
               </div>
@@ -1008,19 +1017,28 @@ const ViewCustomer = ({
             <div className="mb-4 flex flex-wrap">
               <div className="w-full sm:w-1/3">
                 <p className="font-semibold text-gray-600">
-                  State: <span className="font-normal">Califonia</span>
+                  State:{" "}
+                  <span className="font-normal">
+                    {customerInfo ? customerInfo.state : "N/A"}
+                  </span>
                 </p>
                 {/* <p className="text-gray-900">California</p> */}
               </div>
               <div className="w-full sm:w-1/3">
                 <p className="font-semibold text-gray-600">
-                  LGA: <span className="font-normal">Ojodu</span>
+                  LGA:{" "}
+                  <span className="font-normal">
+                    {customerInfo ? customerInfo.lga : "N/A"}
+                  </span>
                 </p>
                 {/* <p className="text-gray-900">Local Government Area</p> */}
               </div>
               <div className="w-full sm:w-1/3">
                 <p className="font-semibold text-gray-600">
-                  City: <span className="font-normal">Ojodu</span>
+                  City:{" "}
+                  <span className="font-normal">
+                    {customerInfo ? customerInfo.city : "N/A"}
+                  </span>
                 </p>
                 {/* <p className="text-gray-900">City Name</p> */}
               </div>
@@ -1028,13 +1046,19 @@ const ViewCustomer = ({
             <div className="mb-4 flex flex-wrap">
               <div className="w-full sm:w-1/3">
                 <p className="font-semibold text-gray-600">
-                  NIN: <span className="font-normal">12345678</span>
+                  NIN:{" "}
+                  <span className="font-normal">
+                    {customerInfo ? customerInfo.nin : "N/A"}
+                  </span>
                 </p>
                 {/* <p className="text-gray-900">1234567890</p> */}
               </div>
               <div className="w-full sm:w-1/3">
                 <p className="font-semibold text-gray-600">
-                  BVN: <span className="font-normal">1234567</span>
+                  BVN:{" "}
+                  <span className="font-normal">
+                    {customerInfo ? customerInfo.bvn : "N/A"}
+                  </span>
                 </p>
                 {/* <p className="text-gray-900">1234567890</p> */}
               </div>
@@ -1044,7 +1068,7 @@ const ViewCustomer = ({
 
         <div className=" mt-8 rounded-lg">
           <div className="md:flex ">
-            <div className="w-[60%] rounded-lg border p-6">
+            <div className="w-[60%] rounded-lg p-6 md:border">
               <p className="mb-8 mt-2 text-xl font-bold">Next of Kin Details</p>
 
               <div>
@@ -1052,7 +1076,7 @@ const ViewCustomer = ({
                   <p className="font-bold">
                     Name:{" "}
                     <span className="font-normal">
-                      Olanrewaju Adeyanju Oluwagbemilekenibitiapaeniyankoto
+                      {customerInfo ? customerInfo.nok : "N/A"}
                     </span>
                   </p>
                   {/* <p className="text-gray-900">John Doe</p> */}
@@ -1061,7 +1085,9 @@ const ViewCustomer = ({
                 <div className="mb-4  w-full ">
                   <p className=" font-bold">
                     Phone Number:{" "}
-                    <span className="pl-8 font-normal">123-456-7890</span>
+                    <span className="pl-8 font-normal">
+                      {customerInfo ? customerInfo.nokPhone : "N/A"}
+                    </span>
                   </p>
                   {/* <p className="text-gray-900">123-456-7890</p> */}
                 </div>
@@ -1069,7 +1095,9 @@ const ViewCustomer = ({
                 <div className="mb-4  w-full ">
                   <p className=" font-bold">
                     Relationship:{" "}
-                    <span className="pl-8 font-normal">123-456-7890</span>
+                    <span className="pl-8 font-normal">
+                      {customerInfo ? customerInfo.nokRelationship : "N/A"}
+                    </span>
                   </p>
                   {/* <p className="text-gray-900">123-456-7890</p> */}
                 </div>
@@ -1077,26 +1105,27 @@ const ViewCustomer = ({
                 <div className="mb-4  w-full ">
                   <p className=" font-bold">
                     Home Address:{" "}
-                    <span className="pl-8 font-normal">123-456-7890</span>
+                    <span className="pl-8 font-normal">{"N/A"}</span>
                   </p>
                   {/* <p className="text-gray-900">123-456-7890</p> */}
                 </div>
               </div>
             </div>
 
-            <div className="ml-8 w-[40%] border p-6">
-              <p className="mb-8 mt-2 text-xl font-bold">Next of Kin Details</p>
+            {/* <div className="w-[40%] border p-6 ml-8">
+          <p className="text-xl mt-2 mb-8 font-bold">Next of Kin Details</p>
 
-              <div className="">
-                <Image
-                  src={ninslip}
-                  alt="Customer"
-                  width={270}
-                  height={165}
-                  className="rounded-md"
-                />
-              </div>
-            </div>
+          <div className="">
+            <Image
+              src={ninslip}
+              alt="Customer"
+              width={270}
+              height={165}
+              className="rounded-md"
+            />
+          </div>
+
+          </div> */}
           </div>
         </div>
       </div>
@@ -1114,119 +1143,360 @@ const EditCustomer = ({
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [selectedLGAArray, setSelectesLGAArray] = useState<string[]>([]);
+
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedStateArray, setselectedStateArray] = useState<StateProps[]>(
+    [],
+  );
+  const [selectedState, setSelectedState] = useState("");
+
+  const { client } = useAuth();
+  const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
+    queryKey: ["customerInfo"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user/${customerId}`)
+        .then((response: AxiosResponse<customer, any>) => {
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          console.log(error.response ?? error.message);
+          throw error;
+        });
+    },
+  });
+
+  const {
+    data: organizations,
+    isLoading: isUserLoading,
+    isError: getGroupError,
+  } = useQuery({
+    queryKey: ["allOrganizations"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user?role=organisation`, {})
+        .then((response) => {
+          return response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+          throw error;
+        });
+    },
+  });
+
+  const {
+    mutate: updateUserInfo,
+    isPending,
+    isError,
+  } = useMutation({
+    mutationKey: ["user update"],
+    mutationFn: async (values: UpdateKycProps) => {
+      const formData = new FormData();
+
+      formData.append("firstName", values.firstName);
+      formData.append("lastName", values.lastName);
+      formData.append("otherName", values.otherName);
+      formData.append("phoneNumber", values.phoneNumber);
+      formData.append("email", values.email);
+      formData.append("country", values.country);
+      formData.append("state", values.state);
+      formData.append("lga", values.lga);
+      formData.append("city", values.city);
+      // formData.append("popularMarket", values.popularMarket);
+      // formData.append("nok", values.nok);
+      // formData.append("nokRelationship", values.nokRelationship);
+      // formData.append("nokPhone", values.nokPhone);
+      formData.append("homeAddress", values.homeAddress);
+      // formData.append("userType", values.userType);
+      formData.append("organisation", values.organisation);
+      formData.append("nin", values.nin);
+      formData.append("bvn", values.bvn);
+      // formData.append("meansOfID", values.meansOfID);
+      formData.append("bankAcctNo", values.bankAcctNo);
+      // Append images
+      if (values.photo) {
+        formData.append("photo", values.photo[0]); // Assuming photo is an array of File objects
+      }
+      if (!values.photo) {
+        formData.append("photo", customerInfo?.photo); // Assuming photo is an array of File objects
+      }
+      // if (values.meansOfID) {
+      //   formData.append("meansOfID", values.meansOfID[0]);
+      // }
+      if (values.meansOfIDPhoto) {
+        formData.append("meansOfIDPhoto", values.meansOfIDPhoto[0]);
+      }
+      if (values.meansOfIDPhoto) {
+        formData.append("meansOfIDPhoto", customerInfo?.meansOfIDPhoto);
+      }
+
+      return client.put(`/api/user/${customerId}`, formData);
+    },
+    onSuccess(response) {
+      // router.push("/customer");
+      console.log(response);
+      setShowSuccessToast(true);
+      // setSuccessMessage((response as any).response.data.message);
+    },
+    onError(error: AxiosError<any, any>) {
+      console.log(error);
+      setShowErrorToast(true);
+      setErrorMessage(error.response?.data.message);
+    },
+  });
+  const MyEffectComponent = ({ formikValues }: { formikValues: any }) => {
+    useEffect(() => {
+      // This function will run whenever the value of 'formikValues.myField' changes
+      setSelectedCountry(formikValues.country);
+      setSelectedState(formikValues.state);
+    }, [formikValues]); // Add 'formikValues.myField' as a dependency
+
+    return null; // Since this is a utility component, it doesn't render anything
+  };
+  useEffect(() => {
+    const filteredStates =
+      StatesAndLGAs.find((country) => country.country === selectedCountry)
+        ?.states || [];
+
+    setselectedStateArray(filteredStates);
+  }, [selectedCountry]);
+
+  useEffect(() => {
+    // Find the Country object in the dataset
+    const CountryObject = StatesAndLGAs.find(
+      (countryData) => countryData.country === selectedCountry,
+    );
+    if (CountryObject) {
+      const stateObject = CountryObject.states.find(
+        (state) => state.name === selectedState,
+      );
+      // If state is found, return its LGAs
+      if (stateObject) {
+        console.log(stateObject.lgas);
+        setSelectesLGAArray(stateObject.lgas);
+      } else {
+        // If state is not found, return an empty array
+      }
+    }
+  }, [selectedCountry, selectedState]);
   return (
     <div className="mx-auto mt-8 w-[100%] overflow-hidden rounded-md bg-white p-4 shadow-md">
       <div>
-        <div className="p-6 md:flex ">
-          <div className="mr-6 md:w-1/6 ">
-            <Image
-              src={passport}
+        {customerInfo && (
+          <Formik
+            initialValues={{
+              firstName: customerInfo?.firstName,
+              lastName: customerInfo?.lastName,
+              otherName: customerInfo?.otherName,
+              phoneNumber: customerInfo?.phoneNumber,
+              email: customerInfo?.email,
+              homeAddress: customerInfo?.homeAddress,
+              country: customerInfo?.country,
+              state: customerInfo?.state,
+              lga: customerInfo?.lga,
+              city: customerInfo?.city,
+              organisation: customerInfo?.organisation,
+              meansOfIDPhoto: null,
+              photo: null,
+              nin: customerInfo?.nin,
+              bvn: customerInfo?.bvn,
+              ninslip: null,
+              nok: "",
+              nokRelationship: "",
+              nokPhone: "",
+              popularMarket: "",
+              userType: "",
+              meansOfID: "",
+              bankAcctNo: "",
+            }}
+            validationSchema={Yup.object({
+              firstName: Yup.string().required("Required"),
+              lastName: Yup.string().required("Required"),
+              otherName: Yup.string().optional(),
+              email: Yup.string().required("Required"),
+              homeAddress: Yup.string().required("Required"),
+              country: Yup.string().required("Required"),
+              state: Yup.string().required("Required"),
+              lga: Yup.string().required("Required"),
+              city: Yup.string().required("Required"),
+
+              organisation: Yup.string().required("Required"),
+
+              //   meansOfIDPhoto: Yup.mixed().optional(), // For files, use mixed type
+              //   photo: Yup.mixed().optional(),
+              //   nin: Yup.string().optional(), // Assuming nin and bvn are strings
+              //   bvn: Yup.string().optional(),
+              //   ninslip: Yup.mixed().optional(),
+              //   nok: Yup.string().default(''), // Use default value '' for string fields
+              //   nokRelationship: Yup.string().default(''),
+              //   nokPhone: Yup.string().default(''),
+              //   popularMarket: Yup.string().default(''),
+              //   userType: Yup.string().default(''),
+              //   meansOfID: Yup.string().default(''),
+              //   bankAcctNo: Yup.string().default(''),
+            })}
+            onSubmit={(values, { setSubmitting }) => {
+              console.log(values);
+              updateUserInfo(values);
+              setTimeout(() => {
+                setShowSuccessToast(false);
+                setShowErrorToast(false);
+                setSubmitting(false);
+              }, 400);
+            }}
+          >
+            {({
+              isSubmitting,
+              values,
+              errors,
+              handleChange,
+              setFieldValue,
+            }) => (
+              <Form
+                encType="multipart/form-data"
+                name="IdImage"
+                className="mt-8 w-full"
+              >
+                <div className="p-6 md:flex ">
+                  <div className="mr-6 md:w-1/6 ">
+                    {/* <Image
+              src={customerInfo ? customerInfo.photo : "/placeholder.png"}
               alt="Customer"
               width={200}
               height={100}
               className="rounded-md"
-            />
+            /> */}
 
-            <button className="mt-8 w-full items-center rounded bg-gray-300 px-4 py-2 font-bold text-gray-800  hover:bg-gray-400">
+                    <div className="">
+                      <div className="mb-4 ">
+                        {values.photo && values.photo[0] ? (
+                          <Image
+                            src={URL.createObjectURL(values.photo[0])} // Display placeholder image or actual image URL
+                            alt="photo"
+                            className="h-auto w-full"
+                            style={{ maxWidth: "100%" }}
+                            width={500}
+                            height={300}
+                          />
+                        ) : (
+                          <Image
+                            src={customerInfo.photo} // Display placeholder image or actual image URL
+                            alt="photo"
+                            className="h-auto w-full"
+                            style={{ maxWidth: "100%" }}
+                            width={500}
+                            height={300}
+                          />
+                        )}
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="photo"
+                          className="mt-4 cursor-pointer rounded-md bg-gray-300  px-4 py-2 text-white hover:bg-gray-400"
+                        >
+                          Change
+                          <input
+                            id="photo"
+                            name="photo"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(event) => {
+                              const file = event.target.files;
+                              setFieldValue("photo", file); // Store the selected file in state
+                            }}
+                          />
+                        </label>
+                        {isSubmitting && (
+                          <span className="ml-2">Uploading...</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* <button className="w-full mt-8 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded  items-center">
+              
               <span>Download</span>
-            </button>
-          </div>
+            </button> */}
+                  </div>
+                  <div className="mt-8 flex w-5/6 flex-wrap md:mx-16">
+                    <div className="mb-8">
+                      <div className="w-full justify-between gap-4 md:flex md:items-center">
+                        <div className="mb-3 w-full">
+                          <label
+                            htmlFor="firstName"
+                            className="text-normal m-0 font-bold "
+                          >
+                            First Name{" "}
+                            <span className="font-base font-semibold text-[#FF0000]">
+                              *
+                            </span>
+                          </label>
+                          <Field
+                            id="firstName"
+                            name="firstName"
+                            type="text"
+                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          />
+                          <ErrorMessage
+                            name="firstName"
+                            component="div"
+                            className="text-red-500"
+                          />
+                        </div>
+                        <div className="mb-3 w-full">
+                          <label
+                            htmlFor="lastName"
+                            className="text-normal m-0 font-bold "
+                          >
+                            Last Name{" "}
+                            <span className="font-base font-semibold text-[#FF0000]">
+                              *
+                            </span>
+                          </label>
+                          <Field
+                            id="lastName"
+                            name="lastName"
+                            type="text"
+                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          />
+                          <ErrorMessage
+                            name="lastName"
+                            component="div"
+                            className="text-red-500"
+                          />
+                        </div>
+                      </div>
 
-          <div className="mx-16 flex w-5/6 flex-wrap ">
-            <Formik
-              initialValues={initialValues}
-              validationSchema={validationSchema}
-              onSubmit={(values, { setSubmitting }) => {
-                console.log(values);
-
-                setTimeout(() => {
-                  setShowSuccessToast(false);
-                  setShowErrorToast(false);
-                  setSubmitting(false);
-                }, 400);
-              }}
-            >
-              {({ isSubmitting, values, setFieldValue }) => (
-                <Form
-                  encType="multipart/form-data"
-                  name="IdImage"
-                  className="mt-8 w-full"
-                >
-                  <div className="mb-8">
-                    <div className="flex w-full items-center justify-between gap-4">
-                      <div className="mb-3 w-full">
+                      <div className="mb-3">
                         <label
-                          htmlFor="firstName"
+                          htmlFor="otherName"
                           className="text-normal m-0 font-bold "
                         >
-                          First Name{" "}
+                          Other Names
+                        </label>
+                        <Field
+                          id="otherName"
+                          name="otherName"
+                          type="text"
+                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label
+                          htmlFor="phoneNumber"
+                          className="text-normal m-0 font-bold "
+                        >
+                          Phone Number{" "}
                           <span className="font-base font-semibold text-[#FF0000]">
                             *
                           </span>
                         </label>
-                        <Field
-                          id="firstName"
-                          name="firstName"
-                          type="text"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        />
-                        <ErrorMessage
-                          name="firstName"
-                          component="div"
-                          className="text-red-500"
-                        />
-                      </div>
-                      <div className="mb-3 w-full">
-                        <label
-                          htmlFor="lastName"
-                          className="text-normal m-0 font-bold "
-                        >
-                          Last Name{" "}
-                          <span className="font-base font-semibold text-[#FF0000]">
-                            *
-                          </span>
-                        </label>
-                        <Field
-                          id="lastName"
-                          name="lastName"
-                          type="text"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        />
-                        <ErrorMessage
-                          name="lastName"
-                          component="div"
-                          className="text-red-500"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="mb-3">
-                      <label
-                        htmlFor="otherName"
-                        className="text-normal m-0 font-bold "
-                      >
-                        Other Names
-                      </label>
-                      <Field
-                        id="otherName"
-                        name="otherName"
-                        type="text"
-                        className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label
-                        htmlFor="phoneNumber"
-                        className="text-normal m-0 font-bold "
-                      >
-                        Phone Number{" "}
-                        <span className="font-base font-semibold text-[#FF0000]">
-                          *
-                        </span>
-                      </label>
-                      <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-                        {/* <span className="flex h-full select-none items-center gap-2 text-gray-400 sm:text-sm">
+                        <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                          {/* <span className="flex h-full select-none items-center gap-2 text-gray-400 sm:text-sm">
           <svg
             width="20"
             height="16"
@@ -1252,342 +1522,346 @@ const EditCustomer = ({
           </svg>
           +234
         </span> */}
-                        <Field
-                          id="phoneNumber"
+                          <Field
+                            id="phoneNumber"
+                            name="phoneNumber"
+                            type="tel"
+                            className="bg-transparent outline-none"
+                          />
+                        </div>
+                        <ErrorMessage
                           name="phoneNumber"
-                          type="tel"
-                          className="bg-transparent outline-none"
+                          component="div"
+                          className="text-red-500"
                         />
                       </div>
-                      <ErrorMessage
-                        name="phoneNumber"
-                        component="div"
-                        className="text-red-500"
-                      />
-                    </div>
 
-                    <div className="mb-3">
-                      <label
-                        htmlFor="email"
-                        className="text-normal m-0 font-bold "
-                      >
-                        Email address{" "}
-                        <span className="font-base font-semibold text-[#FF0000]">
-                          *
-                        </span>
-                      </label>
-                      <Field
-                        id="email"
-                        name="email"
-                        type="email"
-                        className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                      />
-                      <ErrorMessage
-                        name="email"
-                        component="div"
-                        className="text-red-500"
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label
-                        htmlFor="homeAddress"
-                        className="text-normal m-0 font-bold "
-                      >
-                        Home Address{" "}
-                        <span className="font-base font-semibold text-[#FF0000]">
-                          *
-                        </span>
-                      </label>
-                      <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-                        <Field
-                          id="homeAddress"
-                          name="homeAddress"
-                          type="text"
-                          className="bg-transparent outline-none"
-                        />
-                      </div>
-                      <ErrorMessage
-                        name="homeAddress"
-                        component="div"
-                        className="text-red-500"
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label
-                        htmlFor="countryOfResidence"
-                        className="text-normal m-0 font-bold "
-                      >
-                        Country of Residence{" "}
-                        <span className="font-base font-semibold text-[#FF0000]">
-                          *
-                        </span>
-                      </label>
-                      <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-                        <Field
-                          id="countryOfResidence"
-                          name="countryOfResidence"
-                          type="text"
-                          className="bg-transparent outline-none"
-                        />
-                      </div>
-                      <ErrorMessage
-                        name="countryOfResidence"
-                        component="div"
-                        className="text-red-500"
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label
-                        htmlFor="state"
-                        className="text-normal m-0 font-bold "
-                      >
-                        State{" "}
-                        <span className="font-base font-semibold text-[#FF0000]">
-                          *
-                        </span>
-                      </label>
-                      <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-                        <Field
-                          id="state"
-                          name="state"
-                          type="text"
-                          className="bg-transparent outline-none"
-                        />
-                      </div>
-                      <ErrorMessage
-                        name="state"
-                        component="div"
-                        className="text-red-500"
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label
-                        htmlFor="lga"
-                        className="text-normal m-0 font-bold "
-                      >
-                        LGA{" "}
-                        <span className="font-base font-semibold text-[#FF0000]">
-                          *
-                        </span>
-                      </label>
-                      <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-                        <Field
-                          id="lga"
-                          name="lga"
-                          type="text"
-                          className="bg-transparent outline-none"
-                        />
-                      </div>
-                      <ErrorMessage
-                        name="lga"
-                        component="div"
-                        className="text-red-500"
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label
-                        htmlFor="city"
-                        className="text-normal m-0 font-bold "
-                      >
-                        Home Address{" "}
-                        <span className="font-base font-semibold text-[#FF0000]">
-                          *
-                        </span>
-                      </label>
-                      <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-                        <Field
-                          id="city"
-                          name="city"
-                          type="city"
-                          className="bg-transparent outline-none"
-                        />
-                      </div>
-                      <ErrorMessage
-                        name="city"
-                        component="div"
-                        className="text-red-500"
-                      />
-                    </div>
-                    {/* Organization Search Input */}
-                    {
                       <div className="mb-3">
                         <label
-                          htmlFor="organization"
-                          className="m-0 text-xs font-medium text-white"
+                          htmlFor="email"
+                          className="text-normal m-0 font-bold "
                         >
-                          Organization{" "}
+                          Email address{" "}
                           <span className="font-base font-semibold text-[#FF0000]">
                             *
                           </span>
                         </label>
                         <Field
-                          as="select"
-                          id="organization"
-                          name="organization"
+                          id="email"
+                          name="email"
+                          type="email"
                           className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        >
-                          <option value="">Select Organization</option>
-                        </Field>
+                        />
                         <ErrorMessage
-                          name="organization"
+                          name="email"
                           component="div"
                           className="text-red-500"
                         />
                       </div>
-                    }
 
-                    <div className="mb-3">
-                      <label
-                        htmlFor="password"
-                        className="m-0 text-xs font-medium text-white"
-                      >
-                        Password{" "}
-                        <span className="font-base font-semibold text-[#FF0000]">
-                          *
-                        </span>
-                      </label>
-                      <Field
-                        id="password"
-                        name="password"
-                        type="password"
-                        className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                      />
-                      <ErrorMessage
-                        name="password"
-                        component="div"
-                        className="text-red-500"
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label
-                        htmlFor="image"
-                        className="text-md block font-medium "
-                      >
-                        Identification Document Upload
-                      </label>
-                      <div className="mt-1 justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5">
-                        <input
-                          type="file"
-                          name="image"
-                          id="image"
-                          className="hidden"
-                          onChange={(e) =>
-                            setFieldValue("meansOfIDPhoto", e.target.files)
-                          }
-                          accept="image/*"
-                        />
-                        <label htmlFor="image" className="cursor-pointer">
-                          <p className="text-center ">
-                            Drag n drop an image here, or click to select one
-                          </p>
+                      <div className="mb-3">
+                        <label
+                          htmlFor="homeAddress"
+                          className="text-normal m-0 font-bold "
+                        >
+                          Home Address{" "}
+                          <span className="font-base font-semibold text-[#FF0000]">
+                            *
+                          </span>
                         </label>
+                        <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                          <Field
+                            id="homeAddress"
+                            name="homeAddress"
+                            type="text"
+                            className="bg-transparent outline-none"
+                          />
+                        </div>
+                        <ErrorMessage
+                          name="homeAddress"
+                          component="div"
+                          className="text-red-500"
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label
+                          htmlFor="country"
+                          className="text-normal m-0 font-bold "
+                        >
+                          Country of Residence
+                        </label>
+                        <Field
+                          onChange={handleChange}
+                          as="select"
+                          isInvalid={!!errors.country}
+                          name="country"
+                          id="country"
+                          // type="text"
+                          placeholder="country"
+                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                        >
+                          <option>Select Country</option>
+                          {StatesAndLGAs &&
+                            StatesAndLGAs.map((countries) => (
+                              <option
+                                key={countries.country}
+                                value={countries.country}
+                              >
+                                {countries.country}
+                              </option>
+                            ))}
+                        </Field>
+                        <ErrorMessage
+                          name="country"
+                          component="div"
+                          className="text-xs text-red-500"
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label
+                          htmlFor="state"
+                          className="text-normal m-0 font-bold "
+                        >
+                          State
+                        </label>
+                        <Field
+                          as="select"
+                          id="state"
+                          name="state"
+                          // type="text"
+                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                        >
+                          <option>Select State</option>
+
+                          {selectedStateArray &&
+                            selectedStateArray.map((state) => (
+                              <option key={state.name} value={state.name}>
+                                {state.name}
+                              </option>
+                            ))}
+                        </Field>
+                        <ErrorMessage
+                          name="state"
+                          component="div"
+                          className="text-xs text-red-500"
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label
+                          htmlFor="lga"
+                          className="text-normal m-0 font-bold"
+                        >
+                          Local Government Area (lga)
+                        </label>
+                        <Field
+                          as="select"
+                          id="lga"
+                          name="lga"
+                          // type="text"
+                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                        >
+                          <option>Select LGA</option>
+
+                          {selectedLGAArray &&
+                            selectedLGAArray.map((lga) => (
+                              <option key={lga} value={lga}>
+                                {lga}
+                              </option>
+                            ))}
+                          {/* {selectedLGAArray && selectedStateArray.map((lga) => (
+              <option>
+
+              </option>
+            )) } */}
+                        </Field>
+                        <ErrorMessage
+                          name="lga"
+                          component="div"
+                          className="text-xs text-red-500"
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label
+                          htmlFor="city"
+                          className="text-normal m-0 font-bold "
+                        >
+                          City{" "}
+                          <span className="font-base font-semibold text-[#FF0000]">
+                            *
+                          </span>
+                        </label>
+                        <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                          <Field
+                            id="city"
+                            name="city"
+                            type="city"
+                            className="bg-transparent outline-none"
+                          />
+                        </div>
+                        <ErrorMessage
+                          name="city"
+                          component="div"
+                          className="text-red-500"
+                        />
+                      </div>
+                      {/* Organization Search Input */}
+                      {
+                        <div className="mb-3">
+                          <label
+                            htmlFor="organisation"
+                            className="m-0 text-xs font-medium"
+                          >
+                            Select Organisation i.e Thrift Collector
+                            <span className="font-base font-semibold text-[#FF0000]">
+                              *
+                            </span>
+                          </label>
+                          <Field
+                            disabled
+                            as="select"
+                            id="organisation"
+                            name="organisation"
+                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          >
+                            <option value="">Select Organization</option>
+                            {organizations?.map((org: getOrganizationProps) => (
+                              <option key={org._id} value={org._id}>
+                                {org.organisationName}
+                              </option>
+                            ))}
+                          </Field>
+                          <ErrorMessage
+                            name="organisation"
+                            component="div"
+                            className="text-red-500"
+                          />
+                        </div>
+                      }
+
+                      {/* <div className="mb-3">
+        <label
+          htmlFor="image"
+          className="text-md block font-medium "
+        >
+          Identification Document Upload
+        </label>
+        <div className="mt-1 justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5">
+          <input
+            type="file"
+            name="image"
+            id="image"
+            className="hidden"
+            onChange={(e) =>
+              setFieldValue("meansOfIDPhoto", e.target.files)
+            }
+            accept="image/*"
+          />
+          <label htmlFor="image" className="cursor-pointer">
+            <p className="text-center ">
+              Drag n drop an image here, or click to select one
+            </p>
+          </label>
+          <div>
+          {values.meansOfIDPhoto && values.meansOfIDPhoto[0] && (
+            <Image
+              src={URL.createObjectURL(values.meansOfIDPhoto[0])}
+              alt="Product"
+              className="max-w-full"
+              style={{ maxWidth: "100%" }}
+              width={300}
+              height={200}
+            />
+          )}</div>
+        </div>
+        <div className="text-xs text-red-600">
+          <ErrorMessage name="meansOfIDPhoto" />
+        </div>
+      </div> */}
+
+                      <div className="mb-3">
+                        <label htmlFor="nin" className="m-0 text-xs font-bold ">
+                          NIN number
+                        </label>
+                        <Field
+                          name="nin"
+                          type="text"
+                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                        />
+                        <ErrorMessage
+                          name="nin"
+                          component="div"
+                          className="text-xs text-red-500"
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="bvn" className="m-0 text-xs font-bold ">
+                          BVN number
+                        </label>
+                        <Field
+                          name="bvn"
+                          type="text"
+                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                        />
+                        <ErrorMessage
+                          name="bvn"
+                          component="div"
+                          className="text-xs text-red-500"
+                        />
+                      </div>
+
+                      <div className="flex items-center">
+                        <div className="mr-4">
+                          {values.meansOfIDPhoto && values.meansOfIDPhoto[0] ? (
+                            <Image
+                              src={URL.createObjectURL(
+                                values.meansOfIDPhoto[0],
+                              )} // Display placeholder image or actual image URL
+                              alt="meansOfIDPhoto"
+                              className="max-w-full"
+                              style={{ maxWidth: "100%" }}
+                              width={300}
+                              height={200}
+                            />
+                          ) : (
+                            <Image
+                              src={customerInfo.meansOfIDPhoto} // Display placeholder image or actual image URL
+                              alt="meansOfIDPhoto"
+                              className="max-w-full"
+                              style={{ maxWidth: "100%" }}
+                              width={300}
+                              height={200}
+                            />
+                          )}
+                        </div>
+
                         <div>
-                          {values.meansOfIDPhoto &&
-                            values.meansOfIDPhoto[0] && (
-                              <Image
-                                src={URL.createObjectURL(
-                                  values.meansOfIDPhoto[0],
-                                )}
-                                alt="Product"
-                                className="max-w-full"
-                                style={{ maxWidth: "100%" }}
-                                width={300}
-                                height={200}
-                              />
-                            )}
+                          <label
+                            htmlFor="meansOfIDPhoto"
+                            className="cursor-pointer rounded-md bg-gray-300  px-4 py-2 text-white hover:bg-gray-400"
+                          >
+                            Change Doc
+                            <input
+                              id="meansOfIDPhoto"
+                              name="meansOfIDPhoto"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(event) => {
+                                const file = event.target.files;
+                                setFieldValue("meansOfIDPhoto", file); // Store the selected file in state
+                              }}
+                            />
+                          </label>
+                          {isSubmitting && (
+                            <span className="ml-2">Uploading...</span>
+                          )}
                         </div>
                       </div>
-                      <div className="text-xs text-red-600">
-                        <ErrorMessage name="meansOfIDPhoto" />
-                      </div>
                     </div>
-
-                    <div className="mb-3">
-                      <label htmlFor="nin" className="m-0 text-xs font-bold ">
-                        NIN number
-                      </label>
-                      <Field
-                        name="nin"
-                        type="text"
-                        className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                      />
-                      <ErrorMessage
-                        name="nin"
-                        component="div"
-                        className="text-xs text-red-500"
-                      />
-                    </div>
-                    <div className="mb-3">
-                      <label htmlFor="bvn" className="m-0 text-xs font-bold ">
-                        BVN number
-                      </label>
-                      <Field
-                        name="bvn"
-                        type="text"
-                        className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                      />
-                      <ErrorMessage
-                        name="bvn"
-                        component="div"
-                        className="text-xs text-red-500"
-                      />
-                    </div>
-
-                    <div className="flex items-center">
-                      {/* Image preview */}
-                      <div className="mr-4">
-                        {values.ninslip && values.ninslip[0] ? (
-                          <Image
-                            src={URL.createObjectURL(values.ninslip[0])} // Display placeholder image or actual image URL
-                            alt="ninslip"
-                            className="max-w-full"
-                            style={{ maxWidth: "100%" }}
-                            width={300}
-                            height={200}
-                          />
-                        ) : (
-                          <Image
-                            src={ninslip} // Display placeholder image or actual image URL
-                            alt="ninslip"
-                            className="max-w-full"
-                            style={{ maxWidth: "100%" }}
-                            width={300}
-                            height={200}
-                          />
-                        )}
-                      </div>
-                      {/* Change doc button and file input */}
-                      <div>
-                        <label
-                          htmlFor="ninslip"
-                          className="cursor-pointer rounded-md bg-gray-300  px-4 py-2 text-white hover:bg-gray-400"
-                        >
-                          Change Doc
-                          <input
-                            id="ninslip"
-                            name="ninslip"
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(event) => {
-                              const file = event.target.files;
-                              setFieldValue("ninslip", file); // Store the selected file in state
-                            }}
-                          />
-                        </label>
-                        {isSubmitting && (
-                          <span className="ml-2">Uploading...</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  {/* <CustomButton
+                    {/* <CustomButton
     type="submit"
     style="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
     label={isSubmitting ? 'Creating account...' : 'Create account'}
@@ -1596,36 +1870,36 @@ const EditCustomer = ({
      {showErrorToast && errorMessage && errorMessage && <ErrorToaster message={errorMessage? errorMessage : "Error creating organization"} />}
 */}
 
-                  {/* Submit Button */}
+                    {/* Submit Button */}
 
-                  <div className="flex justify-center">
-                    <CustomButton
-                      type="submit"
-                      style="w-96  rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
-                      label={
-                        isSubmitting ? "Saving Changes..." : "Save Changes"
-                      }
-                    />
+                    <div className="flex justify-center">
+                      <CustomButton
+                        type="submit"
+                        style="w-96  rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
+                        label={
+                          isSubmitting ? "Saving Changes..." : "Save Changes"
+                        }
+                      />
+                    </div>
+
+                    {/* Toast Messages */}
+                    {showSuccessToast && (
+                      <SuccessToaster
+                        message={successMessage || "User Updated successfully!"}
+                      />
+                    )}
+                    {showErrorToast && (
+                      <ErrorToaster
+                        message={errorMessage || "Error Updating User"}
+                      />
+                    )}
+                    <MyEffectComponent formikValues={values} />
                   </div>
-
-                  {/* Toast Messages */}
-                  {showSuccessToast && (
-                    <SuccessToaster
-                      message={
-                        successMessage || "Account Created successfully!"
-                      }
-                    />
-                  )}
-                  {showErrorToast && (
-                    <ErrorToaster
-                      message={errorMessage || "Error creating organization"}
-                    />
-                  )}
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </div>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        )}
       </div>
     </div>
   );

@@ -17,8 +17,8 @@ export default function RootLayout({
   useRedirect()
   return (
     <html lang="en">
-      <body>
-          <main className="bg-ajo_darkBlue">
+      <body className="bg-ajo_darkBlue ">
+          <main className="bg-ajo_darkBlue ">
             <CustomerNavbar />
           {children}
           </main>

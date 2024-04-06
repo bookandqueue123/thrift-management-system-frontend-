@@ -10,10 +10,14 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import DummyTransactions from "@/api/dummyTransactions.json";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";
-import { SetStateAction, useState } from "react";
+import { ChangeEvent, SetStateAction, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSelector } from "react-redux";
+import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 export default function WithDrawalReportSettings(){
+  const organisationId = useSelector(selectOrganizationId)
+  console.log(organisationId)
   const [withdrawalData, setWithdrawalData] = useState<WithdrawalProps[]>([])
 
   const [status, setStatus] = useState("");
@@ -55,7 +59,7 @@ export default function WithDrawalReportSettings(){
         queryKey: ["allWithdrawals",],
         queryFn: async () => {
           return client
-            .get(`/api/withdrawal`, {})
+            .get(`/api/withdrawal?organisation=${organisationId}`, {})
             .then((response) => {
               console.log(response)
               setWithdrawalData(response.data)
@@ -106,6 +110,7 @@ export default function WithDrawalReportSettings(){
         },
       });
 
+      
       const handleStatus = (index: number) =>{
         const newData = [...withdrawalData]
         newData[index].status = newData[index].status === 'paid' ? 'unpaid' : 'paid';
@@ -113,8 +118,40 @@ export default function WithDrawalReportSettings(){
         
         updateStatus(newData[index])
 
-  
       }
+
+      const handlePaymentMode = (e: ChangeEvent<HTMLSelectElement>, id: any) => {
+        const paymentMode = e.target.value
+        
+        updatePaymentMode({paymentMode: paymentMode, id: id })
+      }
+
+      const { mutate: updatePaymentMode } = useMutation({
+        mutationKey: [withdrawalData],
+        mutationFn: async ({ paymentMode, id }: { paymentMode: string; id: string }, context?: any) => {
+         
+          
+          return client.put(`/api/withdrawal/${id}`, {
+           
+            paymentMode: paymentMode
+          });
+        },
+        onSuccess(response: AxiosResponse<any>) {
+          
+          console.log(response)
+          // router.push('/merchant/settings/withdrawals')
+          router.refresh()
+        },
+        onError(error: AxiosError<any, any>) {
+        
+    
+          console.log(error?.response?.data);
+        },
+      });
+
+
+
+      
     return(
         <div>
             <section className="mt-4">
@@ -187,15 +224,16 @@ export default function WithDrawalReportSettings(){
             "Status",
             "Withdrawal Request",
             "Payment Confirmation ",
-            "Evidence of Payment"
+            "Evidence of Payment",
+            "Payment Mode"
           ]}
             content={withdrawals?.map((withdrawal:WithdrawalProps, index:number) => (
               <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {withdrawal.user.accountNumber}
+                {withdrawal.user && withdrawal.user.accountNumber}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {withdrawal.saving}
+                {withdrawal.saving && withdrawal.saving.purposeName}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                 {withdrawal.updatedAt ? 
@@ -279,6 +317,27 @@ export default function WithDrawalReportSettings(){
                 ): 'No Evidence'}
                 
                 </td>
+
+                  <td>
+                  <div className="items-center gap-6 md:flex">
+       
+                      <select
+                      value={withdrawal.paymentMode}
+                        id="paymentMode"
+                        name="paymentMode"
+                        className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 capitalize text-[#7D7D7D]"
+                        defaultValue={"Select a category"}
+                         onChange={(e) => handlePaymentMode(e, withdrawal._id)}
+                        required
+                      >
+                        <option value={""} defaultValue={"Filter"} >
+                          select Payment mode
+                        </option>
+                        <option value={'online'} className="capitalize">online</option>
+                        <option value={'cash'} className="capitalize">cash</option>
+                      </select>
+                    </div>
+                  </td>
               </tr>
             ))}
           />

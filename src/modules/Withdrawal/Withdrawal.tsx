@@ -2,7 +2,7 @@
 import { ErrorMessage, Field, Form, Formik,  } from "formik";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
-import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectUserId } from "@/slices/OrganizationIdSlice";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/api/hooks/useAuth";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
@@ -55,7 +55,7 @@ const WithdrawalForm = () => {
   const [selectedNameId, setSelectNameId] = useState("")
   const [filteredArray, setFilteredArray] = useState<savingsFilteredById[]>([]);
   const { client } = useAuth();
-  const userId = useSelector(selectUser);
+  const userId = useSelector(selectUserId);
   const organisationId = useSelector(selectOrganizationId)
   
   const {
@@ -80,7 +80,7 @@ const WithdrawalForm = () => {
         });
     },
   });
-
+  
   const { data: allSavings, isLoading: isLoadingAllSavings } = useQuery({
     queryKey: ["allSavings"],
     staleTime: 5000,
@@ -123,8 +123,10 @@ const WithdrawalForm = () => {
       setShowSuccessToast(true);
     
     },
-    onError(error){
+    onError(error:any){
       console.log(error)
+     setShowErrorToast(true)
+     setErrorMessage(error.response.data.message)
     }
 
   })
@@ -199,10 +201,26 @@ const WithdrawalForm = () => {
               >
                 <ResponseModal
                 label="Go to Home"
-            heading="Request Received"
-            message="Dear Customer your account will be credited within 24 hours after initiation of withdrawal"
-            route='/customer'
-            />
+                heading="Request Received"
+                message="Dear Customer your account will be credited within 24 hours after initiation of withdrawal"
+                route='/customer'
+                />
+              </Modal>
+
+    
+            )
+          }
+          {
+            showErrorToast && (
+              <Modal
+                setModalState={setShowErrorToast}
+              >
+                <ResponseModal
+                label="Try again"
+                heading="Request Failed"
+                message={errorMessage || "Unable to make withdrawal"}
+                route='/customer/withdrawals'
+                />
               </Modal>
 
     
@@ -243,7 +261,7 @@ const WithdrawalForm = () => {
                   
                 
                   <option value="">Select Account Name</option>
-                  {allUsers?.map((users: any) => (
+                  {allUsers && allUsers.length > 0 && allUsers?.map((users: any) => (
                     <option key={users._id} value={users._id}>
                       {users.firstName} {users.lastName} {users.groupName}
                     </option>

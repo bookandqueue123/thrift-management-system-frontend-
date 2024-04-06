@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Dispatch, SetStateAction } from "react";
-
+import { usePathname } from "next/navigation";
 const Modal = ({
   setModalState,
   title,
@@ -10,6 +10,8 @@ const Modal = ({
   title?: string;
   children: React.ReactNode;
 }) => {
+  const pathName = usePathname()
+  
   return (
     <>
       <div className="fixed inset-0 bg-ajo_offWhite opacity-25"></div>
@@ -28,9 +30,14 @@ const Modal = ({
               loading="eager"
               tabIndex={-1}
             />
-            <h3 className="text-xl font-semibold text-ajo_offWhite md:text-2xl">
-              {title}
-            </h3>
+           
+           
+              <h3 className="text-xl font-semibold text-ajo_offWhite md:text-2xl">
+                {title}
+              </h3>
+            
+            
+            
             <div
               onClick={() => setModalState(false)}
               className="mr-8 cursor-pointer"
@@ -52,6 +59,13 @@ const Modal = ({
               </svg>
             </div>
           </div>
+
+          {pathName === '/superadmin/commission' ?
+          (<div className="text-white mb-8 flex justify-center item-center">
+          <p>To Set Up Commissions,  <span className="text-[#EAAB40]">Kindly fill in the details below:</span></p>
+        </div>): ""
+        }
+          
           <div>{children}</div>
         </div>
       </div>

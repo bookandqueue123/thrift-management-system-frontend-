@@ -66,8 +66,10 @@ const Posting = () => {
       return client
         .get(`/api/saving/get-savings?organisation=${organizationId}`, config)
         .then((response) => {
+
           console.log("allSavingsSuccess: ", response.data);
           setFilteredSavings(response.data.savings);
+
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -79,9 +81,7 @@ const Posting = () => {
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
-    console.log(e.target.value);
 
-    console.log(allSavings.savings);
     if (allSavings) {
       const filtered = allSavings.savings.filter(
         (item: { [x: string]: any; accountNumber: any }) =>
@@ -186,6 +186,31 @@ const Posting = () => {
                 />
               </svg>
             </form>
+            {/* <input
+              onChange={handleSearch}
+              type="search"
+              placeholder="Search"
+              className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
+            /> */}
+            {/* <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+              <circle
+                cx="8.60996"
+                cy="8.10312"
+                r="7.10312"
+                stroke="#EAEAFF"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M13.4121 13.4121L16.9997 16.9997"
+                stroke="#EAEAFF"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg> */}
+            {/* </form> */}
             <FilterDropdown
               options={[
                 "Timestamp",
@@ -228,6 +253,17 @@ const Posting = () => {
           )}
         </div>
 
+        {/* <div className="my-8 justify-between md:flex">
+          <div className="flex items-center">
+            <p className="font-lg mr-2 text-white">Select range from:</p>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={handleFromDateChange}
+              className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+            />
+          </div>
+        </div> */}
         <div className="my-8 justify-between md:flex">
           <div className="flex items-center">
             <p className="font-lg mr-2 text-white">Select range from:</p>
@@ -599,7 +635,7 @@ const PostingForm = ({
         ) ?? [];
       setFilteredSavingIds(savingsIds ?? undefined);
     }
-  }, [postDetails.customerId]);
+  }, [postDetails.customerId, Savings?.savings]);
 
   console.log(filteredSavingIds);
 
@@ -841,7 +877,7 @@ const PostingForm = ({
               <option defaultValue={"Select a user"} className="hidden">
                 Select a user
               </option>
-              {groups?.map((group: customer) => {
+              {groups && groups.length > 0 && groups?.map((group: customer) => {
                 return (
                   <>
                     <option
@@ -1356,7 +1392,15 @@ const PostConfirmation = ({
         </div>
 
         <div className="mx-8 flex  ">
-          <p className="text-sm font-semibold text-[#7D7D7D]">Customer Name:</p>
+          <p className="text-sm font-semibold text-[#7D7D7D]">
+            Customer Name:{" "}
+            {postingResponse.updatedSaving
+              ? postingResponse.updatedSaving.saving.user.firstName
+              : ""}{" "}
+            {postingResponse.updatedSaving
+              ? postingResponse.updatedSaving.saving.user.lastName
+              : ""}
+          </p>
           <p className="ml-4 text-sm text-[#7D7D7D]"></p>
         </div>
 

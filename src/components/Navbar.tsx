@@ -311,3 +311,194 @@ export const Sidebar = ({
     </aside>
   );
 };
+
+
+export const SuperAdminSidebar = ({
+  onShow,
+  setShow,
+}: {
+  onShow: boolean;
+  setShow: Dispatch<SetStateAction<boolean>>;
+}) => {
+  const { SignOut } = useAuth();
+  const router = useRouter();
+
+  const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    return onShow ? "visible" : "invisible";
+  };
+
+  const toggleLeftPadding = () => {
+    return onShow && "pl-4 md:pl-12";
+  };
+
+  const merchantRoutes = [
+    "dashboard",
+    "organisation",
+    "customers",
+    "group",
+    "commission",
+    "roles",
+
+  ];
+
+  const MenuBtn = ({
+    icon,
+    positioning,
+  }: {
+    icon: ReactElement;
+    positioning?: string;
+  }) => (
+    <button
+      type="button"
+      className={`${positioning} inline-flex cursor-pointer items-center justify-center rounded-md p-2 pl-0 text-gray-400 ${toggleLeftPadding()}`}
+      aria-controls="mobile-menu"
+      aria-expanded="false"
+      tabIndex={-1}
+      onClick={() => setShow(!onShow)}
+    >
+      <span className="sr-only">Open main menu</span>
+      {icon}
+    </button>
+  );
+  return (
+    <aside>
+      <div
+        className={`${toggleSidebar()} fixed h-full w-44 space-y-10 border-r border-r-ajo_offWhite border-opacity-80 bg-ajo_darkBlue`}
+      >
+        <div className="flex w-full items-center justify-between px-6 py-6">
+          <Link href="/" tabIndex={-1} className="outline-none">
+            <Image
+              className="h-8 w-auto"
+              src="/Ajo2.svg"
+              alt="Ajo Logo"
+              width={20}
+              height={20}
+            />
+          </Link>
+
+          <MenuBtn
+            icon={
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            }
+          />
+        </div>
+        <nav className="mt-6 flex h-3/4 flex-col justify-between px-2">
+          <div className="cursor-pointer space-y-4">
+            {merchantRoutes.map((route) => {
+              return (
+                <Link
+                  key={route}
+                  href={
+                    route === "dashboard" ? "/superadmin" : `/superadmin/${route}`
+                  }
+                  className="block cursor-pointer rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
+                >
+                  {route}
+                </Link>
+              );
+            })}
+          </div>
+          <span className="w-full cursor-pointer">
+            {["settings", "sign out"].map((label) => (
+              <div
+                key={label}
+                className="relative flex w-full cursor-pointer items-center gap-x-4 rounded-lg px-4 py-2 text-start text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
+              >
+                {label === "settings" ? (
+                  <Link
+                    href="/merchant/settings"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setSettingsDropdownIsOpen(!settingsDropdownIsOpen);
+                    }}
+                  >
+                    {label}
+                  </Link>
+                ) : (
+                  <span
+                    onClick={() => {
+                      SignOut();
+                      // router.replace("/");
+                    }}
+                  >
+                    {label}
+                  </span>
+                )}
+
+                {label === "settings" && (
+                  <Image
+                    src="/arrow_down.svg"
+                    alt="arrow down"
+                    width={8}
+                    height={6}
+                  />
+                )}
+
+                {label === "settings" && settingsDropdownIsOpen && (
+                  <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+                    <Link
+                      href={`/merchant/settings/location`}
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      location settings
+                    </Link>
+                    <Link
+                      href="/merchant/settings/group"
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      group settings
+                    </Link>
+                    
+                    <Link
+                      href="/merchant/settings"
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      Savings settings
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ))}
+          </span>
+        </nav>
+      </div>
+      {/* <!-- Mobile menu button--> */}
+      {!onShow && (
+        <MenuBtn
+          positioning="absolute top-3.5"
+          icon={
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+              />
+            </svg>
+          }
+        />
+      )}
+    </aside>
+  );
+};
