@@ -198,19 +198,11 @@ const Customers = () => {
   };
 
   // CUstomer Creation Process Starts
-  const [userCreated, setUserCreated] = useState(false);
   const CreateNewCustomer = () => {
     return (
       <Modal setModalState={setModalState} title="Create a new customer">
         <div className="px-[10%]">
-          {userCreated ? (
-            <Kyc />
-          ) : (
-            <CreateCustomer
-              setUserCreated={setUserCreated}
-              organizationId={organisationId}
-            />
-          )}
+          <CreateCustomer setCloseModal={setModalState} />
         </div>
       </Modal>
     );
