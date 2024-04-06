@@ -268,7 +268,9 @@ const Customers = () => {
               setModalToShow("create-customer");
             }}
           />
-          {modalToShow === "create-customer" && <CreateNewCustomer />}
+          {modalToShow === "create-customer" && modalState && (
+            <CreateNewCustomer />
+          )}
         </div>
 
         <div className="">
