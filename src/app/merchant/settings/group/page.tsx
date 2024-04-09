@@ -8,8 +8,8 @@ import AmountFormatter from "@/utils/AmountFormatter";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import DummyGroups from "@/api/dummyGroups.json";
 import Image from "next/image";
-import { MultiSelectDropdown } from "@/components/Dropdowns";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import SuccessToaster, { ErrorToaster } from "@/components/toast";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/api/hooks/useAuth";
 import { customer, postSavingsResponse } from "@/types";
 import { AxiosError, AxiosResponse } from "axios";
@@ -29,28 +29,18 @@ const GroupSettings = () => {
 
   const { client } = useAuth();
 
-  const [modalToShow, setModalToShow] = useState<"edit" | "">("");
+  const [modalToShow, setModalToShow] = useState<"edit" | "create" | "">("");
   const [groupToBeEdited, setGroupToBeEdited] = useState("");
   const organizationId = useSelector(selectOrganizationId);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // const x = {
-  //   _id: "660d706a5ec7052d03a59aa8",
-  //   userType: "group",
-  //   groupName: "Saavy Cooperative",
-  //   groupMember: ["660a72a5c07bfcaf8af26f70"],
-  //   role: "customer",
-  //   kycVerified: false,
-  //   isArchieve: false,
-  //   isVerified: true,
-  //   savingIdentities: [],
-  //   organisation: "6606f556c07bfcaf8af251c0",
-  //   createdAt: "2024-04-03T15:06:18.702Z",
-  //   updatedAt: "2024-04-03T15:06:18.702Z",
-  //   __v: 0,
-  // };
+  const queryClient = useQueryClient();
 
   const { data: allGroups, isLoading: isGettingAllGroups } = useQuery({
-    queryKey: ["allgroups"],
+    queryKey: ["allGroups"],
     queryFn: async () => {
       return client
         .get(`/api/user?organisation=${organizationId}&userType=group`, {})
@@ -65,13 +55,29 @@ const GroupSettings = () => {
     },
   });
 
-  const handleGroupActions = (type: "edit" | "", Id: string) => {
-    setModalState(true);
-    setModalContent("form");
-    setModalToShow(type);
-    setGroupToBeEdited(Id);
-    console.log("View Customer");
-  };
+  const { mutate: deleteGroup, isPending: isDeletingGroup } = useMutation({
+    mutationKey: ["deleteGroup"],
+    mutationFn: async (groupId: string) => {
+      console.log("ID: ", groupId);
+      return client.delete(`/api/user/${groupId}`);
+    },
+    onSuccess(response: AxiosResponse<any, any>) {
+      queryClient.invalidateQueries({
+        queryKey: ["allGroups"],
+      });
+      console.log(response.data);
+      console.log("group deleted");
+      setShowSuccessToast(true);
+      setSuccessMessage((response as any).response.data.message);
+    },
+    onError(error: AxiosError<any, any>) {
+      console.error(error.response?.data.message ?? error.message);
+      setShowErrorToast(true);
+      setErrorMessage(error.response?.data.message);
+    },
+  });
+
+
   return (
     <>
       <div className="">
@@ -89,12 +95,19 @@ const GroupSettings = () => {
             onButtonClick={() => {
               setModalState(true);
               setModalContent("form");
+              setModalToShow("create");
             }}
           />
           {modalState && (
             <Modal
               setModalState={setModalState}
-              title={modalContent === "confirmation" ? "" : "Create a Group"}
+              title={
+                modalContent === "confirmation"
+                  ? ""
+                  : modalToShow === "create"
+                    ? "Create a Group"
+                    : "Edit Group"
+              }
             >
               {modalContent === "confirmation" ? (
                 <PostConfirmation
@@ -107,6 +120,8 @@ const GroupSettings = () => {
                   postingMessage={setPostingMessage}
                   onSubmit={setModalContent}
                   setPostingResponse={setPostingResponse}
+                  actionToTake={modalToShow}
+                  groupToBeEdited={groupToBeEdited}
                 />
               )}
             </Modal>
@@ -159,7 +174,12 @@ const GroupSettings = () => {
                           alt="pencil"
                           width={20}
                           height={20}
-                          onClick={() => {}}
+                          onClick={() => {
+                            setModalToShow("edit");
+                            setModalState(true);
+                            setModalContent("form");
+                            setGroupToBeEdited(group._id);
+                          }}
                           className="cursor-pointer"
                         />
                         <Image
@@ -167,7 +187,7 @@ const GroupSettings = () => {
                           alt="pencil"
                           width={20}
                           height={20}
-                          onClick={() => {}}
+                          onClick={() => deleteGroup(group._id)}
                           className="cursor-pointer"
                         />
                         <Image
@@ -186,32 +206,18 @@ const GroupSettings = () => {
             />
             <PaginationBar apiResponse={DummyGroups.groups} />
           </div>
-          {/* {modalState && (
-            <Modal
-              setModalState={setModalState}
-              title={
-                modalContent === "confirmation"
-                  ? ""
-                  : modalToShow === "edit"
-                    ? "Edit Group"
-                    : ""
-              }
-            >
-              {modalToShow === "edit" ? (
-                // <EditCustomer
-                //   customerId={groupToBeEdited}
-                //   setContent={setModalContent}
-                //   content={
-                //     modalContent === "confirmation" ? "confirmation" : "form"
-                //   }
-                //   closeModal={setModalState}
-                // />
-                <></>
-              ) : (
-                ""
-              )}
-            </Modal>
-          )} */}
+
+          {/* <SuccessToaster message="hey" /> */}
+          {showSuccessToast && (
+            <SuccessToaster
+              message={successMessage ?? "Group Deletion Successful!"}
+            />
+          )}
+          {showErrorToast && errorMessage && errorMessage && (
+            <ErrorToaster
+              message={errorMessage ? errorMessage : "Error Deleting Group"}
+            />
+          )}
         </section>
       </div>
     </>
@@ -224,12 +230,16 @@ interface iCreateGroupProps {
   onSubmit: Dispatch<SetStateAction<"form" | "confirmation">>;
   postingMessage: any;
   setPostingResponse: Dispatch<SetStateAction<postSavingsResponse | undefined>>;
+  actionToTake: "create" | "edit" | "";
+  groupToBeEdited?: string;
 }
 
 const CreateGroupForm = ({
   onSubmit,
   postingMessage,
   setPostingResponse,
+  actionToTake,
+  groupToBeEdited,
 }: iCreateGroupProps) => {
   const organizationId = useSelector(selectOrganizationId);
   console.log(organizationId);
@@ -243,13 +253,16 @@ const CreateGroupForm = ({
       setSelectedOptions([...selectedOptions, selectedOption!]);
     }
   };
-  console.log(selectedOptions);
+  // console.log(selectedOptions);
 
   const handleRemoveOption = (index: number) => {
     const updatedOptions = [...selectedOptions];
     updatedOptions.splice(index, 1);
     setSelectedOptions(updatedOptions);
   };
+
+                              console.log("groupToBeEdited",groupToBeEdited);
+
 
   const {
     data: users,
@@ -313,12 +326,54 @@ const CreateGroupForm = ({
     },
   });
 
+  const {
+    mutate: editGroups,
+    isPending: isEditingGroup,
+    isError: editGroupError,
+  } = useMutation({
+    mutationKey: ["edit Group"],
+    mutationFn: async (groupName: string) => {
+      return client.put(`/api/user/${groupToBeEdited}`, {
+        groupName: groupName,
+        groupMember: selectedOptions,
+        organisation: organizationId,
+      });
+    },
+
+    onSuccess(response) {
+      setPostingResponse(response.data);
+      setPostingResponse(
+        (prev) =>
+          ({
+            ...prev,
+            ["status"]: "success",
+          }) as postSavingsResponse,
+      );
+      console.log("yes");
+      return response.data;
+    },
+    onError(error: any) {
+      setPostingResponse(error.response.data!);
+
+      setPostingResponse(
+        (prev) =>
+          ({
+            ...prev,
+            ["status"]: "failed",
+          }) as postSavingsResponse,
+      );
+
+      throw error;
+    },
+  });
+
   useEffect(() => {
     if (isError) {
       // Handle error
       console.error("Error fetching users");
     }
   }, [isError]);
+
   return (
     <Formik
       initialValues={{
@@ -344,9 +399,10 @@ const CreateGroupForm = ({
         setTimeout(() => {
           setSubmitting(false);
 
-          createGroups(values.groupName);
+          actionToTake === "create"
+            ? createGroups(values.groupName)
+            : editGroups(values.groupName);
 
-          // postSavings();
           onSubmit("confirmation");
         }, 400);
       }}
@@ -361,7 +417,7 @@ const CreateGroupForm = ({
                 htmlFor="groupName"
                 className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
               >
-                Group Name:
+                {actionToTake === "edit" && "New"} Group Name:
               </label>
               <Field
                 id="groupName"
@@ -389,7 +445,7 @@ const CreateGroupForm = ({
                 htmlFor="groupDescription"
                 className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
               >
-                Group description:
+                {actionToTake === "edit" && "New"} Group description:
               </label>
 
               <Field
@@ -417,7 +473,7 @@ const CreateGroupForm = ({
                 htmlFor="savingsPurpose"
                 className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
               >
-                Savings Purpose:
+                {actionToTake === "edit" && "New"} Savings Purpose:
               </label>
               <Field
                 id="savingsPurpose"
@@ -527,139 +583,29 @@ const PostConfirmation = ({
   status: "success" | "failed" | undefined;
   postingMessage: any;
 }) => {
-  const postingCreation: string | undefined = Date();
-  const formattedPostingDate = new Date(postingCreation);
-  const timeOfPosting = formattedPostingDate.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true, // Use 12-hour format
-    timeZone: "UTC",
-  });
-
-  const postingStartDate: string | undefined = Date();
-  const formattedPostingStartDate = new Date(postingStartDate);
-  const formattedStartDate = formattedPostingStartDate.toLocaleDateString(
-    "en-US",
-    {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    },
-  );
-
-  const postingEndDate: string | undefined = Date();
-  const formattedPostingEndDate = new Date(postingEndDate);
-  const formattedEndDate = formattedPostingEndDate.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
   return (
-    // <div className="mx-auto h-full w-[75%] bg-ajo_offWhite py-8">
-    //   <p className="mb-8 text-center text-3xl font-bold text-black">{status === 'failed'  ? "Couldn't create group" : "Group Created Successfully"}</p>
-    //   <div className="space-y-4">
-    //     <div className="mx-auto flex items-center justify-between md:w-[40%]">
-    //       <p className="text-sm font-semibold text-[#7D7D7D]">
-    //         Transaction Id:
-    //       </p>
-    //       <p className="text-sm text-[#7D7D7D]">{postingResponse?._id}</p>
-    //     </div>
-    //     <div className="mx-auto flex items-center justify-between md:w-[40%]">
-    //       <p className="text-sm font-semibold text-[#7D7D7D]">Amount:</p>
-    //       <p className="text-sm text-[#7D7D7D]">
-    //         {postingResponse?.amount} NGN
-    //       </p>
-    //     </div>
-    //     <div className="mx-auto flex items-center justify-between md:w-[40%]">
-    //       <p className="text-sm font-semibold text-[#7D7D7D]">Time:</p>
-    //       <p className="text-sm text-[#7D7D7D]">{timeOfPosting}</p>
-    //     </div>
-    //     <div className="mx-auto flex items-center justify-between md:w-[40%]">
-    //       <p className="text-sm font-semibold text-[#7D7D7D]">Purpose:</p>
-    //       <p className="text-sm capitalize text-[#7D7D7D]">
-    //         {postingResponse?.purposeName}
-    //       </p>
-    //     </div>
-    //     {/* <div className="mx-auto flex items-center justify-between md:w-[40%]">
-    //       <p className="text-sm font-semibold text-[#7D7D7D]">Payment:</p>
-    //       <p className="text-sm text-[#7D7D7D]">{postingResponse.}</p>
-    //     </div> */}
-    //     <div className="mx-auto flex items-center justify-between md:w-[40%]">
-    //       <p className="text-sm font-semibold text-[#7D7D7D]">Start Date:</p>
-    //       <p className="text-sm text-[#7D7D7D]">{formattedStartDate}</p>
-    //     </div>
-    //     <div className="mx-auto flex items-center justify-between md:w-[40%]">
-    //       <p className="text-sm font-semibold text-[#7D7D7D]">End Date:</p>
-    //       <p className="text-sm text-[#7D7D7D]">{formattedEndDate}</p>
-    //     </div>
-    //     <div className="mx-auto flex items-center justify-between md:w-[40%]">
-    //       <p className="text-sm font-semibold text-[#7D7D7D]">Payment Mode:</p>
-    //       <p className="text-sm text-[#7D7D7D]">
-    //         {postingResponse?.paymentMode}
-    //       </p>
-    //     </div>
-    //     <div className="mx-auto flex items-center justify-between md:w-[40%]">
-    //       <p className="text-sm font-semibold text-[#7D7D7D]">Narration:</p>
-    //       <p className="text-sm text-[#7D7D7D]">{postingResponse?.message}</p>
-    //     </div>
-    //     <div className="mx-auto flex items-center justify-between md:w-[40%]">
-    //       <p className="text-sm font-semibold text-[#7D7D7D]">Status:</p>
-    //       <p
-    //         className={`text-sm font-bold ${status === "success" ? "text-successText" : "text-errorText"}`}
-    //       >
-    //         {status === "success" ? "Posting Successful" : "Posting Failed"}
-    //       </p>
-    //     </div>
-    //   </div>
-    //   <div className="mx-auto my-8 flex items-center justify-center gap-x-8 px-8 md:w-[50%]">
-    //     <CustomButton
-    //       type="button"
-    //       label="Download"
-    //       style="rounded-md bg-ajo_offWhite border border-ajo_blue py-3 px-9 text-sm text-ajo_blue hover:text-ajo_offWhite focus:text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 w-1/2"
-    //       // onButtonClick={() => onSubmit("confirmation")}
-    //     />
-    //     <CustomButton
-    //       type="button"
-    //       label="Share"
-    //       style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 w-1/2"
-    //       // onButtonClick={() => onSubmit("confirmation")}
-    //     />
-    //   </div>
-    //   <div className="bg-ajo_orange px-8 py-4">
-    //     <p className="text-center text-xs font-medium text-ajo_offWhite">
-    //       For further enquiries and assistance kindly send a mail
-    //       ajo@raoatech.com or call +23497019767
-    //     </p>
-    //   </div>
-    // </div>
-
-    // /failed-icon-7.jpg
-    // "/check-circle.svg"
     <div className="mx-auto mt-[10%] flex h-full w-1/2 flex-col items-center justify-center space-y-8">
       <h1 className="text-white">
-        {" "}
-        {status === "success"
-          ? " Group Successfully Created"
-          : "Unable to Create Group"}{" "}
+        {status !== undefined ? status === "success"
+          ? "Group Successfully Created"
+          : "Unable to Create Group" : "Loading....."}
       </h1>
-      <Image
-        src={status === "success" ? "/check-circle.svg" : "/failed-icon-7.jpg"}
-        alt="check-circle"
-        width={162}
-        height={162}
-        className="w-[6rem] md:w-[10rem]"
-      />
+      {status !== undefined ? (
+        <Image
+          src={
+            status === "success" ? "/check-circle.svg" : "/failed-icon-7.jpg"
+          }
+          alt="check-circle"
+          width={162}
+          height={162}
+          className="w-[6rem] md:w-[10rem]"
+        />
+      ) : (
+        "Loading...."
+      )}
       <p className="whitespace-nowrap text-ajo_offWhite">
         {postingResponse?.message}
-
-        {/* {status === 'success' ? " Group Successfully Created" : 'Unable to Create Group'} */}
       </p>
-      {/* <CustomButton
-            type="button"
-            label="Close"
-            style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 md:w-[40%]"
-            // onButtonClick={() => closeModal(false)}
-          /> */}
     </div>
   );
 };
