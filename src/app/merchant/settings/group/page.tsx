@@ -253,15 +253,13 @@ const CreateGroupForm = ({
       setSelectedOptions([...selectedOptions, selectedOption!]);
     }
   };
-  // console.log(selectedOptions);
 
+  const queryClient = useQueryClient()
   const handleRemoveOption = (index: number) => {
     const updatedOptions = [...selectedOptions];
     updatedOptions.splice(index, 1);
     setSelectedOptions(updatedOptions);
   };
-
-                              console.log("groupToBeEdited",groupToBeEdited);
 
 
   const {
@@ -349,6 +347,9 @@ const CreateGroupForm = ({
             ["status"]: "success",
           }) as postSavingsResponse,
       );
+      queryClient.invalidateQueries({
+        queryKey: ["allUsers"],
+      });
       console.log("yes");
       return response.data;
     },
