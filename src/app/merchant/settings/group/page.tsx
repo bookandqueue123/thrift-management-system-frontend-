@@ -18,6 +18,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useSelector } from "react-redux";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
+import { useRouter } from "next/navigation";
 
 const GroupSettings = () => {
   const [modalState, setModalState] = useState(false);
@@ -242,9 +243,10 @@ const CreateGroupForm = ({
   groupToBeEdited,
 }: iCreateGroupProps) => {
   const organizationId = useSelector(selectOrganizationId);
-  console.log(organizationId);
+  // console.log(organizationId);
   const { client } = useAuth();
   const [selectedOptions, setSelectedOptions] = useState<customer[]>([]);
+  const router = useRouter()
 
   const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
@@ -306,7 +308,8 @@ const CreateGroupForm = ({
             ["status"]: "success",
           }) as postSavingsResponse,
       );
-      console.log("yes");
+      router.refresh()
+      // console.log("yes");
       return response.data;
     },
     onError(error: any) {
@@ -350,7 +353,8 @@ const CreateGroupForm = ({
       queryClient.invalidateQueries({
         queryKey: ["allUsers"],
       });
-      console.log("yes");
+      router.refresh()
+      // console.log("yes");
       return response.data;
     },
     onError(error: any) {
