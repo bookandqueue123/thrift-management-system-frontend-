@@ -8,11 +8,11 @@ export default function ViewDetails(){
         <div>
             
             <p className="flex items-center text-[#EAAB40] cursor-pointer" onClick={() => router.back()}>
-      <span className="mr-2">
-        <FaArrowLeftLong /> 
-      </span>
-      <span>Go Back</span>
-    </p>
+            <span className="mr-2">
+              <FaArrowLeftLong /> 
+            </span>
+            <span>Go Back</span>
+          </p>
             <div className="md:flex justify-between mb-12 mt-8 ">
               <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
                 Commission
