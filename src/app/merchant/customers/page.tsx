@@ -197,17 +197,6 @@ const Customers = () => {
     }
   };
 
-  // CUstomer Creation Process Starts
-  const CreateNewCustomer = () => {
-    return (
-      <Modal setModalState={setModalState} title="Create a new customer">
-        <div className="px-[10%]">
-          <CreateCustomer setCloseModal={setModalState} />
-        </div>
-      </Modal>
-    );
-  };
-
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -264,13 +253,10 @@ const Customers = () => {
             label="Create New Customer"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
             onButtonClick={() => {
-              // setModalState(true);
+              setModalState(true);
               setModalToShow("create-customer");
             }}
           />
-          {modalToShow === "create-customer" && modalState && (
-            <CreateNewCustomer />
-          )}
         </div>
 
         <div className="">
@@ -421,7 +407,9 @@ const Customers = () => {
                       ? "Edit Customer"
                       : modalToShow === "savings"
                         ? "Savings Set Up"
-                        : ""
+                        : modalToShow === "create-customer"
+                          ? "Create Customer"
+                          : ""
               }
             >
               {modalToShow === "view" ? (
@@ -451,6 +439,10 @@ const Customers = () => {
                   }
                   closeModal={setModalState}
                 />
+              ) : modalToShow === "create-customer" ? (
+                <div className="px-[10%]">
+                  <CreateCustomer setCloseModal={setModalState} />
+                </div>
               ) : (
                 ""
               )}
@@ -491,13 +483,6 @@ const Customers = () => {
               >
                 <MdKeyboardArrowRight />
               </button>
-
-              {/* <button
-                className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-                onClick={() => dispatch(setCurrentPage(currentPage + 6))}
-              >
-                {currentPage + 6}
-              </button> */}
             </div>
             {/* <PaginationBar apiResponse={DummyCustomers} /> */}
           </div>

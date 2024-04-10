@@ -28,6 +28,7 @@ const CreateCustomer = ({
   setCloseModal: Dispatch<SetStateAction<boolean>>;
 }) => {
   const { client } = useAuth();
+  const router = useRouter()
 
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
@@ -175,12 +176,12 @@ const CreateCustomer = ({
     },
 
     onSuccess(response) {
-      // router.push("/customer");
       console.log(response);
       console.log("customer created successfully");
       setCloseModal(false);
       setShowSuccessToast(true);
       setSuccessMessage((response as any).response.data.message);
+      router.refresh();
     },
 
     onError(error: AxiosError<any, any>) {
