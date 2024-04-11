@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { ChangeEvent, SetStateAction, useEffect, useState } from "react";
 import { CiExport } from "react-icons/ci";
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { useSelector } from "react-redux";
 
 
@@ -77,12 +78,22 @@ export default function Analytics(){
     { name: "November", value: 11 },
     { name: "December", value: 12 }
   ];
+  const yearsOption: monthOptionsProps[]  = [
+    { name: "2022", value: 2022 },
+    { name: "2023", value: 2023 },
+    { name: "2024", value: 2024 },
+    { name: "2025", value: 2025 },
+    { name: "2026", value: 2026 },
+    { name: "2027", value: 2027 },
+    
+  ];
   const PAGE_SIZE = 5;
 
   const organizationId = useSelector(selectOrganizationId)
 
   const { client } = useAuth();
-  const [selectedMonth, setSelectedMonth] = useState<{ name: string; value: number }>(monthOptions[1]);
+  const [selectedYear, setSelectedYear] = useState<{ name: string; value: number }>(yearsOption[2]);
+  const [selectedMonth, setSelectedMonth] = useState<{ name: string; value: number }>(monthOptions[3]);
   const [searchResult, setSearchResult] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState<allSavingsResponse[]>([]);
   const [fromDate, setFromDate] = useState("");
@@ -109,6 +120,16 @@ export default function Analytics(){
       const selected = monthOptions.find(option => option.value.toString() === selectedValue);
       if (selected) {
         setSelectedMonth(selected);
+        
+      }
+    };
+
+    const handleYearChange = (event: { target: { value: any; }; }) => {
+      const selectedValue = event.target.value;
+      const selected = yearsOption.find(option => option.value.toString() === selectedValue);
+      if (selected) {
+        setSelectedYear(selected);
+        
       }
     };
     
@@ -220,14 +241,13 @@ export default function Analytics(){
   
     
     
-    function filterDatesWithMonthAndDay(dates: any[], month: number, day: number) {
-      
+    function filterDatesWithMonthAndDay(dates: any[], year: number, month: number, day: number) {
       return dates.some(dateString => {
-        const date = new Date(dateString);
-       
-        return date.getMonth() + 1 === month && date.getDate() === day; // Month is zero-based, so add 1
-    });
-  }
+          const date = new Date(dateString);
+          return date.getFullYear() === year && date.getMonth() + 1 === month && date.getDate() === day;
+      });
+   }
+  
   
     return(
         <div>
@@ -286,23 +306,41 @@ export default function Analytics(){
         </div>
 
         <div className="md:flex justify-between my-8">
-          <div className="flex items-center">
-            <p className="mr-2 font-lg text-white">Select range from:</p>
+          <div className="md:flex items-center">
+          <div className="flex items-center mb-2">
+              <p className="mr-2 font-lg text-white">Select Year:</p>
+              <select className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" id="monthSelect" value={selectedYear.value} onChange={handleYearChange}>
+              {yearsOption.map(option => (
+                <option key={option.value} value={option.value}>{option.name}</option>
+              ))} 
+              </select>
+            </div>
+          
+            {/* <p className="mr-2 font-lg text-white">Select range from:</p>
             <input
               type="date"
               value={fromDate}
                 onChange={handleFromDateChange}
               className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-            />
+            /> */}
 
 
-            <p className="mx-2 text-white">to</p>
-            <input
+            {/* <p className="mx-2 text-white">to</p> */}
+            
+            <div className="flex items-center mb-2 md:ml-2">
+              <p className="mr-2 font-lg text-white">Select Month:</p>
+              <select className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" id="monthSelect" value={selectedMonth.value} onChange={handleMonthChange}>
+              {monthOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.name}</option>
+              ))} 
+              </select>
+            </div>
+            {/* <input
               type="date"
               value={toDate}
                onChange={handleToDateChange}
               className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-            />
+            /> */}
             </div>
               <div className="flex mt-4">
                 <button className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
@@ -312,14 +350,6 @@ export default function Analytics(){
                 </button>
               </div>
           </div>
-          <div className="flex items-center mb-2">
-            <p className="mr-2 font-lg text-white">Select Month:</p>
-              <select className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" id="monthSelect" value={selectedMonth.value} onChange={handleMonthChange}>
-              {monthOptions.map(option => (
-                <option key={option.value} value={option.value}>{option.name}</option>
-              ))} 
-              </select>
-            </div>
           
         
 
@@ -353,13 +383,13 @@ export default function Analytics(){
 
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                  
-                  {transaction.user.firstName} {transaction.user.lastName}
+                  {transaction.user.firstName} {transaction.user.lastName} {transaction.user.groupName}
                  
                 </td>
 
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                  
-                  {transaction.user.accountNumber}
+                  {transaction.user.accountNumber || "---"}
                  
                 </td>
 
@@ -369,7 +399,7 @@ export default function Analytics(){
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                 
-                  Admin Fee
+                 {transaction.adminFee}
                 
                     
                 </td>
@@ -388,10 +418,11 @@ export default function Analytics(){
             
                 {days.map((day) => (
                   <td key={day} className="whitespace-nowrap px-6 py-4 text-sm">
-                    {filterDatesWithMonthAndDay(transaction.savedDates,selectedMonth.value, day)
+                  {filterDatesWithMonthAndDay(transaction.savedDates, selectedYear.value, selectedMonth.value, day)
                       ? transaction.amount
                       : '---'}
-                  </td>
+              </td>
+              
                 ))}
                 
 
@@ -414,9 +445,56 @@ export default function Analytics(){
            
         ))}
       />
+
+      < div className="flex justify-center items-center  space-x-2">
+            <button
+              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={goToPreviousPage}
+            >
+              <MdKeyboardArrowLeft />
+            </button>
+
+            <button
+              className="p-2  text-blue-500 rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={() => setCurrentPage(currentPage)}
+            >
+              {currentPage}
+            </button>
+
+            <button
+              className="p-2  rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={() =>(setCurrentPage(currentPage + 1))}
+            >
+              {currentPage + 1}
+            </button>
+            <button
+              className="p-2  rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={() =>(setCurrentPage(currentPage + 2))}
+            >
+              {currentPage + 2}
+            </button>
+
+            <button
+              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              onClick={goToNextPage}
+            >
+              <MdKeyboardArrowRight />
+            </button> 
+
+              {/* <button
+                className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+                onClick={() => dispatch(setCurrentPage(currentPage + 6))}
+              >
+                {currentPage + 6}
+              </button> */}
+
+                    
+         </div>
       </section>
 
      
         </div>
     )
 }
+
+
