@@ -380,7 +380,7 @@ const handleToDateChange = (event: { target: { value: SetStateAction<string>; };
             }
           />
 
-<div className="flex justify-center items-center  space-x-2">
+          <div className="flex justify-center items-center  space-x-2">
             <button
               className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
               onClick={goToPreviousPage}
