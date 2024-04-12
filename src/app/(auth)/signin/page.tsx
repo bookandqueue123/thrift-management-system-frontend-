@@ -241,7 +241,7 @@ const SignInPage = () => {
           <p className="text-center text-sm font-semibold text-white">
             Dont have an account yet?
           </p>
-          <Link href="/">
+          <Link href="/signup">
             <p className="text-center text-sm font-semibold text-ajo_orange hover:underline focus:underline">
               Sign up!
             </p>

@@ -41,9 +41,7 @@ const organizationId = useSelector(selectOrganizationId)
 
 const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
   // setSearchResult(e.target.value);
-  console.log(e.target.value)
-
-  console.log(allTransactions.savings)
+  
   if(allTransactions){
     const filtered = allTransactions.savings.filter((item: {
       [x: string]: any; accountNumber: any; 
@@ -79,7 +77,7 @@ const handleDateFilter = () => {
   
   // const token = useSelector(selectToken)
   const user = useSelector(selectUser);
-  console.log(user);
+  
 
   //   console.log(organizationId)
 
@@ -91,13 +89,13 @@ const handleDateFilter = () => {
         return client
           .get(`/api/saving/get-savings?organisation=${organizationId}`)
           .then((response) => {
-            console.log(response);
+          
             setFilteredTransactions(response.data.savings);
             setTotalAmtCollected(response.data.totalAmountCollected);
             return response.data;
           })
           .catch((error: AxiosError<any, any>) => {
-            console.log(error.response);
+            
             throw error;
           });
       },
@@ -112,12 +110,12 @@ const handleDateFilter = () => {
           {},
         ) //populate this based onthee org
         .then((response: AxiosResponse<customer[], any>) => {
-          console.log(response);
+       
           setTotalCustomers(response.data.length);
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error);
+         
           throw error;
         });
     },
@@ -129,7 +127,7 @@ if(allTransactions){
    totalPages = Math.ceil(allTransactions.savings.length / PAGE_SIZE);
 }
 
-  console.log(filteredTransactions);
+ 
   const paginatedTransactions = filteredTransactions.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
