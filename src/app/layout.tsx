@@ -27,9 +27,13 @@ export default function RootLayout({
         <Provider store={store}>
           <TanstackProvider>
             <PreferredUrlProvider>
-              <div>
+              <div className="">
                 <ToastContainer />
                 {children}
+                <script
+                  src="https://unpkg.com/flowbite@1.5.1/dist/flowbite.js"
+                  async
+                ></script>
               </div>
             </PreferredUrlProvider>
           </TanstackProvider>

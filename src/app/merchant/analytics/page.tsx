@@ -394,7 +394,7 @@ export default function Analytics(){
                 </td>
 
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  Applied %
+                  {transaction.appliedPercentage}
                 
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
