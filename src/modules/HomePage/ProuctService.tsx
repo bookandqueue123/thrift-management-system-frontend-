@@ -27,7 +27,7 @@ export default function ProductService(){
             </div>
 
             <div className=" md:grid grid-cols-2   my-12">
-                <div className=" flex text-white flex-col flex-start md:ml-4 mt-4 md:mt-[4%]">
+                <div className="hidden md:flex text-white flex-col flex-start md:ml-4 mt-4 md:mt-[4%]">
                     <p className="text-2xl  font-bold">02.</p>
                     <p className="py-4">Thrift Savings p.k.a Ajo</p>
                 </div>
@@ -41,6 +41,11 @@ export default function ProductService(){
                         src="/product2.svg" alt=""
                     />
                         
+                </div>
+
+                <div className="md:hidden flex text-white flex-col flex-start md:ml-4 mt-4 md:mt-[4%]">
+                    <p className="text-2xl  font-bold">02.</p>
+                    <p className="py-4">Thrift Savings p.k.a Ajo</p>
                 </div>
 
                 
