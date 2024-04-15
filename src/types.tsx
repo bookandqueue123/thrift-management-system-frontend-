@@ -428,3 +428,24 @@ export interface FormValues {
 export interface FormErrors {
   [key: string]: string | string[];
 }
+
+export interface UpdateMerchantKycProps {
+  country:         string;
+  state:           string;
+  lga:             string;
+  region:            string;
+  phoneNumber:        string;
+  organisationLogo:   null;
+  tradingName: string,
+  organisationName: string
+  description: string;
+  prefferedUrl: string;
+  email: string;
+  facebook: string;
+  instagram: string;
+  linkedIn: string;
+  twitter: string;
+  pintrest: string;
+  officeAddress: string
+
+}

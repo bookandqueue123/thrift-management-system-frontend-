@@ -6,9 +6,9 @@ import HomePage from "@/modules/HomePage/homePage";
 export default function Home() {
   VerifyOrgSubdomain();
   return(
-    <div className=" bg-ajo_darkBlue ">
-      <HomePage/>
-      {/* <Landing /> */}
+    <div className=" ">
+      {/* <HomePage/> */}
+      <Landing />
     </div>
     
     

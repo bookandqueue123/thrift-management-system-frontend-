@@ -25,7 +25,6 @@ export const formatToDateAndTime = (
 
 
 export function extractDate(dateString: string | Date): string {
-  console.log(dateString)
   const date = new Date(dateString);
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
@@ -34,7 +33,7 @@ export function extractDate(dateString: string | Date): string {
 }
 
 export function extractTime(dateString: string | Date): string {
-  console.log(dateString);
+
 
   // Create a Date object from the provided dateString
   const date = new Date(dateString);
