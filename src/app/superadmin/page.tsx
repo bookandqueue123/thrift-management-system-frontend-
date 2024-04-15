@@ -1,8 +1,14 @@
 'use client'
+import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
 import TransactionsTable from "@/components/Tables";
+import { customer, getOrganizationProps } from "@/types";
+import { extractDate } from "@/utils/TimeStampFormatter";
+import { useQuery } from "@tanstack/react-query";
+import { AxiosError, AxiosResponse } from "axios";
 import Link from "next/link";
+import { useState } from "react";
 import { CiExport } from "react-icons/ci";
 
 
@@ -60,6 +66,69 @@ const mockData = [
     }
   ];
 export default function SuperAdminDashboard(){
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 3;
+  const { client } = useAuth();
+  const [filteredOrganisations, setFilteredOrganisations] = useState<getOrganizationProps[]>([])
+  const [filteredCustomers, setFilteredCustomer] = useState<customer[]>([]);
+  const {
+    data: organizations,
+    isLoading: isUserLoading,
+    isError: getGroupError,
+  } = useQuery({
+    queryKey: ["allOrganizations"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user?role=organisation`, {})
+        .then((response) => {
+          setFilteredOrganisations(response.data)
+          return response.data;
+          
+        })
+        .catch((error) => {
+          console.log(error);
+          throw error;
+        });
+    },
+  });
+  const paginatedOrganisations = filteredOrganisations?.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+  
+ 
+  const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
+    queryKey: ["allCustomers"],
+    queryFn: async () => {
+      return client
+        .get(
+          `/api/user?role=customer&userType=individual`,
+          {},
+        ) //populate this based onthee org
+        .then((response: AxiosResponse<customer[], any>) => {
+        
+          setFilteredCustomer(response.data);
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          console.log(error);
+          throw error;
+        });
+    },
+  });
+  
+  const paginatedCustomers = filteredCustomers?.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+  let totalPages = 0;
+  if (allCustomers) {
+    totalPages = Math.ceil(allCustomers.length / PAGE_SIZE);
+  }
+
+
+  
+
     return(
         <div>
            <div className="mb-4 space-y-2">
@@ -103,34 +172,42 @@ export default function SuperAdminDashboard(){
             </Link>
           </div>
 
-      <TransactionsTable
-        headers={[
-        "S/N",
-        "Organisation Name",
-        "Organisation ID",
-        "Total Number of Customers",
-        "Registration Date",
-        "Action"
-        ]}
+          <TransactionsTable
+            headers={[
+            "S/N",
+            "Organisation Name",
+            "Account Number",
+            "email",
+            "Organisation ID",
+            "Total Number of Customers",
+            "Registration Date",
+            "Action"
+            ]}
 
-        content={mockData.map((organisation, index) => (
+        content={paginatedOrganisations.map((organisation, index) => (
             <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {index}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.organisation_name}
+                    {organisation.organisationName}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.organization_id}
+                    {organisation.accountNumber}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.total_customers} customers
+                    {organisation.email}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.registration_day}
+                    {organisation._id}
                 </td>
-                <td className="mb-8 whitespace-nowrap px-6 py-4 text-sm">
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    --- customers
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {extractDate(organisation.createdAt)} 
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
                     
                 </td>
             </tr>
@@ -160,28 +237,28 @@ export default function SuperAdminDashboard(){
         "Action"
         ]}
 
-        content={customerMockData.map((customer, index) => (
+        content={paginatedCustomers.map((customer, index) => (
             <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {customer.Customer_Name}
+                    {customer.firstName} {customer.lastName}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {customer.Account_Created_on}
+                    {extractDate(customer.createdAt)}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {customer.Email_Address}
+                    {customer.email}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {customer.Phone_Number} customers
+                    {customer.phoneNumber} 
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {customer.State}
+                    {customer.state}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {customer.LGA}
+                    {customer.lga}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {customer.Organisation}
+                    {customer.organisation}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                     

@@ -1,7 +1,14 @@
 'use client'
+import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import TransactionsTable from "@/components/Tables";
+import { customer } from "@/types";
+import { extractDate } from "@/utils/TimeStampFormatter";
+import { useQuery } from "@tanstack/react-query";
+import { AxiosError, AxiosResponse } from "axios";
+import { ChangeEvent, SetStateAction, useState } from "react";
 import { CiExport } from "react-icons/ci";
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 
 
 const mockData = [
@@ -37,6 +44,97 @@ const mockData = [
     }
   ];
 export default function SuperAdminCustomer(){
+  const { client } = useAuth();
+   const PAGE_SIZE = 5;
+   const [searchResult, setSearchResult] = useState("");
+   const [fromDate, setFromDate] = useState("");
+   const [toDate, setToDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filteredCustomers, setFilteredCustomer] = useState<customer[]>([]);
+  const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
+    queryKey: ["allCustomers"],
+    queryFn: async () => {
+      return client
+        .get(
+          `/api/user?role=customer&userType=individual`,
+          {},
+        ) //populate this based onthee org
+        .then((response: AxiosResponse<customer[], any>) => {
+        
+          setFilteredCustomer(response.data);
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          console.log(error);
+          throw error;
+        });
+    },
+  });
+  
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchResult(e.target.value);
+    console.log(e.target.value);
+
+    if (allCustomers) {
+      const filtered = allCustomers.filter((item) =>
+        String(item.accountNumber).includes(String(e.target.value)),
+      );
+      // Update the filtered data state
+      setFilteredCustomer(filtered);
+    }
+  };
+
+  const handleFromDateChange = (event: {
+    target: { value: SetStateAction<string> };
+  }) => {
+    setFromDate(event.target.value);
+  };
+
+  const handleToDateChange = (event: {
+    target: { value: SetStateAction<string> };
+  }) => {
+    setToDate(event.target.value);
+
+    handleDateFilter();
+  };
+
+  const handleDateFilter = () => {
+    // Filter the data based on the date range
+    if (allCustomers) {
+      const filtered = allCustomers.filter((item) => {
+        const itemDate = new Date(item.createdAt); // Convert item date to Date object
+        const startDateObj = new Date(fromDate);
+        const endDateObj = new Date(toDate);
+
+        return itemDate >= startDateObj && itemDate <= endDateObj;
+      });
+
+      // Update the filtered data state
+      setFilteredCustomer(filtered);
+    }
+  };
+
+  const paginatedCustomers = filteredCustomers?.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+  let totalPages = 0;
+  if (allCustomers) {
+    totalPages = Math.ceil(allCustomers.length / PAGE_SIZE);
+  }
+
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
     return(
         <div>
            <div className="mb-4 space-y-2">
@@ -51,7 +149,7 @@ export default function SuperAdminCustomer(){
             {/* <SearchInput onSearch={() => ("")}/> */}
             <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
             <input
-            // onChange={handleSearch}
+            onChange={handleSearch}
               type="search"
               placeholder="Search"
               className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
@@ -104,8 +202,8 @@ export default function SuperAdminCustomer(){
             <p className="mr-2 font-lg text-white">Select range from:</p>
             <input
               type="date"
-            //   value={fromDate}
-            //     onChange={handleFromDateChange}
+              value={fromDate}
+                onChange={handleFromDateChange}
               className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
             />
 
@@ -113,8 +211,8 @@ export default function SuperAdminCustomer(){
             <p className="mx-2 text-white">to</p>
             <input
               type="date"
-            //   value={toDate}
-            //   onChange={handleToDateChange}
+              value={toDate}
+              onChange={handleToDateChange}
               className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
             />
             </div>
@@ -134,6 +232,9 @@ export default function SuperAdminCustomer(){
       <TransactionsTable
         headers={[
         "Customer Name",
+        "Account Number",
+        
+        "Customer ID",
         "Account Created on",
         "Email Address",
         "Phone Number",
@@ -143,35 +244,88 @@ export default function SuperAdminCustomer(){
         "Action"
         ]}
 
-        content={mockData.map((organisation, index) => (
-            <tr className="" key={index}>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.Customer_Name}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.Account_Created_on}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.Email_Address}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.Phone_Number} customers
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.State}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.LGA}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.Organisation}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    
-                </td>
-            </tr>
-        ))}
+        content={paginatedCustomers.map((customer, index) => (
+          <tr className="" key={index}>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {customer.firstName} {customer.lastName}
+              </td>
+
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {customer.accountNumber}
+              </td>
+              
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {customer._id}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {extractDate(customer.createdAt)}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {customer.email}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {customer.phoneNumber} 
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {customer.state}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {customer.lga}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {customer.organisation}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  
+              </td>
+          </tr>
+      ))}
       />
+
+        <div className="flex justify-center">
+            <div className="flex items-center justify-center  space-x-2">
+              <button
+                className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+                onClick={goToPreviousPage}
+              >
+                <MdKeyboardArrowLeft />
+              </button>
+
+              <button
+                className="cursor-pointer  rounded-md p-2 text-blue-500 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+                onClick={() => setCurrentPage(currentPage)}
+              >
+                {currentPage}
+              </button>
+
+              <button
+                className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                {currentPage + 1}
+              </button>
+              <button
+                className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+                onClick={() => setCurrentPage(currentPage + 2)}
+              >
+                {currentPage + 2}
+              </button>
+
+              <button
+                className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+                onClick={goToNextPage}
+              >
+                <MdKeyboardArrowRight/>
+              </button>
+
+              {/* <button
+                className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+                onClick={() => dispatch(setCurrentPage(currentPage + 6))}
+              >
+                {currentPage + 6}
+              </button> */}
+            </div>
+            </div>
       </section>
         </div>
     )

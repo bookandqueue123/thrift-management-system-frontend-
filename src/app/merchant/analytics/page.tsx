@@ -366,8 +366,10 @@ export default function Analytics(){
         "Admin Fee",
         "Service Charge",
         "Applied Service Charge %",
+        "Final Admin Fee",
         ...Array.from({ length: 31 }, (_, i) => i + 1).map(day => `${selectedMonth.name} ${day}`),
         "Total",
+        "Total Amount Payable",
         "Action"
         ]}
 
@@ -410,10 +412,10 @@ export default function Analytics(){
                      
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                
-                  Applied Service charge
-                  
-                    
+                  Applied Service charge  
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  Final Admin Fee
                 </td>
             
                 {days.map((day) => (
@@ -429,6 +431,11 @@ export default function Analytics(){
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                 
                   {transaction.totalAmountSaved}
+                 
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                
+                  {transaction.amountPayable}
                  
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
