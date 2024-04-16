@@ -279,6 +279,13 @@ export const Sidebar = ({
                     >
                       Savings settings
                     </Link>
+
+                    <Link
+                      href="/merchant/settings/setup-adminfee"
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      Savings Setup and <br/> Admin Fee
+                    </Link>
                   </div>
                 )}
               </div>
