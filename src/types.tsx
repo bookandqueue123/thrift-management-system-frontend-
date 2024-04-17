@@ -408,6 +408,8 @@ export interface User {
   organisationName: string;
   createdAt: Date;
   updatedAt: Date;
+  totalCustomer: number;
+  pendingPayout: number;
   __v: number;
 }
 
