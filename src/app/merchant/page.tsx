@@ -91,7 +91,7 @@ const handleDateFilter = () => {
           .then((response) => {
           
             setFilteredTransactions(response.data.savings);
-            setTotalAmtCollected(response.data.totalAmountCollected);
+            setTotalAmtCollected(response?.data?.totalAmountCollected);
             return response.data;
           })
           .catch((error: AxiosError<any, any>) => {
@@ -180,7 +180,7 @@ const handleToDateChange = (event: { target: { value: SetStateAction<string>; };
   const organization = {
     Name: user?.organisationName,
     accountNumber: user?.accountNumber,
-    totalAmtCollected: totalAmtCollected,
+    totalAmtCollected: totalAmtCollected ?? 0,
     totalCustomers: totalCustomers,
     pendingPayout: 250,
   };
