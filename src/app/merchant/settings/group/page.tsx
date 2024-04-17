@@ -18,7 +18,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useSelector } from "react-redux";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const GroupSettings = () => {
   const [modalState, setModalState] = useState(false);
@@ -29,6 +29,8 @@ const GroupSettings = () => {
   const [postingMessage, setPostingMessage] = useState();
 
   const { client } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [modalToShow, setModalToShow] = useState<"edit" | "create" | "">("");
   const [groupToBeEdited, setGroupToBeEdited] = useState("");
@@ -54,6 +56,7 @@ const GroupSettings = () => {
           throw error;
         });
     },
+    staleTime: 5000,
   });
 
   const { mutate: deleteGroup, isPending: isDeletingGroup } = useMutation({
@@ -66,10 +69,13 @@ const GroupSettings = () => {
       queryClient.invalidateQueries({
         queryKey: ["allGroups"],
       });
+      router.replace(pathname);
       console.log(response.data);
       console.log("group deleted");
       setShowSuccessToast(true);
-      setSuccessMessage((response as any).response.data.message);
+      setSuccessMessage(
+        `${response.data.deletedUser.groupName} group has been deleted`,
+      );
     },
     onError(error: AxiosError<any, any>) {
       console.error(error.response?.data.message ?? error.message);
@@ -77,7 +83,6 @@ const GroupSettings = () => {
       setErrorMessage(error.response?.data.message);
     },
   });
-
 
   return (
     <>
@@ -246,7 +251,8 @@ const CreateGroupForm = ({
   // console.log(organizationId);
   const { client } = useAuth();
   const [selectedOptions, setSelectedOptions] = useState<customer[]>([]);
-  const router = useRouter()
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
@@ -256,13 +262,12 @@ const CreateGroupForm = ({
     }
   };
 
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   const handleRemoveOption = (index: number) => {
     const updatedOptions = [...selectedOptions];
     updatedOptions.splice(index, 1);
     setSelectedOptions(updatedOptions);
   };
-
 
   const {
     data: users,
@@ -308,7 +313,9 @@ const CreateGroupForm = ({
             ["status"]: "success",
           }) as postSavingsResponse,
       );
-      router.refresh()
+      queryClient.invalidateQueries({
+        queryKey: ["allUsers"],
+      });
       // console.log("yes");
       return response.data;
     },
@@ -350,10 +357,12 @@ const CreateGroupForm = ({
             ["status"]: "success",
           }) as postSavingsResponse,
       );
+      router.replace(pathname);
+
       queryClient.invalidateQueries({
         queryKey: ["allUsers"],
       });
-      router.refresh()
+      router.refresh();
       // console.log("yes");
       return response.data;
     },
@@ -591,9 +600,11 @@ const PostConfirmation = ({
   return (
     <div className="mx-auto mt-[10%] flex h-full w-1/2 flex-col items-center justify-center space-y-8">
       <h1 className="text-white">
-        {status !== undefined ? status === "success"
-          ? "Group Successfully Created"
-          : "Unable to Create Group" : "Loading....."}
+        {status !== undefined
+          ? status === "success"
+            ? "Group Successfully Created"
+            : "Unable to Create Group"
+          : "Loading....."}
       </h1>
       {status !== undefined ? (
         <Image
