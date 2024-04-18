@@ -523,7 +523,7 @@ interface ShowModalProps {
   closeModal: Dispatch<SetStateAction<boolean>>;
 }
 
-const SavingsSettings = ({
+export const SavingsSettings = ({
   customerId,
   setContent,
   content,
@@ -923,7 +923,7 @@ const SavingsSettings = ({
   );
 };
 
-const ViewCustomer = ({
+export const ViewCustomer = ({
   customerId,
   setContent,
   content,
@@ -1134,7 +1134,7 @@ const ViewCustomer = ({
   );
 };
 
-const EditCustomer = ({
+export const EditCustomer = ({
   customerId,
   setContent,
   content,
