@@ -25,6 +25,8 @@ import * as Yup from "yup";
 const CreateCustomer = ({
   setCloseModal,
 }: {
+  organizationId: string;
+  setUserCreated: Dispatch<SetStateAction<boolean>>;
   setCloseModal: Dispatch<SetStateAction<boolean>>;
 }) => {
   const { client } = useAuth();

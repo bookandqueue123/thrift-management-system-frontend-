@@ -209,6 +209,7 @@ const Customers = () => {
             <Kyc />
           ) : (
             <CreateCustomer
+            setCloseModal={setModalState}
               setUserCreated={setUserCreated}
               organizationId={organisationId}
             />
@@ -525,9 +526,9 @@ export default Customers;
 
 interface ShowModalProps {
   customerId: string;
-  setContent?: Dispatch<SetStateAction<"form" | "confirmation">>;
+  setContent: Dispatch<SetStateAction<"form" | "confirmation">>;
   content: "form" | "confirmation";
-  closeModal?: Dispatch<SetStateAction<boolean>>;
+  closeModal: Dispatch<SetStateAction<boolean>>;
 }
 
 export const SavingsSettings = ({
