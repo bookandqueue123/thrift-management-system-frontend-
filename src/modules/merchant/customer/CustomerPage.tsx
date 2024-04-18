@@ -9,6 +9,7 @@ import {
   CustomerSignUpProps,
   FormErrors,
   FormValues,
+  MyFileList,
   StateProps,
   UpdateKycProps,
   customer,
@@ -1966,21 +1967,29 @@ const CreateCustomer = ({
         homeAddress: Yup.string().required("Required"),
         photo: Yup.mixed()
           .required("Required")
-          .test("fileSize", "File size must be less than 2MB", (value) => {
-            if (value) {
-              return value[0].size <= 2097152;
-            }
-            return true;
-          }),
+          .test(
+            "fileSize",
+            "File size must be less than 2MB",
+            (value: MyFileList) => {
+              if (value) {
+                return value[0].size <= 2097152;
+              }
+              return true;
+            },
+          ),
         meansOfID: Yup.string().required("Required"),
         meansOfIDPhoto: Yup.mixed()
           .required("Means of ID photo is required")
-          .test("fileSize", "File size must be less than 2MB", (value) => {
-            if (value) {
-              return value[0].size <= 2097152;
-            }
-            return true;
-          }),
+          .test(
+            "fileSize",
+            "File size must be less than 2MB",
+            (value: MyFileList) => {
+              if (value) {
+                return value[0].size <= 2097152;
+              }
+              return true;
+            },
+          ),
         nin: Yup.string().optional(),
         bvn: Yup.string().optional(),
         bankAcctNo: Yup.string().required("Required"),

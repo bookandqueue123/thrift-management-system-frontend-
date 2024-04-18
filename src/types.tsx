@@ -452,3 +452,15 @@ export interface UpdateMerchantKycProps {
   officeAddress: string
 
 }
+
+type MyFile = {
+  name: string;
+  size: number;
+  type: string;
+  lastModified: number;
+};
+
+export type MyFileList = {
+  [index: number]: MyFile;
+  // length: number;
+};
