@@ -6,6 +6,7 @@ export type customer = {
   email: string;
   phoneNumber: string;
   accountNumber: number;
+  groupMembers: [],
   role: "customer" | "merchant" | "organization";
   kycVerified: boolean;
   organisation: string;

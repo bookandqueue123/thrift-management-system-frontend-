@@ -34,16 +34,25 @@ const GroupSettings = () => {
 
   const [modalToShow, setModalToShow] = useState<"edit" | "create" | "">("");
   const [groupToBeEdited, setGroupToBeEdited] = useState("");
+  const [groupToBeEditedName, setGroupToBeEditedName] = useState("");
+  const [groupToBeEditedMembers, setGroupToBeEditedMembers] = useState<
+    string[]
+  >([]);
+
   const organizationId = useSelector(selectOrganizationId);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [isDeleted, setIsDeleted] = useState(false)
+  const [isDeleted, setIsDeleted] = useState(false);
 
   const queryClient = useQueryClient();
 
-  const { data: allGroups, isLoading: isGettingAllGroups, refetch: refetchAllGroups } = useQuery({
+  const {
+    data: allGroups,
+    isLoading: isGettingAllGroups,
+    refetch: refetchAllGroups,
+  } = useQuery({
     queryKey: ["allGroups"],
     queryFn: async () => {
       return client
@@ -67,14 +76,14 @@ const GroupSettings = () => {
       return client.delete(`/api/user/${groupId}`);
     },
     onSuccess(response: AxiosResponse<any, any>) {
-      setIsDeleted(true)
+      setIsDeleted(true);
       setShowSuccessToast(true);
       setSuccessMessage(
         `${response.data.deletedUser.groupName} group has been deleted`,
       );
     },
     onError(error: AxiosError<any, any>) {
-      setIsDeleted(false)
+      setIsDeleted(false);
       console.error(error.response?.data.message ?? error.message);
       setShowErrorToast(true);
       setErrorMessage(error.response?.data.message);
@@ -82,8 +91,8 @@ const GroupSettings = () => {
   });
 
   useEffect(() => {
-    refetchAllGroups()
-  },[isDeleted])
+    refetchAllGroups();
+  }, [isDeleted, refetchAllGroups]);
 
   return (
     <>
@@ -124,11 +133,12 @@ const GroupSettings = () => {
                 />
               ) : (
                 <CreateGroupForm
-                  postingMessage={setPostingMessage}
                   onSubmit={setModalContent}
                   setPostingResponse={setPostingResponse}
                   actionToTake={modalToShow}
                   groupToBeEdited={groupToBeEdited}
+                  groupToBeEditedName={groupToBeEditedName}
+                  groupToBeEditedMembers={groupToBeEditedMembers}
                 />
               )}
             </Modal>
@@ -140,11 +150,7 @@ const GroupSettings = () => {
               Existing Group List
             </p>
             <TransactionsTable
-              headers={[
-                "Group Name",
-                "Total Group Number",
-                "Action",
-              ]}
+              headers={["Group Name", "Total Group Number", "Action"]}
               content={
                 isGettingAllGroups ? (
                   <p className="text-sm font-semibold text-ajo_offWhite">
@@ -170,6 +176,8 @@ const GroupSettings = () => {
                             setModalState(true);
                             setModalContent("form");
                             setGroupToBeEdited(group._id);
+                            setGroupToBeEditedName(group.groupName);
+                            setGroupToBeEditedMembers(group.groupMember);
                           }}
                           className="cursor-pointer"
                         />
@@ -219,35 +227,39 @@ export default GroupSettings;
 
 interface iCreateGroupProps {
   onSubmit: Dispatch<SetStateAction<"form" | "confirmation">>;
-  postingMessage: any;
   setPostingResponse: Dispatch<SetStateAction<postSavingsResponse | undefined>>;
   actionToTake: "create" | "edit" | "";
   groupToBeEdited?: string;
+  groupToBeEditedName?: string;
+  groupToBeEditedMembers?: string[];
 }
 
 const CreateGroupForm = ({
   onSubmit,
-  postingMessage,
   setPostingResponse,
   actionToTake,
   groupToBeEdited,
+  groupToBeEditedName,
+  groupToBeEditedMembers,
 }: iCreateGroupProps) => {
   const organizationId = useSelector(selectOrganizationId);
-  // console.log(organizationId);
   const { client } = useAuth();
-  const [selectedOptions, setSelectedOptions] = useState<customer[]>([]);
-  const router = useRouter();
-  const pathname = usePathname();
+  const [selectedOptions, setSelectedOptions] = useState<
+    (customer | undefined)[]
+  >([]);
+  const [groupsChanged, setGroupsChanged] = useState(false);
+  const [isTouched, setIsTouched] = useState(false);
 
   const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
     const selectedOption = users?.find((option) => option._id === selectedId);
-    if (!selectedOptions.some((option) => option._id === selectedOption?._id)) {
+    if (
+      !selectedOptions.some((option) => option?._id === selectedOption?._id)
+    ) {
       setSelectedOptions([...selectedOptions, selectedOption!]);
     }
   };
 
-  const queryClient = useQueryClient();
   const handleRemoveOption = (index: number) => {
     const updatedOptions = [...selectedOptions];
     updatedOptions.splice(index, 1);
@@ -258,6 +270,7 @@ const CreateGroupForm = ({
     data: users,
     isLoading: isUserLoading,
     isError,
+    refetch: refetchAllUsers,
   } = useQuery({
     queryKey: ["allUsers"],
     queryFn: async () => {
@@ -271,9 +284,6 @@ const CreateGroupForm = ({
         });
     },
   });
-
-  const selectedIds = selectedOptions.map((option) => option._id);
-  // console.log('Selected IDs:', selectedIds);
 
   const {
     mutate: createGroups,
@@ -298,10 +308,8 @@ const CreateGroupForm = ({
             ["status"]: "success",
           }) as postSavingsResponse,
       );
-      queryClient.invalidateQueries({
-        queryKey: ["allUsers"],
-      });
-      // console.log("yes");
+      setGroupsChanged(true);
+      console.log(response.data);
       return response.data;
     },
     onError(error: any) {
@@ -314,6 +322,7 @@ const CreateGroupForm = ({
             ["status"]: "failed",
           }) as postSavingsResponse,
       );
+      setGroupsChanged(true);
 
       throw error;
     },
@@ -342,13 +351,6 @@ const CreateGroupForm = ({
             ["status"]: "success",
           }) as postSavingsResponse,
       );
-      router.replace(pathname);
-
-      queryClient.invalidateQueries({
-        queryKey: ["allUsers"],
-      });
-      router.refresh();
-      // console.log("yes");
       return response.data;
     },
     onError(error: any) {
@@ -373,14 +375,37 @@ const CreateGroupForm = ({
     }
   }, [isError]);
 
+  useEffect(() => {
+    refetchAllUsers();
+  }, [groupsChanged, refetchAllUsers]);
+
+  useEffect(() => {
+    if (actionToTake === "edit" && !isTouched) {
+      const getUsersFromIds = (userIds: string[]) => {
+        return userIds.map((userId: string) =>
+          users?.find((user) => user._id === userId),
+        );
+      };
+      const matchedUsers = getUsersFromIds(groupToBeEditedMembers ?? []);
+      const updatedSelectedOptions = [
+        ...selectedOptions,
+        ...matchedUsers,
+      ].filter(
+        (user, index, self) =>
+          self.findIndex((u) => u?._id === user?._id) === index,
+      );
+      setSelectedOptions(updatedSelectedOptions ?? []);
+    }
+  }, [actionToTake, isTouched, selectedOptions, groupToBeEditedMembers, users]);
+
   return (
     <Formik
       initialValues={{
         groupType: "named group",
-        groupName: "",
+        groupName: actionToTake === "edit" ? groupToBeEditedName ?? "" : "",
         groupDescription: "",
         savingsPurpose: "",
-        selectedCustomer: [],
+        selectedCustomer: actionToTake === "edit" ? groupToBeEditedMembers : [],
       }}
       validationSchema={Yup.object({
         groupName: Yup.string().required("Group Name is required"),
@@ -493,7 +518,6 @@ const CreateGroupForm = ({
           </div>
 
           {/* Add Customers Field */}
-          {/* Add Customers Field */}
           <div className="items-center gap-6 md:flex">
             <label
               htmlFor="addCustomers"
@@ -505,6 +529,9 @@ const CreateGroupForm = ({
               <select
                 className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
                 onChange={handleOptionChange}
+                onFocus={() => {
+                  setIsTouched(true);
+                }}
               >
                 <option value="">Select an option</option>
                 {users?.map((option) => (
@@ -521,7 +548,7 @@ const CreateGroupForm = ({
                       onClick={() => handleRemoveOption(index)}
                       className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
                     >
-                      {option.firstName} {option.lastName}
+                      {option?.firstName} {option?.lastName}
                       <svg
                         className="ml-1 h-3 w-3 cursor-pointer text-gray-700"
                         fill="none"
@@ -544,7 +571,7 @@ const CreateGroupForm = ({
                 name="selectedCustomers"
                 as="input"
                 type="hidden"
-                value={selectedOptions.map((option) => option._id)}
+                value={selectedOptions.map((option) => option?._id)}
               />
               <ErrorMessage
                 name="selectedCustomers"
