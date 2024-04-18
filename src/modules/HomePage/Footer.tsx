@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 export default function Footer(){
     return(
         <div className="bg-ajo_darkBlue">
@@ -49,7 +50,7 @@ export default function Footer(){
                 </div>
 
                 <div className=" my-8 flex justify-center text-white pb-8">
-                Powered by Raoatech Ng
+                Powered by <Link target="_blank" href={"https://raoatech.com/"} className="ml-1"><span> Raoatech Ng</span> </Link>
                 </div>
             </div>
         </div>
