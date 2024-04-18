@@ -351,6 +351,7 @@ const CreateGroupForm = ({
             ["status"]: "success",
           }) as postSavingsResponse,
       );
+            setGroupsChanged(true);
       return response.data;
     },
     onError(error: any) {
@@ -363,6 +364,8 @@ const CreateGroupForm = ({
             ["status"]: "failed",
           }) as postSavingsResponse,
       );
+            setGroupsChanged(false);
+
 
       throw error;
     },
@@ -403,9 +406,13 @@ const CreateGroupForm = ({
       {groupsChanged ? (
         <PostConfirmation
           postingMessage={
-            postingResponse?.status === "success"
-              ? "Group Updated Successfully"
-              : "Group Update Failed"
+            actionToTake === "edit"
+              ? postingResponse?.status === "success"
+                ? "Group Updated Successfully"
+                : "Group Update Failed"
+              : postingResponse?.status === "success"
+                ? "Group Successfully Created"
+                : "Unable to Create Group"
           }
           postingResponse={postingResponse}
           status={postingResponse?.status}
@@ -630,9 +637,7 @@ const PostConfirmation = ({
     <div className="mx-auto mt-[10%] flex h-full w-1/2 flex-col items-center justify-center space-y-8">
       <h1 className="text-white">
         {status !== undefined
-          ? status === "success"
-            ? postingMessage ?? "Group Successfully Created"
-            : postingMessage ?? "Unable to Create Group"
+          ? postingMessage
           : "Loading....."}
       </h1>
       {status !== undefined ? (
