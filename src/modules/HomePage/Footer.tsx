@@ -48,8 +48,8 @@ export default function Footer(){
                     </div>
                 </div>
 
-                <div className=" my-8 flex justify-end text-white pb-8">
-                &copy; Copyright 2024 Raoatech Ng- All Rights Reservedd
+                <div className=" my-8 flex justify-center text-white pb-8">
+                Powered by Raoatech Ng
                 </div>
             </div>
         </div>

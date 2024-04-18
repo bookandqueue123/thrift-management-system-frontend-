@@ -10,7 +10,7 @@ export default function HowToUse(){
                         <button type="button" className="-rotate-12 absolute top-[-10px]  transform  text-dark bg-white hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-blue-300 font-bold rounded-lg text-xl px-6 py-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                         Organisation
                         </button>
-                        <p className="mb-3 pt-16 pb-32 font-normal text-gray-700 dark:text-gray-400">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin imperdiet consectetur odio quis tempor. Nam fringilla elit felis, a porta elit porttitor vel.</p>
+                        <p className="mb-3 pt-16 pb-32 font-normal text-gray-700 dark:text-gray-400">Organisations Sign Up by providing all necessary information. Organisation can onboard its customers/staff.</p>
                     </div>
                 </div>
 
@@ -22,7 +22,7 @@ export default function HowToUse(){
                         <button type="button" className="rotate-12 absolute top-[-10px]  transform  text-white bg-[#EAAB40] hover:bg-yellow-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-bold rounded-lg text-xl px-6 py-3 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                             Individual
                         </button>
-                        <p className="mb-3 pt-16 pb-32 font-normal text-gray-700 dark:text-gray-400">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin imperdiet consectetur odio quis tempor. Nam fringilla elit felis, a porta elit porttitor vel.</p>
+                        <p className="mb-3 pt-16 pb-32 font-normal text-gray-700 dark:text-gray-400">Customers/ Organisations staff can go through Finkia’s self on-boarding process or He/She can be onboarded by an organisation..</p>
                     </div>
                 </div>
 
