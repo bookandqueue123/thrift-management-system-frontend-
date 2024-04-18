@@ -92,7 +92,7 @@ const GroupSettings = () => {
 
   useEffect(() => {
     refetchAllGroups();
-  }, [isDeleted, refetchAllGroups]);
+  }, [isDeleted, refetchAllGroups, modalToShow]);
 
   return (
     <>
