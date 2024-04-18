@@ -379,7 +379,7 @@ const CreateGroupForm = ({
 
   useEffect(() => {
     refetchAllGroups();
-  }, [groupsChanged]);
+  }, [groupsChanged, refetchAllGroups]);
 
   useEffect(() => {
     if (actionToTake === "edit" && !isTouched) {
