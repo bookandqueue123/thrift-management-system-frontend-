@@ -13,11 +13,15 @@ import { useQuery } from "@tanstack/react-query";
 
 import { allSavingsResponse, customer, savings } from "@/types";
 import { ChangeEvent, SetStateAction, useState } from "react";
-import { extractDate, extractTime, formatToDateAndTime } from "@/utils/TimeStampFormatter";
+import {
+  extractDate,
+  extractTime,
+  formatToDateAndTime,
+} from "@/utils/TimeStampFormatter";
 import { Badge } from "@/components/StatusBadge";
 import { CiExport } from "react-icons/ci";
 import { MdKeyboardArrowLeft } from "react-icons/md";
-import { MdKeyboardArrowRight } from "react-icons/md"
+import { MdKeyboardArrowRight } from "react-icons/md";
 
 import { AxiosError, AxiosResponse } from "axios";
 
@@ -27,59 +31,54 @@ const MerchantDashboard = () => {
   const PAGE_SIZE = 5;
   const { client } = useAuth();
 
-  const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
-  const [currentPage, setCurrentPage] = useState(1)
-  const [filteredTransactions, setFilteredTransactions] = useState<savings[]>([])
-const organizationId = useSelector(selectOrganizationId)
-// const token = useSelector(selectToken)
-// const user = useSelector(selectUser)
-// console.log(user)
-  
-//   console.log(organizationId)
-
-
-const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-  // setSearchResult(e.target.value);
-  
-  if(allTransactions){
-    const filtered = allTransactions.savings.filter((item: {
-      [x: string]: any; accountNumber: any; 
-}) =>
-      String(item.user.accountNumber).includes(String(e.target.value))
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filteredTransactions, setFilteredTransactions] = useState<savings[]>(
+    [],
   );
-  // Update the filtered data state
-  setFilteredTransactions(filtered);
-  }
-  
-};
-
-const handleDateFilter = () => {
-  // Filter the data based on the date range
-  if(allTransactions){
-  const filtered = allTransactions.savings.filter((item: { createdAt: string | number | Date; }) => {
-    const itemDate = new Date(item.createdAt); // Convert item date to Date object
-    const startDateObj = new Date(fromDate);
-    const endDateObj = new Date(toDate);
-
-    return itemDate >= startDateObj && itemDate <= endDateObj;
-  });
-
-  // Update the filtered data state
-  setFilteredTransactions(filtered);
-}
-};
-
-
- 
-  const [totalAmtCollected, setTotalAmtCollected] = useState(0);
-  const [totalCustomers, setTotalCustomers] = useState(0);
-  
+  const organizationId = useSelector(selectOrganizationId);
   // const token = useSelector(selectToken)
-  const user = useSelector(selectUser);
-  
+  // const user = useSelector(selectUser)
+  // console.log(user)
 
   //   console.log(organizationId)
+
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    // setSearchResult(e.target.value);
+
+    if (allTransactions) {
+      const filtered = allTransactions.savings.filter(
+        (item: { [x: string]: any; accountNumber: any }) =>
+          String(item.user.accountNumber).includes(String(e.target.value)),
+      );
+      // Update the filtered data state
+      setFilteredTransactions(filtered);
+    }
+  };
+
+  const handleDateFilter = () => {
+    // Filter the data based on the date range
+    if (allTransactions) {
+      const filtered = allTransactions.savings.filter(
+        (item: { createdAt: string | number | Date }) => {
+          const itemDate = new Date(item.createdAt); // Convert item date to Date object
+          const startDateObj = new Date(fromDate);
+          const endDateObj = new Date(toDate);
+
+          return itemDate >= startDateObj && itemDate <= endDateObj;
+        },
+      );
+
+      // Update the filtered data state
+      setFilteredTransactions(filtered);
+    }
+  };
+
+  const [totalAmtCollected, setTotalAmtCollected] = useState(0);
+
+  // const token = useSelector(selectToken)
+  const user = useSelector(selectUser);
 
   const { data: allTransactions, isLoading: isLoadingAllTransactions } =
     useQuery({
@@ -89,45 +88,21 @@ const handleDateFilter = () => {
         return client
           .get(`/api/saving/get-savings?organisation=${organizationId}`)
           .then((response) => {
-          
             setFilteredTransactions(response.data.savings);
-            setTotalAmtCollected(response.data.totalAmountCollected);
+            setTotalAmtCollected(response?.data?.totalAmountCollected);
             return response.data;
           })
           .catch((error: AxiosError<any, any>) => {
-            
             throw error;
           });
       },
     });
 
-  const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
-    queryKey: ["allCustomers"],
-    queryFn: async () => {
-      return client
-        .get(
-          `/api/user?role=customer&organisation=${organizationId}&userType=individual`,
-          {},
-        ) //populate this based onthee org
-        .then((response: AxiosResponse<customer[], any>) => {
-       
-          setTotalCustomers(response.data.length);
-          return response.data;
-        })
-        .catch((error: AxiosError<any, any>) => {
-         
-          throw error;
-        });
-    },
-  });
+  let totalPages = 0;
+  if (allTransactions) {
+    totalPages = Math.ceil(allTransactions.savings.length / PAGE_SIZE);
+  }
 
-
-let totalPages = 0
-if(allTransactions){
-   totalPages = Math.ceil(allTransactions.savings.length / PAGE_SIZE);
-}
-
- 
   const paginatedTransactions = filteredTransactions.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
@@ -144,28 +119,28 @@ if(allTransactions){
   //   paginatedTransactions = [];
   // }
 
-
-
   if (allTransactions) {
     totalPages = Math.ceil(allTransactions.length / PAGE_SIZE);
   }
 
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+  const handleFromDateChange = (event: {
+    target: { value: SetStateAction<string> };
+  }) => {
+    setFromDate(event.target.value);
+  };
 
-const goToNextPage = () => {
-  if (currentPage < totalPages) {
-   (setCurrentPage(currentPage + 1));
-  }
-};
-const handleFromDateChange = (event: { target: { value: SetStateAction<string>; }; }) => {
-  setFromDate(event.target.value);
-  
-};
+  const handleToDateChange = (event: {
+    target: { value: SetStateAction<string> };
+  }) => {
+    setToDate(event.target.value);
 
-const handleToDateChange = (event: { target: { value: SetStateAction<string>; }; }) => {
-  setToDate(event.target.value);
-  
-  handleDateFilter()
-};
+    handleDateFilter();
+  };
 
   const goToPreviousPage = () => {
     if (currentPage > 1) {
@@ -173,16 +148,13 @@ const handleToDateChange = (event: { target: { value: SetStateAction<string>; };
     }
   };
 
-
- 
-
   // console.log("paginatedTransactions" + paginatedTransactions);
   const organization = {
     Name: user?.organisationName,
     accountNumber: user?.accountNumber,
-    totalAmtCollected: totalAmtCollected,
-    totalCustomers: totalCustomers,
-    pendingPayout: 250,
+    totalAmtCollected: totalAmtCollected ?? 0,
+    totalCustomers: user?.totalCustomer ?? 0,
+    pendingPayout: user?.pendingPayout ?? 0,
   };
   return (
     <>
@@ -230,7 +202,7 @@ const handleToDateChange = (event: { target: { value: SetStateAction<string>; };
               Pending Payouts
             </p>
           }
-          bottomValueBottomText={organization.pendingPayout.toString()}
+          bottomValueBottomText={organization.pendingPayout?.toString()}
         />
         <DashboardCard
           illustrationName="user"
@@ -239,7 +211,7 @@ const handleToDateChange = (event: { target: { value: SetStateAction<string>; };
               Total Customers
             </p>
           }
-          bottomValueBottomText={organization.totalCustomers.toString()}
+          bottomValueBottomText={organization.totalCustomers?.toString()}
         />
       </section>
       <section>
@@ -251,7 +223,7 @@ const handleToDateChange = (event: { target: { value: SetStateAction<string>; };
             {/* <SearchInput onSearch={() => ("")}/> */}
             <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
               <input
-              onChange={handleSearch}
+                onChange={handleSearch}
                 type="search"
                 placeholder="Search"
                 className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
@@ -289,32 +261,35 @@ const handleToDateChange = (event: { target: { value: SetStateAction<string>; };
           </span>
         </div>
 
-        <div className="md:flex justify-between">
-        <div className="flex items-center">
-                <p className="mr-2 font-lg text-white">Select range from:</p>
-                <input
-                  type="date"
-                  value={fromDate}
-                   onChange={handleFromDateChange}
-                  className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                />
+        <div className="justify-between md:flex">
+          <div className="flex items-center">
+            <p className="font-lg mr-2 text-white">Select range from:</p>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={handleFromDateChange}
+              className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+            />
 
-
-                <p className="mx-2 text-white">to</p>
-                <input
-                  type="date"
-                  value={toDate}
-                  onChange={handleToDateChange}
-                  className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <div className="flex mt-4">
-                <button className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
-                <button className="px-4 py-2 text-white rounded-md border-none bg-transparent relative">
-                  
-                  <u>Export as Excel</u>
-                </button>
-              </div>
+            <p className="mx-2 text-white">to</p>
+            <input
+              type="date"
+              value={toDate}
+              onChange={handleToDateChange}
+              className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+            />
+          </div>
+          <div className="mt-4 flex">
+            <button className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
+              Export as CSV{" "}
+              <span className="ml-2 mt-1">
+                <CiExport />
+              </span>
+            </button>
+            <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
+              <u>Export as Excel</u>
+            </button>
+          </div>
         </div>
 
         <div>
@@ -334,8 +309,8 @@ const handleToDateChange = (event: { target: { value: SetStateAction<string>; };
             ]}
             content={
               filteredTransactions?.length === 0 ? (
-                <tr> 
-                  <p className="text-center text-sm font-semibold text-ajo_offWhite relative left-[80%] md:left-[250%] ">
+                <tr>
+                  <p className="relative left-[80%] text-center text-sm font-semibold text-ajo_offWhite md:left-[250%] ">
                     No Transactions yet
                   </p>
                 </tr>
@@ -378,50 +353,48 @@ const handleToDateChange = (event: { target: { value: SetStateAction<string>; };
             }
           />
 
-          <div className="flex justify-center items-center  space-x-2">
+          <div className="flex items-center justify-center  space-x-2">
             <button
-              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
               onClick={goToPreviousPage}
             >
               <MdKeyboardArrowLeft />
             </button>
 
             <button
-              className="p-2  text-blue-500 rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              className="cursor-pointer  rounded-md p-2 text-blue-500 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
               onClick={() => setCurrentPage(currentPage)}
             >
               {currentPage}
             </button>
 
             <button
-              className="p-2  rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-              onClick={() =>(setCurrentPage(currentPage + 1))}
+              className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+              onClick={() => setCurrentPage(currentPage + 1)}
             >
               {currentPage + 1}
             </button>
             <button
-              className="p-2  rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-              onClick={() =>(setCurrentPage(currentPage + 2))}
+              className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+              onClick={() => setCurrentPage(currentPage + 2)}
             >
               {currentPage + 2}
             </button>
 
             <button
-              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+              className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
               onClick={goToNextPage}
             >
               <MdKeyboardArrowRight />
-            </button> 
+            </button>
 
-              {/* <button
+            {/* <button
                 className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
                 onClick={() => dispatch(setCurrentPage(currentPage + 6))}
               >
                 {currentPage + 6}
               </button> */}
-
-                    
-         </div>
+          </div>
           {/* <PaginationBar apiResponse={DummyTransactions} /> */}
         </div>
       </section>
@@ -430,6 +403,3 @@ const handleToDateChange = (event: { target: { value: SetStateAction<string>; };
 };
 
 export default MerchantDashboard;
-
-
-
