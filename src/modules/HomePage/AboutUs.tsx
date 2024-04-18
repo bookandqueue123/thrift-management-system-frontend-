@@ -3,17 +3,17 @@ import Image from "next/image";
 export default function AboutUs(){
     const data = [
         {
-          text: "Helping Traders save on daily basis",
+          text: "Helping traders save on daily basis",
           firstImageSrc: "/woman-holding.svg",
           secondImageSrc: "/man-woman.svg"
         },
         {
-            text: "Automating financial management for Cooperative Societies",
+            text: "Automating financial management for cooperative societies",
             firstImageSrc: "/automate1.svg",
             secondImageSrc: "/automate2.svg"
         },
         {
-            text: "Inculcating Healthy Saving Habits in Youths",
+            text: "Inculcating healthy saving habits in youths",
             firstImageSrc: "/inculate1.svg",
             secondImageSrc: "/inculate2.svg"
         },

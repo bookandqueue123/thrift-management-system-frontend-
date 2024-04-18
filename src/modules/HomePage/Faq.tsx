@@ -7,7 +7,7 @@ export default function FAQ(){
         <div className="text-white mx-4 md:mx-[4%] my-8 mt-16">
             <h1 className="text-3xl font-bold p-5"> FAQ’s</h1>
             <p className="text-sm p-5">
-                about Saving with us
+                About saving with us
             </p>
             <div className="mt-8" id="accordion-collapse" data-accordion="collapse">
                 <h2 id="accordion-collapse-heading-1">
@@ -21,7 +21,7 @@ export default function FAQ(){
 
                 <div id="accordion-collapse-body-1" className="hidden" aria-labelledby="accordion-collapse-heading-1">
                     <div className="p-5  ">
-                        <p className="mb-2 text-gray-400 dark:text-white">Flowbite is an open-source library of interactive components built on top of Tailwind CSS including buttons, dropdowns, modals, navbars, and more.</p>
+                        <p className="mb-2 text-gray-400 dark:text-white">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
                 
                     </div>
                 </div>
@@ -39,7 +39,7 @@ export default function FAQ(){
                 <div id="accordion-collapse-body-2" className="hidden" aria-labelledby="accordion-collapse-heading-2">
                     <div className="p-5  dark:border-gray-700">
                     
-                    <p className="text-gray-400 dark:text-gray-400">Check out the <a href="https://flowbite.com/figma/" className="text-blue-600 dark:text-blue-500 hover:underline">Figma design system</a> based on the utility classNamees from Tailwind CSS and components from Flowbite.</p>
+                    <p className="text-gray-400 dark:text-gray-400">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
                     </div>
                 </div>
             
@@ -53,7 +53,7 @@ export default function FAQ(){
                 </h2>
                 <div id="accordion-collapse-body-3" className="hidden" aria-labelledby="accordion-collapse-heading-3">
                     <div className="p-5 ">
-                        <p className="mb-2 text-gray-400 dark:text-gray-400">The main difference is that the core components from Flowbite are open source under the MIT license, whereas Tailwind UI is a paid product. Another difference is that Flowbite relies on smaller and standalone components, whereas Tailwind UI offers sections of pages.</p>
+                        <p className="mb-2 text-gray-400 dark:text-gray-400">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
                     
                     </div>
                 </div>
@@ -69,7 +69,7 @@ export default function FAQ(){
                 </h2>
                 <div id="accordion-collapse-body-4" className="hidden" aria-labelledby="accordion-collapse-heading-4">
                     <div className="p-5 ">
-                        <p className="mb-2 text-gray-400 dark:text-gray-400">The main difference is that the core components from Flowbite are open source under the MIT license, whereas Tailwind UI is a paid product. Another difference is that Flowbite relies on smaller and standalone components, whereas Tailwind UI offers sections of pages.</p>
+                        <p className="mb-2 text-gray-400 dark:text-gray-400">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
                     
                     </div>
                 </div>
@@ -84,7 +84,7 @@ export default function FAQ(){
                 </h2>
                 <div id="accordion-collapse-body-5" className="hidden" aria-labelledby="accordion-collapse-heading-5">
                     <div className="p-5 ">
-                        <p className="mb-2 text-gray-400 dark:text-gray-400">The main difference is that the core components from Flowbite are open source under the MIT license, whereas Tailwind UI is a paid product. Another difference is that Flowbite relies on smaller and standalone components, whereas Tailwind UI offers sections of pages.</p>
+                        <p className="mb-2 text-gray-400 dark:text-gray-400">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
                     
                     </div>
                 </div>
@@ -99,7 +99,7 @@ export default function FAQ(){
                 </h2>
                 <div id="accordion-collapse-body-6" className="hidden" aria-labelledby="accordion-collapse-heading-6">
                     <div className="p-5 ">
-                        <p className="mb-2 text-gray-400 dark:text-gray-400">The main difference is that the core components from Flowbite are open source under the MIT license, whereas Tailwind UI is a paid product. Another difference is that Flowbite relies on smaller and standalone components, whereas Tailwind UI offers sections of pages.</p>
+                        <p className="mb-2 text-gray-400 dark:text-gray-400">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
                     
                     </div>
                 </div>
