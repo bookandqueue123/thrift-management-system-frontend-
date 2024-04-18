@@ -22,14 +22,14 @@ export default function ProductService(){
 
                 <div className=" flex text-white flex-col flex-start md:ml-4 mt-4 md:mt-[4%]">
                     <p className="text-2xl  font-bold">01.</p>
-                    <p className="py-4">Personalized Savings Plans</p>
+                    <p className="py-4">Personalized savings plans</p>
                 </div>
             </div>
 
             <div className=" md:grid grid-cols-2   my-12">
                 <div className="hidden md:flex text-white md:mr-16 flex-col flex-start md:ml-4 mt-4 md:mt-[4%]">
                     <p className="text-2xl  font-bold ">02.</p>
-                    <p className="py-4">Thrift Savings for petty traders/ Artisans- popularly known as Ajo, Esusu or Adashe.</p>
+                    <p className="py-4">Thrift savings for petty traders/artisans - popularly known as Ajo, Esusu or Adashe.</p>
                 </div>
 
                 <div className=" p-4 max-w-sm bg-[#2F54FB] rounded-lg ">
@@ -45,7 +45,7 @@ export default function ProductService(){
 
                 <div className="md:hidden flex text-white flex-col flex-start md:ml-4 mt-4 md:mt-[4%]">
                     <p className="text-2xl  font-bold">02.</p>
-                    <p className="py-4">Thrift Savings p.k.a Ajo</p>
+                    <p className="py-4">Thrift savings for petty traders/artisans - popularly known as Ajo, Esusu or Adashe.</p>
                 </div>
 
                 

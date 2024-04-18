@@ -15,7 +15,7 @@ export default function HeroSection(){
             <div className="">
             <Image
                 alt="hero"
-                src="/heroImage.svg"
+                src="/frame.svg"
                 width={700}
                 height={500}
                 // layout="responsive" // Use layout="responsive" for responsive images
