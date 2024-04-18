@@ -48,7 +48,7 @@ const SignInForm = () => {
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
 
-      console.log(response);
+  
 
       if (response.data.role === "customer") {
         if(user){
@@ -84,9 +84,7 @@ const SignInForm = () => {
         );
       }
 
-      console.log(organizationId);
-
-      console.log(user);
+     
 
       //  dispatch(setOrganizationId(response.data._id));
 

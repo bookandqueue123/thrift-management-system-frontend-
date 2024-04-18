@@ -2,6 +2,7 @@
 import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
+import CustomerAction from "@/components/CustomerAction";
 import TransactionsTable from "@/components/Tables";
 import { customer, getOrganizationProps } from "@/types";
 import { extractDate } from "@/utils/TimeStampFormatter";
@@ -178,7 +179,7 @@ export default function SuperAdminDashboard(){
             "Organisation Name",
             "Account Number",
             "email",
-            "Organisation ID",
+            // "Organisation ID",
             "Total Number of Customers",
             "Registration Date",
             "Action"
@@ -198,9 +199,9 @@ export default function SuperAdminDashboard(){
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {organisation.email}
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {organisation._id}
-                </td>
+                </td> */}
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                     --- customers
                 </td>
@@ -261,7 +262,11 @@ export default function SuperAdminDashboard(){
                     {customer.organisation}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    
+                <CustomerAction
+                  index={index}
+                  customerId={customer._id}
+
+                />
                 </td>
             </tr>
         ))}
