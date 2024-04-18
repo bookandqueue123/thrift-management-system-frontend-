@@ -39,10 +39,11 @@ const GroupSettings = () => {
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isDeleted, setIsDeleted] = useState(false)
 
   const queryClient = useQueryClient();
 
-  const { data: allGroups, isLoading: isGettingAllGroups } = useQuery({
+  const { data: allGroups, isLoading: isGettingAllGroups, refetch: refetchAllGroups } = useQuery({
     queryKey: ["allGroups"],
     queryFn: async () => {
       return client
@@ -66,23 +67,23 @@ const GroupSettings = () => {
       return client.delete(`/api/user/${groupId}`);
     },
     onSuccess(response: AxiosResponse<any, any>) {
-      queryClient.invalidateQueries({
-        queryKey: ["allGroups"],
-      });
-      router.replace(pathname);
-      console.log(response.data);
-      console.log("group deleted");
+      setIsDeleted(true)
       setShowSuccessToast(true);
       setSuccessMessage(
         `${response.data.deletedUser.groupName} group has been deleted`,
       );
     },
     onError(error: AxiosError<any, any>) {
+      setIsDeleted(false)
       console.error(error.response?.data.message ?? error.message);
       setShowErrorToast(true);
       setErrorMessage(error.response?.data.message);
     },
   });
+
+  useEffect(() => {
+    refetchAllGroups()
+  },[isDeleted])
 
   return (
     <>
@@ -141,10 +142,6 @@ const GroupSettings = () => {
             <TransactionsTable
               headers={[
                 "Group Name",
-                "Account Name",
-                "Account Number",
-                "Bank Name",
-                "Group Type",
                 "Total Group Number",
                 "Action",
               ]}
@@ -158,18 +155,6 @@ const GroupSettings = () => {
                     <tr className="" key={index}>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
                         {group.groupName || "----"}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {group.accountName || "----"}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {group.accountNumber || "----"}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {group.bankName || "----"}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {group.groupType || "----"}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
                         {group.groupMember.length || "----"}
