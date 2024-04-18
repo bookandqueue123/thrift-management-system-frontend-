@@ -9,7 +9,7 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import DummyGroups from "@/api/dummyGroups.json";
 import Image from "next/image";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { QueryObserverResult, RefetchOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/api/hooks/useAuth";
 import { customer, postSavingsResponse } from "@/types";
 import { AxiosError, AxiosResponse } from "axios";
@@ -138,7 +138,8 @@ const GroupSettings = () => {
                   actionToTake={modalToShow}
                   groupToBeEdited={groupToBeEdited}
                   groupToBeEditedName={groupToBeEditedName}
-                  groupToBeEditedMembers={groupToBeEditedMembers}
+                    groupToBeEditedMembers={groupToBeEditedMembers}
+                    refetchAllGroups={refetchAllGroups}
                 />
               )}
             </Modal>
@@ -232,6 +233,9 @@ interface iCreateGroupProps {
   groupToBeEdited?: string;
   groupToBeEditedName?: string;
   groupToBeEditedMembers?: string[];
+  refetchAllGroups: (
+    options?: RefetchOptions | undefined,
+  ) => Promise<QueryObserverResult<any, Error>>;
 }
 
 const CreateGroupForm = ({
@@ -241,6 +245,7 @@ const CreateGroupForm = ({
   groupToBeEdited,
   groupToBeEditedName,
   groupToBeEditedMembers,
+  refetchAllGroups,
 }: iCreateGroupProps) => {
   const organizationId = useSelector(selectOrganizationId);
   const { client } = useAuth();
@@ -268,7 +273,6 @@ const CreateGroupForm = ({
     data: users,
     isLoading: isUserLoading,
     isError,
-    refetch,
   } = useQuery({
     queryKey: ["allUsers"],
     queryFn: async () => {
@@ -374,7 +378,7 @@ const CreateGroupForm = ({
   }, [isError]);
 
   useEffect(() => {
-    refetch();
+    refetchAllGroups();
   }, [groupsChanged]);
 
   useEffect(() => {
