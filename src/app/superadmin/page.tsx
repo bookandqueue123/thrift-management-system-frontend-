@@ -92,6 +92,7 @@ export default function SuperAdminDashboard(){
         });
     },
   });
+
   const paginatedOrganisations = filteredOrganisations?.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,

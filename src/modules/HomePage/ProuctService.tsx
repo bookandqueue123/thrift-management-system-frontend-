@@ -15,7 +15,7 @@ export default function ProductService(){
                         width={500}
                         height={500}
                         className="rounded-t-lg"
-                        src="/product1.svg" alt=""
+                        src="/product-service1.svg" alt=""
                     />
                         
                 </div>
@@ -27,9 +27,9 @@ export default function ProductService(){
             </div>
 
             <div className=" md:grid grid-cols-2   my-12">
-                <div className="hidden md:flex text-white flex-col flex-start md:ml-4 mt-4 md:mt-[4%]">
-                    <p className="text-2xl  font-bold">02.</p>
-                    <p className="py-4">Thrift Savings p.k.a Ajo</p>
+                <div className="hidden md:flex text-white md:mr-16 flex-col flex-start md:ml-4 mt-4 md:mt-[4%]">
+                    <p className="text-2xl  font-bold ">02.</p>
+                    <p className="py-4">Thrift Savings for petty traders/ Artisans- popularly known as Ajo, Esusu or Adashe.</p>
                 </div>
 
                 <div className=" p-4 max-w-sm bg-[#2F54FB] rounded-lg ">
@@ -38,7 +38,7 @@ export default function ProductService(){
                         width={500}
                         height={500}
                         className="rounded-t-lg"
-                        src="/product2.svg" alt=""
+                        src="/product-service2.svg" alt=""
                     />
                         
                 </div>
@@ -51,25 +51,7 @@ export default function ProductService(){
                 
             </div>
 
-            <div className=" md:grid grid-cols-2   my-12">
-    
-    <div className=" p-4 max-w-sm bg-white rounded-lg ">
-    
-        <Image
-            width={500}
-            height={500}
-            className="rounded-t-lg"
-            src="/product1.svg" alt=""
-        />
             
-    </div>
-
-    <div className=" flex text-white flex-col flex-start md:ml-4 mt-4 md:mt-[4%]">
-        <p className="text-2xl  font-bold">03.</p>
-        <p className="py-4">Loans</p>
-    </div>
-</div>
-
            
         </div>
     )
