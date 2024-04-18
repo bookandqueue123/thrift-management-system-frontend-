@@ -930,7 +930,7 @@ export const ViewCustomer = ({
   content,
   closeModal,
 }: ShowModalProps) => {
-  console.log(customerId);
+  // console.log(customerId);
 
   const { client } = useAuth();
   const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
@@ -939,6 +939,7 @@ export const ViewCustomer = ({
       return client
         .get(`/api/user/${customerId}`)
         .then((response: AxiosResponse<customer, any>) => {
+          // console.log(response.data);
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -1114,20 +1115,21 @@ export const ViewCustomer = ({
               </div>
             </div>
 
-            {/* <div className="w-[40%] border p-6 ml-8">
-          <p className="text-xl mt-2 mb-8 font-bold">Next of Kin Details</p>
+            <div className="ml-8 w-[40%] border p-6">
+              <p className="mb-8 mt-2 text-xl font-bold">
+                Means Of ID: {customerInfo?.meansOfID ?? ""}
+              </p>
 
-          <div className="">
-            <Image
-              src={ninslip}
-              alt="Customer"
-              width={270}
-              height={165}
-              className="rounded-md"
-            />
-          </div>
-
-          </div> */}
+              <div className="">
+                <Image
+                  src={customerInfo?.meansOfIDPhoto ?? ninslip}
+                  alt="Customer"
+                  width={270}
+                  height={165}
+                  className="rounded-md"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
