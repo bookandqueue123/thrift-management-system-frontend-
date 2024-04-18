@@ -253,9 +253,7 @@ const CreateGroupForm = ({
   const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
     const selectedOption = users?.find((option) => option._id === selectedId);
-    if (
-      !selectedOptions.some((option) => option?._id === selectedOption?._id)
-    ) {
+    if (!selectedOptions.some((option) => option?._id === selectedOption?._id)) {
       setSelectedOptions([...selectedOptions, selectedOption!]);
     }
   };
@@ -270,7 +268,7 @@ const CreateGroupForm = ({
     data: users,
     isLoading: isUserLoading,
     isError,
-    refetch: refetchAllUsers,
+    refetch,
   } = useQuery({
     queryKey: ["allUsers"],
     queryFn: async () => {
@@ -376,8 +374,8 @@ const CreateGroupForm = ({
   }, [isError]);
 
   useEffect(() => {
-    refetchAllUsers();
-  }, [groupsChanged, refetchAllUsers]);
+    refetch();
+  }, [groupsChanged]);
 
   useEffect(() => {
     if (actionToTake === "edit" && !isTouched) {
@@ -387,16 +385,13 @@ const CreateGroupForm = ({
         );
       };
       const matchedUsers = getUsersFromIds(groupToBeEditedMembers ?? []);
-      const updatedSelectedOptions = [
-        ...selectedOptions,
-        ...matchedUsers,
-      ].filter(
+      const updatedSelectedOptions = [...selectedOptions, ...matchedUsers].filter(
         (user, index, self) =>
           self.findIndex((u) => u?._id === user?._id) === index,
       );
       setSelectedOptions(updatedSelectedOptions ?? []);
     }
-  }, [actionToTake, isTouched, selectedOptions, groupToBeEditedMembers, users]);
+  },[actionToTake, isTouched, selectedOptions, groupToBeEditedMembers, users])
 
   return (
     <Formik
