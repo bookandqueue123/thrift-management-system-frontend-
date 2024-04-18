@@ -1,7 +1,13 @@
 
 'use client'
+import { useAuth } from '@/api/hooks/useAuth';
+import { useMutation } from '@tanstack/react-query';
 import { ChangeEvent, FormEvent, useState } from 'react';
-
+import { AxiosError, AxiosResponse } from 'axios';
+import { useSelector } from 'react-redux';
+import { selectOrganizationId } from '@/slices/OrganizationIdSlice';
+import SuccessModal from '@/components/SuccessModal';
+import ErrorModal from '@/components/ErrorModal';
 interface setUpSavingsProps{
   accountType: string,
     percentageBased: string,
@@ -16,6 +22,8 @@ interface setUpSavingsProps{
     collectionDate: string
 }
 const Form = () => {
+  const { client } = useAuth();
+  const organisationId = useSelector(selectOrganizationId);
   const [formData, setFormData] = useState<setUpSavingsProps>({
     accountType: 'individual',
     percentageBased: '',
@@ -30,8 +38,10 @@ const Form = () => {
     collectionDate: ''
   });
 
+  
   const [errors, setErrors] = useState<Partial<setUpSavingsProps>>({});
-
+  const [showModal, setShowModal] = useState(false)
+  const [showError, setShowError] = useState(false)
   const handleChange = (e : ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({
@@ -44,13 +54,38 @@ const Form = () => {
     }
   };
 
+  const {
+    mutate: SetupGeneralSavings,
+    isPending,
+    isError,
+  } = useMutation({
+    mutationKey: ["generalSavingsSetup"],
+    mutationFn: async () => {
+      return client.put(`api/user/${organisationId}`, {
+        
+        adminFee: formData.percentageBased
+      });
+    },
+    onSuccess(response: AxiosResponse<any, any>) {
+      
+      setShowModal(true)
+      // router.push(`/signin`);
+    },
+    onError(error: AxiosError<any, any>) {
+      setShowError(true)
+     
+    },
+  });
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    
     e.preventDefault();
     const validationErrors = validateForm(formData);
     if (Object.keys(validationErrors).length === 0) {
-      console.log(formData);
+      SetupGeneralSavings()
     } else {
       setErrors(validationErrors);
+      
     }
   };
 
@@ -62,37 +97,7 @@ const Form = () => {
       errors.amountBased = 'Either Percentage Based or Amount Based is required';
     }
   
-    if (!data.accountNumber) {
-      errors.accountNumber = 'Account Number is required';
-    }
-  
-    if (!data.accountName) {
-      errors.accountName = 'Account Name is required';
-    }
-  
-    if (!data.purpose) {
-      errors.purpose = 'Purpose is required';
-    }
-  
-    if (!data.amount) {
-      errors.amount = 'Amount is required';
-    }
-  
-    if (!data.frequency) {
-      errors.frequency = 'Frequency is required';
-    }
-  
-    if (!data.startDate) {
-      errors.startDate = 'Start Date is required';
-    }
-  
-    if (!data.endDate) {
-      errors.endDate = 'End Date is required';
-    }
-  
-    if (!data.collectionDate) {
-      errors.collectionDate = 'Collection Date is required';
-    }
+    
   
     // Add more validation rules as needed
   
@@ -101,6 +106,23 @@ const Form = () => {
   
   return (
     <div className="flex flex-col ">
+    {showModal ? (
+        <SuccessModal
+        title='Savings Set Up'
+        successText='Savings set up Successfully'
+        setShowModal={setShowModal}
+        />
+      ): ""
+    }
+      {showError ? (
+        <ErrorModal
+        title='Savings Set Up Error'
+        errorText='Savings set up Failed'
+        setShowModal={setShowError}
+        />
+      ): ""
+      
+    }
       <div className="mb-4 space-y-2 md:ml-[15%] ">
         <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
           Settings

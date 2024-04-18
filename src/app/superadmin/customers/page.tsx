@@ -1,6 +1,7 @@
 'use client'
 import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
+import CustomerAction from "@/components/CustomerAction";
 import TransactionsTable from "@/components/Tables";
 import { customer } from "@/types";
 import { extractDate } from "@/utils/TimeStampFormatter";
@@ -276,7 +277,10 @@ export default function SuperAdminCustomer(){
                   {customer.organisation}
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  
+                <CustomerAction
+                  index={index}
+                  customerId={customer._id}
+                />
               </td>
           </tr>
       ))}

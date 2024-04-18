@@ -8,7 +8,7 @@ import ContactUs from "./ContactUs";
 import Footer from "./Footer";
 export default function HomePage(){
     return(
-        <div className="">
+        <div className="bg-ajo_darkBlue ">
            <Navbar/>
             <HeroSection/> 
             <AboutUs/>

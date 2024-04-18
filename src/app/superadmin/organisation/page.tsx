@@ -1,6 +1,7 @@
 'use client'
 import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
+import CustomerAction from "@/components/CustomerAction";
 import TransactionsTable from "@/components/Tables";
 import { getOrganizationProps } from "@/types";
 import { extractDate, extractTime, formatToDateAndTime } from "@/utils/TimeStampFormatter";
@@ -227,7 +228,7 @@ export default function SuperAdminOrganisation(){
         "Organisation Name",
         "Account Number",
         "email",
-        "Organisation ID",
+        
         "Total Number of Customers",
         "Registration Date",
         "Action"
@@ -247,9 +248,7 @@ export default function SuperAdminOrganisation(){
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {organisation.email}
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation._id}
-                </td>
+                
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                     --- customers
                 </td>
@@ -257,7 +256,10 @@ export default function SuperAdminOrganisation(){
                     {extractDate(organisation.createdAt)} 
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    
+                <CustomerAction
+                  index={index}
+                  customerId={organisation._id}
+                  />
                 </td>
             </tr>
         ))}
