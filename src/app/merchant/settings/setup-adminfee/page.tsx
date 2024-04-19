@@ -85,7 +85,7 @@ const Form = () => {
         purposeName: formData.purpose,
         amount: formData.amount,
         startDate: formData.startDate,
-        endDate: formData.startDate,
+        endDate: formData.endDate,
         organisation: organisationId,
         frequency: formData.frequency,
         users: [formData.userId],

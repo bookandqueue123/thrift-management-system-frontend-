@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 
-const isProd = process.env.NODE_ENV === "production";
+const isProd = process.env.NEXT_PUBLIC_APP_ENV === "production";
+console.log(process.env.NEXT_PUBLIC_APP_ENV);
 
 const nextConfig = {
   images: {
@@ -8,8 +9,9 @@ const nextConfig = {
   },
   env: {
     BACKEND_API: isProd
-      ? "https://test.finkia.com.ng/"
+      ? "https://prod-api.finkia.com.ng/"
       : "https://test.finkia.com.ng/",
+    PASSWORD_ENCRYPTION_KEY: process.env.PASSWORD_ENCRYPTION_KEY,
   },
 };
 
