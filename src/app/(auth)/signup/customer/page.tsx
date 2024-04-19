@@ -77,7 +77,7 @@ const Page = () => {
       setShowSuccessToast(true);
       setSuccessMessage(response.data.message);
       console.log(response);
-      router.push(`/signin`);
+      router.replace(`/signin`);
     },
     onError(error: AxiosError<any, any>) {
       setShowErrorToast(true);
