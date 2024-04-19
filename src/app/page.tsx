@@ -3,12 +3,13 @@ import VerifyOrgSubdomain from "@/utils/VerifyOrgSubdomain";
 import Landing from "./landing";
 import HomePage from "@/modules/HomePage/homePage";
 
+
 export default function Home() {
-  VerifyOrgSubdomain();
+  // VerifyOrgSubdomain();
   return(
     <div className=" ">
-      {/* <HomePage/> */}
-      <Landing />
+       <HomePage/> 
+      {/* <Landing /> */}
     </div>
     
     
