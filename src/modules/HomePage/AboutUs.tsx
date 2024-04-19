@@ -1,6 +1,15 @@
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
-export default function AboutUs(){
+interface AboutProps{
+    bg?:string
+    aboutText: string
+}
+export default function AboutUs({bg, aboutText}:AboutProps ){
+    const pathName = usePathname()
+
+    const isHomepage = pathName === "/"
+    
     const data = [
         {
           text: "Helping traders save on daily basis",
@@ -21,16 +30,16 @@ export default function AboutUs(){
         
       ];
     return(
-        <div className="text-white mx-4 md:mx-[4%] my-8 mt-16">
+        <div className={`${bg === "white" ? 'text-black': "text-white"} ${bg === "white" ? "bg-[#E3E7FA]": ""} py-12  md:px-[4%]  my-8 mt-16`}>
             <h2 className="text-3xl font-bold">About us</h2>
-            <p className="my-8 text-left md:mr-[2%] text-left">
-                FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit. <br/>
-                
+            <p className="my-8 text-left md:mr-[4%] text-left">
+                {aboutText}
             </p>
-            <p className="mt-2">Finkia achieves this by:</p>
+            <p className={`mt-2 ${!isHomepage ? 'hidden' : 'block'}`}>Finkia achieves this by:</p>
 
           
-            <div>
+            {/* This component isn't meant to show on any other page except the homepage. scope might change later */}
+            <div className={`mt-2 ${!isHomepage ? 'hidden' : 'block'}`}>
                 {data.map((item, index) => (
                     <div key={index} className="md:flex justify-between mb-[30%] md:mb-[10%]">
                     <div className="mt-8">

@@ -37,7 +37,7 @@ export default function ChangePassword() {
   } = useMutation({
     mutationKey: ["reset password", token],
     mutationFn: async (values: ChangePasswordProps) => {
-      return client.post(`/api/auth/reset-password/${'token'}`, {
+      return client.post(`/api/auth/reset-password/${token}`, {
         password: values.newPassword,
         
       });
