@@ -6,6 +6,7 @@ export type customer = {
   email: string;
   phoneNumber: string;
   accountNumber: number;
+  groupMembers: [],
   role: "customer" | "merchant" | "organization";
   kycVerified: boolean;
   organisation: string;
@@ -408,6 +409,8 @@ export interface User {
   organisationName: string;
   createdAt: Date;
   updatedAt: Date;
+  totalCustomer: number;
+  pendingPayout: number;
   __v: number;
 }
 
@@ -428,3 +431,36 @@ export interface FormValues {
 export interface FormErrors {
   [key: string]: string | string[];
 }
+
+export interface UpdateMerchantKycProps {
+  country:         string;
+  state:           string;
+  lga:             string;
+  region:            string;
+  phoneNumber:        string;
+  organisationLogo:   null;
+  tradingName: string,
+  organisationName: string
+  description: string;
+  prefferedUrl: string;
+  email: string;
+  facebook: string;
+  instagram: string;
+  linkedIn: string;
+  twitter: string;
+  pintrest: string;
+  officeAddress: string
+
+}
+
+type MyFile = {
+  name: string;
+  size: number;
+  type: string;
+  lastModified: number;
+};
+
+export type MyFileList = {
+  [index: number]: MyFile;
+  // length: number;
+};

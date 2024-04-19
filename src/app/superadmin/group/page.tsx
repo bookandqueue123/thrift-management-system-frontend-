@@ -5,6 +5,12 @@ import { CiExport } from "react-icons/ci";
 import { MdModeEditOutline } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import { FaFileDownload } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import Modal from "@/components/Modal";
+
+import CreateOranisationGroupForm from "@/modules/superAdmin/CreateOrganisationGroupForm";
+
 
 const mockData = [
     {
@@ -33,8 +39,20 @@ const mockData = [
     }
   ];
 export default function SuperAdminCustomer(){
+  const router = useRouter()
+  const [showModal, setShowModal] = useState(false)
     return(
+
         <div>
+          {showModal ? (
+            <Modal 
+              setModalState={setShowModal}
+              title="Create Organisation Group">
+           
+             
+              <CreateOranisationGroupForm/>
+            </Modal>
+          ) : ""}
            <div className="mb-4 space-y-2">
                 <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
                  Groups
@@ -88,6 +106,8 @@ export default function SuperAdminCustomer(){
             label="Create Group"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
             onButtonClick={() => {
+              setShowModal(true)
+              // router.push("/superadmin/group/create-group")
             //   setModalState(true);
             //   setModalContent("form");
             }}

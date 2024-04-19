@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Dispatch, SetStateAction } from "react";
-
+import { usePathname } from "next/navigation";
 const Modal = ({
   setModalState,
   title,
@@ -10,6 +10,8 @@ const Modal = ({
   title?: string;
   children: React.ReactNode;
 }) => {
+  const pathName = usePathname();
+
   return (
     <>
       <div className="fixed inset-0 bg-ajo_offWhite opacity-25"></div>
@@ -28,9 +30,11 @@ const Modal = ({
               loading="eager"
               tabIndex={-1}
             />
+
             <h3 className="text-xl font-semibold text-ajo_offWhite md:text-2xl">
               {title}
             </h3>
+
             <div
               onClick={() => setModalState(false)}
               className="mr-8 cursor-pointer"
@@ -40,7 +44,7 @@ const Modal = ({
                 height="32"
                 viewBox="0 0 48 48"
                 fill="none"
-                className="md:h-[32px] h-[16px] md:w-[32px] w-[16px]"
+                className="h-[16px] w-[16px] md:h-[32px] md:w-[32px]"
               >
                 <path
                   d="M48 16L16 48M16 16L48 48"
@@ -52,6 +56,20 @@ const Modal = ({
               </svg>
             </div>
           </div>
+
+          {pathName === "/superadmin/commission" ? (
+            <div className="item-center mb-8 flex justify-center text-white">
+              <p>
+                To Set Up Commissions,{" "}
+                <span className="text-[#EAAB40]">
+                  Kindly fill in the details below:
+                </span>
+              </p>
+            </div>
+          ) : (
+            ""
+          )}
+
           <div>{children}</div>
         </div>
       </div>
@@ -60,3 +78,41 @@ const Modal = ({
 };
 
 export default Modal;
+
+export const ModalConfirmation = ({
+  responseMessage,
+  status,
+  successTitle,
+  errorTitle,
+}: {
+  responseMessage: string;
+  status: "success" | "failed" | undefined;
+  successTitle: string;
+  errorTitle: string;
+}) => {
+  return (
+    <div className="mx-auto mt-[10%] flex h-full w-1/2 flex-col items-center justify-center space-y-8">
+      {status !== undefined ? (
+        <Image
+          src={
+            status === "success" ? "/check-circle.svg" : "/failed-icon-7.jpg"
+          }
+          alt="check-circle"
+          width={162}
+          height={162}
+          className="w-[6rem] md:w-[10rem]"
+        />
+      ) : (
+        "Loading...."
+      )}
+      <h1 className="text-white">
+        {status !== undefined
+          ? status === "success"
+            ? successTitle
+            : errorTitle
+          : "Loading....."}
+      </h1>
+      <p className="whitespace-nowrap text-ajo_offWhite">{responseMessage}</p>
+    </div>
+  );
+};
