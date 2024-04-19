@@ -1,5 +1,0 @@
-[context.production]
-  environment = { NODE_ENV = "production", NEXT_PUBLIC_APP_ENV = "production" }
-
-[context.staging]
-  environment = { NODE_ENV = "production", NEXT_PUBLIC_APP_ENV = "staging" }
