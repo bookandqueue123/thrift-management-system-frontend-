@@ -39,7 +39,7 @@ export default function FAQ(){
                 <div id="accordion-collapse-body-2" className="hidden" aria-labelledby="accordion-collapse-heading-2">
                     <div className="p-5  dark:border-gray-700">
                     
-                    <p className="text-gray-400 dark:text-gray-400">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
+                    <p className="text-gray-400 dark:text-gray-400 md:mr-[2%] text-left">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
                     </div>
                 </div>
             
@@ -53,7 +53,7 @@ export default function FAQ(){
                 </h2>
                 <div id="accordion-collapse-body-3" className="hidden" aria-labelledby="accordion-collapse-heading-3">
                     <div className="p-5 ">
-                        <p className="mb-2 text-gray-400 dark:text-gray-400">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
+                        <p className="mb-2 text-gray-400 dark:text-gray-400 md:mr-[2%] text-left">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
                     
                     </div>
                 </div>
@@ -69,7 +69,7 @@ export default function FAQ(){
                 </h2>
                 <div id="accordion-collapse-body-4" className="hidden" aria-labelledby="accordion-collapse-heading-4">
                     <div className="p-5 ">
-                        <p className="mb-2 text-gray-400 dark:text-gray-400">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
+                        <p className="mb-2 text-gray-400 dark:text-gray-400 md:mr-[2%] text-left">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
                     
                     </div>
                 </div>
@@ -84,7 +84,7 @@ export default function FAQ(){
                 </h2>
                 <div id="accordion-collapse-body-5" className="hidden" aria-labelledby="accordion-collapse-heading-5">
                     <div className="p-5 ">
-                        <p className="mb-2 text-gray-400 dark:text-gray-400">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
+                        <p className="mb-2 text-gray-400 dark:text-gray-400 md:mr-[2%] text-left">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
                     
                     </div>
                 </div>
@@ -99,7 +99,7 @@ export default function FAQ(){
                 </h2>
                 <div id="accordion-collapse-body-6" className="hidden" aria-labelledby="accordion-collapse-heading-6">
                     <div className="p-5 ">
-                        <p className="mb-2 text-gray-400 dark:text-gray-400">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
+                        <p className="md:mr-[2%] text-left mb-2 text-gray-400 dark:text-gray-400">FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly. It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan-repayment ability of the customer. The platform also helps individuals to cultivate good savings habit.</p>
                     
                     </div>
                 </div>
