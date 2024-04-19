@@ -1,0 +1,5 @@
+[context.production]
+  environment = { NODE_ENV = "production" }
+
+[context.staging]
+  environment = { NODE_ENV = "staging" }
