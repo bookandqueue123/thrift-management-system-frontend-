@@ -256,7 +256,7 @@ export default function Analytics(){
            
            <div className="mb-4 space-y-2">
                 <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
-                 Analytics
+                 General Report
                 </p>
             </div>
 
@@ -354,7 +354,7 @@ export default function Analytics(){
         
 
           <div className="mb-4">
-        <p className="text-white text-xl">Commission List</p>
+        <p className="text-white text-xl"></p>
       </div>
 
       <TransactionsTable
