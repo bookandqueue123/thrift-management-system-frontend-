@@ -39,7 +39,6 @@ const SignInForm = () => {
   // Remember password
   useEffect(() => {
     const cookies = parseCookies();
-    console.log("NODE_ENV: ",process.env.NODE_ENV);
     if (cookies.rememberedPassword && cookies.rememberedEmail) {
       const decryptedPassword = decryptPassword(
         cookies.rememberedPassword,
