@@ -66,14 +66,6 @@ const CustomerDashboard = () => {
 
   // console.log(LoggedInUser)
 
-  const user = {
-    // firstName: "Dare",
-    // lastName: "Olanrewaju",
-    acctBalance: 203935,
-    // nextWithdrawalDate: new Date("2024-02-12"),
-    // hasKyc: true,
-  };
-
   const { data: allSavings, isLoading: isLoadingAllSavings } = useQuery({
     queryKey: ["allSavings"],
     staleTime: 5000,
@@ -253,7 +245,7 @@ const CustomerDashboard = () => {
               bottomValueTopText="Current Savings Balance"
               bottomValueBottomText={
                 isBalanceVisible
-                  ? `N${AmountFormatter(user.acctBalance)}`
+                  ? `N${AmountFormatter(allSavings.currentSavingsBalance)}`
                   : "*********"
               }
             />
