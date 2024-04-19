@@ -32,7 +32,7 @@ export default function HowToUse(){
                         <button type="button" className="rotate-12 absolute top-[-10px]  transform  text-white bg-[#EAAB40] hover:bg-yellow-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-bold rounded-lg text-xl px-6 py-3 text-center   ">
                             Customer
                         </button>
-                        <p className="mb-3 pt-16 mb-16 font-normal text-gray-700 dark:text-gray-400">Customers/Organisations staff can go through Finkia’s self on-boarding process or He/She can be onboarded by an organisation..</p>
+                        <p className="mb-3 pt-16 pb-16 font-normal text-gray-700 dark:text-gray-400">Customers/Organisations staff can go through Finkia’s self on-boarding process or He/She can be onboarded by an organisation..</p>
                         <button 
                         onClick={() => router.push('/signup/customer')}
                          type="button" className="mb-16 text-white bg-[#EAAB40] font-medium rounded-lg text-sm px-2 py-2 text-center hover:bg-yellow-400  ">
