@@ -5,8 +5,8 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 
-const apiUrl = process.env.BACKEND_API;
-// console.log(apiUrl);
+const apiUrl = process.env.API_URL;
+console.log(apiUrl);
 const BASE_URL = apiUrl;
 
 export const useAuth = () => {
