@@ -7,13 +7,14 @@ import {
 } from "@/slices/OrganizationIdSlice";
 import {
   CountryAndStateProps,
+  MyFileList,
   StateProps,
   UpdateKycProps,
   getOrganizationProps,
 } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { ErrorMessage, Field, Form, Formik } from "formik";
+import { ErrorMessage, Field, Form, Formik, FormikErrors } from "formik";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -80,6 +81,10 @@ export const Kyc = () => {
     userType: "individual",
   };
 
+  const initialErrors = {
+    country: "Required",
+  };
+
   const MyEffectComponent = ({ formikValues }: { formikValues: any }) => {
     useEffect(() => {
       // This function will run whenever the value of 'formikValues.myField' changes
@@ -116,33 +121,6 @@ export const Kyc = () => {
       }
     }
   }, [selectedCountry, selectedState]);
-  function getLGAsByState(stateName: string) {
-    // Find the Country object in the dataset
-    const CountryObject = StatesAndLGAs.find(
-      (countryData) => countryData.country === selectedCountry,
-    );
-
-    // If Country object is found, find the state by its name
-    if (CountryObject) {
-      const stateObject = CountryObject.states.find(
-        (state) => state.name === stateName,
-      );
-      // If state is found, return its LGAs
-      if (stateObject) {
-        console.log(stateObject.lgas);
-        setSelectesLGAArray(stateObject.lgas);
-      } else {
-        // If state is not found, return an empty array
-        return [];
-      }
-    } else {
-      // If Nigeria object is not found, return null or handle the error accordingly
-      return null;
-    }
-  }
-  // useEffect(() => {
-  //   const filteredLG
-  // })
 
   const {
     mutate: kycUpdate,
@@ -173,9 +151,6 @@ export const Kyc = () => {
       if (values.photo) {
         formData.append("photo", values.photo[0]); // Assuming photo is an array of File objects
       }
-      // if (values.meansOfID) {
-      //   formData.append("meansOfID", values.meansOfID[0]);
-      // }
       if (values.meansOfIDPhoto) {
         formData.append("meansOfIDPhoto", values.meansOfIDPhoto[0]);
       }
@@ -186,8 +161,8 @@ export const Kyc = () => {
     },
 
     onSuccess(response) {
-      router.push("/customer");
-      console.log(response);
+      router.replace("/customer");
+      // console.log(response);
       setShowSuccessToast(true);
       setSuccessMessage((response as any).response.data.message);
     },
@@ -218,17 +193,23 @@ export const Kyc = () => {
   });
 
   const socials = ["facebook", "linkedin", "instagram", "twitter", "envelope"];
-  const handleSectionComplete = () => {
+  const handleSectionComplete = (errors: FormikErrors<UpdateKycProps>) => {
     switch (kycSection) {
       case "personal":
-        setKycSection("next of kin");
+        !errors.country &&
+          !errors.state &&
+          !errors.lga &&
+          !errors.city &&
+          !errors.popularMarket &&
+          setKycSection("next of kin");
         break;
       case "next of kin":
-        setKycSection("identification");
+        !errors.nokPhone &&
+          !errors.nokRelationship &&
+          !errors.nok &&
+          !errors.homeAddress &&
+          setKycSection("identification");
         break;
-      // case "identification":
-      //   setKycSection("final");
-      //   break;
       default:
         break;
     }
@@ -316,6 +297,7 @@ export const Kyc = () => {
       </div>
       <Formik
         initialValues={initialValues}
+        initialErrors={initialErrors}
         validationSchema={Yup.object({
           country: Yup.string().required("Required"),
           state: Yup.string().required("Required"),
@@ -326,12 +308,49 @@ export const Kyc = () => {
           nokRelationship: Yup.string().required("Required"),
           nokPhone: Yup.string().required("Required"),
           homeAddress: Yup.string().required("Required"),
-          photo: Yup.mixed().required("Required"),
+          photo: Yup.mixed()
+            .required("Required")
+            .test(
+              "fileSize",
+              "File size must be less than 2MB",
+              (value: MyFileList) => {
+                if (value) {
+                  return value[0].size <= 2097152;
+                }
+                return true;
+              },
+            ),
           meansOfID: Yup.string().required("Required"),
-          meansOfIDPhoto: Yup.mixed().required("Required"),
+          meansOfIDPhoto: Yup.mixed()
+            .required("Means of ID photo is required")
+            .test(
+              "fileSize",
+              "File size must be less than 2MB",
+              (value: MyFileList) => {
+                if (value) {
+                  return value[0].size <= 2097152;
+                }
+                return true;
+              },
+            ),
           nin: Yup.string().optional(),
           bvn: Yup.string().optional(),
-          bankAcctNo: Yup.string().required("Required"),
+          bankName: Yup.string()
+            .required("Required")
+            .min(2, "Bank name must be at least 2 characters")
+            .max(50, "Bank name must be less than 50 characters"),
+          bankAcctName: Yup.string()
+            .required("Required")
+            .min(2, "Account name must be at least 2 characters")
+            .max(100, "Account name must be less than 100 characters")
+            .matches(
+              /^[a-zA-Z\s]*$/,
+              "Account name should only contain alphabets and spaces",
+            ),
+          bankAcctNo: Yup.string()
+            .required("Required")
+            .length(10, "Account number must be exactly 10 digits")
+            .matches(/^\d{10}$/, "Account number should only contain digits"),
           // organisation: Yup.string().required("Required"),
         })}
         onSubmit={(values, { setSubmitting }) => {
@@ -436,7 +455,6 @@ export const Kyc = () => {
                       as="select"
                       id="lga"
                       name="lga"
-                      // type="text"
                       className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                     >
                       <option>Select LGA</option>
@@ -447,11 +465,6 @@ export const Kyc = () => {
                             {lga}
                           </option>
                         ))}
-                      {/* {selectedLGAArray && selectedStateArray.map((lga) => (
-                        <option>
-
-                        </option>
-                      )) } */}
                     </Field>
                     <ErrorMessage
                       name="lga"
@@ -588,12 +601,6 @@ export const Kyc = () => {
               <>
                 {/* Identification Details Fields */}
                 <div className="mb-8">
-                  {/* <div className="mb-3">
-        <label htmlFor="photo" className="m-0 text-xs font-medium text-white">Passport Photograph (Maximum 2.0 MB)</label>
-        <Field name="photo" type="file" className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]" />
-        <ErrorMessage name="photo" component="div" className="text-red-500 text-xs" />
-      </div> */}
-
                   <div className="">
                     <label
                       htmlFor="photo"
@@ -643,17 +650,18 @@ export const Kyc = () => {
                       name="meansOfID"
                       className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
                     >
+                      <option value="" className="hidden"></option>
                       <option value="International Passport">
                         International Passport
                       </option>
                       <option value="Utility Bill">Utility Bill</option>
-                      <option value="Utility Bill">NIN</option>
-                      <option value="Utility Bill">Drivers License</option>
-                      <option value="Utility Bill">Voters Card</option>
-                      <option value="Utility Bill">
+                      <option value="NIN">NIN</option>
+                      <option value="Drivers License">Drivers License</option>
+                      <option value="Voters Card">Voters Card</option>
+                      <option value="Association Membership ID">
                         Association Membership ID
                       </option>
-                      <option value="Utility Bill">School ID</option>
+                      <option value="School ID">School ID</option>
                     </Field>
                     <ErrorMessage
                       name="meansOfID"
@@ -661,25 +669,6 @@ export const Kyc = () => {
                       className="text-xs text-red-500"
                     />
                   </div>
-                  {/* <div className="mb-3">
-                    <label
-                      htmlFor="meansOfIDPhoto"
-                      className="m-0 text-xs font-medium text-white"
-                    >
-                      Identification Document Upload
-                    </label>
-                    <Field
-                      name="meansOfIDPhoto"
-                      type="file"
-                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                    />
-                    <ErrorMessage
-                      name="meansOfIDPhoto"
-                      component="div"
-                      className="text-xs text-red-500"
-                    />
-                  </div> */}
-
                   <div className="mb-3">
                     <label
                       htmlFor="image"
@@ -752,6 +741,42 @@ export const Kyc = () => {
                     />
                     <ErrorMessage
                       name="bvn"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label
+                      htmlFor="bankName"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Bank Name
+                    </label>
+                    <Field
+                      name="bankName"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="bankName"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label
+                      htmlFor="bankAcctName"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Bank Account Name
+                    </label>
+                    <Field
+                      name="bankAcctName"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="bankAcctName"
                       component="div"
                       className="text-xs text-red-500"
                     />
@@ -901,9 +926,11 @@ export const Kyc = () => {
               </button>
               {kycSection !== "identification" ? (
                 <button
-                  type="button"
+                  type="submit"
                   className="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
-                  onClick={() => handleSectionComplete()}
+                  onClick={() => {
+                    handleSectionComplete(errors);
+                  }}
                   disabled={isSubmitting}
                 >
                   Next
