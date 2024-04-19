@@ -15,6 +15,7 @@ import { setAuthData } from "@/slices/OrganizationIdSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { decryptPassword, encryptPassword } from "@/utils/Encryptpassword";
 
 const SignInForm = () => {
   const { client } = useAuth();
@@ -33,18 +34,21 @@ const SignInForm = () => {
     rememberPassword: true,
   });
 
+  const secretKey = process.env.PASSWORD_ENCRYPTION_KEY as string;
+
   // Remember password
   useEffect(() => {
     const cookies = parseCookies();
-    const storedPassword = cookies.rememberedPassword;
-    const storedEmail = cookies.rememberedEmail;
-    console.log("storedPassword", storedPassword);
-    console.log("storedEmail", storedEmail);
-    if (storedPassword && storedEmail) {
+    console.log(process.env.NODE_ENV);
+    if (cookies.rememberedPassword && cookies.rememberedEmail) {
+      const decryptedPassword = decryptPassword(
+        cookies.rememberedPassword,
+        secretKey,
+      );
       setInitialValues((prevValues) => ({
         ...prevValues,
-        email: storedEmail,
-        password: storedPassword,
+        email: cookies.rememberedEmail,
+        password: decryptedPassword,
         rememberPassword: true,
       }));
     }
@@ -122,9 +126,9 @@ const SignInForm = () => {
         password: Yup.string().required("Password is required"),
       })}
       onSubmit={(values, { setSubmitting }) => {
-        console.log(initialValues.rememberPassword)
+        const encryptedPassword = encryptPassword(values.password, secretKey);
         if (initialValues.rememberPassword) {
-          setCookie(null, "rememberedPassword", values.password, {
+          setCookie(null, "rememberedPassword", encryptedPassword, {
             maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
             path: "/signin",
           });
@@ -133,7 +137,8 @@ const SignInForm = () => {
             path: "/signin",
           });
         } else {
-          destroyCookie(null, "rememberedPassword");destroyCookie(null, "rememberedEmail");
+          destroyCookie(null, "rememberedPassword");
+          destroyCookie(null, "rememberedEmail");
         }
         UserSignIn(values);
         setTimeout(() => {
