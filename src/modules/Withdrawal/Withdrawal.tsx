@@ -124,7 +124,7 @@ const WithdrawalForm = () => {
     
     },
     onError(error:any){
-      console.log(error)
+      
      setShowErrorToast(true)
      setErrorMessage(error.response.data.message)
     }

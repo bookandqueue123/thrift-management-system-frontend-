@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { store } from "./store/store";
 
 export async function middleware(request: NextRequest) {
-  console.log("Middleware triggered:", request.nextUrl.pathname);
+  
   const { pathname } = request.nextUrl;
-  console.log(pathname);
+  
   const state = store.getState();
-  console.log(state);
+  
   const { token } = state.auth;
-  console.log(token);
+ 
 
   // List of protected routes
   const protectedRoutes = [
@@ -30,7 +30,7 @@ export async function middleware(request: NextRequest) {
     "/merchant/withdrawals",
   ];
 
-  console.log("middleware pathname", pathname);
+  
   if (protectedRoutes.includes(pathname) && !token) {
     return NextResponse.redirect(new URL("/signin", request.url));
   }

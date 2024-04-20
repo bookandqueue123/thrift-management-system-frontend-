@@ -16,10 +16,10 @@ export default function OrganisationHomePage(){
              bg="white"
             /> 
             <AboutUs bg="white" aboutText={aboutText}/>
-            <HowToUse/>
-            <ProductService/>
-            <FAQ/>
-            <ContactUs/>
+            {/* <HowToUse/> */}
+            {/* <ProductService/>
+            <FAQ/> */}
+            {/* <ContactUs/> */}
             <Footer/>
         </div>
         

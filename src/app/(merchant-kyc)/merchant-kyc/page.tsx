@@ -76,7 +76,7 @@ const Kyc = () => {
       );
       // If state is found, return its LGAs
       if (stateObject) {
-        console.log(stateObject.lgas);
+  
         setSelectesLGAArray(stateObject.lgas);
       } else {
         // If state is not found, return an empty array
@@ -96,7 +96,7 @@ const Kyc = () => {
       );
       // If state is found, return its LGAs
       if (stateObject) {
-        console.log(stateObject.lgas);
+   
         setSelectesLGAArray(stateObject.lgas);
       } else {
         return [];
@@ -163,7 +163,7 @@ const Kyc = () => {
           return response.data;
         })
         .catch((error) => {
-          console.log(error);
+         
           throw error;
         });
     },
@@ -312,7 +312,7 @@ const Kyc = () => {
         onSubmit={(values, { setSubmitting }) => {
           setTimeout(() => {
             kycUpdate(values);
-            console.log(values);
+           
             setSubmitting(false);
           }, 800);
         }}
