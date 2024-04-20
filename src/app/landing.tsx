@@ -1,7 +1,9 @@
 import Banner from "@/components/Banner";
+import VerifyOrgSubdomain from "@/utils/VerifyOrgSubdomain";
 import Link from "next/link";
 
 const Landing = () => {
+  VerifyOrgSubdomain();
   return (
     <main className="md:flex">
       <Banner />
@@ -58,6 +60,6 @@ const Landing = () => {
       </section>
     </main>
   );
-}
+};
 
 export default Landing;
