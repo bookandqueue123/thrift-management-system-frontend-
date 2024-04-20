@@ -1,17 +1,30 @@
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export default function Navbar(){
+    const pathName = usePathname()
+    const isHomepage = pathName === "/"
     return(
         <nav className="">
             <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
                 <a href="https://flowbite.com/" className="flex items-center space-x-3 rtl:space-x-reverse">
-                    
-                    <Image
-                    src="/Logo.svg"
-                    width={100}
-                    height={100}
-                    alt="logo"
-                    />
+                    {isHomepage
+                        ?
+                        <Image
+                        src="/Logo.svg"
+                        width={100}
+                        height={100}
+                        alt="logo"
+                        />
+                        :
+                        <Image
+                        src="/MAXWELL.png"
+                        width={100}
+                        height={100}
+                        alt="logo"
+                        />
+                    }
+                   
                     {/* <span className="self-center text-2xl font-semibold whitespace-nowrap text-[#EAAB40]">Finkia</span> */}
                 </a>
                 <button data-collapse-toggle="navbar-default" type="button" className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-default" aria-expanded="false">

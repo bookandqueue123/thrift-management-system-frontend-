@@ -76,7 +76,7 @@ const Page = () => {
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
       setSuccessMessage(response.data.message);
-      console.log(response);
+      
       router.push(`/signin`);
     },
     onError(error: AxiosError<any, any>) {
@@ -114,7 +114,7 @@ const Page = () => {
           return response.data;
         })
         .catch((error) => {
-          console.log(error);
+   
           throw error;
         });
     },
@@ -124,7 +124,7 @@ const Page = () => {
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={(values, { setSubmitting }) => {
-        console.log(values);
+    
         CustomerSignUp(values);
         setTimeout(() => {
           setShowSuccessToast(false);

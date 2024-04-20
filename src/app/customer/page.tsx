@@ -55,13 +55,13 @@ const CustomerDashboard = () => {
           return response.data;
         })
         .catch((error) => {
-          console.log(error);
+         
           throw error;
         });
     },
   });
   
-  console.log(LoggedInUser)
+  
 
   const user = {
     firstName: "Dare",
@@ -78,19 +78,19 @@ const CustomerDashboard = () => {
       return client
         .get(`/api/saving/get-savings`)
         .then((response) => {
-          console.log("allSavingsSuccess: ", response.data);
+         
           // setFilteredSavings(response.data.savings)
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error.response);
+       
           throw error;
         });
     },
   });
 
   useEffect(() => {
-    console.log(allSavings)
+
     if (allSavings?.savings) {
       // Check if Savings?.savings is not undefined or null
       const filtered = allSavings.savings.filter(
@@ -103,7 +103,7 @@ const CustomerDashboard = () => {
  
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
-    console.log(filteredSavings)
+  
     if(filteredSavings){
       const filtered = filteredSavings.filter((item) =>
         String(item.user.accountNumber).includes(String(e.target.value))

@@ -73,7 +73,7 @@ const MerchantForm = () => {
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true)
        router.push('/signin')
-      console.log(response.data);
+ 
      
       setSuccessMessage((response as any).response.data.message);
        

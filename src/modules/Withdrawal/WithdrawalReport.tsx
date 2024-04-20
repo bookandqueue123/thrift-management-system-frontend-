@@ -71,14 +71,14 @@ export default function WithdrawalReport(){
       },
       onSuccess(response: AxiosResponse<any>) {
         alert('Receipt submitted successfully!');
-        console.log(response)
+      
         // router.push('/merchant/settings/withdrawals')
         
       },
       onError(error: AxiosError<any, any>) {
       
   
-        console.log(error);
+        console.log('error');
       },
     })
 
@@ -104,9 +104,7 @@ export default function WithdrawalReport(){
 
     const { mutate: UpdateCofirmationStatus } = useMutation({
       mutationFn: async (updatedConfirmationPaymentRow: WithdrawalProps) => {
-        console.log(updatedConfirmationPaymentRow)
-  
-        console.log(updatedConfirmationPaymentRow.paymentConfirmation)
+        
         return client.put(`/api/withdrawal/${updatedConfirmationPaymentRow._id}`, {
           paymentConfirmation: updatedConfirmationPaymentRow.paymentConfirmation
           // status: "paid"
@@ -114,14 +112,14 @@ export default function WithdrawalReport(){
 
       },
       onSuccess(response: AxiosResponse<any>) {
-        console.log(response)
+  
         // router.push('/merchant/settings/withdrawals')
         router.refresh()
       },
       onError(error: AxiosError<any, any>) {
       
   
-        console.log(error);
+
       },
     });
 
@@ -142,21 +140,21 @@ export default function WithdrawalReport(){
               return response.data;
             })
             .catch((error) => {
-              console.log(error);
+             
               throw error;
             });
         },
       });
-     console.log(withdrawals)
+    
 
      const handleStatus = (index: number) =>{
-      console.log(index)
+   
       const newData = [...withdrawalData]
-      console.log(newData)
+
       newData[index].paymentConfirmation = newData[index].paymentConfirmation === 'unconfirmed' ? 'confirmed' : 'unconfirmed';
       
       setWithdrawalData(newData)
-      console.log(withdrawalData)
+   
       // updateStatus(newData[index])
       UpdateCofirmationStatus(newData[index])
 

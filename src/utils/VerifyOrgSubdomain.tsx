@@ -37,7 +37,7 @@ const VerifyOrgSubdomain = () => {
             return response.data;
           })
           .catch((error) => {
-            console.log(error);
+         
             throw error;
           });
       },
@@ -60,7 +60,7 @@ const VerifyOrgSubdomain = () => {
     }
   }, [preferredUrl, router, setPreferredUrl, currentUrl, allOrganizations]);
 
-  console.log("preferredUrl", preferredUrl);
+ 
   return null;
 };
 
