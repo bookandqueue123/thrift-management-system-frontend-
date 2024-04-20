@@ -7,7 +7,7 @@ export default function Footer(){
     return(
         <div className={`${isHomepage ? 'bg-ajo_darkBlue' : ""}`}>
             <div className="mt-[4%] mx-[6%]">
-                <p className="text-xl font-semibold text-ajo_orange pb-4">Finkia</p>
+                <p className="text-xl font-semibold text-ajo_orange pb-4">{isHomepage ? 'Finkia' : 'Maxwell'}</p>
                 
                 <div className="md:flex justify-between">
                     <div className="flex">
