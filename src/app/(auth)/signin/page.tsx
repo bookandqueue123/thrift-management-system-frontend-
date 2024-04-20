@@ -1,5 +1,6 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
+import { parseCookies, setCookie, destroyCookie } from "nookies";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { signInProps } from "@/types";
 import { useMutation } from "@tanstack/react-query";
@@ -7,23 +8,18 @@ import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as Yup from "yup";
 
 import { setAuthData } from "@/slices/OrganizationIdSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
-
-
-// export const metadata = {
-//   title: 'SignIn',
-//   description: 'Login to your account',
-// };
+import { decryptPassword, encryptPassword } from "@/utils/Encryptpassword";
 
 const SignInForm = () => {
   const { client } = useAuth();
-  const organizationId = useSelector(selectOrganizationId);
+  // const organizationId = useSelector(selectOrganizationId);
   const user = useSelector(selectUser);
   const dispatch = useDispatch();
   const router = useRouter();
@@ -31,13 +27,38 @@ const SignInForm = () => {
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [initialValues, setInitialValues] = useState({
+    email: "",
+    userCategory: "Customer",
+    password: "",
+    rememberPassword: true,
+  });
+
+  const secretKey = process.env.PASSWORD_ENCRYPTION_KEY as string;
+
+  // Remember password
+  useEffect(() => {
+    const cookies = parseCookies();
+    if (cookies.rememberedPassword && cookies.rememberedEmail) {
+      const decryptedPassword = decryptPassword(
+        cookies.rememberedPassword,
+        secretKey,
+      );
+      setInitialValues((prevValues) => ({
+        ...prevValues,
+        email: cookies.rememberedEmail,
+        password: decryptedPassword,
+        rememberPassword: true,
+      }));
+    }
+  }, []);
 
   const {
     mutate: UserSignIn,
     isPending,
     isError,
   } = useMutation({
-    mutationKey: ["set Savings"],
+    mutationKey: ["UserLogin"],
     mutationFn: async (values: signInProps) => {
       return client.post(`/api/auth/login`, {
         emailOrPhoneNumber: values.email,
@@ -48,19 +69,15 @@ const SignInForm = () => {
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
 
-  
-
       if (response.data.role === "customer") {
-        if(user){
+        if (user) {
           router.push(`/customer`);
         }
-        
       } else if (response.data.role === "organisation") {
-        if(response.data.kycVerified) {
+        if (response.data.kycVerified) {
           router.push("/merchant");
-        } else{
-          router.push("/welcome")
-
+        } else {
+          router.push("/welcome");
         }
       }
 
@@ -84,8 +101,6 @@ const SignInForm = () => {
         );
       }
 
-     
-
       //  dispatch(setOrganizationId(response.data._id));
 
       setSuccessMessage((response as any).response.data.message);
@@ -102,12 +117,7 @@ const SignInForm = () => {
 
   return (
     <Formik
-      initialValues={{
-        email: "",
-        userCategory: "Customer",
-        password: "",
-        rememberPassword: false,
-      }}
+      initialValues={initialValues}
       validationSchema={Yup.object({
         email: Yup.string()
           .email("Invalid email address")
@@ -115,6 +125,20 @@ const SignInForm = () => {
         password: Yup.string().required("Password is required"),
       })}
       onSubmit={(values, { setSubmitting }) => {
+        const encryptedPassword = encryptPassword(values.password, secretKey);
+        if (initialValues.rememberPassword) {
+          setCookie(null, "rememberedPassword", encryptedPassword, {
+            maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
+            path: "/signin",
+          });
+          setCookie(null, "rememberedEmail", values.email, {
+            maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
+            path: "/signin",
+          });
+        } else {
+          destroyCookie(null, "rememberedPassword");
+          destroyCookie(null, "rememberedEmail");
+        }
         UserSignIn(values);
         setTimeout(() => {
           setSubmitting(false);
@@ -144,21 +168,6 @@ const SignInForm = () => {
                 className="text-xs text-red-500"
               />
             </div>
-
-            {/* <div className="mb-3">
-            <label htmlFor="userCategory" className="m-0 text-xs font-medium text-white">
-              User Category
-            </label>
-            <Field
-              as="select"
-              id="userCategory"
-              name="userCategory"
-              className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
-            >
-              <option value="Customer">Customer</option>
-              <option value="Merchant">Merchant</option>
-            </Field>
-          </div> */}
 
             <div className="mb-3">
               <div className="flex items-center justify-between">

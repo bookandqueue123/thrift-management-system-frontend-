@@ -6,6 +6,7 @@ export type customer = {
   email: string;
   phoneNumber: string;
   accountNumber: number;
+  groupMembers: [],
   role: "customer" | "merchant" | "organization";
   kycVerified: boolean;
   organisation: string;
@@ -451,3 +452,15 @@ export interface UpdateMerchantKycProps {
   officeAddress: string
 
 }
+
+type MyFile = {
+  name: string;
+  size: number;
+  type: string;
+  lastModified: number;
+};
+
+export type MyFileList = {
+  [index: number]: MyFile;
+  // length: number;
+};
