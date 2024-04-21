@@ -46,8 +46,8 @@ export default function Footer(){
                     </div>
 
                     <div className={`${isHomepage ? 'text-white' : 'black'} mt-4 md:mt-0`}>
-                        <h2>About us</h2>
-                        <h2 className="py-4">Contact us</h2>
+                        <h2><Link href="#about-content">About us</Link></h2>
+                        <h2 className="py-4"><Link href="#contact-us">Contact us</Link></h2>
                         <h2>Privacy policy</h2>
                     </div>
                 </div>
