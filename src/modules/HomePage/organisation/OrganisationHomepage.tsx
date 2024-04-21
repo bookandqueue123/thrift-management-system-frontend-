@@ -7,7 +7,17 @@ import FAQ from "../Faq";
 import ContactUs from "../ContactUs";
 import Footer from "../Footer";
 
-const aboutText = "At Maxwell savings, we believe in the transformative power of saving, and our platform is designed to make saving not just easy but also rewarding. Whether you're a seasoned trader looking to enhance your financial strategy or a young individual embarking on your savings journey, Finkia is here to guide and support you every step of the way."
+
+const data = [
+    {
+      text: "Helping traders save on daily basis",
+      firstImageSrc: "/maxabout.jpg",
+      secondImageSrc: "/man-woman.svg"
+    },
+
+    
+  ];
+const aboutText = "Maxwell savings is a traditional thrift management company - popularly known as ajo, esusu or adashe. The company was founded 1st February, 2017. As a customer, you can choose to save your money with Maxwell Savings on a daily and weekly basis. And you can also collect your saved funds on a monthly, quarterly or yearly basis."
 export default function OrganisationHomePage(){
     return(
         <div >
@@ -15,11 +25,11 @@ export default function OrganisationHomePage(){
             <HeroSection 
              bg="white"
             /> 
-            <AboutUs bg="white" aboutText={aboutText}/>
+            <AboutUs bg="white" data={data} aboutText={aboutText}/>
             {/* <HowToUse/> */}
             {/* <ProductService/>
             <FAQ/> */}
-            {/* <ContactUs/> */}
+            <ContactUs bg="white"/>
             <Footer/>
         </div>
         
