@@ -4,33 +4,24 @@ import { usePathname } from "next/navigation";
 interface AboutProps{
     bg?:string
     aboutText: string
+    data: dataProps[]
+    
 }
-export default function AboutUs({bg, aboutText}:AboutProps ){
+interface dataProps{
+        text: string
+        firstImageSrc: string,
+        secondImageSrc: string
+}
+
+//the data props should contain 2 images when it is being used on the prmary homepage else one single image
+export default function AboutUs({bg, aboutText, data}:AboutProps ){
     const pathName = usePathname()
 
     const isHomepage = pathName === "/"
     
-    const data = [
-        {
-          text: "Helping traders save on daily basis",
-          firstImageSrc: "/woman-holding.svg",
-          secondImageSrc: "/man-woman.svg"
-        },
-        {
-            text: "Automating financial management for cooperative societies",
-            firstImageSrc: "/automate1.svg",
-            secondImageSrc: "/automate2.svg"
-        },
-        {
-            text: "Inculcating healthy saving habits in youths",
-            firstImageSrc: "/inculate1.svg",
-            secondImageSrc: "/inculate2.svg"
-        },
-
-        
-      ];
+    
     return(
-        <div className={`${bg === "white" ? 'text-black': "text-white"} ${bg === "white" ? "bg-[#E3E7FA]": ""} py-12  md:px-[4%]  my-8 mt-16`}>
+        <div id="about-content" className={`${bg === "white" ? 'text-black': "text-white"} ${bg === "white" ? "bg-[#E3E7FA]": ""} py-12  md:px-[4%]   mt-16`}>
             <h2 className="text-3xl font-bold">About us</h2>
             <p className="my-8 text-left md:mr-[4%] text-left">
                 {aboutText}
@@ -39,7 +30,7 @@ export default function AboutUs({bg, aboutText}:AboutProps ){
 
           
             {/* This component isn't meant to show on any other page except the homepage. scope might change later */}
-            <div className={`mt-2 ${!isHomepage ? 'hidden' : 'block'}`}>
+            <div className={`mt-2 `}>
                 {data.map((item, index) => (
                     <div key={index} className="md:flex justify-between mb-[30%] md:mb-[10%]">
                     <div className="mt-8">
@@ -51,26 +42,40 @@ export default function AboutUs({bg, aboutText}:AboutProps ){
                         />
                         <p className="font-bold text-xl mt-4 md:mt-8">{item.text}</p>
                     </div>
-                    <div className=" mt-8 md:mt-0 flex relative md:mr-[10%]">
-                        <div className="">
-                        {/* First image */}
-                        <Image 
-                            width="100"
-                            height={100}
-                            src={item.firstImageSrc} 
-                            alt="First Image" 
-                            className="w-48 h-auto" />
-                        </div>
-                        <div className="">
-                        {/* Second image */}
-                        <Image 
-                            width="100"
-                            height={100}
-                            src={item.secondImageSrc} 
-                            alt="Second Image" 
-                            className="w-48 h-auto absolute top-[50%] left-[30%] md:top-[50%] md:left-[75%]" />
-                        </div>
-                    </div>
+
+                    {isHomepage ? 
+                      <div className=" mt-8 md:mt-0 flex relative md:mr-[10%]">
+                      <div className="">
+                      {/* First image */}
+                      <Image 
+                          width="500"
+                          height={100}
+                          src={item.firstImageSrc} 
+                          alt="First Image" 
+                          className="w-48 h-auto" />
+                      </div>
+                      <div className="">
+                      {/* Second image */}
+                      <Image 
+                          width="100"
+                          height={100}
+                          src={item.secondImageSrc} 
+                          alt="Second Image" 
+                          className="w-48 h-auto absolute top-[50%] left-[30%] md:top-[50%] md:left-[75%]" />
+                      </div>
+                  </div>
+                  :
+                  <div className="mt-8 md:mt-0 md:w-[50%]">
+                    <Image
+                        width={600}
+                        height={200}
+                        src={item.firstImageSrc} 
+                        alt="First Image" 
+                        className=""
+                    />
+                  </div>
+                }
+                  
                     </div>
                 ))}
                 </div>

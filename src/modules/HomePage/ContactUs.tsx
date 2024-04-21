@@ -1,27 +1,30 @@
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { PhoneNumber } from "react-phone-number-input";
 import * as Yup from "yup";
 
-export default function ContactUs(){
+export default function ContactUs({bg}: {bg?: string}){
+  const pathName = usePathname()
+    const isHomepage = pathName === "/"
     const [showSuccessToast, setShowSuccessToast] =useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
     return(
-        <div className="relative ">
+        <div className="relative" id="contact-us">
         {/* Background image */}
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url('/effect.svg')`, // Replace 'background-image.jpg' with your image URL
+            backgroundImage: `url('/contactusbg.svg')`, 
           }}
         ></div>
         {/* Yellow overlay */}
-        <div className="absolute inset-0 bg-ajo_orange opacity-50"></div>
+        <div className="absolute inset-0  opacity-50"></div>
         {/* Content */}
-        <div className="relative z-10 p-8 text-white ml-[4%]">
+        <div className={`relative z-10 p-8 ${isHomepage ? 'text-white' : "text-black"} ml-[4%]`}>
           <h1 className="text-3xl font-bold">Contact us</h1>
           <p className="text-lg mt-4">
             Send us a message.
@@ -191,19 +194,19 @@ export default function ContactUs(){
               </button>
               </div>
             </div>
-            <div className="md:px-16 md:w-[50%] flex flex-col space-y-8 justify-center item-center text-left align-center">
+            <div className="md:px-16 md:w-[50%] flex flex-col space-y-8  justify-center item-center text-left align-center">
 
-              <div>
+              <div className="text-white">
                  <h2 className="font-bold text-4xl">Office Address</h2>
                 <p className="pt-4">1A, Hughes Avenue, Alagomeji, Yaba, Lagos, Nigeria.</p>
               </div>
-              <div>
+              <div className="text-white">
                  <h2 className="font-bold text-4xl">Telephone</h2>
-                <p className="pt-4">+234 809 722 7051</p>
+                <p className="pt-4">+234 906 190 3588</p>
               </div>
-              <div>
+              <div className="text-white">
                  <h2 className="font-bold text-4xl">Email Address</h2>
-                <p className="pt-4">Finkia.support@raoatech.com</p>
+                <p className="pt-4"> info@maxwellsavings.com.ng</p>
               </div>
             </div>
           </div>
