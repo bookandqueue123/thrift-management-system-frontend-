@@ -74,7 +74,7 @@ const SetUpSavingsForm = ({
   closeModal,
 }: SetUpSavingsProps) => {
   const organizationId = useSelector(selectOrganizationId);
-  console.log(organizationId);
+
   const { client } = useAuth();
   const [selectedOptions, setSelectedOptions] = useState<customer[]>([]);
   const [displayConfirmationModal, setDisplayConfirmationMedal] =
@@ -132,11 +132,11 @@ const SetUpSavingsForm = ({
       return client
         .get(endpoint, {})
         .then((response: AxiosResponse<customer[], any>) => {
-          console.log(response.data);
+          
           return response.data;
         })
         .catch((error) => {
-          console.log(error);
+          
           throw error;
         });
     },
@@ -144,7 +144,7 @@ const SetUpSavingsForm = ({
 
   const selectedIds = selectedOptions.map((option) => option._id);
   const groupId = selectedIds[0];
-  console.log(selectedIds);
+
   const { mutate: postNamedGroups } = useMutation({
     mutationFn: async () => {
       const unNamedPayload = {
@@ -175,14 +175,13 @@ const SetUpSavingsForm = ({
     },
     onSuccess: (response) => {
       // console.log(response);
-      console.log("User created successfully");
+      
       setContent("confirmation");
       setDisplayConfirmationMedal(true);
-      console.log(displayConfirmationModal);
-      // console.log(response);
+     
     },
     onError: (error) => {
-      console.log(saveDetails.amount);
+ 
       // setContent("confirmation")
       // setDisplayConfirmationMedal(true)
       console.error("Error creating user:", error);
@@ -345,7 +344,7 @@ const SetUpSavingsForm = ({
       console.log("Form is valid, submitting...");
       postNamedGroups();
     } else {
-      console.log(formErrors);
+      
       console.log("Form is invalid, showing errors...");
     }
 

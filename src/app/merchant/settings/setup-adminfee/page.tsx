@@ -115,7 +115,7 @@ const Form = () => {
     if (Object.keys(validationErrors).length === 0) {
       console.log(formData);
        SetupSavings()
-      setShowModal(true)
+    
 
     } else {
       setErrors(validationErrors);

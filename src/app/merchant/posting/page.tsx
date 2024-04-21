@@ -67,13 +67,13 @@ const Posting = () => {
         .get(`/api/saving/get-savings?organisation=${organizationId}`, config)
         .then((response) => {
 
-          console.log("allSavingsSuccess: ", response.data);
+        
           setFilteredSavings(response.data.savings);
 
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error.response);
+        
           throw error;
         });
     },
@@ -145,7 +145,7 @@ const Posting = () => {
     }
   };
 
-  console.log(paginatedSavings);
+ 
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -449,7 +449,7 @@ const PostingForm = ({
     todayPayment: "no",
     // status: "",
   });
-  console.log(postDetails.savingId);
+ 
   const [filteredArray, setFilteredArray] = useState<savingsFilteredById[]>([]);
   const [groupSavings, setGroupSavings] = useState<savingsFilteredById[]>([]);
 
@@ -590,7 +590,7 @@ const PostingForm = ({
         const filtered = Savings.savings.filter(
           (item) => item.user._id === groupId,
         );
-        console.log(groupId);
+      
         setGroupSavings(filtered);
       } else {
         // Handle case where Savings?.savings is undefined or null
@@ -625,7 +625,7 @@ const PostingForm = ({
     filterArray(); // Call the filterArray function
   }, [Savings, postDetails.customerId, groupId, postDetails.postingType]); // Add dependencies to useEffect
 
-  console.log(filteredArray);
+
 
   useEffect(() => {
     if (postDetails.customerId) {
@@ -637,7 +637,7 @@ const PostingForm = ({
     }
   }, [postDetails.customerId, Savings?.savings]);
 
-  console.log(filteredSavingIds);
+
 
   // const handleChange = (e: { target: { name: any; value: any } }) => {
   //   const { name, value } = e.target;
@@ -682,7 +682,7 @@ const PostingForm = ({
           return response.data;
         })
         .catch((error) => {
-          console.log(error);
+   
           throw error;
         });
     },
@@ -721,7 +721,7 @@ const PostingForm = ({
       });
     },
     onSuccess(response: AxiosResponse<postSavingsResponse, any>) {
-      console.log(response);
+
       setPostingResponse(response.data);
       setPostingResponse(
         (prev) =>
@@ -732,7 +732,7 @@ const PostingForm = ({
       );
     },
     onError(error: AxiosError<any, any>) {
-      console.log(error);
+ 
       setPostingResponse(error.response?.data);
       setPostingResponse(
         (prev) =>
@@ -742,7 +742,7 @@ const PostingForm = ({
           }) as postSavingsResponse,
       );
 
-      console.log(error?.response?.data);
+      
     },
   });
 
@@ -770,14 +770,13 @@ const PostingForm = ({
       return newErrors;
     });
 
-    // console.log(formErrors);
 
     if (isValid) {
       postSavings();
       onSubmit("confirmation");
-      console.log("Form is valid, submitting...");
+    
     } else {
-      console.log("Form is invalid, showing errors...");
+
     }
   };
 
@@ -794,7 +793,7 @@ const PostingForm = ({
   );
 
   const uniqueCustomerIds = Array.from(customerIds);
-  console.log(uniqueCustomerIds);
+
   return (
     <form className="mx-auto w-[85%] space-y-3" onSubmit={onSubmitHandler}>
       <div className="items-center gap-6  md:flex">
@@ -1289,7 +1288,7 @@ const PostConfirmation = ({
   postingResponse: postSavingsResponse | undefined;
   status: "success" | "failed" | undefined;
 }) => {
-  console.log(postingResponse);
+
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
 
   useEffect(() => {

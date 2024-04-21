@@ -1,132 +1,160 @@
-'use client'
-import React, { useState } from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import { usePathname } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
-import { useAuth} from '@/api/hooks/useAuth';
-import { MerchantSignUpProps } from '@/types';
-import SuccessToaster, { ErrorToaster } from '@/components/toast';
-import { useRouter } from 'next/navigation';
+"use client";
+import { useAuth } from "@/api/hooks/useAuth";
+import SuccessToaster, { ErrorToaster } from "@/components/toast";
+import { MerchantSignUpProps } from "@/types";
+import { useMutation } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
+import { ErrorMessage, Field, Form, Formik } from "formik";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import * as Yup from "yup";
 // export const metadata = {
 //   title: "Merchant SignUp | Ajo by Raoatech",
 //   description: "Create your account",
 // };
 const validationSchema = Yup.object().shape({
-  organisationName: Yup.string()
-    .required('Organisation Name is required'),
-  email: Yup.string()
-    .email('Invalid email')
-    .required('Email is required'),
+  organisationName: Yup.string().required("Organisation Name is required"),
+  email: Yup.string().email("Invalid email").required("Email is required"),
   phoneNumber: Yup.string()
     // .matches(/^\+234\d{10}$/, 'Invalid phone number')
     .matches(
       /^(?:\+234\d{10}|\d{11})$/,
-      'Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long'
+      "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
     )
-    .required('Phone number is required'),
-    prefferedUrl: Yup.string()
-  .required(),
-    
+    .required("Phone number is required"),
+  prefferedUrl: Yup.string().required(),
+
   password: Yup.string()
-    .min(6, 'Password must be at least 6 characters')
-    .required('Password is required'),
+    .min(6, "Password must be at least 6 characters")
+    .required("Password is required"),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password')], 'Passwords must match')
-    .required('Confirm Password is required')
+    .oneOf([Yup.ref("password")], "Passwords must match")
+    .required("Confirm Password is required"),
 });
 
 const MerchantForm = () => {
   const { client } = useAuth();
-  const router = useRouter()
+  const router = useRouter();
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("")
-  const [errorMessage, setErrorMessage] = useState("")
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const initialValues: MerchantSignUpProps = {
-    organisationName: '',
-    email: '',
-    phoneNumber: '',
-    prefferedUrl: '',
-    password: '',
-    confirmPassword: '',
-    role: 'organisation'
+    organisationName: "",
+    email: "",
+    phoneNumber: "",
+    prefferedUrl: "",
+    password: "",
+    confirmPassword: "",
+    role: "organisation",
   };
 
-  const {mutate: MerchantSignUp, isPending, isError} = useMutation({
+  const {
+    mutate: MerchantSignUp,
+    isPending,
+    isError,
+  } = useMutation({
     mutationKey: ["Merchant sign up"],
     mutationFn: async (values: MerchantSignUpProps) => {
-     
       return client.post(`/api/auth/register`, {
-        
         organisationName: values.organisationName,
         phoneNumber: values.phoneNumber,
         email: values.email,
         password: values.password,
         prefferedUrl: values.prefferedUrl,
-        role: "organisation"
-      
-      })
+        role: "organisation",
+      });
     },
-    
+
     onSuccess(response: AxiosResponse<any, any>) {
-      setShowSuccessToast(true)
-       router.replace('/signin')
+      setShowSuccessToast(true);
+      router.replace("/signin");
       console.log(response.data);
-     
+
       setSuccessMessage((response as any).response.data.message);
-       
+
       // setTimeout(() => {
-        
+
       // }, 4000)
-     
     },
-    onError(error : AxiosError<any, any>){
-      setShowErrorToast(true)
-      setErrorMessage(error.response?.data.message)
+    onError(error: AxiosError<any, any>) {
+      setShowErrorToast(true);
+      setErrorMessage(error.response?.data.message);
       // setErrorMessage(error.data)
-  
-    }
-    
-  })
+    },
+  });
 
   return (
-    
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={(values, { setSubmitting }) => {
-       
-        
-        MerchantSignUp(values)
-        
-           setShowSuccessToast(false)
-           setShowErrorToast(false)
-          setSubmitting(false);
-        
-       
-        
+        MerchantSignUp(values);
+
+        setShowSuccessToast(false);
+        setShowErrorToast(false);
+        setSubmitting(false);
       }}
     >
       {({ isSubmitting }) => (
         <Form className="mt-8">
           <div className="mb-8">
-        
             <div className="mb-3">
-              <label htmlFor="organisation-name" className="m-0 text-xs font-medium text-white">Organisation Name <span className="font-base font-semibold text-[#FF0000]">*</span></label>
-              <Field type="text" name="organisationName" id="organisation-name" className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]" />
-              <ErrorMessage name="organisationName" component="div" className="text-red-500" />
+              <label
+                htmlFor="organisation-name"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Organisation Name{" "}
+                <span className="font-base font-semibold text-[#FF0000]">
+                  *
+                </span>
+              </label>
+              <Field
+                type="text"
+                name="organisationName"
+                id="organisation-name"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="organisationName"
+                component="div"
+                className="text-red-500"
+              />
             </div>
 
             <div className="mb-3">
-              <label htmlFor="email" className="m-0 text-xs font-medium text-white">Email Address <span className="font-base font-semibold text-[#FF0000]">*</span></label>
-              <Field type="email" name="email" id="email" className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]" />
-              <ErrorMessage name="email" component="div" className="text-red-500" />
+              <label
+                htmlFor="email"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Email Address{" "}
+                <span className="font-base font-semibold text-[#FF0000]">
+                  *
+                </span>
+              </label>
+              <Field
+                type="email"
+                name="email"
+                id="email"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="email"
+                component="div"
+                className="text-red-500"
+              />
             </div>
 
             <div className="mb-3">
-              <label htmlFor="phoneNumber" className="m-0 text-xs font-medium text-white">Contact Number <span className="font-base font-semibold text-[#FF0000]">*</span></label>
+              <label
+                htmlFor="phoneNumber"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Contact Number{" "}
+                <span className="font-base font-semibold text-[#FF0000]">
+                  *
+                </span>
+              </label>
               <div className="mt-1 flex w-full gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
                 {/* <span className="flex h-full w-1/5 select-none items-center gap-2 text-gray-400 sm:text-sm">
                   <svg
@@ -154,40 +182,117 @@ const MerchantForm = () => {
                   </svg>
                   +234
                 </span> */}
-                <Field type="tel" name="phoneNumber" id="phoneNumber" className="w-4/5 bg-transparent outline-none" />
+                <Field
+                  type="tel"
+                  name="phoneNumber"
+                  id="phoneNumber"
+                  className="w-4/5 bg-transparent outline-none"
+                />
               </div>
-              <ErrorMessage name="phoneNumber" component="div" className="text-red-500" />
+              <ErrorMessage
+                name="phoneNumber"
+                component="div"
+                className="text-red-500"
+              />
             </div>
 
             <div className="mb-3">
-              <label htmlFor="prefferedUrl" className="m-0 text-xs font-medium text-white">Preferred Url <span className="font-base font-semibold text-[#FF0000]">*</span></label>
-              <Field type="string" name="prefferedUrl" id="prefferedUrl" className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]" />
-              <ErrorMessage name="prefferedUrl" component="div" className="text-red-500" />
+              <label
+                htmlFor="prefferedUrl"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Preferred Url{" "}
+                <span className="font-base font-semibold text-[#FF0000]">
+                  *
+                </span>
+              </label>
+              <Field
+                type="string"
+                name="prefferedUrl"
+                id="prefferedUrl"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="prefferedUrl"
+                component="div"
+                className="text-red-500"
+              />
             </div>
 
             <div className="mb-3">
-              <label htmlFor="password" className="m-0 text-xs font-medium text-white">Password <span className="font-base font-semibold text-[#FF0000]">*</span></label>
-              <Field type="password" name="password" id="password" className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]" />
-              <ErrorMessage name="password" component="div" className="text-red-500" />
+              <label
+                htmlFor="password"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Password{" "}
+                <span className="font-base font-semibold text-[#FF0000]">
+                  *
+                </span>
+              </label>
+              <Field
+                type="password"
+                name="password"
+                id="password"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="password"
+                component="div"
+                className="text-red-500"
+              />
             </div>
 
             <div className="mb-3">
-              <label htmlFor="confirm-password" className="m-0 text-xs font-medium text-white">Confirm Password <span className="font-base font-semibold text-[#FF0000]">*</span></label>
-              <Field type="password" name="confirmPassword" id="confirm-password" className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]" />
-              <ErrorMessage name="confirmPassword" component="div" className="text-red-500" />
+              <label
+                htmlFor="confirm-password"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Confirm Password{" "}
+                <span className="font-base font-semibold text-[#FF0000]">
+                  *
+                </span>
+              </label>
+              <Field
+                type="password"
+                name="confirmPassword"
+                id="confirm-password"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="confirmPassword"
+                component="div"
+                className="text-red-500"
+              />
             </div>
           </div>
-          <button type="submit" className="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating account...' : 'Create account'}
+          <button
+            type="submit"
+            className="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Creating account..." : "Create account"}
           </button>
 
-           {/* Conditionally render SuccessToaster component */}
-           {showSuccessToast  && <SuccessToaster message={successMessage ? successMessage : "Account Created successfully!"} />}
-           {showErrorToast && errorMessage && errorMessage && <ErrorToaster message={errorMessage? errorMessage : "Error creating organization"} />}
+          {/* Conditionally render SuccessToaster component */}
+          {showSuccessToast && (
+            <SuccessToaster
+              message={
+                successMessage
+                  ? successMessage
+                  : "Account Created successfully!"
+              }
+            />
+          )}
+          {showErrorToast && errorMessage && errorMessage && (
+            <ErrorToaster
+              message={
+                errorMessage ? errorMessage : "Error creating organization"
+              }
+            />
+          )}
         </Form>
       )}
     </Formik>
-    
   );
 };
 

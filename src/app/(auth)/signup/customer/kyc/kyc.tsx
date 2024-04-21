@@ -114,13 +114,14 @@ export const Kyc = () => {
       );
       // If state is found, return its LGAs
       if (stateObject) {
-        console.log(stateObject.lgas);
+      
         setSelectesLGAArray(stateObject.lgas);
       } else {
         // If state is not found, return an empty array
       }
     }
   }, [selectedCountry, selectedState]);
+
 
   const {
     mutate: kycUpdate,
@@ -155,14 +156,16 @@ export const Kyc = () => {
         formData.append("meansOfIDPhoto", values.meansOfIDPhoto[0]);
       }
 
-      console.log(formData);
+     
       // Make the API call with formData
       return client.put(`/api/user/${userId}`, formData);
     },
 
     onSuccess(response) {
+
       router.replace("/customer");
       // console.log(response);
+
       setShowSuccessToast(true);
       setSuccessMessage((response as any).response.data.message);
     },
@@ -186,7 +189,7 @@ export const Kyc = () => {
           return response.data;
         })
         .catch((error) => {
-          console.log(error);
+      
           throw error;
         });
     },
@@ -356,7 +359,7 @@ export const Kyc = () => {
         onSubmit={(values, { setSubmitting }) => {
           setTimeout(() => {
             kycUpdate(values);
-            console.log(values);
+       
             setSubmitting(false);
           }, 400);
         }}

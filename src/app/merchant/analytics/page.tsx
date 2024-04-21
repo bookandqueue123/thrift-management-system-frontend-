@@ -147,7 +147,7 @@ export default function Analytics(){
             return response.data.savings;
           })
           .catch((error: AxiosError<any, any>) => {
-            console.log(error.response);
+       
             throw error;
           });
       },
@@ -155,7 +155,7 @@ export default function Analytics(){
 
     const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
       setSearchResult(e.target.value);
-      console.log(e.target.value);
+
   
       if (allTransactions) {
         const filtered = allTransactions.filter((item: {
@@ -163,12 +163,12 @@ export default function Analytics(){
 }) =>
           String(item.user.accountNumber).includes(String(e.target.value)),
         );
-        console.log(filtered)
+  
         // Update the filtered data state
         setFilteredTransactions(filtered);
       }
     };
-    console.log(filteredTransactions)
+ 
     
 
     const handleFromDateChange = (event: {

@@ -1,10 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 export default function Footer(){
+    const pathName = usePathname()
+    const isHomepage = pathName === "/"
     return(
-        <div className="bg-ajo_darkBlue">
+        <div className={`${isHomepage ? 'bg-ajo_darkBlue' : ""}`}>
             <div className="mt-[4%] mx-[6%]">
-                <p className="text-xl font-semibold text-ajo_orange pb-4">Finkia</p>
+                <p className="text-xl font-semibold text-ajo_orange pb-4">{isHomepage ? 'Finkia' : 'Maxwell'}</p>
                 
                 <div className="md:flex justify-between">
                     <div className="flex">
@@ -42,14 +45,14 @@ export default function Footer(){
                         </div>
                     </div>
 
-                    <div className="text-white mt-4 md:mt-0">
-                        <h2>About us</h2>
-                        <h2 className="py-4">Contact us</h2>
+                    <div className={`${isHomepage ? 'text-white' : 'black'} mt-4 md:mt-0`}>
+                        <h2><Link href="#about-content">About us</Link></h2>
+                        <h2 className="py-4"><Link href="#contact-us">Contact us</Link></h2>
                         <h2>Privacy policy</h2>
                     </div>
                 </div>
 
-                <div className=" my-8 flex justify-center text-white pb-8">
+                <div className={` my-8 flex justify-center  ${isHomepage ? 'text-white' : 'black'} pb-8`}>
                 Powered by <Link target="_blank" href={"https://raoatech.com/"} className="ml-1"><span> Raoatech Ng</span> </Link>
                 </div>
             </div>
