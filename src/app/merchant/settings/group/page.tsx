@@ -9,7 +9,13 @@ import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import DummyGroups from "@/api/dummyGroups.json";
 import Image from "next/image";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  QueryObserverResult,
+  RefetchOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useAuth } from "@/api/hooks/useAuth";
 import { customer, postSavingsResponse } from "@/types";
 import { AxiosError, AxiosResponse } from "axios";
@@ -34,15 +40,25 @@ const GroupSettings = () => {
 
   const [modalToShow, setModalToShow] = useState<"edit" | "create" | "">("");
   const [groupToBeEdited, setGroupToBeEdited] = useState("");
+  const [groupToBeEditedName, setGroupToBeEditedName] = useState("");
+  const [groupToBeEditedMembers, setGroupToBeEditedMembers] = useState<
+    string[]
+  >([]);
+
   const organizationId = useSelector(selectOrganizationId);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isDeleted, setIsDeleted] = useState(false);
 
   const queryClient = useQueryClient();
 
-  const { data: allGroups, isLoading: isGettingAllGroups } = useQuery({
+  const {
+    data: allGroups,
+    isLoading: isGettingAllGroups,
+    refetch: refetchAllGroups,
+  } = useQuery({
     queryKey: ["allGroups"],
     queryFn: async () => {
       return client
@@ -66,23 +82,23 @@ const GroupSettings = () => {
       return client.delete(`/api/user/${groupId}`);
     },
     onSuccess(response: AxiosResponse<any, any>) {
-      queryClient.invalidateQueries({
-        queryKey: ["allGroups"],
-      });
-      router.replace(pathname);
-      console.log(response.data);
-      console.log("group deleted");
+      setIsDeleted(true);
       setShowSuccessToast(true);
       setSuccessMessage(
         `${response.data.deletedUser.groupName} group has been deleted`,
       );
     },
     onError(error: AxiosError<any, any>) {
+      setIsDeleted(false);
       console.error(error.response?.data.message ?? error.message);
       setShowErrorToast(true);
       setErrorMessage(error.response?.data.message);
     },
   });
+
+  useEffect(() => {
+    refetchAllGroups();
+  }, [isDeleted, refetchAllGroups, modalToShow, modalState]);
 
   return (
     <>
@@ -115,21 +131,14 @@ const GroupSettings = () => {
                     : "Edit Group"
               }
             >
-              {modalContent === "confirmation" ? (
-                <PostConfirmation
-                  postingMessage={postingMessage}
-                  postingResponse={postingResponse}
-                  status={postingResponse?.status}
-                />
-              ) : (
-                <CreateGroupForm
-                  postingMessage={setPostingMessage}
-                  onSubmit={setModalContent}
-                  setPostingResponse={setPostingResponse}
-                  actionToTake={modalToShow}
-                  groupToBeEdited={groupToBeEdited}
-                />
-              )}
+              <CreateGroupForm
+                onSubmit={setModalContent}
+                actionToTake={modalToShow}
+                groupToBeEdited={groupToBeEdited}
+                groupToBeEditedName={groupToBeEditedName}
+                groupToBeEditedMembers={groupToBeEditedMembers}
+                refetchAllGroups={refetchAllGroups}
+              />
             </Modal>
           )}
         </div>
@@ -139,15 +148,7 @@ const GroupSettings = () => {
               Existing Group List
             </p>
             <TransactionsTable
-              headers={[
-                "Group Name",
-                "Account Name",
-                "Account Number",
-                "Bank Name",
-                "Group Type",
-                "Total Group Number",
-                "Action",
-              ]}
+              headers={["Group Name", "Total Group Number", "Action"]}
               content={
                 isGettingAllGroups ? (
                   <p className="text-sm font-semibold text-ajo_offWhite">
@@ -158,18 +159,6 @@ const GroupSettings = () => {
                     <tr className="" key={index}>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
                         {group.groupName || "----"}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {group.accountName || "----"}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {group.accountNumber || "----"}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {group.bankName || "----"}
-                      </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {group.groupType || "----"}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
                         {group.groupMember.length || "----"}
@@ -185,6 +174,8 @@ const GroupSettings = () => {
                             setModalState(true);
                             setModalContent("form");
                             setGroupToBeEdited(group._id);
+                            setGroupToBeEditedName(group.groupName);
+                            setGroupToBeEditedMembers(group.groupMember);
                           }}
                           className="cursor-pointer"
                         />
@@ -234,35 +225,42 @@ export default GroupSettings;
 
 interface iCreateGroupProps {
   onSubmit: Dispatch<SetStateAction<"form" | "confirmation">>;
-  postingMessage: any;
-  setPostingResponse: Dispatch<SetStateAction<postSavingsResponse | undefined>>;
   actionToTake: "create" | "edit" | "";
   groupToBeEdited?: string;
+  groupToBeEditedName?: string;
+  groupToBeEditedMembers?: string[];
+  refetchAllGroups: (
+    options?: RefetchOptions | undefined,
+  ) => Promise<QueryObserverResult<any, Error>>;
 }
 
 const CreateGroupForm = ({
   onSubmit,
-  postingMessage,
-  setPostingResponse,
   actionToTake,
   groupToBeEdited,
+  groupToBeEditedName,
+  groupToBeEditedMembers,
+  refetchAllGroups,
 }: iCreateGroupProps) => {
   const organizationId = useSelector(selectOrganizationId);
-  // console.log(organizationId);
   const { client } = useAuth();
-  const [selectedOptions, setSelectedOptions] = useState<customer[]>([]);
-  const router = useRouter();
-  const pathname = usePathname();
+  const [selectedOptions, setSelectedOptions] = useState<
+    (customer | undefined)[]
+  >([]);
+  const [groupsChanged, setGroupsChanged] = useState(false);
+  const [isTouched, setIsTouched] = useState(false);
+  const [postingResponse, setPostingResponse] = useState<postSavingsResponse>();
 
   const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
     const selectedOption = users?.find((option) => option._id === selectedId);
-    if (!selectedOptions.some((option) => option._id === selectedOption?._id)) {
+    if (
+      !selectedOptions.some((option) => option?._id === selectedOption?._id)
+    ) {
       setSelectedOptions([...selectedOptions, selectedOption!]);
     }
   };
 
-  const queryClient = useQueryClient();
   const handleRemoveOption = (index: number) => {
     const updatedOptions = [...selectedOptions];
     updatedOptions.splice(index, 1);
@@ -287,9 +285,6 @@ const CreateGroupForm = ({
     },
   });
 
-  const selectedIds = selectedOptions.map((option) => option._id);
-  // console.log('Selected IDs:', selectedIds);
-
   const {
     mutate: createGroups,
     isPending: isCreatingGroup,
@@ -313,10 +308,8 @@ const CreateGroupForm = ({
             ["status"]: "success",
           }) as postSavingsResponse,
       );
-      queryClient.invalidateQueries({
-        queryKey: ["allUsers"],
-      });
-      // console.log("yes");
+      setGroupsChanged(true);
+      console.log(response.data);
       return response.data;
     },
     onError(error: any) {
@@ -329,6 +322,7 @@ const CreateGroupForm = ({
             ["status"]: "failed",
           }) as postSavingsResponse,
       );
+      setGroupsChanged(true);
 
       throw error;
     },
@@ -357,13 +351,7 @@ const CreateGroupForm = ({
             ["status"]: "success",
           }) as postSavingsResponse,
       );
-      router.replace(pathname);
-
-      queryClient.invalidateQueries({
-        queryKey: ["allUsers"],
-      });
-      router.refresh();
-      // console.log("yes");
+            setGroupsChanged(true);
       return response.data;
     },
     onError(error: any) {
@@ -376,6 +364,8 @@ const CreateGroupForm = ({
             ["status"]: "failed",
           }) as postSavingsResponse,
       );
+            setGroupsChanged(false);
+
 
       throw error;
     },
@@ -388,203 +378,249 @@ const CreateGroupForm = ({
     }
   }, [isError]);
 
+  useEffect(() => {
+    refetchAllGroups();
+  }, [groupsChanged, refetchAllGroups]);
+
+  useEffect(() => {
+    if (actionToTake === "edit" && !isTouched) {
+      const getUsersFromIds = (userIds: string[]) => {
+        return userIds.map((userId: string) =>
+          users?.find((user) => user._id === userId),
+        );
+      };
+      const matchedUsers = getUsersFromIds(groupToBeEditedMembers ?? []);
+      const updatedSelectedOptions = [
+        ...selectedOptions,
+        ...matchedUsers,
+      ].filter(
+        (user, index, self) =>
+          self.findIndex((u) => u?._id === user?._id) === index,
+      );
+      setSelectedOptions(updatedSelectedOptions ?? []);
+    }
+  }, [actionToTake, isTouched, selectedOptions, groupToBeEditedMembers, users]);
+
   return (
-    <Formik
-      initialValues={{
-        groupType: "named group",
-        groupName: "",
-        groupDescription: "",
-        savingsPurpose: "",
-        selectedCustomer: [],
-      }}
-      validationSchema={Yup.object({
-        groupName: Yup.string().required("Group Name is required"),
-        groupDescription: Yup.string().required(
-          "Group Description is required",
-        ),
-        savingsPurpose: Yup.string().required("Savings Purpose is required"),
-        selectedCustomers: Yup.array().min(
-          1,
-          "At least one customer must be selected",
-        ),
-      })}
-      onSubmit={(values: { groupName: string }, { setSubmitting }) => {
-        console.log(values);
-        setTimeout(() => {
-          setSubmitting(false);
+    <>
+      {groupsChanged ? (
+        <PostConfirmation
+          postingMessage={
+            actionToTake === "edit"
+              ? postingResponse?.status === "success"
+                ? "Group Updated Successfully"
+                : "Group Update Failed"
+              : postingResponse?.status === "success"
+                ? "Group Successfully Created"
+                : "Unable to Create Group"
+          }
+          postingResponse={postingResponse}
+          status={postingResponse?.status}
+        />
+      ) : (
+        <Formik
+          initialValues={{
+            groupType: "named group",
+            groupName: actionToTake === "edit" ? groupToBeEditedName ?? "" : "",
+            groupDescription: "",
+            savingsPurpose: "",
+            selectedCustomer:
+              actionToTake === "edit" ? groupToBeEditedMembers : [],
+          }}
+          validationSchema={Yup.object({
+            groupName: Yup.string().required("Group Name is required"),
+            groupDescription: Yup.string().required(
+              "Group Description is required",
+            ),
+            savingsPurpose: Yup.string().required(
+              "Savings Purpose is required",
+            ),
+            selectedCustomers: Yup.array().min(
+              1,
+              "At least one customer must be selected",
+            ),
+          })}
+          onSubmit={(values: { groupName: string }, { setSubmitting }) => {
+            console.log(values);
+            setTimeout(() => {
+              setSubmitting(false);
 
-          actionToTake === "create"
-            ? createGroups(values.groupName)
-            : editGroups(values.groupName);
+              actionToTake === "create"
+                ? createGroups(values.groupName)
+                : editGroups(values.groupName);
 
-          onSubmit("confirmation");
-        }, 400);
-      }}
-    >
-      {({ isSubmitting }) => (
-        <Form className="mx-auto mt-12 w-[90%] space-y-3 md:w-[60%]">
-          {/** Group Name Field */}
+              onSubmit("confirmation");
+            }, 400);
+          }}
+        >
+          {({ isSubmitting }) => (
+            <Form className="mx-auto mt-12 w-[90%] space-y-3 md:w-[60%]">
+              {/** Group Name Field */}
 
-          <div>
-            <div className="items-center gap-6 md:flex">
-              <label
-                htmlFor="groupName"
-                className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
-              >
-                {actionToTake === "edit" && "New"} Group Name:
-              </label>
-              <Field
-                id="groupName"
-                name="groupName"
-                type="text"
-                placeholder="E.g 1million Goal"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-            </div>
-            <div className="items-center gap-6 md:flex">
-              <div className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"></div>
-              <ErrorMessage
-                name="groupName"
-                component="div"
-                className="w-full text-red-500"
-              />
-            </div>
-          </div>
-
-          {/** Group Description Field */}
-
-          <div className="">
-            <div className="items-center gap-6 md:flex">
-              <label
-                htmlFor="groupDescription"
-                className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
-              >
-                {actionToTake === "edit" && "New"} Group description:
-              </label>
-
-              <Field
-                id="groupDescription"
-                name="groupDescription"
-                type="text"
-                placeholder="Describe..."
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-            </div>
-            <div className="items-center gap-6 md:flex">
-              <div className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"></div>
-              <ErrorMessage
-                name="groupDescription"
-                component="div"
-                className="w-full text-red-500"
-              />
-            </div>
-          </div>
-
-          {/** Savings Purpose Field */}
-          <div>
-            <div className="items-center gap-6 md:flex">
-              <label
-                htmlFor="savingsPurpose"
-                className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
-              >
-                {actionToTake === "edit" && "New"} Savings Purpose:
-              </label>
-              <Field
-                id="savingsPurpose"
-                name="savingsPurpose"
-                type="text"
-                placeholder="Purpose...."
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-            </div>
-            <div className="items-center gap-6 md:flex">
-              <div className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"></div>
-              <ErrorMessage
-                name="savingsPurpose"
-                component="div"
-                className="w-full text-red-500"
-              />
-            </div>
-          </div>
-
-          {/* Add Customers Field */}
-          {/* Add Customers Field */}
-          <div className="items-center gap-6 md:flex">
-            <label
-              htmlFor="addCustomers"
-              className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
-            >
-              Add Customers
-            </label>
-            <div className="w-full">
-              <select
-                className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
-                onChange={handleOptionChange}
-              >
-                <option value="">Select an option</option>
-                {users?.map((option) => (
-                  <option key={option._id} value={option._id}>
-                    {option.firstName} {option.lastName}
-                  </option>
-                ))}
-              </select>
-
-              <div className="space-x-1 space-y-2">
-                {selectedOptions.map((option, index) => (
-                  <div key={index} className="mb-2 mr-2 inline-block">
-                    <button
-                      onClick={() => handleRemoveOption(index)}
-                      className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
-                    >
-                      {option.firstName} {option.lastName}
-                      <svg
-                        className="ml-1 h-3 w-3 cursor-pointer text-gray-700"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
+              <div>
+                <div className="items-center gap-6 md:flex">
+                  <label
+                    htmlFor="groupName"
+                    className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+                  >
+                    {actionToTake === "edit" && "New"} Group Name:
+                  </label>
+                  <Field
+                    id="groupName"
+                    name="groupName"
+                    type="text"
+                    placeholder="E.g 1million Goal"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                </div>
+                <div className="items-center gap-6 md:flex">
+                  <div className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"></div>
+                  <ErrorMessage
+                    name="groupName"
+                    component="div"
+                    className="w-full text-red-500"
+                  />
+                </div>
               </div>
-              <Field
-                name="selectedCustomers"
-                as="input"
-                type="hidden"
-                value={selectedOptions.map((option) => option._id)}
-              />
-              <ErrorMessage
-                name="selectedCustomers"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-          </div>
 
-          {/** Submit Button */}
-          <div className="flex items-center justify-center pb-12 pt-4">
-            <span className="hidden w-[20%] md:block">Submit</span>
-            <div className="md:flex md:w-[80%] md:justify-center">
-              <button
-                type="submit"
-                className="rounded-md bg-ajo_blue px-9 py-3 text-sm text-ajo_offWhite hover:bg-indigo-500 focus:bg-indigo-500 md:w-[60%]"
-                disabled={isSubmitting}
-              >
-                Submit
-              </button>
-            </div>
-          </div>
-        </Form>
+              {/** Group Description Field */}
+
+              <div className="">
+                <div className="items-center gap-6 md:flex">
+                  <label
+                    htmlFor="groupDescription"
+                    className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+                  >
+                    {actionToTake === "edit" && "New"} Group description:
+                  </label>
+
+                  <Field
+                    id="groupDescription"
+                    name="groupDescription"
+                    type="text"
+                    placeholder="Describe..."
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                </div>
+                <div className="items-center gap-6 md:flex">
+                  <div className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"></div>
+                  <ErrorMessage
+                    name="groupDescription"
+                    component="div"
+                    className="w-full text-red-500"
+                  />
+                </div>
+              </div>
+
+              {/** Savings Purpose Field */}
+              <div>
+                <div className="items-center gap-6 md:flex">
+                  <label
+                    htmlFor="savingsPurpose"
+                    className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+                  >
+                    {actionToTake === "edit" && "New"} Savings Purpose:
+                  </label>
+                  <Field
+                    id="savingsPurpose"
+                    name="savingsPurpose"
+                    type="text"
+                    placeholder="Purpose...."
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                </div>
+                <div className="items-center gap-6 md:flex">
+                  <div className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"></div>
+                  <ErrorMessage
+                    name="savingsPurpose"
+                    component="div"
+                    className="w-full text-red-500"
+                  />
+                </div>
+              </div>
+
+              {/* Add Customers Field */}
+              <div className="items-center gap-6 md:flex">
+                <label
+                  htmlFor="addCustomers"
+                  className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+                >
+                  Add Customers
+                </label>
+                <div className="w-full">
+                  <select
+                    className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+                    onChange={handleOptionChange}
+                    onFocus={() => {
+                      setIsTouched(true);
+                    }}
+                  >
+                    <option value="">Select an option</option>
+                    {users?.map((option) => (
+                      <option key={option._id} value={option._id}>
+                        {option.firstName} {option.lastName}
+                      </option>
+                    ))}
+                  </select>
+
+                  <div className="space-x-1 space-y-2">
+                    {selectedOptions.map((option, index) => (
+                      <div key={index} className="mb-2 mr-2 inline-block">
+                        <button
+                          onClick={() => handleRemoveOption(index)}
+                          className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
+                        >
+                          {option?.firstName} {option?.lastName}
+                          <svg
+                            className="ml-1 h-3 w-3 cursor-pointer text-gray-700"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <Field
+                    name="selectedCustomers"
+                    as="input"
+                    type="hidden"
+                    value={selectedOptions.map((option) => option?._id)}
+                  />
+                  <ErrorMessage
+                    name="selectedCustomers"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+              </div>
+
+              {/** Submit Button */}
+              <div className="flex items-center justify-center pb-12 pt-4">
+                <span className="hidden w-[20%] md:block">Submit</span>
+                <div className="md:flex md:w-[80%] md:justify-center">
+                  <button
+                    type="submit"
+                    className="rounded-md bg-ajo_blue px-9 py-3 text-sm text-ajo_offWhite hover:bg-indigo-500 focus:bg-indigo-500 md:w-[60%]"
+                    disabled={isSubmitting}
+                  >
+                    Submit
+                  </button>
+                </div>
+              </div>
+            </Form>
+          )}
+        </Formik>
       )}
-    </Formik>
+    </>
   );
 };
 
@@ -601,9 +637,7 @@ const PostConfirmation = ({
     <div className="mx-auto mt-[10%] flex h-full w-1/2 flex-col items-center justify-center space-y-8">
       <h1 className="text-white">
         {status !== undefined
-          ? status === "success"
-            ? "Group Successfully Created"
-            : "Unable to Create Group"
+          ? postingMessage
           : "Loading....."}
       </h1>
       {status !== undefined ? (

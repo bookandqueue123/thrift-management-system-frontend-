@@ -2,14 +2,14 @@
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import { SearchInput } from "@/components/Forms";
 import TransactionsTable from "@/components/Tables";
-// import DummyCustomers from "@/api/dummyCustomers.json";
 import { useAuth } from "@/api/hooks/useAuth";
-import Modal from "@/components/Modal";
+import Modal, { ModalConfirmation } from "@/components/Modal";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import {
   CustomerSignUpProps,
   FormErrors,
   FormValues,
+  MyFileList,
   StateProps,
   UpdateKycProps,
   customer,
@@ -39,12 +39,7 @@ import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import StatesAndLGAs from "@/api/statesAndLGAs.json";
-import CreateCustomer from "@/modules/CreateCustomer/CreateCustomer";
-import { Kyc } from "@/app/(auth)/signup/customer/kyc/kyc";
-import CustomerAction from "@/components/CustomerAction";
-
-// import { Kyc } from "@/app/(auth)/signup/customer/kyc/page";
-// import 'react-datepicker/dist/react-datepicker.css';
+import { usePathname, useRouter } from "next/navigation";
 
 const initialValues: CustomerSignUpProps = {
   firstName: "",
@@ -91,6 +86,7 @@ const validationSchema = Yup.object().shape({
 const Customers = () => {
   const PAGE_SIZE = 5;
 
+  const [isCustomerCreated, setIsCustomerCreated] = useState(false);
   const [searchResult, setSearchResult] = useState("");
   const [filteredCustomers, setFilteredCustomer] = useState<customer[]>([]);
   const [fromDate, setFromDate] = useState("");
@@ -98,6 +94,9 @@ const Customers = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const { client } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [modalState, setModalState] = useState(false);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
     "form",
@@ -130,7 +129,11 @@ const Customers = () => {
     }
   };
 
-  const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
+  const {
+    data: allCustomers,
+    isLoading: isLoadingAllCustomers,
+    refetch,
+  } = useQuery({
     queryKey: ["allCustomers"],
     queryFn: async () => {
       return client
@@ -139,7 +142,7 @@ const Customers = () => {
           {},
         ) //populate this based onthee org
         .then((response: AxiosResponse<customer[], any>) => {
-          console.log(response);
+          // console.log(response);
           setFilteredCustomer(response.data);
           return response.data;
         })
@@ -148,6 +151,7 @@ const Customers = () => {
           throw error;
         });
     },
+    staleTime: 5000,
   });
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchResult(e.target.value);
@@ -177,7 +181,6 @@ const Customers = () => {
     }
   };
 
- 
   const paginatedCustomers = filteredCustomers?.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
@@ -199,25 +202,10 @@ const Customers = () => {
     }
   };
 
-  // CUstomer Creation Process Starts
-  const [userCreated, setUserCreated] = useState(false);
-  const CreateNewCustomer = () => {
-    return (
-      <Modal setModalState={setModalState} title="Create a new customer">
-        <div className="px-[10%]">
-          {userCreated ? (
-            <Kyc />
-          ) : (
-            <CreateCustomer
-            setCloseModal={setModalState}
-              setUserCreated={setUserCreated}
-              organizationId={organisationId}
-            />
-          )}
-        </div>
-      </Modal>
-    );
-  };
+  useEffect(() => {
+    // Calling refetch to rerun the allCustomers query
+    refetch();
+  }, [isCustomerCreated, refetch]);
 
   return (
     <>
@@ -241,7 +229,6 @@ const Customers = () => {
                 // "Status",
               ]}
             />
-            {/* <SearchInput onSearch={handleSearch}/> */}
 
             <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
               <input
@@ -275,11 +262,10 @@ const Customers = () => {
             label="Create New Customer"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
             onButtonClick={() => {
-              // setModalState(true);
+              setModalState(true);
               setModalToShow("create-customer");
             }}
           />
-          {modalToShow === "create-customer" && <CreateNewCustomer />}
         </div>
 
         <div className="">
@@ -364,12 +350,6 @@ const Customers = () => {
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {customer.organisation || "----"}
                 </td>
-                <td>
-                  <CustomerAction
-                  index={index}
-                  customerId={customer._id}
-                  />
-                </td>
 
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   <StatusIndicator
@@ -436,7 +416,9 @@ const Customers = () => {
                       ? "Edit Customer"
                       : modalToShow === "savings"
                         ? "Savings Set Up"
-                        : ""
+                        : modalToShow === "create-customer"
+                          ? "Create Customer"
+                          : ""
               }
             >
               {modalToShow === "view" ? (
@@ -466,6 +448,24 @@ const Customers = () => {
                   }
                   closeModal={setModalState}
                 />
+              ) : modalToShow === "create-customer" ? (
+                <>
+                  {!isCustomerCreated ? (
+                    <div className="px-[10%]">
+                      <CreateCustomer
+                        setCloseModal={setModalState}
+                        setCustomerCreated={setIsCustomerCreated}
+                      />
+                    </div>
+                  ) : (
+                    <ModalConfirmation
+                      successTitle="Customer creation successful"
+                      errorTitle="Customer Creation Failed"
+                      status={isCustomerCreated ? "success" : "failed"}
+                      responseMessage=""
+                    />
+                  )}
+                </>
               ) : (
                 ""
               )}
@@ -506,13 +506,6 @@ const Customers = () => {
               >
                 <MdKeyboardArrowRight />
               </button>
-
-              {/* <button
-                className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-                onClick={() => dispatch(setCurrentPage(currentPage + 6))}
-              >
-                {currentPage + 6}
-              </button> */}
             </div>
             {/* <PaginationBar apiResponse={DummyCustomers} /> */}
           </div>
@@ -937,7 +930,7 @@ export const ViewCustomer = ({
   content,
   closeModal,
 }: ShowModalProps) => {
-  console.log(customerId);
+  // console.log(customerId);
 
   const { client } = useAuth();
   const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
@@ -946,6 +939,7 @@ export const ViewCustomer = ({
       return client
         .get(`/api/user/${customerId}`)
         .then((response: AxiosResponse<customer, any>) => {
+          // console.log(response.data);
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -963,13 +957,13 @@ export const ViewCustomer = ({
         <div className="rounded-lg md:border">
           <div className="p-6 md:flex ">
             <div className="mr-6 md:w-1/6 ">
-              {/* <Image
+              <Image
                 src={customerInfo ? customerInfo?.photo : ""}
                 alt="Customer"
                 width={200}
                 height={100}
                 className="rounded-md"
-              /> */}
+              />
             </div>
             <div className="flex w-5/6 flex-wrap md:ml-4">
               <div className="mb-2 mt-2 w-full md:w-1/2">
@@ -1121,20 +1115,21 @@ export const ViewCustomer = ({
               </div>
             </div>
 
-            {/* <div className="w-[40%] border p-6 ml-8">
-          <p className="text-xl mt-2 mb-8 font-bold">Next of Kin Details</p>
+            <div className="ml-8 w-[40%] border p-6">
+              <p className="mb-8 mt-2 text-xl font-bold">
+                Means Of ID: {customerInfo?.meansOfID ?? ""}
+              </p>
 
-          <div className="">
-            <Image
-              src={ninslip}
-              alt="Customer"
-              width={270}
-              height={165}
-              className="rounded-md"
-            />
-          </div>
-
-          </div> */}
+              <div className="">
+                <Image
+                  src={customerInfo?.meansOfIDPhoto ?? ninslip}
+                  alt="Customer"
+                  width={270}
+                  height={165}
+                  className="rounded-md"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1231,9 +1226,7 @@ export const EditCustomer = ({
       if (!values.photo) {
         formData.append("photo", customerInfo?.photo); // Assuming photo is an array of File objects
       }
-      // if (values.meansOfID) {
-      //   formData.append("meansOfID", values.meansOfID[0]);
-      // }
+
       if (values.meansOfIDPhoto) {
         formData.append("meansOfIDPhoto", values.meansOfIDPhoto[0]);
       }
@@ -1330,21 +1323,7 @@ export const EditCustomer = ({
               state: Yup.string().required("Required"),
               lga: Yup.string().required("Required"),
               city: Yup.string().required("Required"),
-
               organisation: Yup.string().required("Required"),
-
-              //   meansOfIDPhoto: Yup.mixed().optional(), // For files, use mixed type
-              //   photo: Yup.mixed().optional(),
-              //   nin: Yup.string().optional(), // Assuming nin and bvn are strings
-              //   bvn: Yup.string().optional(),
-              //   ninslip: Yup.mixed().optional(),
-              //   nok: Yup.string().default(''), // Use default value '' for string fields
-              //   nokRelationship: Yup.string().default(''),
-              //   nokPhone: Yup.string().default(''),
-              //   popularMarket: Yup.string().default(''),
-              //   userType: Yup.string().default(''),
-              //   meansOfID: Yup.string().default(''),
-              //   bankAcctNo: Yup.string().default(''),
             })}
             onSubmit={(values, { setSubmitting }) => {
               console.log(values);
@@ -1370,14 +1349,6 @@ export const EditCustomer = ({
               >
                 <div className="p-6 md:flex ">
                   <div className="mr-6 md:w-1/6 ">
-                    {/* <Image
-              src={customerInfo ? customerInfo.photo : "/placeholder.png"}
-              alt="Customer"
-              width={200}
-              height={100}
-              className="rounded-md"
-            /> */}
-
                     <div className="">
                       <div className="mb-4 ">
                         {values.photo && values.photo[0] ? (
@@ -1424,11 +1395,6 @@ export const EditCustomer = ({
                         )}
                       </div>
                     </div>
-
-                    {/* <button className="w-full mt-8 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded  items-center">
-              
-              <span>Download</span>
-            </button> */}
                   </div>
                   <div className="mt-8 flex w-5/6 flex-wrap md:mx-16">
                     <div className="mb-8">
@@ -1505,32 +1471,6 @@ export const EditCustomer = ({
                           </span>
                         </label>
                         <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-                          {/* <span className="flex h-full select-none items-center gap-2 text-gray-400 sm:text-sm">
-          <svg
-            width="20"
-            height="16"
-            viewBox="0 0 20 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-100 f-100"
-          >
-            <path
-              d="M1 1.45C1 1.33954 1.08954 1.25 1.2 1.25H18.8C18.9105 1.25 19 1.33954 19 1.45V14.55C19 14.6605 18.9105 14.75 18.8 14.75H1.2C1.08954 14.75 1 14.6605 1 14.55V1.45Z"
-              fill="white"
-            />
-            <path
-              d="M1 2.05C1 1.60817 1.35817 1.25 1.8 1.25H6.29677C6.7386 1.25 7.09677 1.60817 7.09677 2.05V13.95C7.09677 14.3918 6.7386 14.75 6.29677 14.75H1.8C1.35817 14.75 1 14.3918 1 13.95V2.05ZM12.9032 2.05C12.9032 1.60817 13.2614 1.25 13.7032 1.25H18.2C18.6418 1.25 19 1.60817 19 2.05V13.95C19 14.3918 18.6418 14.75 18.2 14.75H13.7032C13.2614 14.75 12.9032 14.3918 12.9032 13.95V2.05Z"
-              fill="#186648"
-            />
-            <path
-              d="M1 1.45C1 1.33954 1.08954 1.25 1.2 1.25H18.8C18.9105 1.25 19 1.33954 19 1.45V14.55C19 14.6605 18.9105 14.75 18.8 14.75H1.2C1.08954 14.75 1 14.6605 1 14.55V1.45Z"
-              stroke="#131313"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          +234
-        </span> */}
                           <Field
                             id="phoneNumber"
                             name="phoneNumber"
@@ -1679,11 +1619,6 @@ export const EditCustomer = ({
                                 {lga}
                               </option>
                             ))}
-                          {/* {selectedLGAArray && selectedStateArray.map((lga) => (
-              <option>
-
-              </option>
-            )) } */}
                         </Field>
                         <ErrorMessage
                           name="lga"
@@ -1749,47 +1684,6 @@ export const EditCustomer = ({
                           />
                         </div>
                       }
-
-                      {/* <div className="mb-3">
-        <label
-          htmlFor="image"
-          className="text-md block font-medium "
-        >
-          Identification Document Upload
-        </label>
-        <div className="mt-1 justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5">
-          <input
-            type="file"
-            name="image"
-            id="image"
-            className="hidden"
-            onChange={(e) =>
-              setFieldValue("meansOfIDPhoto", e.target.files)
-            }
-            accept="image/*"
-          />
-          <label htmlFor="image" className="cursor-pointer">
-            <p className="text-center ">
-              Drag n drop an image here, or click to select one
-            </p>
-          </label>
-          <div>
-          {values.meansOfIDPhoto && values.meansOfIDPhoto[0] && (
-            <Image
-              src={URL.createObjectURL(values.meansOfIDPhoto[0])}
-              alt="Product"
-              className="max-w-full"
-              style={{ maxWidth: "100%" }}
-              width={300}
-              height={200}
-            />
-          )}</div>
-        </div>
-        <div className="text-xs text-red-600">
-          <ErrorMessage name="meansOfIDPhoto" />
-        </div>
-      </div> */}
-
                       <div className="mb-3">
                         <label htmlFor="nin" className="m-0 text-xs font-bold ">
                           NIN number
@@ -1870,14 +1764,6 @@ export const EditCustomer = ({
                         </div>
                       </div>
                     </div>
-                    {/* <CustomButton
-    type="submit"
-    style="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
-    label={isSubmitting ? 'Creating account...' : 'Create account'}
-  />
-  {showSuccessToast && successMessage && <SuccessToaster message={successMessage ? successMessage : "Account Created successfully!"} />}
-     {showErrorToast && errorMessage && errorMessage && <ErrorToaster message={errorMessage? errorMessage : "Error creating organization"} />}
-*/}
 
                     {/* Submit Button */}
 
@@ -1911,5 +1797,726 @@ export const EditCustomer = ({
         )}
       </div>
     </div>
+  );
+};
+
+const CreateCustomer = ({
+  setCustomerCreated,
+  setCloseModal,
+}: {
+  setCloseModal: Dispatch<SetStateAction<boolean>>;
+  setCustomerCreated: Dispatch<SetStateAction<boolean>>;
+}) => {
+  const { client } = useAuth();
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedStateArray, setselectedStateArray] = useState<StateProps[]>(
+    [],
+  );
+  const [selectedState, setSelectedState] = useState("");
+  const organizationId = useSelector(selectOrganizationId);
+  console.log("ID:  " + organizationId);
+  const [selectedLGAArray, setSelectesLGAArray] = useState<string[]>([]);
+
+  const initialValues: UpdateKycProps = {
+    firstName: "",
+    lastName: "",
+    otherName: "",
+    phoneNumber: "",
+    email: "",
+    country: "",
+    state: "",
+    lga: "",
+    city: "",
+    popularMarket: "",
+    nok: "",
+    nokRelationship: "",
+    nokPhone: "",
+    homeAddress: "",
+    photo: null,
+    meansOfID: "",
+    meansOfIDPhoto: null,
+    nin: "",
+    bvn: "",
+    bankAcctNo: "",
+    organisation: "",
+    userType: "individual",
+  };
+
+  const MyEffectComponent = ({ formikValues }: { formikValues: any }) => {
+    useEffect(() => {
+      // This function will run whenever the value of 'formikValues.myField' changes
+      setSelectedCountry(formikValues.country);
+      setSelectedState(formikValues.state);
+    }, [formikValues]); // Add 'formikValues.myField' as a dependency
+
+    return null; // Since this is a utility component, it doesn't render anything
+  };
+
+  useEffect(() => {
+    const filteredStates =
+      StatesAndLGAs.find((country) => country.country === selectedCountry)
+        ?.states || [];
+
+    setselectedStateArray(filteredStates);
+  }, [selectedCountry]);
+
+  useEffect(() => {
+    // Find the Country object in the dataset
+    const CountryObject = StatesAndLGAs.find(
+      (countryData) => countryData.country === selectedCountry,
+    );
+    if (CountryObject) {
+      const stateObject = CountryObject.states.find(
+        (state) => state.name === selectedState,
+      );
+      // If state is found, return its LGAs
+      if (stateObject) {
+        console.log(stateObject.lgas);
+        setSelectesLGAArray(stateObject.lgas);
+      } else {
+        // If state is not found, return an empty array
+      }
+    }
+  }, [selectedCountry, selectedState]);
+
+  const {
+    mutate: createNewCustomer,
+    isPending,
+    isError,
+  } = useMutation({
+    mutationKey: ["create-customer"],
+    mutationFn: async (values: UpdateKycProps) => {
+      const formData = new FormData();
+
+      // Append all the fields to the formData
+      formData.append("firstName", values.firstName);
+      formData.append("lastName", values.lastName);
+      formData.append("otherName", values.otherName);
+      formData.append("phoneNumber", values.phoneNumber);
+      formData.append("email", values.email);
+      formData.append("country", values.country);
+      formData.append("state", values.state);
+      formData.append("lga", values.lga);
+      formData.append("city", values.city);
+      formData.append("popularMarket", values.popularMarket);
+      formData.append("nok", values.nok);
+      formData.append("nokRelationship", values.nokRelationship);
+      formData.append("nokPhone", values.nokPhone);
+      formData.append("homeAddress", values.homeAddress);
+      formData.append("userType", values.userType);
+      formData.append("organisation", organizationId);
+      formData.append("nin", values.nin);
+      formData.append("bvn", values.bvn);
+      formData.append("meansOfID", values.meansOfID);
+      formData.append("bankAcctNo", values.bankAcctNo);
+      // Append images
+      if (values.photo) {
+        formData.append("photo", values.photo[0]); // Assuming photo is an array of File objects
+      }
+
+      if (values.meansOfIDPhoto) {
+        formData.append("meansOfIDPhoto", values.meansOfIDPhoto[0]);
+      }
+      return client.post(`/api/user/create-customer`, formData);
+    },
+
+    onSuccess(response) {
+      console.log(response);
+      console.log("customer created successfully");
+      setCustomerCreated(true);
+      setTimeout(() => {
+        setCloseModal(false);
+      }, 5000);
+    },
+
+    onError(error: AxiosError<any, any>) {
+      setCustomerCreated(false);
+      if (error.response?.status === 413) {
+        console.log("Request Entity Too Large (413 Error)");
+        console.log(
+          "Custom error message: The file you're trying to upload is too large.",
+        );
+      } else {
+        console.log("Other error occurred:", error);
+      }
+      console.log(error.response?.data.message);
+    },
+  });
+
+  return (
+    <Formik
+      initialValues={initialValues}
+      validationSchema={Yup.object({
+        firstName: Yup.string().required("First Name is required"),
+        lastName: Yup.string().required("Last Name is required"),
+        phoneNumber: Yup.string()
+          .matches(
+            /^(?:\+234\d{10}|\d{11})$/,
+            "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
+          )
+          .required("Phone number is required"),
+        email: Yup.string()
+          .email("Invalid email address")
+          .required("Email is required"),
+        country: Yup.string().required("Required"),
+        state: Yup.string().required("Required"),
+        lga: Yup.string().required("Required"),
+        city: Yup.string().required("Required"),
+        popularMarket: Yup.string().required("Required"),
+        nok: Yup.string().required("Required"),
+        nokRelationship: Yup.string().required("Required"),
+        nokPhone: Yup.string().required("Required"),
+        homeAddress: Yup.string().required("Required"),
+        photo: Yup.mixed()
+          .required("Required")
+          .test(
+            "fileSize",
+            "File size must be less than 2MB",
+            (value: MyFileList) => {
+              if (value) {
+                return value[0].size <= 2097152;
+              }
+              return true;
+            },
+          ),
+        meansOfID: Yup.string().required("Required"),
+        meansOfIDPhoto: Yup.mixed()
+          .required("Means of ID photo is required")
+          .test(
+            "fileSize",
+            "File size must be less than 2MB",
+            (value: MyFileList) => {
+              if (value) {
+                return value[0].size <= 2097152;
+              }
+              return true;
+            },
+          ),
+        nin: Yup.string().optional(),
+        bvn: Yup.string().optional(),
+        bankAcctNo: Yup.string().required("Required"),
+      })}
+      onSubmit={(values, { setSubmitting }) => {
+        console.log("submitting........");
+        createNewCustomer(values);
+        setTimeout(() => {
+          // console.log(values);
+          setSubmitting(false);
+        }, 400);
+      }}
+    >
+      {({
+        isSubmitting,
+        handleChange,
+        handleSubmit,
+        values,
+        errors,
+        setFieldValue,
+      }) => (
+        <Form
+          className="mt-8"
+          onSubmit={handleSubmit}
+          encType="multipart/form-data"
+          name="image"
+        >
+          <div className="flex w-full items-center justify-between gap-4">
+            <div className="mb-3 w-1/2">
+              <label
+                htmlFor="firstName"
+                className="m-0 text-xs font-medium text-white"
+              >
+                First Name{" "}
+                <span className="font-base font-semibold text-[#FF0000]">
+                  *
+                </span>
+              </label>
+              <Field
+                id="firstName"
+                name="firstName"
+                type="text"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="firstName"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+            <div className="mb-3 w-1/2">
+              <label
+                htmlFor="lastName"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Last Name{" "}
+                <span className="font-base font-semibold text-[#FF0000]">
+                  *
+                </span>
+              </label>
+              <Field
+                id="lastName"
+                name="lastName"
+                type="text"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="lastName"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <label
+              htmlFor="otherName"
+              className="m-0 text-xs font-medium text-white"
+            >
+              Other Names
+            </label>
+            <Field
+              id="otherName"
+              name="otherName"
+              type="text"
+              className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+            />
+          </div>
+
+          <div className="mb-3">
+            <label
+              htmlFor="phoneNumber"
+              className="m-0 text-xs font-medium text-white"
+            >
+              Phone Number{" "}
+              <span className="font-base font-semibold text-[#FF0000]">*</span>
+            </label>
+            <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+              <Field
+                id="phoneNumber"
+                name="phoneNumber"
+                type="tel"
+                className="bg-transparent outline-none"
+              />
+            </div>
+            <ErrorMessage
+              name="phoneNumber"
+              component="div"
+              className="text-red-500"
+            />
+          </div>
+
+          <div className="mb-3">
+            <label
+              htmlFor="email"
+              className="m-0 text-xs font-medium text-white"
+            >
+              Email address{" "}
+              <span className="font-base font-semibold text-[#FF0000]">*</span>
+            </label>
+            <Field
+              id="email"
+              name="email"
+              type="email"
+              className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+            />
+            <ErrorMessage
+              name="email"
+              component="div"
+              className="text-red-500"
+            />
+          </div>
+          {/* Personal Details Fields */}
+          <div className="mb-8">
+            <div className="mb-3">
+              <label
+                htmlFor="country"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Country of Residence
+              </label>
+              <Field
+                onChange={handleChange}
+                as="select"
+                isInvalid={!!errors.country}
+                name="country"
+                id="country"
+                // type="text"
+                placeholder="country"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              >
+                <option>Select Country</option>
+                {StatesAndLGAs &&
+                  StatesAndLGAs.map((countries) => (
+                    <option key={countries.country} value={countries.country}>
+                      {countries.country}
+                    </option>
+                  ))}
+              </Field>
+              <ErrorMessage
+                name="country"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+            {/* Add more fields for personal details */}
+
+            <div className="mb-3">
+              <label
+                htmlFor="state"
+                className="m-0 text-xs font-medium text-white"
+              >
+                State
+              </label>
+              <Field
+                as="select"
+                id="state"
+                name="state"
+                // type="text"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              >
+                <option>Select State</option>
+
+                {selectedStateArray &&
+                  selectedStateArray.map((state) => (
+                    <option key={state.name} value={state.name}>
+                      {state.name}
+                    </option>
+                  ))}
+              </Field>
+              <ErrorMessage
+                name="state"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+            <div className="mb-3">
+              <label
+                htmlFor="lga"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Local Government Area (lga)
+              </label>
+              <Field
+                as="select"
+                id="lga"
+                name="lga"
+                // type="text"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              >
+                <option>Select LGA</option>
+
+                {selectedLGAArray &&
+                  selectedLGAArray.map((lga) => (
+                    <option key={lga} value={lga}>
+                      {lga}
+                    </option>
+                  ))}
+                {/* {selectedLGAArray && selectedStateArray.map((lga) => (
+                        <option>
+
+                        </option>
+                      )) } */}
+              </Field>
+              <ErrorMessage
+                name="lga"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+            <div className="mb-3">
+              <label
+                htmlFor="city"
+                className="m-0 text-xs font-medium text-white"
+              >
+                City/Town
+              </label>
+              <Field
+                name="city"
+                type="text"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="city"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+            <div className="mb-3">
+              <label
+                htmlFor="popularMarket"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Popular market/bus park/religion centre/event centre/place in
+                your locality
+              </label>
+              <Field
+                name="popularMarket"
+                type="text"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="popularMarket"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <div className="mb-3">
+              <label
+                htmlFor="nok"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Next Of Kin
+              </label>
+              <Field
+                name="nok"
+                type="text"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="nok"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+            {/* Add more fields for next of kin details */}
+            <div className="mb-3">
+              <label
+                htmlFor="nokRelationship"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Relationship to Next of Kin
+              </label>
+              <Field
+                name="nokRelationship"
+                type="text"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="nokRelationship"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+            <div className="mb-3">
+              <label
+                htmlFor="nokPhoneNumber"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Next of Kin Phone number
+              </label>
+              <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                <Field
+                  name="nokPhone"
+                  id="kin-phone"
+                  type="tel"
+                  className=" bg-transparent outline-none"
+                />
+              </div>
+              <ErrorMessage
+                name="nokPhoneNumber"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+            <div className="mb-3">
+              <label
+                htmlFor="homeAddress"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Home address
+              </label>
+              <Field
+                name="homeAddress"
+                type="text"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="homeAddress"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <div className="">
+              <label
+                htmlFor="photo"
+                className="text-md block font-medium text-white"
+              >
+                Photo
+              </label>
+              <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5">
+                <input
+                  type="file"
+                  name="photo"
+                  id="photo"
+                  className="hidden"
+                  onChange={(e) => setFieldValue("photo", e.target.files)}
+                  accept="image/*"
+                />
+                <label htmlFor="photo" className="cursor-pointer">
+                  <p className="text-center text-white">
+                    Drag n drop an image here, or click to select one
+                  </p>
+                </label>
+                {values.photo && values.photo[0] && (
+                  <Image
+                    src={URL.createObjectURL(values.photo[0])}
+                    alt="Product"
+                    className="max-w-full"
+                    style={{ maxWidth: "100%" }}
+                    width={100}
+                    height={100}
+                  />
+                )}
+              </div>
+              <div className="text-red-500">
+                <ErrorMessage name="photo" />
+              </div>
+            </div>
+
+            <div className="mb-3 mt-4">
+              <label
+                htmlFor="meansOfID"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Select Identification Document type
+              </label>
+              <Field
+                as="select"
+                name="meansOfID"
+                className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+              >
+                <option className="hidden"></option>
+                <option value="International Passport">
+                  International Passport
+                </option>
+                <option value="Utility Bill">Utility Bill</option>
+                <option value="NIN">NIN</option>
+                <option value="Drivers License">Drivers License</option>
+                <option value="Voters Card">Voters Card</option>
+                <option value="Association Membership ID">
+                  Association Membership ID
+                </option>
+                <option value="School ID">School ID</option>
+              </Field>
+              <ErrorMessage
+                name="meansOfID"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+
+            <div className="mb-3">
+              <label
+                htmlFor="image"
+                className="text-md block font-medium text-white "
+              >
+                {!values.meansOfID ? "Means  of Id" : values.meansOfID} Photo
+              </label>
+              <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5">
+                <input
+                  type="file"
+                  name="image"
+                  id="image"
+                  className="hidden"
+                  onChange={(e) =>
+                    setFieldValue("meansOfIDPhoto", e.target.files)
+                  }
+                  accept="image/*"
+                />
+                <label htmlFor="image" className="cursor-pointer">
+                  <p className="text-center text-white">
+                    Drag n drop an image here, or click to select one
+                  </p>
+                </label>
+                {values.meansOfIDPhoto && values.meansOfIDPhoto[0] && (
+                  <Image
+                    src={URL.createObjectURL(values.meansOfIDPhoto[0])}
+                    alt="Product"
+                    className="max-w-full"
+                    style={{ maxWidth: "100%" }}
+                    width={100}
+                    height={100}
+                  />
+                )}
+              </div>
+              <div className="text-red-500">
+                <ErrorMessage name="meansOfIDPhoto" className="text-red-500" />
+              </div>
+            </div>
+
+            <div className="mb-3">
+              <label
+                htmlFor="nin"
+                className="m-0 text-xs font-medium text-white"
+              >
+                NIN number
+              </label>
+              <Field
+                name="nin"
+                type="text"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="nin"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+            <div className="mb-3">
+              <label
+                htmlFor="bvn"
+                className="m-0 text-xs font-medium text-white"
+              >
+                BVN number
+              </label>
+              <Field
+                name="bvn"
+                type="text"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="bvn"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+            <div className="mb-3">
+              <label
+                htmlFor="bankAcctNo"
+                className="m-0 text-xs font-medium text-white"
+              >
+                Bank Account Number (All withdrawals will be made into this
+                account)
+              </label>
+              <Field
+                name="bankAcctNo"
+                type="text"
+                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              />
+              <ErrorMessage
+                name="bankAcctNo"
+                component="div"
+                className="text-red-500"
+              />
+            </div>
+          </div>
+
+          {/* Submission buttons */}
+          <button
+            type="submit"
+            className="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
+            disabled={isSubmitting}
+          >
+            {isSubmitting || isPending ? "Creating Customer......" : "Submit"}
+          </button>
+          <MyEffectComponent formikValues={values} />
+        </Form>
+      )}
+    </Formik>
   );
 };
