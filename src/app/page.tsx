@@ -20,7 +20,7 @@ export default function Home() {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       setHost(url.host);
-      // console.log("host", host);
+      console.log("host", host);
     }
 
     if (host === "finkia.com.ng" || host === "staging.finkia.com.ng") {
