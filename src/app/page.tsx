@@ -25,7 +25,7 @@ export default function Home() {
       console.log("host", host);
     }
 
-    if (host === "finkia.com.ng" || host === "staging.finkia.com.ng") {
+    if (host === "www.finkia.com.ng" || host === "staging.finkia.com.ng") {
       setHomePageToShow("finkia");
     } else {
       setHomePageToShow("portal");
