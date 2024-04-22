@@ -1,10 +1,9 @@
 "use client";
 import Banner from "@/components/Banner";
-import VerifyOrgSubdomain from "@/utils/VerifyOrgSubdomain";
 import Link from "next/link";
 
 const Landing = () => {
-  VerifyOrgSubdomain();
+  // VerifyOrgSubdomain();
   return (
     <main className="md:flex">
       <Banner />

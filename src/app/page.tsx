@@ -1,11 +1,13 @@
 "use client";
 import HomePage from "@/modules/HomePage/homePage";
 // import { tailspin } from "ldrs";
+import VerifyOrgSubdomain from "@/utils/VerifyOrgSubdomain";
 import type {} from "ldrs";
 import { useEffect, useState } from "react";
 import Landing from "./landing";
 
 export default function Home() {
+  VerifyOrgSubdomain();
   const [homePageToShow, setHomePageToShow] = useState("");
   const [isHomepageSet, setIsHomepageSet] = useState(false);
   const [host, setHost] = useState("");
