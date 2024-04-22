@@ -1,28 +1,20 @@
 "use client";
-import DummyTransactions from "@/api/dummyTransactions.json";
 import { useAuth } from "@/api/hooks/useAuth";
-import Alert from "@/components/Alert";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
-import { SearchInput } from "@/components/Forms";
 import Modal from "@/components/Modal";
-import PaginationBar from "@/components/Pagination";
-import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
-import AmountFormatter from "@/utils/AmountFormatter";
-import { useQuery } from "@tanstack/react-query";
-import { Session } from "inspector";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ChangeEvent, Suspense, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { selectUserId } from "@/slices/OrganizationIdSlice";
 import { allSavingsResponse } from "@/types";
-import { AxiosError } from "axios";
+import AmountFormatter from "@/utils/AmountFormatter";
 import { extractDate, extractTime } from "@/utils/TimeStampFormatter";
-import { MdKeyboardArrowLeft } from "react-icons/md";
-import { MdKeyboardArrowRight } from "react-icons/md";
+import { useQuery } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
+import { ChangeEvent, Suspense, useEffect, useState } from "react";
 import { CiExport } from "react-icons/ci";
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import { useSelector } from "react-redux";
 
 const CustomerDashboard = () => {
   const PAGE_SIZE = 5;
@@ -58,15 +50,12 @@ const CustomerDashboard = () => {
           return response.data;
         })
         .catch((error) => {
-         
           throw error;
         });
     },
   });
 
-
   // console.log(LoggedInUser)
-
 
   const { data: allSavings, isLoading: isLoadingAllSavings } = useQuery({
     queryKey: ["allSavings"],
@@ -75,23 +64,20 @@ const CustomerDashboard = () => {
       return client
         .get(`/api/saving/get-savings`)
         .then((response) => {
-
           // setFilteredSavings(response.data.savings)
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-       
           throw error;
         });
     },
   });
 
   useEffect(() => {
-
     if (allSavings?.savings) {
       // Check if Savings?.savings is not undefined or null
       const filtered = allSavings.savings.filter(
-        (item: { user: { _id: string } }) => item.user._id === id,
+        (item: { user: { _id: string } }) => item?.user?._id === id,
       );
       setCustomerSavings(filtered);
       setFilteredSavings(filtered);
@@ -103,7 +89,6 @@ const CustomerDashboard = () => {
 
     console.log(filteredSavings);
     if (filteredSavings) {
-
       const filtered = filteredSavings.filter((item) =>
         String(item.user.accountNumber).includes(String(e.target.value)),
       );
@@ -138,7 +123,7 @@ const CustomerDashboard = () => {
 
   if (!id) {
     // If id is not available yet, display loading indicator
-    return <div className="text-ajo_offWhite font-semibold">Loading...</div>;
+    return <div className="font-semibold text-ajo_offWhite">Loading...</div>;
   }
 
   // const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
