@@ -15,6 +15,7 @@ const Settings = () => {
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
     "form",
   );
+  
   return (
     <div className="">
       <div className="mb-4 space-y-2 ">
@@ -224,6 +225,7 @@ const SetUpSavingsForm = ({
     value: string,
     savingType: "named group" | "nameless group",
   ) => {
+    
     switch (name) {
       case "purposeName":
         if (!value.trim()) return "Savings purpose is required";

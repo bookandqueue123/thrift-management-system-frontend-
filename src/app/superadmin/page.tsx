@@ -210,7 +210,10 @@ export default function SuperAdminDashboard(){
                     {extractDate(organisation.createdAt)} 
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    
+                <CustomerAction
+                  index={index}
+                  customerId={organisation._id}
+                  />
                 </td>
             </tr>
         ))}

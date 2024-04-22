@@ -7,8 +7,13 @@ interface successModalProps{
     successText: string,
     title: string
     setShowModal: Dispatch<SetStateAction<boolean>>;
+    // setShowParentModal: Dispatch<SetStateAction<boolean>>
 }
-export default function SuccessModal({successText, title, setShowModal}: successModalProps){
+export default function SuccessModal({successText, title, setShowModal, }: successModalProps){
+    // function handleButtonClick(){
+    //     setShowParentModal(false)
+    //     setShowModal(false)
+    //    }
     return(
         <div>
             <Modal

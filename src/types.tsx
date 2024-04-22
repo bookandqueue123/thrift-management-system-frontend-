@@ -1,4 +1,5 @@
 export type customer = {
+  organisationName?: string;
   _id: string;
   firstName: string;
   lastName: string;

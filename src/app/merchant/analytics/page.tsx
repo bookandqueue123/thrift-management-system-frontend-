@@ -8,6 +8,7 @@ import CreateCommissionForm from "@/modules/superAdmin/CreateCommission";
 import ViewCommission from "@/modules/superAdmin/ViewCommission";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 import { allSavingsResponse } from "@/types";
+import AmountFormatter from "@/utils/AmountFormatter";
 import { useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import Link from "next/link";
@@ -421,7 +422,7 @@ export default function Analytics(){
                 {days.map((day) => (
                   <td key={day} className="whitespace-nowrap px-6 py-4 text-sm">
                   {filterDatesWithMonthAndDay(transaction.savedDates, selectedYear.value, selectedMonth.value, day)
-                      ? transaction.amount
+                      ? AmountFormatter(transaction.amount)
                       : '---'}
               </td>
               

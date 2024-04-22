@@ -85,6 +85,7 @@ const CustomerDashboard = () => {
         });
     },
   });
+  console.log(allSavings)
 
   useEffect(() => {
 

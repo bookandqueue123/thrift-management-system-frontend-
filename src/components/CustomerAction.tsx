@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StatusIndicator } from "./StatusIndicator";
-import Modal from "./Modal";
+import Modal, { NoBackgroundModal } from "./Modal";
 import { EditCustomer, SavingsSettings, ViewCustomer } from "@/modules/merchant/customer/CustomerPage";
 
 
@@ -79,7 +79,7 @@ export default function CustomerAction({index, customerId}: CustomerActionProps)
             />
 
         {modalState && (
-            <Modal
+            <NoBackgroundModal
               setModalState={setModalState}
               title={
                 modalContent === "confirmation"
@@ -123,7 +123,7 @@ export default function CustomerAction({index, customerId}: CustomerActionProps)
               ) : (
                 ""
               )}
-            </Modal>
+            </NoBackgroundModal>
           )}
         </div>
     )
