@@ -17,7 +17,7 @@ export const useAuth = () => {
   const client = axios.create({
     baseURL: BASE_URL,
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2MjdiNTVkMTZhZWVlOGEwOTM0OTE4NSIsImlhdCI6MTcxMzg4MDcxM30.5-8PveMPknEXHM4cJBIZQt1plo6yiIpCQdhdW5x-U_M`,
     },
   });
 
