@@ -7,13 +7,18 @@ interface errorModalProps{
     errorText: string,
     title: string,
     setShowModal: Dispatch<SetStateAction<boolean>>;
+    // setShowParentModal: Dispatch<SetStateAction<boolean>> 
 }
 export default function ErrorModal({errorText, title, setShowModal}: errorModalProps){
+//    function handleButtonClick(){
+//     setShowParentModal(false)
+//     setShowModal(false)
+//    }
     return(
         <div>
             <Modal
                 title={title}
-                setModalState={() =>setShowModal(false)}
+                setModalState={() => setShowModal(false)}
             >
              <div className="mx-auto mt-[10%] flex h-full w-1/2 flex-col items-center justify-center space-y-8">
             <Image

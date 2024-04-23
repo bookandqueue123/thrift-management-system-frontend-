@@ -70,6 +70,19 @@ const Form = () => {
       
       setShowModal(true)
       // router.push(`/signin`);
+      setFormData({
+        accountType: 'individual',
+    percentageBased: '',
+    amountBased: '',
+    accountNumber: '',
+    accountName: '',
+    purpose: '',
+    amount: '',
+    frequency: '',
+    startDate: '',
+    endDate: '',
+    collectionDate: ''
+      })
     },
     onError(error: AxiosError<any, any>) {
       setShowError(true)

@@ -1,5 +1,5 @@
 
- 'use client'
+'use client'
 import { useAuth } from '@/api/hooks/useAuth';
 import { CustomButton } from '@/components/Buttons';
 import ErrorModal from '@/components/ErrorModal';
@@ -9,18 +9,12 @@ import { selectOrganizationId } from '@/slices/OrganizationIdSlice';
 import { customer } from '@/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { AxiosError, AxiosResponse } from 'axios';
+
 import Image from 'next/image';
-import { ChangeEvent, ChangeEventHandler, FormEvent, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ChangeEvent, ChangeEventHandler, Dispatch, FormEvent, SetStateAction, useEffect, useState } from 'react';
 import { IoMdSearch } from 'react-icons/io';
 import { useSelector } from 'react-redux';
-
-// import { CustomButton } from "@/components/Buttons";
-// import ErrorModal from "@/components/ErrorModal";
-// import Modal, { NoBackgroundModal } from "@/components/Modal";
-// import SuccessModal from "@/components/SuccessModal";
-// import SetUpSavingsAndAdminFee from "@/modules/settings/SetupAdminFee";
-// import Image from "next/image";
-// import { useState } from "react";
 
 interface setUpSavingsProps{
   accountType: string,
@@ -37,8 +31,16 @@ interface setUpSavingsProps{
     collectionDate: string,
     userId: string
 }
-const Form = () => {
-  const { client } = useAuth();
+
+interface SetUpSavingsAndAdminFeeProps{
+    // closeModal:  Dispatch<SetStateAction<boolean>>;
+    setShowErrorModal:Dispatch<SetStateAction<boolean>>
+    setShowSuccessModal: Dispatch<SetStateAction<boolean>>
+    setContent: Dispatch<SetStateAction<"form" | "confirmation">>
+}
+const SetUpSavingsAndAdminFee = ({setContent, setShowErrorModal, setShowSuccessModal}: SetUpSavingsAndAdminFeeProps) => {
+  const router = useRouter()
+    const { client } = useAuth();
   const organisationId = useSelector(selectOrganizationId);
 
   const [showModal, setShowModal] = useState(false)
@@ -102,30 +104,23 @@ const Form = () => {
       });
     },
     onSuccess(response: AxiosResponse<any, any>) {
-      setShowSuccessToast(true);
+    //   setShowSuccessToast(true);
+    setShowSuccessToast(true)
       setSuccessMessage(response.data.message);
-      console.log(response);
-      setShowModal(true)
+      setShowSuccessModal(true)
+      setContent("confirmation")
       
+      setTimeout(() => {
+        router.push("/settings/setup-adminfee")
+      }, 30)
+    //   closeModal(false)
+    //   setShowModal(true)
       // router.push(`/signin`);
-      setFormData({
-        accountType: 'individual',
-    percentageBased: '',
-    amountBased: '',
-    accountNumber: '',
-    accountName: '',
-    purpose: '',
-    amount: '',
-    userId: '',
-    frequency: '',
-    startDate: '',
-    endDate: '',
-    totalexpectedSavings: '',
-    collectionDate: ''
-      })
     },
     onError(error: AxiosError<any, any>) {
-      setShowError(true)
+        // closeModal(false)
+    //   setShowError(true)
+     setShowErrorModal(true)
       setShowErrorToast(true);
       setErrorMessage(                                   
         error.response?.data.message || "Error creating organization",
@@ -251,6 +246,7 @@ const Form = () => {
         title='Savings Set Up'
         successText='Savings set up Successfully'
         setShowModal={setShowModal}
+       
         />
       ): ""
     }
@@ -262,14 +258,14 @@ const Form = () => {
         />
       ): ""
       
-    }
+    } 
       
-      <div className="mb-4 space-y-2 md:ml-[15%]">
-        <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
+      <div className="mb-4 space-y-2 ">
+        {/* <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
           Settings
-        </p>
+        </p> */}
       </div>
-      <div className='md:ml-[15%] bg-white mt-12'>
+      <div className='  mt-12'>
         <h2 className="font-bold p-4">SAVING SETUP AND ADMIN FEE</h2>
         <div className=" pl-12 pt-1">
         <h1 className="text-sm font-semibold mb-2">Admin Fee (Kindly select your most prefered administrative fee)</h1>
@@ -510,90 +506,4 @@ const Form = () => {
   );
 };
 
- export default Form;
-
-// export default function Page(){
-//   const [modalState, setModalState] = useState(false);
-//   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
-//     "form",
-//   );
-//   const [showSuccessModal, setShowSuccessModal] = useState(false)
-//   const [showErrorModal, setShowErrorModal] = useState(false)
-//   return(
-//     <div className="">
-//     <div className="mb-4 space-y-2 ">
-//       <p className="text-2xl font-bold text-ajo_offWhite text-opacity-60">
-//         Settings
-//       </p>
-//       <p className="text-sm font-bold text-ajo_offWhite">Savings settings</p>
-//     </div>
-//     <div className="mx-auto mt-[20%] flex h-screen w-[80%] flex-col items-center gap-8 md:mt-[10%] md:w-[40%]">
-//       <Image
-//         src="/receive-money.svg"
-//         alt="hand with coins in it"
-//         width={120}
-//         height={120}
-//         className="w-[5rem] md:w-[7.5rem]"
-//       />
-//       <p className="text-center text-sm text-ajo_offWhite">
-//         Create a savings group make all the necessary edits and changes. Use
-//         the button below to get started!
-//       </p>
-
-//       {/* <Link href="/merchant/settings/savings"> */}
-//       <CustomButton
-//         type="button"
-//         label="Savings SetUp"
-//         style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-//         onButtonClick={() => setModalState(true)}
-//       />
-//       {/* </Link> */}
-//     </div>
-//     {modalState && (
-//       <NoBackgroundModal
-//         setModalState={setModalState}
-
-//         title={ "Set Up Savings"}
-//       >
-//         {modalContent === 'confirmation' && showSuccessModal ? 
-//           <NoBackgroundModal
-//           setModalState={setModalState}
-//           // setShowParentModal={setModalState}
-          
-//           title={ ""}
-//         >
-        
-//           <SuccessModal
-//            setShowParentModal={setModalState}
-//           title='Savings Set Up'
-//           successText='Savings set up Successfully'
-//           setShowModal={setShowSuccessModal}
-
-//           />
-//           </NoBackgroundModal>
-//           : 
-//           modalContent === 'confirmation' && showErrorModal ? 
-//           <ErrorModal
-//            setShowParentModal={setModalState}
-//             title='Savings Set Up Error'
-//             errorText='Savings set up Failed'
-//             setShowModal={setShowErrorModal}
-
-//           />
-//           : modalContent === "form" ?
-//           <SetUpSavingsAndAdminFee
-//               setContent={setModalContent}
-//               // content={modalContent === "confirmation" ? "confirmation" : "form"}
-//               // closeModal={setModalState}
-//               setShowErrorModal={setShowErrorModal}
-//               setShowSuccessModal={setShowSuccessModal}
-//             />
-//             : ""
-//       }
-       
-       
-//       </NoBackgroundModal>
-//     )}
-//   </div>
-//   )
-// }
+export default SetUpSavingsAndAdminFee;

@@ -72,6 +72,7 @@ const CustomerDashboard = () => {
         });
     },
   });
+  console.log(allSavings)
 
   useEffect(() => {
     if (allSavings?.savings) {

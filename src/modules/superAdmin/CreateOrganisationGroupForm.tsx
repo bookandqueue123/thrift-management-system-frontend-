@@ -1,250 +1,427 @@
+import { useAuth } from "@/api/hooks/useAuth";
+import { CustomButton } from "@/components/Buttons";
+import ErrorModal from "@/components/ErrorModal";
+import { selectOrganizationId, selectUserId } from "@/slices/OrganizationIdSlice";
+import { FormErrors, FormValues, customer } from "@/types";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { AxiosResponse } from "axios";
+import Image from "next/image";
+import { Dispatch, SetStateAction, useState } from "react";
+import { useSelector } from "react-redux";
 
-'use client'  
-  import { Formik, Form, Field, ErrorMessage } from 'formik';
-  import * as Yup from 'yup';
-  import { useSelector } from "react-redux";
-  import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import { useAuth } from '@/api/hooks/useAuth';
-import { customer } from '@/types';
-import { useEffect, useState } from 'react';
-import { AxiosResponse } from 'axios';
-import { useQuery } from '@tanstack/react-query';
-  
-  const CreateOranisationGroupForm = ({
+interface SetUpSavingsProps {
+  setContent: Dispatch<SetStateAction<"form" | "confirmation">>;
+  content: "form" | "confirmation";
+  closeModal: Dispatch<SetStateAction<boolean>>;
+} 
+const CreateOranisationGroupForm = () => {
+  const organizationId = useSelector(selectOrganizationId);
+
+  const { client } = useAuth();
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [selectedOptions, setSelectedOptions] = useState<customer[]>([]);
+  const [displayConfirmationModal, setDisplayConfirmationMedal] =
+    useState(false);
+  const [errorMessage, setErrorMessage] = useState("")  
+  const [saveDetails, setSaveDetails] = useState({
     
-  }) => {
-    const organizationId = useSelector(selectOrganizationId)
-    console.log(organizationId)
-    const { client } = useAuth();
-    const [selectedOptions, setSelectedOptions] = useState<customer[]>([]);
+    groupName: "",
+    description: "",
+    startDate: "",
+    endDate: "",
+    collectionDate: "",
+    frequency: "",
+    // group:
+  });
+
+  const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target as
+      | HTMLInputElement
+      | HTMLSelectElement
+      | HTMLTextAreaElement;
+    setFormValues({ ...formValues, [name]: value });
+    setFormErrors({
+      ...formErrors,
+      [name]: validateField(
+        name,
+        value,
+        // saveDetails.savingsType as "named group" | "nameless group",
+      ),
+    });
+
+    const selectedId = value;
+    const selectedOption = users?.find((option) => option._id === selectedId);
+    if (!selectedOptions.some((option) => option._id === selectedOption?._id)) {
+      setSelectedOptions([...selectedOptions, selectedOption!]);
+    }
+  };
+  const handleRemoveOption = (index: number) => {
+    const updatedOptions = [...selectedOptions];
+    updatedOptions.splice(index, 1);
+    setSelectedOptions(updatedOptions);
+  };
+
+  const {data: users, isLoading: isUserLoading, isError} = useQuery({
+    queryKey: ["allUsers"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user?role=organisation`, {})
+        .then((response: AxiosResponse<customer[], any>) => {
+          
+          return response.data;
+        })
+        .catch((error) => {
+         
+          throw error;
+        })
+    }
+  })
   
-    // const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    //   const selectedId = e.target.value;
-    //   const selectedOption = users?.find((option) => option._id === selectedId);
-    //   if (!selectedOptions.some((option) => option._id === selectedOption?._id)) {
-    //     setSelectedOptions([...selectedOptions, selectedOption!]);
-    //   }
-    // };
-    console.log(selectedOptions)
+
+  const selectedIds = selectedOptions.map((option) => option._id);
+  const groupId = selectedIds[0];
+
+  const { mutate: postOrganisationGroups } = useMutation({
+    mutationFn: async () => {
+      
+      const payload = {
+        groupName: saveDetails.groupName,
+        description: saveDetails.description,
+        organizations: selectedIds
+      };
+      
+      return client.post(`api/user/create-organisation-group`, payload);
+    },
+    onSuccess: (response) => {
+      // console.log(response);
+      
+      // setContent("confirmation");
+      setDisplayConfirmationMedal(true);
+     
+    },
+    onError: (error:any) => {
+      
+      setErrorMessage(error.response.data.message)
+      // setContent("confirmation")
+      // setDisplayConfirmationMedal(true)
+      setShowErrorModal(true)
+      console.error("Error creating user:", error);
+      throw error;
+    },
+  });
+
   
-    const handleRemoveOption = (index: number) => {
-      const updatedOptions = [...selectedOptions];
-      updatedOptions.splice(index, 1);
-      setSelectedOptions(updatedOptions);
-    };
+  
+ 
+
+  // Input Validation States
+  const [formValues, setFormValues] = useState<FormValues>(saveDetails);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [isTouched, setIsTouched] = useState<{ [key: string]: boolean }>({});
+
+  const validateField = (
+    name: string,
+    value: string,
     
-  
-    const {data: users, isLoading: isUserLoading, isError} = useQuery({
-      queryKey: ["allUsers"],
-      queryFn: async () => {
-        return client
-          .get(`/api/user?organisation=${organizationId}&userType=individual`, {})
-          .then((response: AxiosResponse<customer[], any>) => {
-            
-            return response.data;
-          })
-          .catch((error) => {
-           
-            throw error;
-          })
+    // savingType: "named group" | "nameless group",
+  ) => {
+    if(selectedIds.length === 0) return "At least one user is required";
+    switch (name) {
+      case "groupName":
+        if (!value.trim()) return "Savings purpose is required";
+        break;
+      case "description":
+        if (!value.trim()) return "description is required";
+      
+        break;
+     
+      case "addCustomers":
+        if (selectedIds.length === 0) return "At least one user is required";
+        break;
+
+      default:
+        return "";
+    }
+
+    
+    return "";
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLElement>) => {
+    const { name, value } = e.target as
+      | HTMLInputElement
+      | HTMLSelectElement
+      | HTMLTextAreaElement;
+    setFormValues({ ...formValues, [name]: value });
+    setFormErrors({
+      ...formErrors,
+      [name]: validateField(
+        name,
+        value,
+        // saveDetails.savingsType as "named group" | "nameless group",
+      ),
+    });
+
+    // Initialize a variable to hold the processed value (initially, it's the same as the input value)
+    let processedValue = value;
+
+    // If the input field is 'description', remove commas and convert it to a number
+    if (name === "description") {
+      // Remove commas from the value using a regular expression
+      const unformattedValue = value.replace(/,/g, "");
+      // Parse the string to a floating point number
+      processedValue = parseFloat(unformattedValue).toString();
+    }
+
+    // Update the state 'saveDetails' with the new value, keeping previous state intact
+    setSaveDetails((prev) => ({ ...prev, [name]: processedValue }));
+  };
+
+  const handleInputFocus = (e: React.FocusEvent<HTMLElement>) => {
+    const { name, value } = e.target as
+      | HTMLInputElement
+      | HTMLSelectElement
+      | HTMLTextAreaElement;
+    setIsTouched({ ...isTouched, [name]: true });
+    setFormValues({ ...formValues, [name]: value });
+    setFormErrors({
+      ...formErrors,
+      [name]: validateField(
+        name,
+        value,
+        // saveDetails.savingsType as "named group" | "nameless group",
+      ),
+    });
+  };
+
+  const onSubmitHandler = (e: React.FormEvent) => {
+    console.log(saveDetails);
+    // console.log(organizationId);
+     
+    if (selectedIds.length === 0) {
+      setFormErrors((prevErrors) => ({
+        ...prevErrors,
+        addCustomers: "Please select at least one option",
+      }));
+    } 
+    e.preventDefault();
+
+    let isValid = true;
+    const newErrors: FormErrors = {};
+
+    Object.keys(formValues).forEach((key) => {
+      const error = validateField(
+        key,
+        formValues[key],
+        
+        // saveDetails.savingsType as "named group" | "nameless group",
+      );
+      if (error) {
+        isValid = false;
+        newErrors[key] = error;
       }
-    })
-    console.log(users)
-  
-      const selectedIds = selectedOptions.map(option => option._id);
-      // console.log('Selected IDs:', selectedIds);
-    
-  
-  
-    //   const {mutate: createGroups, isPending: isCreatingGroup, isError: createGroupError} = useMutation({
-    //     mutationKey: ["create Group"],
-    //     mutationFn: async (groupName:string) => {
-    //       return client.post(`/api/user/create-group`, {
-    //         groupName: groupName,
-    //         groupMember: selectedOptions,
-    //         organisation: organizationId
-    //       })
-    //     },
-  
-    //       onSuccess(response) {
-   
-        
-    //     setPostingResponse(response.data)
-    //     setPostingResponse(
-    //       (prev) =>
-    //         ({
-    //           ...prev,
-    //           ["status"]: "success",
-    //         }) as postSavingsResponse,
-    //     );
-    //     console.log("yes")
-    //     return response.data;
-    //   },
-    //   onError(error: any) {
-    //     setPostingResponse(error.response.data!)
-        
-    //     setPostingResponse(
-    //       (prev) =>
-    //         ({
-    //           ...prev,
-    //           ["status"]: "failed",
-    //         }) as postSavingsResponse,
-    //     );
+    });
+
+    setFormErrors((prevErrors) => {
+      return newErrors;
+    });
+
+    if (isValid) {
+      console.log("Form is valid, submitting...");
+      postOrganisationGroups()
+    } else {
       
-    //     throw error;
-    //   },
-    // })
-  
-  
-      
-  
-    // useEffect(() => {
-    //   if (isError) {
-    //     // Handle error
-    //     console.error('Error fetching users');
-    //   }
-    // }, [isError]);
-    return (
-      <Formik
-        initialValues={{
-          groupType: 'named group',
-          groupName: '',
-          groupDescription: '',
+      console.log("Form is invalid, showing errors...");
+    }
+
+    // onSubmit("confirmation");
+  };
+  return (
+    <div>
+      {showErrorModal ? (
+        <ErrorModal
+        setShowModal={setShowErrorModal}
+          title="Error Creating Organisation Groups"
+          errorText={errorMessage}
+        />
+      ): ""}
+      {displayConfirmationModal ? (
+        <div className="mx-auto mt-[10%] flex h-full w-1/2 flex-col items-center justify-center space-y-8">
+          <Image
+            src="/check-circle.svg"
+            alt="check-circle"
+            width={162}
+            height={162}
+            className="w-[6rem] md:w-[10rem]"
+          />
+          <p className="whitespace-nowrap text-ajo_offWhite">
+           Group Created Successfully
+          </p>
+          <CustomButton
+            type="button"
+            label="Close"
+            style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 md:w-[40%]"
+            onButtonClick={() => setDisplayConfirmationMedal(false)}
+          />
+        </div>
+      ) : (
+        <form
+          className="mx-auto mt-12 w-[90%] space-y-3 md:w-[60%]"
+          onSubmit={onSubmitHandler}
+        >
           
-          selectedCustomer : []
-        }}
-        validationSchema={Yup.object({
-          groupName: Yup.string().required('Group Name is required'),
-          groupDescription: Yup.string().required('Group Description is required'),
-          
-          selectedCustomers: Yup.array().min(1, 'At least one customer must be selected')
-        })}
-        onSubmit={(values:{groupName: string}, { setSubmitting }) => {
-          console.log(values)
-          setTimeout(() => {
-            setSubmitting(false);
-            
-            // createGroups(values.groupName);
-  
-            // postSavings();
-            // onSubmit("confirmation");
-  
-          }, 400);
-        }}
-      >
-        {({ isSubmitting }) => (
-          <Form className="mx-auto mt-12 w-[90%] space-y-3 md:w-[60%]">
-            {/** Group Name Field */}
-  
-            <div>
-  
-            
-            <div className="items-center gap-6 md:flex">
-              <label htmlFor="groupName" className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white">
-                Group Name:
-              </label>
-              <Field
+
+          <div className="items-center gap-6 md:flex">
+            <label
+              htmlFor="groupName"
+              className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+            >
+              Group Name:
+            </label>
+            <span className="w-full">
+              <input
                 id="groupName"
                 name="groupName"
                 type="text"
-                placeholder="E.g 1million Goal"
+                placeholder="state reason"
                 className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                onChange={handleInputChange}
+                onFocus={handleInputFocus}
+                required
               />
-              
-            </div>
-            <div className="items-center gap-6 md:flex">
-              <div className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"></div>
-              <ErrorMessage name="groupName" component="div" className="text-red-500 w-full" />
-            </div>
-            </div>
-  
-            {/** Group Description Field */}
-           
-           <div className="">
-            <div className="items-center gap-6 md:flex">
-              <label htmlFor="groupDescription" className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white">
-                Description:
-              </label> 
-              
-              <Field
-                id="groupDescription"
-                name="groupDescription"
+              {(isTouched.groupName || formErrors.groupName) && (
+                <p className="mt-2 text-sm font-semibold text-red-600">
+                  {formErrors.groupName}
+                </p>
+              )}
+            </span>
+          </div>
+          
+          <div className="items-center gap-6 md:flex">
+            <label
+              htmlFor="description"
+              className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+            >
+              Description:
+            </label>
+            <span className="w-full">
+              <input
+                id="description"
+                name="description"
+                placeholder="describe..."
                 type="text"
-                placeholder="Describe..."
                 className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              /> 
-             
-            </div>
+                onChange={(event) => {
+                  const { name, value } = event.target;
+                  setFormValues({ ...formValues, [name]: value });
+                  setFormErrors({
+                    ...formErrors,
+                    [name]: validateField(
+                      name,
+                      value,
+                      // saveDetails.savingsType as
+                      //   | "named group"
+                      //   | "nameless group",
+                    ),
+                  });
+                  const input = event.target.value.replace(/\D/g, "");
+                  const formatted = Number(input).toLocaleString();
+                  setSaveDetails((prev) => ({
+                    ...prev,
+                    ["description"]: input,
+                  }));
+                }}
+                onFocus={handleInputFocus}
+                required
+              />
+              {(isTouched.description || formErrors.description) && (
+                <p className="mt-2 text-sm font-semibold text-red-600">
+                  {formErrors.description}
+                </p>
+              )}
+            </span>
+          </div>
+          
             <div className="items-center gap-6 md:flex">
-            <div className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"></div>
-                <ErrorMessage name="groupDescription" component="div" className="text-red-500 w-full" />
-            </div>
-            </div>
-  
-           
-            
-  
-            {/* Add Customers Field */}
-             {/* Add Customers Field */}
-             <div className="items-center gap-6 md:flex">
-              <label htmlFor="addCustomers" className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white">
+              <label
+                htmlFor="addCustomers"
+                className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+              >
                 Add Organisation
               </label>
+
               <div className="w-full">
-                <select
-                  className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
-                //   onChange={handleOptionChange}
-                >
-                  <option value="">Select an option</option>
-                  {users && users.length > 0 && users?.map((option) => (
-                    <option key={option._id} value={option._id}>{option.firstName} {option.lastName}</option>
-                  ))}
-                </select>
-  
-                
+                <span className="w-full">
+                  <select
+                    id="addCustomers"
+                    name="addCustomers"
+                    className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+                    onChange={handleOptionChange}
+                    onFocus={handleInputFocus}
+                  >
+                    <option className="hidden lowercase text-opacity-10">
+                      Select an option
+                    </option>
+                    {users?.map((option) => (
+                      <option key={option._id} value={option._id}>
+                        {option.organisationName}{" "}
+                      </option>
+                    ))}
+                  </select>
+
+                  {(isTouched.addCustomers || formErrors.addCustomers) && selectedIds.length === 0 && (
+                    <p className="mt-2 text-sm font-semibold text-red-600">
+                      {formErrors.addCustomers}
+                    </p>
+                  )}
+                </span>
+
                 <div className="space-x-1 space-y-2">
                   {selectedOptions.map((option, index) => (
-                    <div key={index} className="inline-block mr-2 mb-2">
+                    <div key={index} className="mb-2 mr-2 inline-block">
                       <button
                         onClick={() => handleRemoveOption(index)}
                         className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
                       >
-                        {option.firstName} {option.lastName}
+                        {option.organisationName}
                         <svg
-                          className="ml-1 h-3 w-3 text-gray-700 cursor-pointer"
+                          className="ml-1 h-3 w-3 cursor-pointer text-gray-700"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
                           xmlns="http://www.w3.org/2000/svg"
                         >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
                         </svg>
                       </button>
                     </div>
                   ))}
                 </div>
-                <Field name="selectedCustomers" as="input" type="hidden" value={selectedOptions.map((option) => option._id)} />
-                <ErrorMessage name="selectedCustomers" component="div" className="text-red-500" />
               </div>
             </div>
-  
-            {/** Submit Button */}
-            <div className="flex items-center justify-center pb-12 pt-4">
-              <span className="hidden w-[20%] md:block">Submit</span>
-              <div className="md:flex md:w-[80%] md:justify-center">
-                <button
-                  type="submit"
-                  className="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite hover:bg-indigo-500 focus:bg-indigo-500 md:w-[60%]"
-                  disabled={isSubmitting}
-                >
-                  Submit
-                </button>
-              </div>
+        
+          
+          
+          <div className="flex items-center justify-center pb-12 pt-4">
+            <span className="hidden w-[20%] md:block">Submit</span>
+            <div className="md:flex md:w-[80%] md:justify-center">
+              <CustomButton
+                type="button"
+                label="Submit"
+                style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 md:w-[60%]"
+                onButtonClick={onSubmitHandler}
+              />
             </div>
-          </Form>
-        )}
-      </Formik>
-    );
-  };
+          </div>
+        </form>
+      )}
+    </div>
+  );
+};
 
-  export default CreateOranisationGroupForm
+export default CreateOranisationGroupForm
