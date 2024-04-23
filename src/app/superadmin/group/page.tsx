@@ -10,6 +10,11 @@ import { useState } from "react";
 import Modal from "@/components/Modal";
 
 import CreateOranisationGroupForm from "@/modules/superAdmin/CreateOrganisationGroupForm";
+import SuccessModal from "@/components/SuccessModal";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/api/hooks/useAuth";
+import { OrganisationGroupsProps } from "@/types";
+import { AxiosResponse } from "axios";
 
 
 const mockData = [
@@ -39,18 +44,43 @@ const mockData = [
     }
   ];
 export default function SuperAdminCustomer(){
+  const {client} = useAuth()
+  const {
+    data: organizationsGroups,
+    isLoading: isUserLoading,
+    isError: getGroupError,
+  } = useQuery({
+    queryKey: ["allOrganizationsGroup"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user?userType=organisation`, {})
+        .then((response) => {
+          return response.data;
+        })
+        .catch((error) => {
+      
+          throw error;
+        });
+    },
+  });
+  console.log(organizationsGroups)
+
   const router = useRouter()
   const [showModal, setShowModal] = useState(false)
-    return(
+  const [removeParentModal, setRemoveParentModal] = useState(false)
+  const [showErrorModal, setShowErrorModal] = useState(false) 
+  return(
 
         <div>
-          {showModal ? (
+         
+         
+          {!removeParentModal && showModal ? (
             <Modal 
               setModalState={setShowModal}
               title="Create Organisation Group">
            
              
-              <CreateOranisationGroupForm/>
+              <CreateOranisationGroupForm closeModal={setShowModal}/>
             </Modal>
           ) : ""}
            <div className="mb-4 space-y-2">
@@ -150,33 +180,33 @@ export default function SuperAdminCustomer(){
       <TransactionsTable
         headers={[
         "Group Name",
-        "Account Name",
-        "Account Number",
-        "Bank Name,",
-        "Group Type", 
+        // "Account Name",
+        // "Account Number",
+        // "Bank Name,",
+        // "Group Type", 
         "Total Group Number",
         "Action"
         ]}
 
-        content={mockData.map((group, index) => (
+        content={organizationsGroups?.map((group: OrganisationGroupsProps, index: number) => (
             <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {group.group_name}
+                    {group.groupName}
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {group.account_name}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                </td> */}
+                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {group.account_number}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                </td> */}
+                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {group.bank_name} customers
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                </td> */}
+                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {group.group_type}
-                </td>
+                </td> */}
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {group.total_group_number}
+                    {group.organisations.length}
                 </td>
                
                 <td className="whitespace-nowrap flex px-6 py-4 text-sm">

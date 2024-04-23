@@ -465,3 +465,19 @@ export type MyFileList = {
   [index: number]: MyFile;
   // length: number;
 };
+export interface OrganisationGroupsProps {
+  _id:              string;
+  description:      string;
+  userType:         string;
+  groupName:        string;
+  groupMember:      any[];
+  role:             string;
+  organisations:    any[];
+  kycVerified:      boolean;
+  isArchieve:       boolean;
+  isVerified:       boolean;
+  savingIdentities: any[];
+  createdAt:        Date;
+  updatedAt:        Date;
+  __v:              number;
+}

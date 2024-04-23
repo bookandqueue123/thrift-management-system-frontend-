@@ -10,11 +10,11 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { useSelector } from "react-redux";
 
 interface SetUpSavingsProps {
-  setContent: Dispatch<SetStateAction<"form" | "confirmation">>;
-  content: "form" | "confirmation";
+  // setContent: Dispatch<SetStateAction<"form" | "confirmation">>;
+  // content: "form" | "confirmation";
   closeModal: Dispatch<SetStateAction<boolean>>;
 } 
-const CreateOranisationGroupForm = () => {
+const CreateOranisationGroupForm = ({closeModal}: SetUpSavingsProps) => {
   const organizationId = useSelector(selectOrganizationId);
 
   const { client } = useAuth();
@@ -83,18 +83,19 @@ const CreateOranisationGroupForm = () => {
 
   const { mutate: postOrganisationGroups } = useMutation({
     mutationFn: async () => {
+      // closeModal(false)
       
       const payload = {
         groupName: saveDetails.groupName,
         description: saveDetails.description,
-        organizations: selectedIds
+        organisations: selectedIds
       };
       
       return client.post(`api/user/create-organisation-group`, payload);
     },
     onSuccess: (response) => {
       // console.log(response);
-      
+      setSelectedOptions([])
       // setContent("confirmation");
       setDisplayConfirmationMedal(true);
      
@@ -115,6 +116,7 @@ const CreateOranisationGroupForm = () => {
  
 
   // Input Validation States
+  const [showSelectError, setShowSelectError] = useState(false)
   const [formValues, setFormValues] = useState<FormValues>(saveDetails);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isTouched, setIsTouched] = useState<{ [key: string]: boolean }>({});
@@ -125,7 +127,7 @@ const CreateOranisationGroupForm = () => {
     
     // savingType: "named group" | "nameless group",
   ) => {
-    if(selectedIds.length === 0) return "At least one user is required";
+   
     switch (name) {
       case "groupName":
         if (!value.trim()) return "Savings purpose is required";
@@ -148,6 +150,7 @@ const CreateOranisationGroupForm = () => {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLElement>) => {
+    // setShowSelectError(true)
     const { name, value } = e.target as
       | HTMLInputElement
       | HTMLSelectElement
@@ -178,6 +181,7 @@ const CreateOranisationGroupForm = () => {
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLElement>) => {
+
     const { name, value } = e.target as
       | HTMLInputElement
       | HTMLSelectElement
@@ -195,9 +199,8 @@ const CreateOranisationGroupForm = () => {
   };
 
   const onSubmitHandler = (e: React.FormEvent) => {
-    console.log(saveDetails);
-    // console.log(organizationId);
-     
+    setShowSelectError(true)
+   
     if (selectedIds.length === 0) {
       setFormErrors((prevErrors) => ({
         ...prevErrors,
@@ -228,7 +231,7 @@ const CreateOranisationGroupForm = () => {
 
     if (isValid) {
       console.log("Form is valid, submitting...");
-      postOrganisationGroups()
+       postOrganisationGroups()
     } else {
       
       console.log("Form is invalid, showing errors...");
@@ -368,23 +371,29 @@ const CreateOranisationGroupForm = () => {
                       </option>
                     ))}
                   </select>
-
-                  {(isTouched.addCustomers || formErrors.addCustomers) && selectedIds.length === 0 && (
+                  
+                  {showSelectError && selectedIds.length === 0 && (
+                    <p className="mt-2 text-sm font-semibold text-red-600">
+                      At least one user is required
+                    </p>
+                  )}
+                  {/* {(isTouched.addCustomers || formErrors.addCustomers) && selectedIds.length === 0 && (
                     <p className="mt-2 text-sm font-semibold text-red-600">
                       {formErrors.addCustomers}
                     </p>
-                  )}
+                  )} */}
                 </span>
 
                 <div className="space-x-1 space-y-2">
                   {selectedOptions.map((option, index) => (
                     <div key={index} className="mb-2 mr-2 inline-block">
-                      <button
-                        onClick={() => handleRemoveOption(index)}
+                      <p
+                       
                         className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
                       >
                         {option.organisationName}
                         <svg
+                           onClick={() => handleRemoveOption(index)}
                           className="ml-1 h-3 w-3 cursor-pointer text-gray-700"
                           fill="none"
                           stroke="currentColor"
@@ -398,7 +407,7 @@ const CreateOranisationGroupForm = () => {
                             d="M6 18L18 6M6 6l12 12"
                           />
                         </svg>
-                      </button>
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -408,7 +417,7 @@ const CreateOranisationGroupForm = () => {
           
           
           <div className="flex items-center justify-center pb-12 pt-4">
-            <span className="hidden w-[20%] md:block">Submit</span>
+            <span className="hidden w-[20%] md:block"></span>
             <div className="md:flex md:w-[80%] md:justify-center">
               <CustomButton
                 type="button"
