@@ -31,8 +31,8 @@ const SignInForm = () => {
     email: "",
     userCategory: "Customer",
     password: "",
-    rememberPassword: true,
   });
+  const [rememberPassword, setRememberPassword] = useState(true);
 
   const secretKey = process.env.PASSWORD_ENCRYPTION_KEY as string;
 
@@ -44,14 +44,19 @@ const SignInForm = () => {
         cookies.rememberedPassword,
         secretKey,
       );
+      // console.log("decryptionKey: ", secretKey);
+      // console.log("decryptedPin: ", decryptedPassword);
+      // console.log("rememberedPassword: ", cookies.rememberedPassword);
+      // console.log("rememberedEmail: ", cookies.rememberedEmail);
       setInitialValues((prevValues) => ({
         ...prevValues,
         email: cookies.rememberedEmail,
         password: decryptedPassword,
-        rememberPassword: true,
       }));
+      setRememberPassword(cookies.rememberedPassword ? true : false);
     }
   }, []);
+
 
   const {
     mutate: UserSignIn,
@@ -71,13 +76,13 @@ const SignInForm = () => {
 
       if (response.data.role === "customer") {
         if (user) {
-          router.push(`/customer`);
+          router.replace(`/customer`);
         }
       } else if (response.data.role === "organisation") {
         if (response.data.kycVerified) {
-          router.push("/merchant");
+          router.replace("/merchant");
         } else {
-          router.push("/welcome");
+          router.replace("/welcome");
         }
       }
 
@@ -118,6 +123,7 @@ const SignInForm = () => {
   return (
     <Formik
       initialValues={initialValues}
+      enableReinitialize
       validationSchema={Yup.object({
         email: Yup.string()
           .email("Invalid email address")
@@ -126,7 +132,7 @@ const SignInForm = () => {
       })}
       onSubmit={(values, { setSubmitting }) => {
         const encryptedPassword = encryptPassword(values.password, secretKey);
-        if (initialValues.rememberPassword) {
+        if (rememberPassword) {
           setCookie(null, "rememberedPassword", encryptedPassword, {
             maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
             path: "/signin",
@@ -136,8 +142,13 @@ const SignInForm = () => {
             path: "/signin",
           });
         } else {
-          destroyCookie(null, "rememberedPassword");
-          destroyCookie(null, "rememberedEmail");
+          destroyCookie(null, "rememberedPassword", { path: "/signin" });
+          destroyCookie(null, "rememberedEmail", { path: "/signin" });
+
+          // const cookies = parseCookies();
+
+          // console.log("rememberedPassword: ", cookies.rememberedPassword);
+          // console.log("rememberedEmail: ", cookies.rememberedEmail);
         }
         UserSignIn(values);
         setTimeout(() => {
@@ -198,11 +209,19 @@ const SignInForm = () => {
             </div>
 
             <div className="flex gap-x-3">
-              <Field
+              <input
                 id="rememberPassword"
                 name="rememberPassword"
                 type="checkbox"
                 className="block h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                onChange={() =>
+                  // setInitialValues((prevValues) => ({
+                  //   ...prevValues,
+                  //   rememberPassword: e.target.checked,
+                  // }))
+                  setRememberPassword(!rememberPassword)
+                }
+                checked={rememberPassword}
               />
               <label
                 htmlFor="rememberPassword"

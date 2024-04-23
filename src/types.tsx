@@ -295,7 +295,7 @@ export interface signInProps {
   email: string;
   userCategory: string;
   password: string;
-  rememberPassword: boolean;
+  // rememberPassword: boolean;
 }
 export interface CustomerSignUpProps {
   [x: string]: any;

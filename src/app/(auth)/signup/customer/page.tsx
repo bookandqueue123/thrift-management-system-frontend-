@@ -4,7 +4,6 @@ import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton } from "@/components/Buttons";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { CustomerSignUpProps, getOrganizationProps } from "@/types";
-import VerifyOrgSubdomain from "@/utils/VerifyOrgSubdomain";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
@@ -76,8 +75,8 @@ const Page = () => {
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
       setSuccessMessage(response.data.message);
-      
-      router.push(`/signin`);
+      console.log(response);
+      router.replace(`/signin`);
     },
     onError(error: AxiosError<any, any>) {
       setShowErrorToast(true);
@@ -114,7 +113,6 @@ const Page = () => {
           return response.data;
         })
         .catch((error) => {
-   
           throw error;
         });
     },
@@ -124,7 +122,6 @@ const Page = () => {
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={(values, { setSubmitting }) => {
-    
         CustomerSignUp(values);
         setTimeout(() => {
           setShowSuccessToast(false);
