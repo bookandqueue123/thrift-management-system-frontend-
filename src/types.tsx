@@ -481,3 +481,18 @@ export interface OrganisationGroupsProps {
   updatedAt:        Date;
   __v:              number;
 }
+export interface setUpSavingsProps {
+  accountType: string,
+    percentageBased: string,
+    amountBased: string,
+    accountNumber: string,
+    accountName: string,
+    purpose: string,
+    amount: string,
+    frequency: string,
+    startDate: string,
+    endDate: string,
+    totalexpectedSavings: string,
+    collectionDate: string,
+    userId: string
+}
