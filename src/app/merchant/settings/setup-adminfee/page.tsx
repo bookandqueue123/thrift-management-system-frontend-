@@ -3,14 +3,15 @@
 import { useAuth } from '@/api/hooks/useAuth';
 import { CustomButton } from '@/components/Buttons';
 import ErrorModal from '@/components/ErrorModal';
-import Modal from '@/components/Modal';
+import Modal, { NoBackgroundModal } from '@/components/Modal';
 import SuccessModal from '@/components/SuccessModal';
 import { selectOrganizationId } from '@/slices/OrganizationIdSlice';
 import { customer } from '@/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { AxiosError, AxiosResponse } from 'axios';
 import Image from 'next/image';
-import { ChangeEvent, ChangeEventHandler, FormEvent, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ChangeEvent, ChangeEventHandler, Dispatch, FormEvent, SetStateAction, useEffect, useState } from 'react';
 import { IoMdSearch } from 'react-icons/io';
 import { useSelector } from 'react-redux';
 
@@ -37,10 +38,60 @@ interface setUpSavingsProps{
     collectionDate: string,
     userId: string
 }
-const Form = () => {
+
+export default function Page(){
+  const [successModal, setSuccessModal ] = useState(false)
+  const [modalState, setModalState] = useState(false);
+  return (
+    <div className="">
+      <div className="mb-4 space-y-2 ">
+        <p className="text-2xl font-bold text-ajo_offWhite text-opacity-60">
+          Settings
+        </p>
+        <p className="text-sm font-bold text-ajo_offWhite">Savings settings</p>
+      </div>
+      
+        {!modalState ? 
+        <><div className="mx-auto mt-[20%] flex h-screen w-[80%] flex-col items-center gap-8 md:mt-[10%] md:w-[40%]">
+        <Image
+          src="/receive-money.svg"
+          alt="hand with coins in it"
+          width={120}
+          height={120}
+          className="w-[5rem] md:w-[7.5rem]"
+        />
+        <p className="text-center text-sm text-ajo_offWhite">
+          Setup savings and admin fee. Make all the necessary edits and changes. Use
+          the button below to get started!
+        </p>
+
+       
+        <CustomButton
+          type="button"
+          label="Savings SetUp"
+          style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+          onButtonClick={() => setModalState(true)}
+        /></div>
+        </>
+        : <Form 
+          setModalState={setModalState} 
+          
+          />
+        }
+        
+      
+      
+        
+          
+     
+    </div>
+  );
+}
+
+const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>>}) => {
   const { client } = useAuth();
   const organisationId = useSelector(selectOrganizationId);
-
+  const router = useRouter()
   const [showModal, setShowModal] = useState(false)
   const [showError, setShowError] = useState(false)
   const [showSuccessToast, setShowSuccessToast] = useState(false);
@@ -104,10 +155,10 @@ const Form = () => {
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
       setSuccessMessage(response.data.message);
-    
+   
       setShowModal(true)
-      
-      // router.push(`/signin`);
+    
+       
       setFormData({
         accountType: 'individual',
     percentageBased: '',
@@ -125,6 +176,7 @@ const Form = () => {
       })
     },
     onError(error: AxiosError<any, any>) {
+      // setModalState(false)
       setShowError(true)
       setShowErrorToast(true);
       setErrorMessage(                                   
@@ -135,11 +187,14 @@ const Form = () => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement> ) => {
     e.preventDefault();
+
     const validationErrors = validateForm(formData);
     if (Object.keys(validationErrors).length === 0) {
      
-       SetupSavings()
-    
+        SetupSavings()
+     
+      //  setModalState(false)
+   
 
     } else {
       setErrors(validationErrors);
@@ -246,6 +301,7 @@ const Form = () => {
 
   return (
     <div className="">
+      
       {showModal ? (
         <SuccessModal
         title='Savings Set Up'
@@ -263,14 +319,40 @@ const Form = () => {
       ): ""
       
     }
+    
       
-      <div className="mb-4 space-y-2 md:ml-[15%]">
+      {/* <div className="mb-4 space-y-2 md:ml-[15%]">
         <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
           Settings
         </p>
-      </div>
+      </div> */}
+      
       <div className='md:ml-[15%] bg-white mt-12'>
-        <h2 className="font-bold p-4">SAVING SETUP AND ADMIN FEE</h2>
+        <div className='flex justify-between'>
+          <h2 className="font-bold p-4">SAVING SETUP AND ADMIN FEE</h2>
+          <div
+              onClick={() => setModalState(false)}
+              className="mr-8 cursor-pointer pt-2"
+            >
+             <svg
+                width="32"
+                height="32"
+                viewBox="0 0 48 48"
+                fill="none"
+                className="h-[16px] w-[16px] md:h-[32px] md:w-[32px]"
+            >
+                <path
+                    d="M48 16L16 48M16 16L48 48"
+                    stroke="black" 
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+            </svg>
+
+            </div>
+          </div>
+       
         <div className=" pl-12 pt-1">
         <h1 className="text-sm font-semibold mb-2">Admin Fee (Kindly select your most prefered administrative fee)</h1>
           <form onSubmit={handleSubmit}>
@@ -506,11 +588,12 @@ const Form = () => {
           </form>
         </div>  
       </div>  
+     
     </div>
   );
 };
 
- export default Form;
+
 
 // export default function Page(){
 //   const [modalState, setModalState] = useState(false);

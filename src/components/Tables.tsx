@@ -19,7 +19,7 @@ const TransactionsTable = ({
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody className="">
           {content}
         </tbody>
       </table>

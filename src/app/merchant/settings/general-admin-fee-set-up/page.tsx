@@ -2,12 +2,14 @@
 'use client'
 import { useAuth } from '@/api/hooks/useAuth';
 import { useMutation } from '@tanstack/react-query';
-import { ChangeEvent, FormEvent, useState } from 'react';
+import { ChangeEvent, Dispatch, FormEvent, SetStateAction, useState } from 'react';
 import { AxiosError, AxiosResponse } from 'axios';
 import { useSelector } from 'react-redux';
 import { selectOrganizationId } from '@/slices/OrganizationIdSlice';
 import SuccessModal from '@/components/SuccessModal';
 import ErrorModal from '@/components/ErrorModal';
+import { CustomButton } from '@/components/Buttons';
+import Image from 'next/image';
 interface setUpSavingsProps{
   accountType: string,
     percentageBased: string,
@@ -21,7 +23,59 @@ interface setUpSavingsProps{
     endDate: string,
     collectionDate: string
 }
-const Form = () => {
+
+
+export default function Page(){
+  const [successModal, setSuccessModal ] = useState(false)
+  const [modalState, setModalState] = useState(false);
+
+  return (
+    <div className="">
+      <div className="mb-4 space-y-2 ">
+        <p className="text-2xl font-bold text-ajo_offWhite text-opacity-60">
+          Settings
+        </p>
+        <p className="text-sm font-bold text-ajo_offWhite">Savings settings</p>
+      </div>
+      
+        {!modalState ? 
+        <><div className="mx-auto mt-[20%] flex h-screen w-[80%] flex-col items-center gap-8 md:mt-[10%] md:w-[40%]">
+        <Image
+          src="/receive-money.svg"
+          alt="hand with coins in it"
+          width={120}
+          height={120}
+          className="w-[5rem] md:w-[7.5rem]"
+        />
+        <p className="text-center text-sm text-ajo_offWhite">
+          Setup savings and admin fee. Make all the necessary edits and changes. Use
+          the button below to get started!
+        </p>
+
+       
+        <CustomButton
+          type="button"
+          label="Savings SetUp"
+          style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+          onButtonClick={() => setModalState(true)}
+        /></div>
+        </>
+        : <Form 
+          setModalState={setModalState} 
+          
+          />
+        }
+        
+      
+      
+        
+          
+     
+    </div>
+  );
+}
+
+const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>>}) => {
   const { client } = useAuth();
   const organisationId = useSelector(selectOrganizationId);
   const [formData, setFormData] = useState<setUpSavingsProps>({
@@ -142,8 +196,31 @@ const Form = () => {
         </p>
       </div>
       
-      <div className='border md:ml-[30%] md:mr-[15%] bg-white mt-[10%] p-8'>
-        <h2 className="font-bold p-4">ADMIN FEE</h2>
+      <div className='border md:ml-[30%] md:mr-[15%] bg-white mt-[5%] mb-8 p-8'>
+      <div className='flex justify-between'>
+          <h2 className="font-bold p-4">SAVING SETUP AND ADMIN FEE</h2>
+          <div
+              onClick={() => setModalState(false)}
+              className="mr-8 cursor-pointer pt-2"
+            >
+             <svg
+                width="32"
+                height="32"
+                viewBox="0 0 48 48"
+                fill="none"
+                className="h-[16px] w-[16px] md:h-[32px] md:w-[32px]"
+            >
+                <path
+                    d="M48 16L16 48M16 16L48 48"
+                    stroke="black" 
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+            </svg>
+
+            </div>
+          </div>
         <div className=" pl-12 pt-1">
         <h1 className="text-sm font-semibold mb-2">Admin Fee (Kindly select your most prefered administrative fee)</h1>
           <form onSubmit={handleSubmit}>
@@ -190,4 +267,4 @@ const Form = () => {
   );
 };
 
-export default Form;
+
