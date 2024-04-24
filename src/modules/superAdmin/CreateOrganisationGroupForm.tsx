@@ -106,7 +106,7 @@ const CreateOranisationGroupForm = ({closeModal}: SetUpSavingsProps) => {
       // setContent("confirmation")
       // setDisplayConfirmationMedal(true)
       setShowErrorModal(true)
-      console.error("Error creating user:", error);
+     
       throw error;
     },
   });

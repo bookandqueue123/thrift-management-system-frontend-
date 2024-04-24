@@ -207,6 +207,8 @@ export default function Analytics(){
       (currentPage - 1) * PAGE_SIZE,
       currentPage * PAGE_SIZE,
     );
+    console.log(paginatedTransactions)
+
 
     // useEffect(() => {
     //   // Filter dates for April (target month: 4)
@@ -363,14 +365,17 @@ export default function Analytics(){
         "S/N",
         "Name",
         "Account No",
+        "General %",
+        "General Fee",
         "Applied %",
         "Admin Fee",
         "Service Charge",
         "Applied Service Charge %",
-        "Final Admin Fee",
+        
         ...Array.from({ length: 31 }, (_, i) => i + 1).map(day => `${selectedMonth.name} ${day}`),
         "Total",
         "Total Amount Payable",
+        "Margin",
         "Action"
         ]}
 
@@ -395,6 +400,16 @@ export default function Analytics(){
                   {transaction.user.accountNumber || "---"}
                  
                 </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                 
+                  General %
+                 
+                </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                 
+                  General fee
+                 
+                </td>
 
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {transaction.appliedPercentage}
@@ -408,17 +423,14 @@ export default function Analytics(){
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                 
-                  Service charge
+                  {transaction.serviceCharge}
                 
                      
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  Applied Service charge  
+                  {transaction.appliedServiceCharge}  
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  Final Admin Fee
-                </td>
-            
+                
                 {days.map((day) => (
                   <td key={day} className="whitespace-nowrap px-6 py-4 text-sm">
                   {filterDatesWithMonthAndDay(transaction.savedDates, selectedYear.value, selectedMonth.value, day)
@@ -439,6 +451,10 @@ export default function Analytics(){
                   {transaction.amountPayable}
                  
                 </td>
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {transaction.adminMargin}
+                </td>
+            
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   
                   Action
