@@ -104,7 +104,7 @@ const Form = () => {
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
       setSuccessMessage(response.data.message);
-      console.log(response);
+    
       setShowModal(true)
       
       // router.push(`/signin`);
@@ -137,7 +137,7 @@ const Form = () => {
     e.preventDefault();
     const validationErrors = validateForm(formData);
     if (Object.keys(validationErrors).length === 0) {
-      console.log(formData);
+     
        SetupSavings()
     
 
@@ -208,7 +208,7 @@ const Form = () => {
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error);
+      
           throw error;
         });
     },

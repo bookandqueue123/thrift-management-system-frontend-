@@ -63,7 +63,7 @@ export default function SuperAdminCustomer(){
         });
     },
   });
-  console.log(organizationsGroups)
+ 
 
   const router = useRouter()
   const [showModal, setShowModal] = useState(false)

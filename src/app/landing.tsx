@@ -14,11 +14,11 @@ const Landing = () => {
               Experience the power of seamless savings with{" "}
             </span>
             <span className="text-[32px] font-bold leading-10 text-ajo_orange">
-              Ajo.
+              Finkia.
             </span>
           </div>
           <p className="mb-8 text-base text-white">
-            How would you like to use Ajo? Kindly select the option that suits
+            How would you like to use Finkia? Kindly select the option that suits
             you best:
           </p>
 
@@ -39,7 +39,7 @@ const Landing = () => {
                 Sign Up as an Organization
               </h6>
               <p className="text-justify text-sm font-light text-ajo_offWhite">
-                Optimize your financial operations with Ajo&apos;s
+                Optimize your financial operations with Finkia&apos;s
                 organizational platform. Seamlessly manage and set up customers
                 and merchants, while monitoring performance with ease.
               </p>

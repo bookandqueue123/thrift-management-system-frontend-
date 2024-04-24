@@ -60,10 +60,10 @@ const Modal = ({
           {pathName === "/superadmin/commission" ? (
             <div className="item-center mb-8 flex justify-center text-white">
               <p>
-                To Set Up Commissions,{" "}
+                {/* To Set Up Commissions,{" "}
                 <span className="text-[#EAAB40]">
                   Kindly fill in the details below:
-                </span>
+                </span> */}
               </p>
             </div>
           ) : (

@@ -54,6 +54,8 @@ const mockData = [
   
 export default function SuperAdminCustomer(){
   const router = useRouter()
+
+  
     const [showModal, setShowModal] = useState(false)
     const [openDropdown, setOpenDropdown] = useState<number>(0);
     
