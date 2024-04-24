@@ -300,7 +300,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
         
         <div className='md:ml-[15%] bg-white mt-12'>
           <div className='flex justify-between'>
-            <h2 className="font-bold p-4">SAVING SETUP AND ADMIN FEE</h2>
+            <h2 className="font-bold p-4">UPDATE SAVING SETUP AND ADMIN FEE</h2>
             <div
                 onClick={() => setModalState(false)}
                 className="mr-8 cursor-pointer pt-2"
