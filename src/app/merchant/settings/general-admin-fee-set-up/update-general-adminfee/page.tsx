@@ -51,7 +51,7 @@ export default function Page(){
           className="w-[5rem] md:w-[7.5rem]"
         />
         <p className="text-center text-sm text-ajo_offWhite">
-          Setup General admin fee of all the customers in the organisation. Make all the necessary edits and changes. Use
+          Update General admin fee of all the customers in the organisation. Make all the necessary edits and changes. Use
           the button below to get started!
         </p>
 

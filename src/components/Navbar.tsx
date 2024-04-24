@@ -133,7 +133,8 @@ export const Sidebar = ({
   const router = useRouter();
 
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
-
+  const [setupdropdownOpen, setSetupDropdownOpen] = useState(false)
+  const [generalAdminFeeOpen, setGeneralAdminFeeOpen] = useState(false)
   const toggleSidebar = () => {
     return onShow ? "visible" : "invisible";
   };
@@ -280,19 +281,104 @@ export const Sidebar = ({
                       Savings settings
                     </Link>
 
-                    <Link
-                      href="/merchant/settings/setup-adminfee"
-                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    <div
+                      
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setSetupDropdownOpen(!setupdropdownOpen);
+                      }}
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite  hover:text-ajo_darkBlue"
                     >
-                      Savings Setup and <br/> Admin Fee
-                    </Link>
+                      <div className="flex justify-between hover:p-1 hover:text-black hover:bg-ajo_offWhite text-gray-200">
+                        <span>
+                          Savings Setup <br/>and  Admin Fee
+                        </span>
+                      
+                        <Image
+                        className="mr-2"
+                          src="/arrow_down.svg"
+                          alt="arrow down"
+                          width={12}
+                          height={12}
+                        />
+                      </div>
+                     
+                      {setupdropdownOpen && 
+                      <>
+                        <div className="left-0 z-20 w-full rounded-md  my-1  py-1 shadow-lg">
+                          <Link
+                            href="/merchant/settings/setup-adminfee"
+                            className="block cursor-pointer whitespace-nowrap px-2 py-1 bg-white text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                          >
+                           Setup Saving <br/> and Admin fee
+                          </Link>
+                          
+                        </div>
 
-                    <Link
-                      href="/merchant/settings/general-admin-fee-set-up"
-                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                        <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
+                          <Link
+                            href="/merchant/settings/update-savings-set-up"
+                            className="block cursor-pointer whitespace-nowrap px-2 py-1 bg-white text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                          >
+                            Update Admin <br/> Settings
+                          </Link>
+                          
+                        </div>
+                      </>
+                      }
+                      
+                    </div>
+
+                    <div
+                       onClick={(e) => {
+                        e.preventDefault();
+                        setGeneralAdminFeeOpen(!generalAdminFeeOpen);
+                      }}
+                       
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
                     >
-                      General Admin Fee <br/> Set up
-                    </Link>
+                      
+                      <div className="flex justify-between hover:p-1 hover:text-black hover:bg-ajo_offWhite text-gray-200">
+                        <span>
+                          General Admin Fee  <br/>and Set up
+
+                        </span>
+                      
+                        <Image
+                        className="mr-2"
+                          src="/arrow_down.svg"
+                          alt="arrow down"
+                          width={12}
+                          height={12}
+                        />
+                      </div>
+
+                      {generalAdminFeeOpen && 
+                      <>
+                        <div className="left-0 z-20 w-full rounded-md  my-1  py-1 shadow-lg">
+                          <Link
+                            href="/merchant/settings/general-admin-fee-set-up"
+                            className="block cursor-pointer whitespace-nowrap px-2 py-1 bg-white text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                          >
+                           General Admin fee
+                          </Link>
+                          
+                        </div>
+
+                        <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
+                          <Link
+                            href="/merchant/settings/general-admin-fee-set-up/update-general-adminfee"
+                            className="block cursor-pointer whitespace-nowrap px-2 py-1 bg-white text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                          >
+                            Update General <br/>Admin Fee  
+                          </Link>
+                          
+                        </div>
+                      </>
+                      }
+                      
+                    
+                    </div>
                   </div>
                 )}
               </div>
