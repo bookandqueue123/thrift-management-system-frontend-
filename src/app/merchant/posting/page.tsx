@@ -545,7 +545,7 @@ const PostingForm = ({
       if (Savings?.savings) {
         // Check if Savings?.savings is not undefined or null
         const filtered = Savings.savings.filter(
-          (item) => item.user._id === groupId,
+          (item) => item.user?._id === groupId,
         );
 
         setGroupSavings(filtered);
@@ -571,7 +571,7 @@ const PostingForm = ({
       if (Savings?.savings) {
         // Check if Savings?.savings is not undefined or null
         const filtered = Savings.savings.filter(
-          (item) => item.user._id === filterKey,
+          (item) => item.user?._id === filterKey,
         );
         setFilteredArray(filtered);
       } else {
@@ -639,7 +639,6 @@ const PostingForm = ({
           .get(`/api/user/${postDetails.customerId}`, {})
           .then((response) => {
             setCustomerAcctNo(response.data.accountNumber);
-            console.log("customer acct no: ", response.data.accountNumber);
           })
           .catch((error) => {
             throw error;
@@ -737,11 +736,11 @@ const PostingForm = ({
   const customerIds = new Set<string>();
   Savings?.savings.forEach((eachSaving) =>
     customerIds.add(
-      eachSaving.user.firstName +
+      eachSaving.user?.firstName +
         " " +
-        eachSaving.user.lastName +
+        eachSaving.user?.lastName +
         ": " +
-        eachSaving.user._id,
+        eachSaving.user?._id,
     ),
   );
 
@@ -1192,7 +1191,7 @@ const PostConfirmation = ({
   status: "success" | "failed" | undefined;
   customerAcctNo: string;
 }) => {
-  console.log(postingResponse);
+  // console.log(postingResponse);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
 
   useEffect(() => {
@@ -1278,7 +1277,6 @@ const PostConfirmation = ({
     day: "2-digit",
   });
 
-  console.log(customerAcctNo);
   return (
     <div
       id="postConfirmationContent"
