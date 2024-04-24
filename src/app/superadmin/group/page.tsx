@@ -184,7 +184,7 @@ export default function SuperAdminCustomer(){
         // "Account Number",
         // "Bank Name,",
         // "Group Type", 
-        "Total Group Number",
+        "Total Group Member",
         "Action"
         ]}
 
@@ -205,8 +205,8 @@ export default function SuperAdminCustomer(){
                 {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {group.group_type}
                 </td> */}
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {group.organisations.length}
+                <td className="whitespace-nowrap px-6 py-4 text-sm ">
+                    {group.organisations.length}  Members
                 </td>
                
                 <td className="whitespace-nowrap flex px-6 py-4 text-sm">
