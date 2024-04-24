@@ -48,7 +48,7 @@ export default function Page(){
           className="w-[5rem] md:w-[7.5rem]"
         />
         <p className="text-center text-sm text-ajo_offWhite">
-          Setup savings and admin fee. Make all the necessary edits and changes. Use
+          Setup General admin fee of all the customers in the organisation. Make all the necessary edits and changes. Use
           the button below to get started!
         </p>
 
@@ -190,11 +190,11 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
       ): ""
       
     }
-      <div className="mb-4 space-y-2 md:ml-[15%] ">
+      {/* <div className="mb-4 space-y-2 md:ml-[15%] ">
         <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
           Settings
         </p>
-      </div>
+      </div> */}
       
       <div className='border md:ml-[30%] md:mr-[15%] bg-white mt-[5%] mb-8 p-8'>
       <div className='flex justify-between'>
