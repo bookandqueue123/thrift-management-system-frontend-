@@ -278,34 +278,34 @@ const Posting = () => {
             content={paginatedSavings?.map((savings, index) => (
               <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.firstName + " " + savings.user.lastName ||
+                  {savings.user.groupName ??
+                    savings.user.firstName + " " + savings.user.lastName ??
                     "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.accountNumber || "----"}
+                  {savings.user.accountNumber ?? "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {/* {customer.transaction_id || "----"} */}
-                  {savings._id || "-----"}
+                  {savings._id ?? "-----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.purposeName || "-----"}
+                  {savings.purposeName ?? "-----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.email}
+                  {savings.user.email ?? "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.phoneNumber}
+                  {savings.user.phoneNumber ?? "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {extractTime(savings.updatedAt || "-----")}
+                  {extractTime(savings.updatedAt ?? "-----")}
                 </td>
 
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.state || "----"}
+                  {savings.user.state ?? "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.lga || "----"}
+                  {savings.user.lga ?? "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   Posted By
@@ -315,13 +315,13 @@ const Posting = () => {
                 </td>
 
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.isPaid || "----"}
+                  {savings.isPaid ?? "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {extractDate(savings.startDate) || "----"}
+                  {extractDate(savings.startDate) ?? "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {extractDate(savings.endDate) || "----"}
+                  {extractDate(savings.endDate) ?? "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   <StatusIndicator label={"View Details"} />
@@ -364,13 +364,6 @@ const Posting = () => {
             >
               <MdKeyboardArrowRight />
             </button>
-
-            {/* <button
-                className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-                onClick={() => dispatch(setCurrentPage(currentPage + 6))}
-              >
-                {currentPage + 6}
-              </button> */}
           </div>
           {/* <PaginationBar apiResponse={DummyCustomers} /> */}
         </div>
@@ -639,6 +632,7 @@ const PostingForm = ({
           .get(`/api/user/${postDetails.customerId}`, {})
           .then((response) => {
             setCustomerAcctNo(response.data.accountNumber);
+            return response.data.accountNumber;
           })
           .catch((error) => {
             throw error;
