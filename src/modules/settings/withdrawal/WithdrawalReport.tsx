@@ -17,7 +17,7 @@ import { useSelector } from "react-redux";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 export default function WithDrawalReportSettings(){
   const organisationId = useSelector(selectOrganizationId)
-  console.log(organisationId)
+  
   const [withdrawalData, setWithdrawalData] = useState<WithdrawalProps[]>([])
 
   const [status, setStatus] = useState("");
@@ -41,14 +41,13 @@ export default function WithDrawalReportSettings(){
       },
       onSuccess(response: AxiosResponse<any>) {
         
-        console.log(response)
+    
         router.push('/merchant/settings/withdrawals')
         router.refresh()
       },
       onError(error: AxiosError<any, any>) {
       
   
-        console.log(error?.response?.data);
       },
     });
     const {
@@ -61,12 +60,12 @@ export default function WithDrawalReportSettings(){
           return client
             .get(`/api/withdrawal?organisation=${organisationId}`, {})
             .then((response) => {
-              console.log(response)
+            
               setWithdrawalData(response.data)
               return response.data;
             })
             .catch((error) => {
-              console.log(error);
+       
               throw error;
             });
         },
@@ -89,8 +88,7 @@ export default function WithDrawalReportSettings(){
       const { mutate: updateStatus } = useMutation({
         mutationKey: [withdrawalData],
         mutationFn: async ( UpdatedStatusRow: WithdrawalProps) => {
-          console.log(UpdatedStatusRow)
-          console.log(UpdatedStatusRow.status)
+          
           return client.put(`/api/withdrawal/${UpdatedStatusRow._id}`, {
            
             status: UpdatedStatusRow.status,
@@ -99,14 +97,14 @@ export default function WithDrawalReportSettings(){
         },
         onSuccess(response: AxiosResponse<any>) {
           
-          console.log(response)
+         
           // router.push('/merchant/settings/withdrawals')
           router.refresh()
         },
         onError(error: AxiosError<any, any>) {
         
     
-          console.log(error?.response?.data);
+        
         },
       });
 
@@ -138,14 +136,14 @@ export default function WithDrawalReportSettings(){
         },
         onSuccess(response: AxiosResponse<any>) {
           
-          console.log(response)
+         
           // router.push('/merchant/settings/withdrawals')
           router.refresh()
         },
         onError(error: AxiosError<any, any>) {
         
     
-          console.log(error?.response?.data);
+         
         },
       });
 

@@ -6,7 +6,7 @@ import ErrorModal from '@/components/ErrorModal';
 import Modal, { NoBackgroundModal } from '@/components/Modal';
 import SuccessModal from '@/components/SuccessModal';
 import { selectOrganizationId } from '@/slices/OrganizationIdSlice';
-import { customer } from '@/types';
+import { customer, setUpSavingsProps } from '@/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { AxiosError, AxiosResponse } from 'axios';
 import Image from 'next/image';
@@ -23,21 +23,7 @@ import { useSelector } from 'react-redux';
 // import Image from "next/image";
 // import { useState } from "react";
 
-interface setUpSavingsProps{
-  accountType: string,
-    percentageBased: string,
-    amountBased: string,
-    accountNumber: string,
-    accountName: string,
-    purpose: string,
-    amount: string,
-    frequency: string,
-    startDate: string,
-    endDate: string,
-    totalexpectedSavings: string,
-    collectionDate: string,
-    userId: string
-}
+
 
 export default function Page(){
   const [successModal, setSuccessModal ] = useState(false)
@@ -69,7 +55,7 @@ export default function Page(){
         <CustomButton
           type="button"
           label="Savings SetUp"
-          style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+          style="rounded-md bg-indigo-800 py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
           onButtonClick={() => setModalState(true)}
         /></div>
         </>
@@ -95,7 +81,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
   const [showModal, setShowModal] = useState(false)
   const [showError, setShowError] = useState(false)
   const [showSuccessToast, setShowSuccessToast] = useState(false);
-  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [showErrorToast, setShowErrorsToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [formData, setFormData] = useState<setUpSavingsProps>({
@@ -178,7 +164,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
     onError(error: AxiosError<any, any>) {
       // setModalState(false)
       setShowError(true)
-      setShowErrorToast(true);
+      
       setErrorMessage(                                   
         error.response?.data.message || "Error creating organization",
       );
@@ -352,6 +338,8 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
 
             </div>
           </div>
+
+          
        
         <div className=" pl-12 pt-1">
         <h1 className="text-sm font-semibold mb-2">Admin Fee (Kindly select your most prefered administrative fee)</h1>

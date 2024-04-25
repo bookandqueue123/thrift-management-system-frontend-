@@ -417,13 +417,13 @@ export default function Analytics(){
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                 
-                 {transaction.adminFee}
+                 {AmountFormatter(transaction.adminFee)}
                 
                     
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                 
-                  {transaction.serviceCharge}
+                  {AmountFormatter(transaction.serviceCharge)}
                 
                      
                 </td>

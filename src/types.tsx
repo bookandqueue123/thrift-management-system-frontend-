@@ -479,7 +479,22 @@ export interface OrganisationGroupsProps {
   isArchieve: boolean;
   isVerified: boolean;
   savingIdentities: any[];
-  createdAt: Date;
-  updatedAt: Date;
-  __v: number;
+  createdAt:        Date;
+  updatedAt:        Date;
+  __v:              number;
+}
+export interface setUpSavingsProps {
+  accountType: string,
+    percentageBased: string,
+    amountBased: string,
+    accountNumber: string,
+    accountName: string,
+    purpose: string,
+    amount: string,
+    frequency: string,
+    startDate: string,
+    endDate: string,
+    totalexpectedSavings: string,
+    collectionDate: string,
+    userId: string
 }

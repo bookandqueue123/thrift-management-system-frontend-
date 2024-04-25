@@ -51,7 +51,7 @@ export default function Page(){
           className="w-[5rem] md:w-[7.5rem]"
         />
         <p className="text-center text-sm text-ajo_offWhite">
-          Setup General admin fee of all the customers in the organisation. Make all the necessary edits and changes. Use
+          Update General admin fee of all the customers in the organisation. Make all the necessary edits and changes. Use
           the button below to get started!
         </p>
 
@@ -201,7 +201,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
       
       <div className='border md:ml-[30%] md:mr-[15%] bg-white mt-[5%] mb-8 p-8'>
       <div className='flex justify-between'>
-          <h2 className="font-bold p-4">SAVING SETUP AND ADMIN FEE</h2>
+          <h2 className="font-bold p-4">UPDATE SAVING SETUP AND ADMIN FEE</h2>
           <div
               onClick={() => setModalState(false)}
               className="mr-8 cursor-pointer pt-2"
