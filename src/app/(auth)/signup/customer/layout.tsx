@@ -1,6 +1,6 @@
 
 export const metadata = {
-  title: "Customer SignUp | Ajo by Raoatech",
+  title: "Customer SignUp | Finkia by Raoatech",
   description: "Create your account",
 };
 

@@ -3,7 +3,6 @@ import Banner from "@/components/Banner";
 import Link from "next/link";
 
 const Landing = () => {
-  // VerifyOrgSubdomain();
   return (
     <main className="md:flex">
       <Banner />
