@@ -7,7 +7,7 @@ export type customer = {
   email: string;
   phoneNumber: string;
   accountNumber: number;
-  groupMembers: [],
+  groupMembers: [];
   role: "customer" | "merchant" | "organization";
   kycVerified: boolean;
   organisation: string;
@@ -434,14 +434,14 @@ export interface FormErrors {
 }
 
 export interface UpdateMerchantKycProps {
-  country:         string;
-  state:           string;
-  lga:             string;
-  region:            string;
-  phoneNumber:        string;
-  organisationLogo:   null;
-  tradingName: string,
-  organisationName: string
+  country: string;
+  state: string;
+  lga: string;
+  region: string;
+  phoneNumber: string;
+  organisationLogo: null;
+  tradingName: string;
+  organisationName: string;
   description: string;
   prefferedUrl: string;
   email: string;
@@ -450,8 +450,10 @@ export interface UpdateMerchantKycProps {
   linkedIn: string;
   twitter: string;
   pintrest: string;
-  officeAddress: string
-
+  officeAddress: string;
+  BankRecommendation: null;
+  CourtAffidavit: null;
+  CommunityRecommendation: null;
 }
 
 type MyFile = {
@@ -466,18 +468,18 @@ export type MyFileList = {
   // length: number;
 };
 export interface OrganisationGroupsProps {
-  _id:              string;
-  description:      string;
-  userType:         string;
-  groupName:        string;
-  groupMember:      any[];
-  role:             string;
-  organisations:    any[];
-  kycVerified:      boolean;
-  isArchieve:       boolean;
-  isVerified:       boolean;
+  _id: string;
+  description: string;
+  userType: string;
+  groupName: string;
+  groupMember: any[];
+  role: string;
+  organisations: any[];
+  kycVerified: boolean;
+  isArchieve: boolean;
+  isVerified: boolean;
   savingIdentities: any[];
-  createdAt:        Date;
-  updatedAt:        Date;
-  __v:              number;
+  createdAt: Date;
+  updatedAt: Date;
+  __v: number;
 }
