@@ -1,7 +1,7 @@
 
 'use client'
 import { useAuth } from '@/api/hooks/useAuth';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction, useState } from 'react';
 import { AxiosError, AxiosResponse } from 'axios';
 import { useSelector } from 'react-redux';
@@ -127,6 +127,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
       
       setShowModal(true)
       // router.push(`/signin`);
+      
       setFormData({
         accountType: 'individual',
     percentageBased: '',
@@ -173,13 +174,33 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
   
     return errors;
   };
-  
+  const {
+    data: organizations,
+    isLoading: isUserLoading,
+    isError: getGroupError,
+  } = useQuery({
+    queryKey: ["allOrganizations"],
+    queryFn: async () => {
+      console.log(organisationId)
+      return client
+        .get(`/api/user/${organisationId}`, {})
+        .then((response) => {
+          setFormData((prevData) => ({...prevData, percentageBased:response.data.adminFee          }))
+          return response.data;
+        })
+        .catch((error) => {
+          throw error;
+        });
+    },
+  });
+
+
   return (
     <div className="flex flex-col ">
     {showModal ? (
         <SuccessModal
-        title='Savings Set Up'
-        successText='Savings set up Successfully'
+        title='General admin fee'
+        successText='General admin fee updated successfully'
         setShowModal={setShowModal}
         />
       ): ""
@@ -203,9 +224,9 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
       <div className='flex justify-between'>
           <h2 className="font-bold p-4">UPDATE SAVING SETUP AND ADMIN FEE</h2>
           <div
-              onClick={() => setModalState(false)}
-              className="mr-8 cursor-pointer pt-2"
-            >
+            onClick={() => setModalState(false)}
+            className="mr-8 cursor-pointer pt-2"
+          >
              <svg
                 width="32"
                 height="32"
@@ -222,7 +243,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
                 />
             </svg>
 
-            </div>
+          </div>
           </div>
         <div className=" pl-12 pt-1">
         <h1 className="text-sm font-semibold mb-2">Admin Fee (Kindly select your most prefered administrative fee)</h1>

@@ -72,7 +72,7 @@ const CustomerDashboard = () => {
         });
     },
   });
-  console.log(allSavings)
+  
 
   useEffect(() => {
     if (allSavings?.savings) {
@@ -88,7 +88,7 @@ const CustomerDashboard = () => {
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
 
-    console.log(filteredSavings);
+
     if (filteredSavings) {
       const filtered = filteredSavings.filter((item) =>
         String(item.user.accountNumber).includes(String(e.target.value)),
