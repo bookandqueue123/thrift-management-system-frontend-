@@ -186,6 +186,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
       setErrors(validationErrors);
      
     }
+    
   };
 
   const validateForm = (data : setUpSavingsProps) : Partial<setUpSavingsProps>=> {
