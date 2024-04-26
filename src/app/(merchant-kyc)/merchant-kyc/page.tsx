@@ -2,28 +2,27 @@
 import { useAuth } from "@/api/hooks/useAuth";
 import StatesAndLGAs from "@/api/statesAndLGAs.json";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
-import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { selectUserId } from "@/slices/OrganizationIdSlice";
 import { MyFileList, StateProps, UpdateMerchantKycProps } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
+import type {} from "ldrs";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
-import type {} from "ldrs";
-
 
 type kycSections = "profile" | "contact" | "address" | "verify";
 
 const Kyc = () => {
-  const userId = useSelector(selectUser);
-      async function getLoader() {
-        const { tailspin } = await import("ldrs");
-        tailspin.register();
-      }
-      getLoader();
+  const userId = useSelector(selectUserId);
+  // async function getLoader() {
+  //   const { tailspin } = await import("ldrs");
+  //   tailspin.register();
+  // }
+  // getLoader();
 
   const { client } = useAuth();
   const router = useRouter();
@@ -76,11 +75,12 @@ const Kyc = () => {
 
   const {
     mutate: kycUpdate,
-    isPending,
+    isPending: isUpdatingKyc,
     isError,
   } = useMutation({
     mutationKey: ["merchant kyc"],
     mutationFn: async (values: UpdateMerchantKycProps) => {
+      console.log("isSubmitting..................")
       const formData = new FormData();
       formData.append("country", values.country);
       formData.append("state", values.state);
@@ -523,9 +523,7 @@ const Kyc = () => {
                     >
                       <p className="text-center text-[gray]">
                         Drag n drop a{" "}
-                        <span className="font-semibold">
-                          .pdf, .docx, .jpg, .png
-                        </span>{" "}
+                        <span className="font-semibold">.pdf, .jpg, .png</span>{" "}
                         here, or click to select one
                       </p>
                     </label>
@@ -576,9 +574,7 @@ const Kyc = () => {
                     <label htmlFor="CourtAffidavit" className="cursor-pointer">
                       <p className="text-center text-[gray]">
                         Drag n drop a{" "}
-                        <span className="font-semibold">
-                          .pdf, .docx, .jpg, .png
-                        </span>{" "}
+                        <span className="font-semibold">.pdf, .jpg, .png</span>{" "}
                         here, or click to select one
                       </p>
                     </label>
@@ -634,9 +630,7 @@ const Kyc = () => {
                     >
                       <p className="text-center text-[gray]">
                         Drag n drop a{" "}
-                        <span className="font-semibold">
-                          .pdf, .docx, .jpg, .png
-                        </span>{" "}
+                        <span className="font-semibold">.pdf, .jpg, .png</span>{" "}
                         here, or click to select one
                       </p>
                     </label>
@@ -976,7 +970,7 @@ const Kyc = () => {
                     <p className="mb-1 text-sm text-ajo_offWhite">
                       Business Name:
                     </p>
-                    <div className="rounded-md bg-white bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
+                    <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                       {values.organisationName}
                     </div>
                   </span>
@@ -985,7 +979,7 @@ const Kyc = () => {
                     <p className="mb-1 text-sm text-ajo_offWhite">
                       Business Description:
                     </p>
-                    <div className="break-words rounded-md bg-white bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
+                    <div className="break-words rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                       {values.description}
                     </div>
                   </span>
@@ -993,7 +987,7 @@ const Kyc = () => {
                   <div className="my-12">
                     <span className="mb-2 block">
                       <p className="mb-1 text-sm text-ajo_offWhite">Website:</p>
-                      <div className="rounded-md bg-white bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
+                      <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                         {values.websiteUrl}
                       </div>
                     </span>
@@ -1001,7 +995,7 @@ const Kyc = () => {
                       <p className="mb-1 text-sm text-ajo_offWhite">
                         Email Address:
                       </p>
-                      <div className="rounded-md bg-white bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
+                      <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                         {values.email}
                       </div>
                     </span>
@@ -1009,7 +1003,7 @@ const Kyc = () => {
                       <p className="mb-1 text-sm text-ajo_offWhite">
                         Telephone number:
                       </p>
-                      <div className="rounded-md bg-white bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
+                      <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                         {values.phoneNumber}
                       </div>
                     </span>
@@ -1020,7 +1014,7 @@ const Kyc = () => {
                       <p className="mb-1 text-sm text-ajo_offWhite">
                         Facebook:
                       </p>
-                      <div className="rounded-md bg-white bg-opacity-75 px-4 py-2 text-ajo_darkBlue">
+                      <div className="rounded-md bg-white  px-4 py-2 text-ajo_darkBlue">
                         {values.facebook}
                       </div>
                     </span>
@@ -1028,13 +1022,13 @@ const Kyc = () => {
                       <p className="mb-1 text-sm text-ajo_offWhite">
                         Instagram:
                       </p>
-                      <div className="rounded-md bg-white bg-opacity-75 px-4 py-2 text-ajo_darkBlue">
+                      <div className="rounded-md bg-white  px-4 py-2 text-ajo_darkBlue">
                         {values.instagram}
                       </div>
                     </span>
                     <span className="mb-2">
                       <p className="mb-1 text-sm text-ajo_offWhite">Twitter:</p>
-                      <div className="rounded-md bg-white bg-opacity-75 px-4 py-2 text-ajo_darkBlue">
+                      <div className="rounded-md bg-white  px-4 py-2 text-ajo_darkBlue">
                         {values.twitter}
                       </div>
                     </span>
@@ -1042,7 +1036,7 @@ const Kyc = () => {
                       <p className="mb-1 text-sm text-ajo_offWhite">
                         Linkedin:
                       </p>
-                      <div className="rounded-md bg-white bg-opacity-75 px-4 py-2 text-ajo_darkBlue">
+                      <div className="rounded-md bg-white  px-4 py-2 text-ajo_darkBlue">
                         {values.linkedIn}
                       </div>
                     </span>
@@ -1050,7 +1044,7 @@ const Kyc = () => {
                       <p className="mb-1 text-sm text-ajo_offWhite">
                         Pinterest:
                       </p>
-                      <div className="rounded-md bg-white bg-opacity-75 px-4 py-2 text-ajo_darkBlue">
+                      <div className="rounded-md bg-white  px-4 py-2 text-ajo_darkBlue">
                         {values.pinterest}
                       </div>
                     </span>
@@ -1061,7 +1055,7 @@ const Kyc = () => {
                       <p className="mb-1 text-sm text-ajo_offWhite">
                         Office Address:
                       </p>
-                      <div className="rounded-md bg-white bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
+                      <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                         {values.officeAddress}
                       </div>
                     </span>
@@ -1070,13 +1064,13 @@ const Kyc = () => {
                         <p className="mb-1 text-sm text-ajo_offWhite">
                           Country:
                         </p>
-                        <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
+                        <div className="rounded-md bg-ajo_offWhite  px-4 py-2 capitalize text-ajo_darkBlue">
                           {values.country}
                         </div>
                       </span>
                       <span className="mb-2 flex-1">
                         <p className="mb-1 text-sm text-ajo_offWhite">State:</p>
-                        <div className="rounded-md bg-white bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
+                        <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                           {values.state}
                         </div>
                       </span>
@@ -1084,13 +1078,13 @@ const Kyc = () => {
                         <p className="mb-1 text-sm text-ajo_offWhite">
                           Local Govt:
                         </p>
-                        <div className="rounded-md bg-white bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
+                        <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                           {values.lga}
                         </div>
                       </span>
                       <span className="mb-2 flex-1">
                         <p className="mb-1 text-sm text-ajo_offWhite">City:</p>
-                        <div className="rounded-md bg-white bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
+                        <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                           {values.city}
                         </div>
                       </span>
@@ -1181,9 +1175,20 @@ const Kyc = () => {
                 }}
                 disabled={isSubmitting}
               >
-                {allSections.verify && activeSection === "verify"
-                  ? "Submit"
-                  : "Next"}
+                {allSections.verify && activeSection === "verify" ? (
+                  isSubmitting || isUpdatingKyc ? (
+                    <l-tailspin
+                      size="80"
+                      stroke="8"
+                      speed="0.8"
+                      color="#F2F0FF"
+                    ></l-tailspin>
+                  ) : (
+                    "Submit"
+                  )
+                ) : (
+                  "Next"
+                )}
               </button>
             </div>
             {showSuccessToast && (
