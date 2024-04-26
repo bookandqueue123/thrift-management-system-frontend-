@@ -53,7 +53,7 @@ export default function Footer(){
                 </div>
 
                 <div className={` my-8 flex justify-center  ${isHomepage ? 'text-white' : 'black'} pb-8`}>
-                Powered by <Link target="_blank" href={"https://raoatech.com/"} className="ml-1"><span> Raoatech Ng</span> </Link>
+                Powered by <Link target="_blank" href={"https://raoatech.com/"} className="ml-1"><span> Raoatech</span> </Link>
                 </div>
             </div>
         </div>

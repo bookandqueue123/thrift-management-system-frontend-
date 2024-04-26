@@ -14,7 +14,7 @@ export default function HowToUse(){
                         Organisation
 
                         </button>
-                        <p className="mb-3 pt-16 pb-16 font-normal text-gray-700 dark:text-gray-400">Organisations sign Up by providing all necessary information. Organisation can onboard its customers/staff.</p>
+                        <p className="mb-3 pt-16 pb-16 font-normal text-gray-700 dark:text-gray-400">Organisations sign up by providing all necessary information. Organisation can onboard its customers/staff.</p>
                         
                         <button 
                         onClick={() => router.push('/signup/merchant')}

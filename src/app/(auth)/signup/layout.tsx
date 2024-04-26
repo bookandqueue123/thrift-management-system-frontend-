@@ -18,7 +18,7 @@ export default function RootLayout({
             SignUp
           </h1>
           <h3 className="mt-2 text-center text-sm text-ajo_orange">
-            Experience the power of seamless savings with Ajo.{" "}
+            Experience the power of seamless savings with Finkia.{" "}
             <span className="font-semibold">
               Kindly Fill in your details in the fields provided below:
             </span>
