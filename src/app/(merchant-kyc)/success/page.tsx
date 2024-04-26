@@ -6,21 +6,21 @@ import { useRouter} from "next/navigation";
 const Verification = () => {
   const router = useRouter();
   return (
-    <div className="flex h-[90vh] flex-col items-center justify-center mt-[-30px] px-8">
+    <div className="mt-[-30px] flex h-[90vh] flex-col items-center justify-center px-8">
       <Image
         src="/sucees.svg"
-        alt="Ajo Logo"
-        className="relative -left-[.5rem] -top-[.5rem] m-0 h-[50px] w-[50px] md:-left-[2rem] md:-top-[1rem] md:h-[100px] md:w-[100px] "
-        width={250}
-        height={250}
+        alt="verification check"
+        className=" m-0 h-[50px] w-[50px] md:h-[100px] md:w-[100px] "
+        width={300}
+        height={300}
         loading="eager"
       />
-      <p className=" text-[22px] md:text-[30px] font-semibold text-[#EAAB40] text-center">
+      <p className=" text-center text-[22px] font-semibold text-[#EAAB40] md:text-[30px]">
         Verification Successful
       </p>
-      <p className=" text-[15px] md:text-[18px] mt-5  text-white text-center">
-        Lorem Ipsum dolor et Manhjikl Nikojnij;os ;jn h b ; cxcv
-        nftfdvbkhgyfvbjb,k dsxb x{" "}
+      <p className=" mt-5 text-center text-[15px]  text-white md:text-[18px]">
+        🎉 Congratulations! Your KYC verification has been successfully
+        completed. 🎉
       </p>
       <CustomButton
         label="Proceed To Dashboard"

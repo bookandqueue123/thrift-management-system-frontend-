@@ -3,7 +3,7 @@ import { useAuth } from "@/api/hooks/useAuth";
 import StatesAndLGAs from "@/api/statesAndLGAs.json";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
-import { StateProps, UpdateMerchantKycProps } from "@/types";
+import { MyFileList, StateProps, UpdateMerchantKycProps } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
@@ -18,9 +18,8 @@ type kycSections = "profile" | "contact" | "address" | "verify";
 const Kyc = () => {
   const userId = useSelector(selectUser);
 
-  const searchParams = useSearchParams();
-
-  const id = searchParams.get("id");
+  // const searchParams = useSearchParams();
+  // const id = searchParams.get("id");
 
   const { client } = useAuth();
   const router = useRouter();
@@ -34,8 +33,8 @@ const Kyc = () => {
     [],
   );
   const [selectedState, setSelectedState] = useState("");
-  const [selectedLGA, setSelectedLGA] = useState("");
-  const organizationId = useSelector(selectOrganizationId);
+  // const [selectedLGA, setSelectedLGA] = useState("");
+  // const organizationId = useSelector(selectOrganizationId);
   const [selectedLGAArray, setSelectesLGAArray] = useState<string[]>([]);
 
   const MyEffectComponent = ({ formikValues }: { formikValues: any }) => {
@@ -72,27 +71,6 @@ const Kyc = () => {
       }
     }
   }, [selectedCountry, selectedState]);
-  function getLGAsByState(stateName: string) {
-    // Find the Country object in the dataset
-    const CountryObject = StatesAndLGAs.find(
-      (countryData) => countryData.country === selectedCountry,
-    );
-
-    // If Country object is found, find the state by its name
-    if (CountryObject) {
-      const stateObject = CountryObject.states.find(
-        (state) => state.name === stateName,
-      );
-      // If state is found, return its LGAs
-      if (stateObject) {
-        setSelectesLGAArray(stateObject.lgas);
-      } else {
-        return [];
-      }
-    } else {
-      return null;
-    }
-  }
 
   const {
     mutate: kycUpdate,
@@ -106,9 +84,9 @@ const Kyc = () => {
       formData.append("state", values.state);
       formData.append("lga", values.lga);
       formData.append("officeAddress", values.officeAddress);
-      formData.append("region", values.region);
+      formData.append("region", values.city);
       formData.append("organisationName", values.organisationName);
-      formData.append("prefferedUrl", values.prefferedUrl);
+      formData.append("prefferedUrl", values.websiteUrl);
       formData.append("email", values.email);
       formData.append("description", values.description);
       formData.append("phoneNumber", values.phoneNumber);
@@ -116,7 +94,7 @@ const Kyc = () => {
       formData.append("instagram", values.instagram);
       formData.append("linkedIn", values.linkedIn);
       formData.append("twitter", values.twitter);
-      formData.append("pintrest", values.pintrest);
+      formData.append("pinterest", values.pinterest);
 
       if (values.organisationLogo) {
         formData.append("organisationLogo", values.organisationLogo[0]);
@@ -125,7 +103,7 @@ const Kyc = () => {
     },
 
     onSuccess(response) {
-      router.push("/success");
+      router.replace("/success");
       setShowSuccessToast(true);
       setSuccessMessage((response as any).response.data.message);
     },
@@ -160,20 +138,20 @@ const Kyc = () => {
     country: "",
     state: "",
     lga: "",
-    region: "",
-    phoneNumber: userData?.phoneNumber || "",
+    city: "",
+    phoneNumber: userData?.phoneNumber ?? "",
     officeAddress: "",
     organisationLogo: null,
     tradingName: "",
-    organisationName: userData?.organisationName || "",
+    organisationName: userData?.organisationName ?? "",
     description: "",
-    prefferedUrl: userData?.prefferedUrl || "",
-    email: userData?.email || "",
+    websiteUrl: "",
+    email: userData?.email ?? "",
     facebook: "",
     instagram: "",
     linkedIn: "",
     twitter: "",
-    pintrest: "",
+    pinterest: "",
     BankRecommendation: null,
     CourtAffidavit: null,
     CommunityRecommendation: null,
@@ -188,6 +166,7 @@ const Kyc = () => {
 
   const handleSectionComplete = (section: kycSections) => {
     setAllSections((prev) => ({ ...prev, [section]: true }));
+    // console.log(allSections);
   };
 
   const [activeSection, SetActiveSection] = useState<kycSections>("profile");
@@ -200,6 +179,10 @@ const Kyc = () => {
   };
   const getBgColor = (section: kycSections) => {
     return allSections[section] ? "bg-white" : "bg-[rgba(255,255,255,0.1)]";
+  };
+
+  const initialErrors = {
+    organisationName: "Required",
   };
 
   return (
@@ -246,26 +229,131 @@ const Kyc = () => {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
+        initialErrors={initialErrors}
         validationSchema={Yup.object({
+          email: Yup.string().required("Required"),
           country: Yup.string().required("Required"),
           state: Yup.string().required("Required"),
           lga: Yup.string().required("Required"),
           region: Yup.string().required("Required"),
           officeAddress: Yup.string().required("Required"),
-          organisationLogo: Yup.mixed().required("Required"),
+          organisationLogo: Yup.mixed()
+            .required("Required")
+            .test(
+              "fileSize",
+              "File size must be less than 2MB",
+              (value: MyFileList) => {
+                if (value) {
+                  return value[0].size <= 2097152;
+                }
+                return true;
+              },
+            )
+            .test(
+              "fileType",
+              "Only .jpg, .png files are allowed",
+              (value: MyFileList) => {
+                if (value) {
+                  const file = value[0];
+                  const fileType = file.type;
+                  return fileType === "image/jpeg" || fileType === "image/png";
+                }
+                return true;
+              },
+            ),
           description: Yup.string().required("Required"),
           phoneNumber: Yup.string().required("Required"),
           organisationName: Yup.string().required("Required"),
           tradingName: Yup.string().optional(),
           websiteUrl: Yup.string().optional(),
-          BankRecommendation: Yup.mixed().required("Required"),
-          CourtAffidavit: Yup.mixed().required("Required"),
-          CommunityRecommendation: Yup.mixed().required("Required"),
+          BankRecommendation: Yup.mixed()
+            .required("Required")
+            .test(
+              "fileSize",
+              "File size must be less than 2MB",
+              (value: MyFileList) => {
+                if (value) {
+                  return value[0].size <= 2097152;
+                }
+                return true;
+              },
+            )
+            .test(
+              "fileType",
+              "Only .pdf, .jpg, .png files are allowed",
+              (value: MyFileList) => {
+                if (value) {
+                  const file = value[0];
+                  const fileType = file.type;
+                  return (
+                    fileType === "application/pdf" ||
+                    fileType === "image/jpeg" ||
+                    fileType === "image/png"
+                  );
+                }
+                return true;
+              },
+            ),
+          CourtAffidavit: Yup.mixed()
+            .required("Required")
+            .test(
+              "fileSize",
+              "File size must be less than 2MB",
+              (value: MyFileList) => {
+                if (value) {
+                  return value[0].size <= 2097152;
+                }
+                return true;
+              },
+            )
+            .test(
+              "fileType",
+              "Only .pdf, .jpg, .png files are allowed",
+              (value: MyFileList) => {
+                if (value) {
+                  const file = value[0];
+                  const fileType = file.type;
+                  return (
+                    fileType === "application/pdf" ||
+                    fileType === "image/jpeg" ||
+                    fileType === "image/png"
+                  );
+                }
+                return true;
+              },
+            ),
+          CommunityRecommendation: Yup.mixed()
+            .required("Required")
+            .test(
+              "fileSize",
+              "File size must be less than 2MB",
+              (value: MyFileList) => {
+                if (value) {
+                  return value[0].size <= 2097152;
+                }
+                return true;
+              },
+            )
+            .test(
+              "fileType",
+              "Only .pdf, .jpg, .png files are allowed",
+              (value: MyFileList) => {
+                if (value) {
+                  const file = value[0];
+                  const fileType = file.type;
+                  return (
+                    fileType === "application/pdf" ||
+                    fileType === "image/jpeg" ||
+                    fileType === "image/png"
+                  );
+                }
+                return true;
+              },
+            ),
         })}
         onSubmit={(values, { setSubmitting }) => {
           setTimeout(() => {
             kycUpdate(values);
-            console.log("bankRecommendation", values.BankRecommendation);
 
             setSubmitting(false);
           }, 800);
@@ -296,9 +384,11 @@ const Kyc = () => {
                       Is your legal business name correct?
                     </label>
                     <Field
+                      onChange={handleChange}
                       name="organisationName"
                       type="text"
                       className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                      isInvalid={!!errors.organisationName}
                     />
                     <ErrorMessage
                       name="organisationName"
@@ -380,14 +470,16 @@ const Kyc = () => {
                       onChange={(e) =>
                         setFieldValue("organisationLogo", e.target.files)
                       }
-                      accept="image/*"
+                      accept="image/jpeg, image/png"
                     />
                     <label
                       htmlFor="organisationLogo"
                       className="cursor-pointer"
                     >
                       <p className="text-center text-[gray]">
-                        Drag n drop an image here, or click to select one
+                        Drag n drop a{" "}
+                        <span className="font-semibold">.jpg or .png file</span>{" "}
+                        here, or click to select one
                       </p>
                     </label>
                   </div>
@@ -421,14 +513,14 @@ const Kyc = () => {
                       onChange={(e) =>
                         setFieldValue("BankRecommendation", e.target.files)
                       }
-                      accept="application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, .jpg,.png"
+                      accept="application/pdf, .jpg, .png"
                     />
                     <label
                       htmlFor="BankRecommendation"
                       className="cursor-pointer"
                     >
                       <p className="text-center text-[gray]">
-                        Drag n drop an{" "}
+                        Drag n drop a{" "}
                         <span className="font-semibold">
                           .pdf, .docx, .jpg, .png
                         </span>{" "}
@@ -437,20 +529,33 @@ const Kyc = () => {
                     </label>
                   </div>
                   {values.BankRecommendation &&
-                    values.BankRecommendation[0] && (
+                    values.BankRecommendation[0] &&
+                    ((values.BankRecommendation[0] as File).type.includes(
+                      "image",
+                    ) ? (
+                      <Image
+                        src={URL.createObjectURL(values.BankRecommendation[0])}
+                        alt="Bank Recommendation"
+                        className="mt-4 max-w-full rounded-md"
+                        style={{ maxWidth: "100%" }}
+                        width={100}
+                        height={100}
+                      />
+                    ) : (
                       <iframe
                         src={URL.createObjectURL(values.BankRecommendation[0])}
                         className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
                         title="Bank Recommendation Letter"
                       ></iframe>
-                    )}
+                    ))}
+
                   <div className="text-xs text-red-600">
-                    <ErrorMessage name="organisationLogo" />
+                    <ErrorMessage name="BankRecommendation" />
                   </div>
                 </div>
                 <div className="mt-4">
                   <label
-                    htmlFor="organisationLogo"
+                    htmlFor="CourtAffidavit"
                     className="m-0 text-xs font-medium text-white"
                   >
                     Court Affidavit
@@ -458,20 +563,17 @@ const Kyc = () => {
                   <div className="mt-1 flex h-[100px] items-center justify-center  rounded-md border-2 border-gray-300 bg-white px-6 pb-6 pt-5">
                     <input
                       type="file"
-                      name="organisationLogo"
-                      id="organisationLogo"
+                      name="CourtAffidavit"
+                      id="CourtAffidavit"
                       className="hidden"
                       onChange={(e) =>
-                        setFieldValue("organisationLogo", e.target.files)
+                        setFieldValue("CourtAffidavit", e.target.files)
                       }
-                      accept="image/*"
+                      accept="application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, .jpg,.png"
                     />
-                    <label
-                      htmlFor="organisationLogo"
-                      className="cursor-pointer"
-                    >
+                    <label htmlFor="CourtAffidavit" className="cursor-pointer">
                       <p className="text-center text-[gray]">
-                        Drag n drop an{" "}
+                        Drag n drop a{" "}
                         <span className="font-semibold">
                           .pdf, .docx, .jpg, .png
                         </span>{" "}
@@ -479,23 +581,33 @@ const Kyc = () => {
                       </p>
                     </label>
                   </div>
-                  {values.organisationLogo && values.organisationLogo[0] && (
-                    <Image
-                      src={URL.createObjectURL(values.organisationLogo[0])}
-                      alt="AJO"
-                      className="mt-4 max-w-full rounded-md"
-                      style={{ maxWidth: "100%" }}
-                      width={100}
-                      height={100}
-                    />
-                  )}
+                  {values.CourtAffidavit &&
+                    values.CourtAffidavit[0] &&
+                    ((values.CourtAffidavit[0] as File).type.includes(
+                      "image",
+                    ) ? (
+                      <Image
+                        src={URL.createObjectURL(values.CourtAffidavit[0])}
+                        alt="Court Affidavit"
+                        className="mt-4 max-w-full rounded-md"
+                        style={{ maxWidth: "100%" }}
+                        width={100}
+                        height={100}
+                      />
+                    ) : (
+                      <iframe
+                        src={URL.createObjectURL(values.CourtAffidavit[0])}
+                        className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
+                        title="Court Affidavit Letter"
+                      ></iframe>
+                    ))}
                   <div className="text-xs text-red-600">
-                    <ErrorMessage name="organisationLogo" />
+                    <ErrorMessage name="CourtAffidavit" />
                   </div>
                 </div>
                 <div className="mt-4">
                   <label
-                    htmlFor="organisationLogo"
+                    htmlFor="CommunityRecommendation"
                     className="m-0 text-xs font-medium text-white"
                   >
                     Letter of recommendation (Community / Religious Leader)
@@ -503,20 +615,23 @@ const Kyc = () => {
                   <div className="mt-1 flex h-[100px] items-center justify-center  rounded-md border-2 border-gray-300 bg-white px-6 pb-6 pt-5">
                     <input
                       type="file"
-                      name="organisationLogo"
-                      id="organisationLogo"
+                      name="CommunityRecommendation"
+                      id="CommunityRecommendation"
                       className="hidden"
-                      onChange={(e) =>
-                        setFieldValue("organisationLogo", e.target.files)
-                      }
+                      onChange={(e) => {
+                        setFieldValue(
+                          "CommunityRecommendation",
+                          e.target.files,
+                        );
+                      }}
                       accept="application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, image/*"
                     />
                     <label
-                      htmlFor="organisationLogo"
+                      htmlFor="CommunityRecommendation"
                       className="cursor-pointer"
                     >
                       <p className="text-center text-[gray]">
-                        Drag n drop an{" "}
+                        Drag n drop a{" "}
                         <span className="font-semibold">
                           .pdf, .docx, .jpg, .png
                         </span>{" "}
@@ -524,18 +639,32 @@ const Kyc = () => {
                       </p>
                     </label>
                   </div>
-                  {values.organisationLogo && values.organisationLogo[0] && (
-                    <Image
-                      src={URL.createObjectURL(values.organisationLogo[0])}
-                      alt="AJO"
-                      className="mt-4 max-w-full rounded-md"
-                      style={{ maxWidth: "100%" }}
-                      width={100}
-                      height={100}
-                    />
-                  )}
+                  {values.CommunityRecommendation &&
+                    values.CommunityRecommendation[0] &&
+                    ((values.CommunityRecommendation[0] as File).type.includes(
+                      "image",
+                    ) ? (
+                      <Image
+                        src={URL.createObjectURL(
+                          values.CommunityRecommendation[0],
+                        )}
+                        alt="Community Recommendation"
+                        className="mt-4 max-w-full rounded-md"
+                        style={{ maxWidth: "100%" }}
+                        width={100}
+                        height={100}
+                      />
+                    ) : (
+                      <iframe
+                        src={URL.createObjectURL(
+                          values.CommunityRecommendation[0],
+                        )}
+                        className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
+                        title="Bank Recommendation Letter"
+                      ></iframe>
+                    ))}
                   <div className="text-xs text-red-600">
-                    <ErrorMessage name="organisationLogo" />
+                    <ErrorMessage name="CommunityRecommendation" />
                   </div>
                 </div>
               </div>
@@ -697,18 +826,18 @@ const Kyc = () => {
 
                 <div className="mb-4">
                   <label
-                    htmlFor="address1"
+                    htmlFor="officeAddress"
                     className="m-0 text-xs font-medium text-white"
                   >
                     Office Address 1
                   </label>
                   <Field
-                    name="address1"
+                    name="officeAddress"
                     type="text"
                     className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                   />
                   <ErrorMessage
-                    name="address1"
+                    name="officeAddress"
                     component="div"
                     className="text-xs text-red-500"
                   />
@@ -740,17 +869,15 @@ const Kyc = () => {
                       name="country"
                       className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-dropdown-icon bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D]"
                     >
+                      {StatesAndLGAs.map((country) => (
+                        <option key={country.country} value={country.country}>
+                          {country.country}
+                        </option>
+                      ))}
                       <option className="invisible"></option>
-
-                      {selectedStateArray &&
-                        selectedStateArray.map((state) => (
-                          <option key={state.name} value={state.name}>
-                            {state.name}
-                          </option>
-                        ))}
                     </Field>
                     <ErrorMessage
-                      name="state"
+                      name="country"
                       component="div"
                       className="text-xs text-red-500"
                     />
@@ -768,14 +895,13 @@ const Kyc = () => {
                       name="state"
                       className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-dropdown-icon bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D]"
                     >
-                      <option className="invisible"></option>
-
                       {selectedStateArray &&
                         selectedStateArray.map((state) => (
                           <option key={state.name} value={state.name}>
                             {state.name}
                           </option>
                         ))}
+                      <option className="invisible"></option>
                     </Field>
                     <ErrorMessage
                       name="state"
@@ -798,14 +924,13 @@ const Kyc = () => {
                       name="lga"
                       className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-dropdown-icon bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D]"
                     >
-                      <option className="invisible"></option>
-
                       {selectedLGAArray &&
                         selectedLGAArray.map((lga) => (
                           <option key={lga} value={lga}>
                             {lga}
                           </option>
                         ))}
+                      <option className="invisible"></option>
                     </Field>
                     <ErrorMessage
                       name="lga"
@@ -823,7 +948,7 @@ const Kyc = () => {
                     <Field
                       name="city"
                       type="text"
-                      className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-dropdown-icon bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D]"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6] p-3 pr-10 text-[#7D7D7D]"
                     />
                     <ErrorMessage
                       name="city"
@@ -850,7 +975,7 @@ const Kyc = () => {
                       Business Name:
                     </p>
                     <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
-                      raoatech technologies
+                      {values.organisationName}
                     </div>
                   </span>
 
@@ -858,15 +983,8 @@ const Kyc = () => {
                     <p className="mb-1 text-sm text-ajo_offWhite">
                       Business Description:
                     </p>
-                    <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                      Ut et massa mi. Aliquam in hendrerit urna. Pellentesque
-                      sit amet sapien fringilla, mattis ligula consectetur,
-                      ultrices mauris. Maecenas vitae mattis tellus. Nullam quis
-                      imperdiet augue. Vestibulum auctor ornare leo, non
-                      suscipit magna interdum eu. Curabitur pellentesque nibh
-                      nibh, at maximus ante fermentum sit amet. Pellentesque
-                      commodo lacus at sodales sodales.
+                    <div className="break-words rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
+                      {values.description}
                     </div>
                   </span>
 
@@ -874,7 +992,7 @@ const Kyc = () => {
                     <span className="mb-2 block">
                       <p className="mb-1 text-sm text-ajo_offWhite">Website:</p>
                       <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
-                        raoatechtechnologies.com
+                        {values.websiteUrl}
                       </div>
                     </span>
                     <span className="mb-2 block">
@@ -882,7 +1000,7 @@ const Kyc = () => {
                         Email Address:
                       </p>
                       <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
-                        raoatech@gmail.com
+                        {values.email}
                       </div>
                     </span>
                     <span className="mb-2 block">
@@ -890,7 +1008,7 @@ const Kyc = () => {
                         Telephone number:
                       </p>
                       <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
-                        +234 818203 8095
+                        {values.phoneNumber}
                       </div>
                     </span>
                   </div>
@@ -901,7 +1019,7 @@ const Kyc = () => {
                         Facebook:
                       </p>
                       <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 text-ajo_darkBlue">
-                        www.facebook.com
+                        {values.facebook}
                       </div>
                     </span>
                     <span className="mb-2">
@@ -909,13 +1027,13 @@ const Kyc = () => {
                         Instagram:
                       </p>
                       <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 text-ajo_darkBlue">
-                        www.instagram.com
+                        {values.instagram}
                       </div>
                     </span>
                     <span className="mb-2">
                       <p className="mb-1 text-sm text-ajo_offWhite">Twitter:</p>
                       <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 text-ajo_darkBlue">
-                        www.twitter.com
+                        {values.twitter}
                       </div>
                     </span>
                     <span className="mb-2">
@@ -923,7 +1041,7 @@ const Kyc = () => {
                         Linkedin:
                       </p>
                       <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 text-ajo_darkBlue">
-                        www.linkedin.com
+                        {values.linkedIn}
                       </div>
                     </span>
                     <span className="mb-2">
@@ -931,7 +1049,7 @@ const Kyc = () => {
                         Pinterest:
                       </p>
                       <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 text-ajo_darkBlue">
-                        www.pinterest.com
+                        {values.pinterest}
                       </div>
                     </span>
                   </div>
@@ -942,7 +1060,7 @@ const Kyc = () => {
                         Office Address:
                       </p>
                       <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
-                        12, Alajo Shomolu Street, Agbado, Ijaiye, Lagos State.
+                        {values.officeAddress}
                       </div>
                     </span>
                     <div className="flex flex-wrap gap-x-4">
@@ -951,13 +1069,27 @@ const Kyc = () => {
                           Country:
                         </p>
                         <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
-                          Nigeria
+                          {values.country}
                         </div>
                       </span>
                       <span className="mb-2 flex-1">
                         <p className="mb-1 text-sm text-ajo_offWhite">State:</p>
                         <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
-                          Lagos State
+                          {values.state}
+                        </div>
+                      </span>
+                      <span className="mb-2 flex-1">
+                        <p className="mb-1 text-sm text-ajo_offWhite">
+                          Local Govt:
+                        </p>
+                        <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
+                          {values.lga}
+                        </div>
+                      </span>
+                      <span className="mb-2 flex-1">
+                        <p className="mb-1 text-sm text-ajo_offWhite">City:</p>
+                        <div className="rounded-md bg-ajo_offWhite bg-opacity-75 px-4 py-2 capitalize text-ajo_darkBlue">
+                          {values.city}
                         </div>
                       </span>
                     </div>
@@ -1006,22 +1138,37 @@ const Kyc = () => {
                 </button>
               </span>
               <button
-                type={allSections.verify ? "submit" : "button"}
+                type="submit"
                 className="w-full  flex-1 rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
                 onClick={() => {
                   if (!allSections.verify && activeSection !== "verify") {
-                    if (allSections.profile && activeSection === "profile") {
+                    if (
+                      allSections.profile &&
+                      activeSection === "profile" &&
+                      !errors.organisationName &&
+                      !errors.description &&
+                      !errors.organisationLogo &&
+                      !errors.BankRecommendation &&
+                      !errors.CommunityRecommendation &&
+                      !errors.CourtAffidavit
+                    ) {
                       handleSectionComplete("contact");
                       SetActiveSection("contact");
                     } else if (
                       allSections.contact &&
-                      activeSection === "contact"
+                      activeSection === "contact" &&
+                      !errors.phoneNumber &&
+                      !errors.email
                     ) {
                       handleSectionComplete("address");
                       SetActiveSection("address");
                     } else if (
                       allSections.address &&
-                      activeSection === "address"
+                      activeSection === "address" &&
+                      !errors.officeAddress &&
+                      !errors.country &&
+                      !errors.state &&
+                      !errors.lga
                     ) {
                       handleSectionComplete("verify");
                       SetActiveSection("verify");
@@ -1037,15 +1184,12 @@ const Kyc = () => {
                   : "Next"}
               </button>
             </div>
-            {/* <SuccessToaster message="hey" /> */}
             {showSuccessToast && (
-              <SuccessToaster message={"Profile completed successfull!"} />
+              <SuccessToaster message={"KYC update successful!"} />
             )}
             {showErrorToast && errorMessage && errorMessage && (
               <ErrorToaster
-                message={
-                  errorMessage ? errorMessage : "Error completing profile"
-                }
+                message={errorMessage ? errorMessage : "Error updating KYC"}
               />
             )}
             <MyEffectComponent formikValues={values} />

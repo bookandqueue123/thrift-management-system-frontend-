@@ -239,13 +239,7 @@ export const Kyc = () => {
         ? "next of kin"
         : "identification";
   const { borderColor, bgColor, textColor } = getIndicatorColor(prevSection);
-  // console.log(getIndicatorColor(prevSection));
 
-  // console.log(kycSection);
-  // if (!id) {
-  //   // If id is not available yet, display loading indicator
-  //   return <div>Loading...</div>;
-  // }
   return (
     <>
       <div className="mx-auto mb-10 mt-8 w-[90%] align-middle">
