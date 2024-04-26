@@ -64,8 +64,8 @@ const CustomerNavbar = () => {
             <div className="flex flex-shrink-0 items-center">
               <Image
                 className="h-8 w-auto"
-                src="/Ajo2.svg"
-                alt="Ajo Logo"
+                src="/Logo.svg"
+                alt="Finkia Logo"
                 width={20}
                 height={20}
               />
@@ -182,8 +182,8 @@ export const Sidebar = ({
           <Link href="/" tabIndex={-1} className="outline-none">
             <Image
               className="h-8 w-auto"
-              src="/Ajo2.svg"
-              alt="Ajo Logo"
+              src="/Logo.svg"
+              alt="Finkia Logo"
               width={20}
               height={20}
             />
@@ -471,8 +471,8 @@ export const SuperAdminSidebar = ({
           <Link href="/" tabIndex={-1} className="outline-none">
             <Image
               className="h-8 w-auto"
-              src="/Ajo2.svg"
-              alt="Ajo Logo"
+              src="/Logo.svg"
+              alt="Finkia Logo"
               width={20}
               height={20}
             />

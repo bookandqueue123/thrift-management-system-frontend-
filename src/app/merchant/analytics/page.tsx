@@ -266,7 +266,6 @@ export default function Analytics(){
             <section>
         <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <span className="flex items-center gap-3">
-            {/* <SearchInput onSearch={() => ("")}/> */}
             <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
             <input
              onChange={handleSearch}
