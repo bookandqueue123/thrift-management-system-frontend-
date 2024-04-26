@@ -205,7 +205,7 @@ const Page = () => {
                   *
                 </span>
               </label>
-              <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+              <div className="">
                 {/* <span className="flex h-full select-none items-center gap-2 text-gray-400 sm:text-sm">
                 <svg
                   width="20"
@@ -236,7 +236,7 @@ const Page = () => {
                   id="phoneNumber"
                   name="phoneNumber"
                   type="tel"
-                  className="bg-transparent outline-none"
+                  className="mt-1 flex w-full items-center gap-2 rounded-lg border-0 border-none bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                 />
               </div>
               <ErrorMessage

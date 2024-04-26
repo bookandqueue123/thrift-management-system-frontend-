@@ -72,6 +72,24 @@ const CustomerDashboard = () => {
         });
     },
   });
+
+  
+
+  const { data: userBalance, isLoading: isLoadingUserBalance } = useQuery({
+    queryKey: ["userBalance"],
+    staleTime: 5000,
+    queryFn: async () => {
+      return client
+        .get(`/api/saving/get-savings?user=${id}`)
+        .then((response) => {
+          // setFilteredSavings(response.data.savings)
+          return response.data.currentSavingsBalance;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          throw error;
+        });
+    },
+  });
   
 
   useEffect(() => {
@@ -235,7 +253,7 @@ const CustomerDashboard = () => {
               bottomValueTopText="Current Savings Balance"
               bottomValueBottomText={
                 isBalanceVisible
-                  ? `N${AmountFormatter(allSavings.currentSavingsBalance)}`
+                  ? `N${AmountFormatter(userBalance)}`
                   : "*********"
               }
             />

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { PhoneNumber } from "react-phone-number-input";
 import * as Yup from "yup";
 
-export default function ContactUs({bg}: {bg?: string}){
+export default function ContactUs({bg, contactMail, contactPhone}: {bg?: string, contactPhone: string, contactMail: string}){
   const pathName = usePathname()
     const isHomepage = pathName === "/"
     const [showSuccessToast, setShowSuccessToast] =useState(false);
@@ -202,11 +202,11 @@ export default function ContactUs({bg}: {bg?: string}){
               </div>
               <div className="text-white">
                  <h2 className="font-bold text-4xl">Telephone</h2>
-                <p className="pt-4">+234 906 190 3588</p>
+                      <p className="pt-4">{contactPhone}</p>
               </div>
               <div className="text-white">
                  <h2 className="font-bold text-4xl">Email Address</h2>
-                <p className="pt-4"> info@maxwellsavings.com.ng</p>
+                <p className="pt-4"> {contactMail}</p>
               </div>
             </div>
           </div>
