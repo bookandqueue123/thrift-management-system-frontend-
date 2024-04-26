@@ -127,7 +127,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
         });
       },
       onSuccess(response: AxiosResponse<any, any>) {
-       
+        console.log(response)
         setShowSuccessToast(true);
         setSuccessMessage(response.data.message);
      
@@ -300,7 +300,8 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
     const handleSavingsClick = (id:any) => {
     
       const selectedSaving = allSavings.savings.filter((saving: { _id: string; }) => saving._id === id )
-      
+
+      console.log(selectedSaving)
       
       if(selectedSaving && selectedSaving.length > 0){
         
@@ -421,8 +422,8 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
                 <div className="relative mb-4 md:w-[50%] md:mr-4">
                   <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Customer Savings</label>
                   <select
-                    name="frequency"
-                    value={formData.frequency}
+                    name="savingID"
+                    value={formData.savingID}
                     onChange={handleChange}
                      onClick={(e) => handleSavingsClick((e.target as HTMLSelectElement).value)}
                     className="form-select bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white"
