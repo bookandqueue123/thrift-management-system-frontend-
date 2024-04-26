@@ -65,6 +65,7 @@ const SignInForm = () => {
   } = useMutation({
     mutationKey: ["UserLogin"],
     mutationFn: async (values: signInProps) => {
+      
       return client.post(`/api/auth/login`, {
         emailOrPhoneNumber: values.email,
         password: values.password,
@@ -73,12 +74,15 @@ const SignInForm = () => {
 
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
-
+      console.log(response)
       if (response.data.role === "customer") {
         if (user) {
           router.replace(`/customer`);
         }
-      } else if (response.data.role === "organisation") {
+      } else if(response.data.role === "superadmin"){
+        router.replace("/superadmin")
+      } 
+      else if (response.data.role === "organisation") {
         if (response.data.kycVerified) {
           router.replace("/merchant");
         } else {
@@ -95,7 +99,17 @@ const SignInForm = () => {
             userId: response.data._id,
           }),
         );
-      } else if (response.data.role === "organisation") {
+      }else if(response.data.role === "superadmin"){
+        dispatch(
+          setAuthData({
+            organizationId: response.data._id,
+            token: response.data.token,
+            user: response.data,
+            userId: response.data._id,
+          }),
+        );
+      }
+       else if (response.data.role === "organisation") {
         dispatch(
           setAuthData({
             organizationId: response.data._id,
@@ -131,6 +145,7 @@ const SignInForm = () => {
         password: Yup.string().required("Password is required"),
       })}
       onSubmit={(values, { setSubmitting }) => {
+        
         const encryptedPassword = encryptPassword(values.password, secretKey);
         if (rememberPassword) {
           setCookie(null, "rememberedPassword", encryptedPassword, {

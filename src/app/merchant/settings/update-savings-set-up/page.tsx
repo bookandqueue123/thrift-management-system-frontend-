@@ -12,7 +12,8 @@ import { ChangeEvent, Dispatch, FormEvent, SetStateAction, useEffect, useState }
 import { IoMdSearch } from "react-icons/io";
 import { useSelector } from "react-redux";
 import { AxiosError, AxiosResponse } from 'axios';
-import { customer, setUpSavingsProps } from "@/types";
+import { allSavingsResponse, customer, setUpSavingsProps } from "@/types";
+import { extractDate } from "@/utils/TimeStampFormatter";
 export default function UpdateSavingsSetup(){
     const [modalState, setModalState] = useState(false);
     return(
@@ -82,10 +83,12 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
       startDate: '',
       endDate: '',
       totalexpectedSavings: '',
-      collectionDate: ''
+      collectionDate: '',
+      savingID: ''
     });
-  
-  
+    const [showForm, setShowForm] = useState(false)
+    const [customerName, setCustomerName] = useState("null");
+    const [selectedCustomer, setSelectedCustomer] = useState("")
     const [totalexpectedSavings, setTotalExpectedSavings] = useState("")
     const [filterAccountNumbers, setFilteredAccountNumbers] = useState<customer[] | undefined>([]) 
     const [errors, setErrors] = useState<Partial<setUpSavingsProps>>({});
@@ -111,7 +114,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
     } = useMutation({
       mutationKey: ["savingsSetup"],
       mutationFn: async (values) => {
-        return client.post(`/api/saving`, {
+        return client.put(`/api/saving/${formData.savingID}`, {
           purposeName: formData.purpose,
           amount: formData.amount,
           startDate: formData.startDate,
@@ -124,6 +127,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
         });
       },
       onSuccess(response: AxiosResponse<any, any>) {
+        console.log(response)
         setShowSuccessToast(true);
         setSuccessMessage(response.data.message);
      
@@ -242,7 +246,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
   
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
-    
+      
       // TotalExpectedSavings()
       setFormData({ ...formData, [name]: value });
     
@@ -253,7 +257,9 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
         } else {
           const customer = allCustomers?.filter((customer) => String(customer.accountNumber).includes(String(value)));
           setFilteredAccountNumbers(customer);
+          // console.log(customer[0]._id)
           if (customer && customer.length > 0) {
+            setCustomerName(`${customer[0].firstName} ${customer[0].lastName}`)
             setFormData((prevData) => ({ ...prevData, accountName: `${customer[0].firstName} ${customer[0].lastName}` }));
           } else {
             setFormData((prevData) => ({ ...prevData, accountName: '' }));
@@ -263,12 +269,64 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
     };
     const handleAccountNumberClick = (accountNumber: string, firstName: string, lastName: string, userId:string) => {
       setFormData({ ...formData, accountNumber, accountName: `${firstName} ${lastName}`, userId });
-      
+      setSelectedCustomer(userId)
       setFilteredAccountNumbers([])
     };
   
-  
-   
+    const { data: allSavings, isLoading: isLoadingAllSavings } = useQuery({
+      queryKey: [' selectedCustomer', selectedCustomer],
+      staleTime: 5000,
+      queryFn: async () => {
+      if(selectedCustomer !== ""){
+        return client
+            .get(`/api/saving/get-savings?user=${selectedCustomer}`)
+            .then((response) => {
+          
+              // setFilteredSavings(response.data.savings)
+              return response.data;
+            })
+            .catch((error: AxiosError<any, any>) => {
+          
+              throw error;
+            });
+          }
+          else{
+          return []
+          }
+      }
+        
+    });
+
+    const handleSavingsClick = (id:any) => {
+    
+      const selectedSaving = allSavings.savings.filter((saving: { _id: string; }) => saving._id === id )
+
+      console.log(selectedSaving)
+      
+      if(selectedSaving && selectedSaving.length > 0){
+        
+        setShowForm(true)
+        setFormData((prevData) => ({...prevData,
+          accountName: customerName,
+         amountBased: selectedSaving[0].dailyBased,
+         percentageBased: selectedSaving[0].individualBased,
+         amount:selectedSaving[0].amount,
+         frequency:selectedSaving[0].frequency,
+         startDate: extractDate(selectedSaving[0].startDate),
+        endDate: extractDate(selectedSaving[0].endDate),
+        purpose: selectedSaving[0].purposeName,
+        collectionDate: extractDate(selectedSaving[0].collectionDate),
+        savingID: selectedSaving[0]._id
+
+        }))
+      }else{
+        
+        setFormData((prevData) => ({ ...prevData, accountName: '' }));
+      }
+      
+   }
+
+    
   
     return (
       <div className="">
@@ -330,6 +388,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
             
           
             <form onSubmit={handleSubmit}>
+              <div className="md:flex justify-between">
                 <div className="relative mb-4 md:w-[50%] md:mr-4">
                         <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Enter Customer Account Number</label>
                         <div className="flex items-center border rounded-md">
@@ -359,6 +418,30 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
                     
                     {errors.accountNumber && <p className="text-red-500">{errors.accountNumber}</p>}
                 </div>
+
+                <div className="relative mb-4 md:w-[50%] md:mr-4">
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Customer Savings</label>
+                  <select
+                    name="savingID"
+                    value={formData.savingID}
+                    onChange={handleChange}
+                     onClick={(e) => handleSavingsClick((e.target as HTMLSelectElement).value)}
+                    className="form-select bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white"
+                  >
+                    <option value="">Select Savings</option>
+                    {allSavings && allSavings?.savings?.map((saving: allSavingsResponse, index: number) => (
+                      <option
+                       
+                       key={saving._id} value={saving._id}>
+                        {saving.purposeName}
+                      </option>
+                    ))}
+                  </select>
+                  
+                    {errors.accountNumber && <p className="text-red-500">{errors.accountNumber}</p>}
+                </div>
+              </div>
+                
               
               <div className="mb-4">
                 <h1 className="text-sm font-semibold mb-2">Admin Fee (Kindly select your most prefered administrative fee)</h1>
@@ -423,7 +506,11 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
               <div className='mr-[8%]'>
                 <p className='text-sm font-bold mb-2'>Savings Settings</p>
                 <hr/>
-              
+
+                  
+                  
+                  {showForm ?
+                   <>
                   <div className='md:flex flex-between mt-4'>
                         <div className="relative mb-4 md:w-[50%] md:mr-4">
                             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Enter Customer Account Number</label>
@@ -466,9 +553,9 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
                     />
                     {filterAccountNumbers?.length !== 0 ? (
                       <div className="rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
-                      {filterAccountNumbers && filterAccountNumbers.map((account, index) => (
+                      {filterAccountNumbers && filterAccountNumbers?.map((account, index) => (
                         <p
-                        onClick={() => console.log(index)}
+                        
                          key={index} 
                          className={` block cursor-pointer px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
                         >
@@ -582,16 +669,19 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
                   {errors.collectionDate && <p className="text-red-500">{errors.collectionDate}</p>}
                   </div>
                     
+              </> : ""}
               </div>  
-              <div className="flex justify-center md:w-[100%] mb-8">
-      
-                    <button 
-                      
-                      className='rounded-md bg-ajo_blue hover:bg-indigo-500 focus:bg-indigo-500 py-5 px-9 text-sm text-ajo_offWhite w-100 md:w-[60%]'>Submit</button>
-                  </div>
+              {showForm ? 
+                <div className="flex justify-center md:w-[100%] mb-8">
+        
+                  <button 
+                        
+                        className='rounded-md bg-ajo_blue hover:bg-indigo-500 focus:bg-indigo-500 py-5 px-9 text-sm text-ajo_offWhite w-100 md:w-[60%]'>Submit</button>
+                  </div> : ""
+                } 
             </form>
           </div>  
-        </div>  
+        </div>   
        
       </div>
     );
