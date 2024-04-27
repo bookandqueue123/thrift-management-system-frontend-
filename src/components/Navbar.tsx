@@ -151,8 +151,8 @@ export const Sidebar = ({
     "history",
     "analytics",
     "withdrawals",
-    "users",
-    "roles",
+    // "users",
+    // "roles",
   ];
 
   const MenuBtn = ({
@@ -185,8 +185,8 @@ export const Sidebar = ({
               className="h-8 w-auto"
               src="/Logo.svg"
               alt="Finkia Logo"
-              width={20}
-              height={20}
+              width={50}
+              height={50}
             />
           </Link>
 
