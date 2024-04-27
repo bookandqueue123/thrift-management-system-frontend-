@@ -339,7 +339,7 @@ export default function WithdrawalReport() {
             </div>
           )}
 
-          <PaginationBar apiResponse={DummyTransactions} />
+          {/* <PaginationBar apiResponse={DummyTransactions} /> */}
         </div>
       </section>
     </div>

@@ -1838,8 +1838,8 @@ const CreateCustomer = ({
     nin: "",
     bvn: "",
     bankAcctNo: "",
-    bankAcctName: "",
-    bankName: "",
+    // bankAcctName: "",
+    // bankName: "",
     organisation: "",
     userType: "individual",
   };
