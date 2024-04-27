@@ -133,8 +133,8 @@ export const Sidebar = ({
   const router = useRouter();
 
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
-  const [setupdropdownOpen, setSetupDropdownOpen] = useState(false)
-  const [generalAdminFeeOpen, setGeneralAdminFeeOpen] = useState(false)
+  const [setupdropdownOpen, setSetupDropdownOpen] = useState(false);
+  const [generalAdminFeeOpen, setGeneralAdminFeeOpen] = useState(false);
   const toggleSidebar = () => {
     return onShow ? "visible" : "invisible";
   };
@@ -147,11 +147,12 @@ export const Sidebar = ({
     "dashboard",
     "customers",
     "posting",
-
     "location",
     "history",
     "analytics",
     "withdrawals",
+    "users",
+    "roles",
   ];
 
   const MenuBtn = ({
@@ -209,7 +210,7 @@ export const Sidebar = ({
           />
         </div>
         <nav className="mt-6 flex h-3/4 flex-col justify-between px-2">
-          <div className="cursor-pointer space-y-4">
+          <div className="cursor-pointer space-y-3">
             {merchantRoutes.map((route) => {
               return (
                 <Link
@@ -219,7 +220,7 @@ export const Sidebar = ({
                   }
                   className="block cursor-pointer rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
                 >
-                  {route === 'analytics' ? 'General Report' : route}
+                  {route === "analytics" ? "General Report" : route}
                 </Link>
               );
             })}
@@ -282,70 +283,65 @@ export const Sidebar = ({
                     </Link>
 
                     <div
-                      
                       onClick={(e) => {
                         e.preventDefault();
                         setSetupDropdownOpen(!setupdropdownOpen);
                       }}
                       className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite  hover:text-ajo_darkBlue"
                     >
-                      <div className="flex justify-between hover:p-1 hover:text-black hover:bg-ajo_offWhite text-gray-200">
+                      <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
                         <span>
-                          Savings Setup <br/>and  Admin Fee
+                          Savings Setup <br />
+                          and Admin Fee
                         </span>
-                      
+
                         <Image
-                        className="mr-2"
+                          className="mr-2"
                           src="/arrow_down.svg"
                           alt="arrow down"
                           width={12}
                           height={12}
                         />
                       </div>
-                     
-                      {setupdropdownOpen && 
-                      <>
-                        <div className="left-0 z-20 w-full rounded-md  my-1  py-1 shadow-lg">
-                          <Link
-                            href="/merchant/settings/setup-adminfee"
-                            className="block cursor-pointer whitespace-nowrap px-2 py-1 bg-white text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                          >
-                           Setup Saving <br/> and Admin fee
-                          </Link>
-                          
-                        </div>
 
-                        <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
-                          <Link
-                            href="/merchant/settings/update-savings-set-up"
-                            className="block cursor-pointer whitespace-nowrap px-2 py-1 bg-white text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                          >
-                            Update Admin <br/> Settings
-                          </Link>
-                          
-                        </div>
-                      </>
-                      }
-                      
+                      {setupdropdownOpen && (
+                        <>
+                          <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
+                            <Link
+                              href="/merchant/settings/setup-adminfee"
+                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                            >
+                              Setup Saving <br /> and Admin fee
+                            </Link>
+                          </div>
+
+                          <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
+                            <Link
+                              href="/merchant/settings/update-savings-set-up"
+                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                            >
+                              Update Admin <br /> Settings
+                            </Link>
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     <div
-                       onClick={(e) => {
+                      onClick={(e) => {
                         e.preventDefault();
                         setGeneralAdminFeeOpen(!generalAdminFeeOpen);
                       }}
-                       
                       className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
                     >
-                      
-                      <div className="flex justify-between hover:p-1 hover:text-black hover:bg-ajo_offWhite text-gray-200">
+                      <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
                         <span>
-                          General Admin Fee  <br/>and Set up
-
+                          General Admin Fee <br />
+                          and Set up
                         </span>
-                      
+
                         <Image
-                        className="mr-2"
+                          className="mr-2"
                           src="/arrow_down.svg"
                           alt="arrow down"
                           width={12}
@@ -353,31 +349,28 @@ export const Sidebar = ({
                         />
                       </div>
 
-                      {generalAdminFeeOpen && 
-                      <>
-                        <div className="left-0 z-20 w-full rounded-md  my-1  py-1 shadow-lg">
-                          <Link
-                            href="/merchant/settings/general-admin-fee-set-up"
-                            className="block cursor-pointer whitespace-nowrap px-2 py-1 bg-white text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                          >
-                           General Admin fee
-                          </Link>
-                          
-                        </div>
+                      {generalAdminFeeOpen && (
+                        <>
+                          <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
+                            <Link
+                              href="/merchant/settings/general-admin-fee-set-up"
+                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                            >
+                              General Admin fee
+                            </Link>
+                          </div>
 
-                        <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
-                          <Link
-                            href="/merchant/settings/general-admin-fee-set-up/update-general-adminfee"
-                            className="block cursor-pointer whitespace-nowrap px-2 py-1 bg-white text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                          >
-                            Update General <br/>Admin Fee  
-                          </Link>
-                          
-                        </div>
-                      </>
-                      }
-                      
-                    
+                          <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
+                            <Link
+                              href="/merchant/settings/general-admin-fee-set-up/update-general-adminfee"
+                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                            >
+                              Update General <br />
+                              Admin Fee
+                            </Link>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
@@ -412,7 +405,6 @@ export const Sidebar = ({
   );
 };
 
-
 export const SuperAdminSidebar = ({
   onShow,
   setShow,
@@ -440,7 +432,6 @@ export const SuperAdminSidebar = ({
     "group",
     "commission",
     "roles",
-
   ];
 
   const MenuBtn = ({
@@ -504,7 +495,9 @@ export const SuperAdminSidebar = ({
                 <Link
                   key={route}
                   href={
-                    route === "dashboard" ? "/superadmin" : `/superadmin/${route}`
+                    route === "dashboard"
+                      ? "/superadmin"
+                      : `/superadmin/${route}`
                   }
                   className="block cursor-pointer rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
                 >
@@ -523,7 +516,7 @@ export const SuperAdminSidebar = ({
                   <Link
                     href="/merchant/settings"
                     onClick={(e) => {
-                      e.preventDefault()
+                      e.preventDefault();
                       setSettingsDropdownIsOpen(!settingsDropdownIsOpen);
                     }}
                   >
@@ -563,7 +556,7 @@ export const SuperAdminSidebar = ({
                     >
                       group settings
                     </Link>
-                    
+
                     <Link
                       href="/merchant/settings"
                       className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"

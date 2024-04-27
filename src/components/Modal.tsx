@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { Dispatch, SetStateAction } from "react";
 import { usePathname } from "next/navigation";
+
+
 const Modal = ({
   setModalState,
   title,
@@ -22,9 +24,9 @@ const Modal = ({
         <div className="fixed inset-0 left-1/2 top-1/2 z-10 mx-auto h-[90%] w-[90%] -translate-x-1/2 -translate-y-1/2 transform overflow-y-auto rounded-lg bg-[#090E2C] bg-[url('/squiggly.svg')] bg-cover bg-center bg-no-repeat pb-8 md:w-4/5">
           <div className="flex items-center justify-between overflow-hidden">
             <Image
-              src="/Ajo.svg"
+              src="/Logo.svg"
               alt="Ajo Logo"
-              className="relative -left-[.5rem] -top-[.5rem] m-0 h-[50px] w-[50px] md:-left-[2rem] md:-top-[1rem] md:h-[100px] md:w-[100px] "
+              className="relative left-[1rem] -top-[.5rem] m-0 h-[50px] w-[50px] md:left[2rem] md:-top-[1rem] md:h-[100px] md:w-[100px] "
               width={100}
               height={100}
               loading="eager"
@@ -136,12 +138,12 @@ export const NoBackgroundModal = ({
         className=""
         // onClick={() => setModalState(false)}
       >
-        <div className="fixed inset-0 left-1/2 top-1/2 z-10 mx-auto h-[90%] w-[90%] -translate-x-1/2 bg-white -translate-y-1/2 transform overflow-y-auto rounded-lg  pb-8 md:w-4/5">
+        <div className="fixed inset-0 left-1/2 top-1/2 z-10 mx-auto h-[90%] w-[90%] -translate-x-1/2 -translate-y-1/2 transform overflow-y-auto rounded-lg bg-white  pb-8 md:w-4/5">
           <div className="flex items-center justify-between overflow-hidden">
             <Image
-              src="/Ajo.svg"
-              alt="Ajo Logo"
-              className="relative -left-[.5rem] -top-[.5rem] m-0 h-[50px] w-[50px] md:-left-[2rem] md:-top-[1rem] md:h-[100px] md:w-[100px] "
+              src="/Logo.svg"
+              alt="Finkia Logo"
+              className="md:left[2rem] relative -top-[.5rem] left-[1rem] m-0 h-[50px] w-[50px] md:-top-[1rem] md:h-[100px] md:w-[100px] "
               width={100}
               height={100}
               loading="eager"
@@ -161,7 +163,7 @@ export const NoBackgroundModal = ({
                 height="32"
                 viewBox="0 0 48 48"
                 fill="none"
-                className="text-black h-[16px] w-[16px] md:h-[32px] md:w-[32px]"
+                className="h-[16px] w-[16px] text-black md:h-[32px] md:w-[32px]"
               >
                 <path
                   d="M48 16L16 48M16 16L48 48"

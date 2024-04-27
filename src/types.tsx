@@ -500,3 +500,26 @@ export interface setUpSavingsProps {
     userId: string
     savingID?: string
 }
+
+
+export interface createRoleProps {
+    roleName: string,
+    description: string,
+    postPermissions: {
+      viewMyPostReports: boolean,
+      viewAllPostReports: boolean,
+      postPayment: boolean,
+      debit: boolean,
+      export: boolean,
+    },
+    withdrawalPermissions: {
+      viewWithdrawals: boolean,
+      export: boolean,
+    },
+    customerPermissions: {
+      viewCustomerDetails: boolean,
+      viewAssignedCustomers: boolean,
+      editAssignedCustomers: boolean,
+      viewAllCustomers: boolean,
+    },
+  };
