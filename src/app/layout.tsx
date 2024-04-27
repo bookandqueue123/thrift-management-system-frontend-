@@ -21,14 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-      {/* <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" /> */}
-      </head>
-      <script
-        type="module"
-        defer
-        src="https://cdn.jsdelivr.net/npm/ldrs/dist/auto/spiral.js"
-      ></script>
+      <head></head>
       <body className={montserrat.className}>
         <Provider store={store}>
           <TanstackProvider>
@@ -36,10 +29,6 @@ export default function RootLayout({
               <div className="">
                 <ToastContainer />
                 {children}
-                {/* <script
-                  src="https://unpkg.com/flowbite@1.5.1/dist/flowbite.js"
-                  async
-                ></script> */}
               </div>
             </PreferredUrlProvider>
           </TanstackProvider>

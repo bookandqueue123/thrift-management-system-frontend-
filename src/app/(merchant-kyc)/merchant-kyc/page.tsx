@@ -73,40 +73,52 @@ const Kyc = () => {
     }
   }, [selectedCountry, selectedState]);
 
-  const {
-    mutate: kycUpdate,
-    isPending: isUpdatingKyc,
-    isError,
-  } = useMutation({
+  const { mutate: kycUpdate, isPending: isUpdatingKyc } = useMutation({
     mutationKey: ["merchant kyc"],
     mutationFn: async (values: UpdateMerchantKycProps) => {
-      console.log("isSubmitting..................")
+      const socials = {
+        facebook: values.facebook,
+        twitter: values.instagram,
+        instagram: values.linkedIn,
+        linkedIn: values.twitter,
+        pintrest: values.pinterest,
+      };
+
       const formData = new FormData();
+
+      formData.append("description", values.description);
+      formData.append("region", values.city);
       formData.append("country", values.country);
       formData.append("state", values.state);
-      formData.append("lga", values.lga);
-      formData.append("officeAddress", values.officeAddress);
-      formData.append("region", values.city);
+      formData.append("city", values.lga);
+      formData.append("socialMedia", JSON.stringify(socials));
+      formData.append("tradingName", values.tradingName);
+      formData.append("website", values.websiteUrl);
+      formData.append("businessEmailAdress", values.email);
+      formData.append("officeAddress1", values.officeAddress);
+      formData.append("officeAddress2", values.address2);
       formData.append("organisationName", values.organisationName);
-      formData.append("prefferedUrl", values.websiteUrl);
       formData.append("email", values.email);
-      formData.append("description", values.description);
       formData.append("phoneNumber", values.phoneNumber);
-      formData.append("facebook", values.facebook);
-      formData.append("instagram", values.instagram);
-      formData.append("linkedIn", values.linkedIn);
-      formData.append("twitter", values.twitter);
-      formData.append("pinterest", values.pinterest);
 
-      if (values.organisationLogo) {
-        formData.append("organisationLogo", values.organisationLogo[0]);
-      }
+      // if (values.organisationLogo) {
+      //   formData.append("organisationLogo", values.organisationLogo[0]);
+      // }
+      //  if (values.BankRecommendation) {
+      //   formData.append("BankRecommendation", values.BankRecommendation[0]);
+      // }
+      //  if (values.CommunityRecommendation) {
+      //   formData.append("CommunityRecommendation", values.CommunityRecommendation[0]);
+      // }
+      //  if (values.CourtAffidavit) {
+      //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
+      //  }
       return client.put(`/api/user/${userId}`, formData);
     },
 
     onSuccess(response) {
-      router.replace("/verification-successful");
       setShowSuccessToast(true);
+      router.replace("/verification-successful");
       setSuccessMessage((response as any).response.data.message);
     },
 
@@ -143,6 +155,7 @@ const Kyc = () => {
     city: "",
     phoneNumber: userData?.phoneNumber ?? "",
     officeAddress: "",
+    address2: "",
     organisationLogo: null,
     tradingName: "",
     organisationName: userData?.organisationName ?? "",
@@ -168,7 +181,6 @@ const Kyc = () => {
 
   const handleSectionComplete = (section: kycSections) => {
     setAllSections((prev) => ({ ...prev, [section]: true }));
-    // console.log(allSections);
   };
 
   const [activeSection, SetActiveSection] = useState<kycSections>("profile");
@@ -237,7 +249,6 @@ const Kyc = () => {
           country: Yup.string().required("Required"),
           state: Yup.string().required("Required"),
           lga: Yup.string().required("Required"),
-          region: Yup.string().required("Required"),
           officeAddress: Yup.string().required("Required"),
           organisationLogo: Yup.mixed()
             .required("Required")
@@ -569,7 +580,7 @@ const Kyc = () => {
                       onChange={(e) =>
                         setFieldValue("CourtAffidavit", e.target.files)
                       }
-                      accept="application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, .jpg,.png"
+                      accept="application/pdf, .jpg, .png"
                     />
                     <label htmlFor="CourtAffidavit" className="cursor-pointer">
                       <p className="text-center text-[gray]">
@@ -622,7 +633,7 @@ const Kyc = () => {
                           e.target.files,
                         );
                       }}
-                      accept="application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, image/*"
+                      accept="application/pdf, .jpg, .png"
                     />
                     <label
                       htmlFor="CommunityRecommendation"
@@ -1134,8 +1145,12 @@ const Kyc = () => {
                 </button>
               </span>
               <button
-                type="submit"
-                className="w-full  flex-1 rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
+                type={
+                  !allSections.verify && activeSection !== "verify"
+                    ? "submit"
+                    : "button"
+                }
+                className="w-full  flex-1 items-center rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
                 onClick={() => {
                   if (!allSections.verify && activeSection !== "verify") {
                     if (
@@ -1170,19 +1185,21 @@ const Kyc = () => {
                       SetActiveSection("verify");
                     }
                   } else {
+                    console.log(errors);
                     submitForm();
                   }
                 }}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isUpdatingKyc}
               >
                 {allSections.verify && activeSection === "verify" ? (
                   isSubmitting || isUpdatingKyc ? (
-                    <l-tailspin
-                      size="80"
-                      stroke="8"
-                      speed="0.8"
-                      color="#F2F0FF"
-                    ></l-tailspin>
+                    <Image
+                      src="/loadingSpinner.svg"
+                      alt="loading spinner"
+                      className="relative left-1/2"
+                      width={25}
+                      height={25}
+                    />
                   ) : (
                     "Submit"
                   )

@@ -451,6 +451,7 @@ export interface UpdateMerchantKycProps {
   twitter: string;
   pinterest: string;
   officeAddress: string;
+  address2: string,
   BankRecommendation: null;
   CourtAffidavit: null;
   CommunityRecommendation: null;

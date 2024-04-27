@@ -26,7 +26,7 @@ const Verification = () => {
         label="Proceed To Dashboard"
         type="button"
         onButtonClick={() => router.replace("/merchant")}
-        style=" bg-[#2F54FB] text-[10px] md:text-[15px] py-3 px-28 text-white rounded-md mt-5"
+        style=" bg-[#2F54FB] text-[10px] md:text-[15px] py-3 px-28 text-white rounded-md mt-5 hover:bg-indigo-500 focus:bg-indigo-500"
       />
     </div>
   );

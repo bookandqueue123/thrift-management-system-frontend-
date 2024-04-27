@@ -156,7 +156,7 @@ const CustomerDashboard = () => {
     }
   };
 
-  // console.slog(paginatedSavings)
+  // console.log(paginatedSavings)
 
   if (!id) {
     // If id is not available yet, display loading indicator
