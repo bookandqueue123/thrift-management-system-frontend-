@@ -365,8 +365,8 @@ export default function Analytics(){
         "S/N",
         "Name",
         "Account No",
-        "General %",
-        "General Fee",
+        // "General %",
+        // "General Fee",
         "Applied %",
         "Admin Fee",
         "Service Charge",
@@ -400,7 +400,7 @@ export default function Analytics(){
                   {transaction.user.accountNumber || "---"}
                  
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                  
                   General %
                  
@@ -409,7 +409,7 @@ export default function Analytics(){
                  
                   General fee
                  
-                </td>
+                </td> */}
 
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {transaction.appliedPercentage}
