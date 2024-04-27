@@ -351,8 +351,8 @@ export interface UpdateKycProps {
   bvn: any;
   organisation: string;
   bankAcctNo: string;
-  bankAcctName: string;
-  bankName: string;
+  // bankAcctName: string;
+  // bankName: string;
 }
 
 export interface WithdrawalProps {
