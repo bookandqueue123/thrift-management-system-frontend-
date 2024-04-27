@@ -1838,6 +1838,8 @@ const CreateCustomer = ({
     nin: "",
     bvn: "",
     bankAcctNo: "",
+    bankAcctName: "",
+    bankName: "",
     organisation: "",
     userType: "individual",
   };
@@ -1909,6 +1911,8 @@ const CreateCustomer = ({
       formData.append("bvn", values.bvn);
       formData.append("meansOfID", values.meansOfID);
       formData.append("bankAcctNo", values.bankAcctNo);
+//       formData.append("bankAcctName", values.bankAcctName);
+      // formData.append("bankName", values.bankAcctNo);
       // Append images
       if (values.photo) {
         formData.append("photo", values.photo[0]); // Assuming photo is an array of File objects
@@ -1994,7 +1998,22 @@ const CreateCustomer = ({
           ),
         nin: Yup.string().optional(),
         bvn: Yup.string().optional(),
-        bankAcctNo: Yup.string().required("Required"),
+        bankName: Yup.string()
+          .required("Required")
+          .min(2, "Bank name must be at least 2 characters")
+          .max(50, "Bank name must be less than 50 characters"),
+        bankAcctName: Yup.string()
+          .required("Required")
+          .min(2, "Account name must be at least 2 characters")
+          .max(100, "Account name must be less than 100 characters")
+          .matches(
+            /^[a-zA-Z\s]*$/,
+            "Account name should only contain alphabets and spaces",
+          ),
+        bankAcctNo: Yup.string()
+          .required("Required")
+          .length(10, "Account number must be exactly 10 digits")
+          .matches(/^\d{10}$/, "Account number should only contain digits"),
       })}
       onSubmit={(values, { setSubmitting }) => {
         console.log("submitting........");
@@ -2486,24 +2505,60 @@ const CreateCustomer = ({
               />
             </div>
             <div className="mb-3">
-              <label
-                htmlFor="bankAcctNo"
-                className="m-0 text-xs font-medium text-white"
-              >
-                Bank Account Number (All withdrawals will be made into this
-                account)
-              </label>
-              <Field
-                name="bankAcctNo"
-                type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-              <ErrorMessage
-                name="bankAcctNo"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
+                    <label
+                      htmlFor="bankName"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Bank Name
+                    </label>
+                    <Field
+                      name="bankName"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="bankName"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label
+                      htmlFor="bankAcctName"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Bank Account Name
+                    </label>
+                    <Field
+                      name="bankAcctName"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="bankAcctName"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label
+                      htmlFor="bankAcctNo"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Bank Account Number (All withdrawals will be made into
+                      this account)
+                    </label>
+                    <Field
+                      name="bankAcctNo"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="bankAcctNo"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
           </div>
 
           {/* Submission buttons */}

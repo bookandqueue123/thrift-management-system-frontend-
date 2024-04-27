@@ -77,6 +77,8 @@ export const Kyc = () => {
     nin: "",
     bvn: "",
     bankAcctNo: "",
+    bankAcctName: "",
+    bankName: "",
     organisation: "",
     userType: "individual",
   };
