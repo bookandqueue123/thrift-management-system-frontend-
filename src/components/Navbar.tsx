@@ -152,7 +152,7 @@ export const Sidebar = ({
     "analytics",
     "withdrawals",
     // "users",
-    // "roles",
+    "roles",
   ];
 
   const MenuBtn = ({
