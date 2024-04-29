@@ -2,9 +2,9 @@
 import { useAuth } from "@/api/hooks/useAuth";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Dispatch, ReactElement, SetStateAction, useState } from "react";
 import AvatarDropdown from "./Dropdowns";
-import { redirect, useRouter } from "next/navigation";
 
 const CustomerNavbar = () => {
   // const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
@@ -151,8 +151,8 @@ export const Sidebar = ({
     "history",
     "analytics",
     "withdrawals",
-    // "users",
-    // "roles",
+    "users",
+    "roles",
   ];
 
   const MenuBtn = ({
