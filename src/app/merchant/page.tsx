@@ -99,7 +99,7 @@ const MerchantDashboard = () => {
           });
       },
     });
-    console.log(allTransactions)
+    
 
   let totalPages = 0;
   if (allTransactions) {
