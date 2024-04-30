@@ -10,7 +10,7 @@ const CustomerNavbar = () => {
   // const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
   const [DropdownMenuIsOpen, setDropdownMenuIsOpen] = useState(false);
 
-  const endpoints = ["dashboard", "withdrawals", "transactions"];
+  const endpoints = ["dashboard", "make-payment", "withdrawals", "transactions"];
   const { SignOut } = useAuth();
 
   return (
@@ -80,7 +80,7 @@ const CustomerNavbar = () => {
                     }
                     className={`rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}
                   >
-                    {route}
+                    {route === 'make-payment' ? 'Make Payment' : route}
                   </Link>
                 );
               })}

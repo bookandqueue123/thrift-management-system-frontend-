@@ -76,7 +76,7 @@ export default function Page(){
 
 const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>>}) => {
   const { client } = useAuth();
-  const organisationId = useSelector(selectOrganizationId);
+  const organisationId = useSelector(selectOrganizationId)
   const router = useRouter()
   const [showModal, setShowModal] = useState(false)
   const [showError, setShowError] = useState(false)
@@ -126,6 +126,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
   } = useMutation({
     mutationKey: ["savingsSetup"],
     mutationFn: async (values) => {
+      
       return client.post(`/api/saving`, {
         purposeName: formData.purpose,
         amount: formData.amount,

@@ -89,8 +89,9 @@ export default function Analytics(){
     
   ];
   const PAGE_SIZE = 5;
-
+  
   const organizationId = useSelector(selectOrganizationId)
+  // const organizationId = useSelector(selectOrganizationId)
 
   const { client } = useAuth();
   const [selectedYear, setSelectedYear] = useState<{ name: string; value: number }>(yearsOption[2]);
@@ -266,7 +267,6 @@ export default function Analytics(){
             <section>
         <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <span className="flex items-center gap-3">
-            {/* <SearchInput onSearch={() => ("")}/> */}
             <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
             <input
              onChange={handleSearch}
@@ -365,8 +365,8 @@ export default function Analytics(){
         "S/N",
         "Name",
         "Account No",
-        // "General %",
-        // "General Fee",
+        "General %",
+        "General Fee",
         "Applied %",
         "Admin Fee",
         "Service Charge",
@@ -400,7 +400,7 @@ export default function Analytics(){
                   {transaction.user.accountNumber || "---"}
                  
                 </td>
-                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
                  
                   General %
                  
@@ -409,7 +409,7 @@ export default function Analytics(){
                  
                   General fee
                  
-                </td> */}
+                </td>
 
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {transaction.appliedPercentage}

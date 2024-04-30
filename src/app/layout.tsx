@@ -24,11 +24,7 @@ export default function RootLayout({
       <head>
       <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
       </head>
-      <script
-        type="module"
-        defer
-        src="https://cdn.jsdelivr.net/npm/ldrs/dist/auto/spiral.js"
-      ></script>
+      
       <body className={montserrat.className}>
         <Provider store={store}>
           <TanstackProvider>

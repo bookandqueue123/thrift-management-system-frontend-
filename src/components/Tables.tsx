@@ -3,9 +3,11 @@ import React from "react";
 const TransactionsTable = ({
   headers,
   content,
+  belowText
 }: {
   headers: string[];
   content: React.ReactNode;
+  belowText?: React.ReactNode
 }) => {
   return (
     <div className="overflow-x-auto rounded-lg border">
@@ -22,7 +24,10 @@ const TransactionsTable = ({
         <tbody className="">
           {content}
         </tbody>
-      </table>
+
+       
+      </table> 
+            {belowText}
     </div>
   );
 };
