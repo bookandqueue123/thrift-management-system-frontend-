@@ -345,8 +345,7 @@ export default function WithDrawalReportSettings(){
           <button onClick={() => setImageURL("")}>Close</button>
         </div>
       )}
-          {/* } */}
-          <PaginationBar apiResponse={DummyTransactions} />
+          {/* <PaginationBar apiResponse={DummyTransactions} /> */}
         </div>
       </section>
         </div>

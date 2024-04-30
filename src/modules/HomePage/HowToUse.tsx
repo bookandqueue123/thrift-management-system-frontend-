@@ -2,49 +2,56 @@ import { useRouter } from "next/navigation"
 
 export default function HowToUse(){
     const router = useRouter()
-    return(
-        <div className="mx-[4%] mt-24 mb-8">
-            <h2 className="text-3xl text-white font-bold">
-                How to use Finkia
-            </h2>
-            <div className="md:flex justify-between my-12">
-                <div className="relative">
-                    <div className="-rotate-6 max-w-sm px-6 bg-[#EAAB40] rounded-lg shadow ">
-                        <button type="button" className="-rotate-12 absolute top-[-10px]  transform  text-dark bg-white hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-blue-300 font-bold rounded-lg text-xl px-6 py-3 text-center   ">
-                        Organisation
+    return (
+      <div className="mx-[4%] mb-8 mt-24">
+        <h2 className="text-3xl font-bold text-white">How to use Finkia</h2>
+        <div className="my-12 justify-between md:flex">
+          <div className="relative">
+            <div className="max-w-sm -rotate-6 rounded-lg bg-[#EAAB40] px-6 shadow ">
+              <button
+                type="button"
+                className="text-dark absolute top-[-10px]  -rotate-12  transform rounded-lg bg-white px-6 py-3 text-center text-xl font-bold hover:bg-gray-200 focus:outline-none focus:ring-4 focus:ring-blue-300   "
+              >
+                Organisation
+              </button>
+              <p className="mb-3 pb-16 pt-16 font-normal text-ajo_darkBlue">
+                Organisations sign up by providing all necessary information.
+                Organisation can onboard its customers/staff.
+              </p>
 
-                        </button>
-                        <p className="mb-3 pt-16 pb-16 font-normal text-gray-700 dark:text-gray-400">Organisations sign up by providing all necessary information. Organisation can onboard its customers/staff.</p>
-                        
-                        <button 
-                        onClick={() => router.push('/signup/merchant')}
-                        type="button" className="mb-16 text-dark bg-white hover:bg-gray-200 font-medium rounded-lg text-sm px-2 py-2 text-center   ">
-                        Register as an organisation
-                        </button>
-                    </div>
-                </div>
-
-                
-                
-
-                <div className=" mt-16 md:mt-0">
-                    <div className="rotate-6 max-w-sm px-6 bg-white rounded-lg shadow ">
-                        <button type="button" className="rotate-12 absolute top-[-10px]  transform  text-white bg-[#EAAB40] hover:bg-yellow-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-bold rounded-lg text-xl px-6 py-3 text-center   ">
-                            Customer
-                        </button>
-                        <p className="mb-3 pt-16 pb-16 font-normal text-gray-700 dark:text-gray-400">Customers/Organisations staff can go through Finkia’s self on-boarding process or He/She can be onboarded by an organisation..</p>
-                        <button 
-                        onClick={() => router.push('/signup/customer')}
-                         type="button" className="mb-16 text-white bg-[#EAAB40] font-medium rounded-lg text-sm px-2 py-2 text-center hover:bg-yellow-400  ">
-                            Register as a customer
-                        </button>
-                    </div>
-                    
-                </div>
-
+              <button
+                onClick={() => router.push("/signup/merchant")}
+                type="button"
+                className="text-dark mb-16 rounded-lg bg-white px-2 py-2 text-center text-sm font-medium hover:bg-gray-200   "
+              >
+                Register as an organisation
+              </button>
             </div>
+          </div>
 
-           
+          <div className=" mt-16 md:mt-0">
+            <div className="max-w-sm rotate-6 rounded-lg bg-white px-6 shadow ">
+              <button
+                type="button"
+                className="absolute top-[-10px] rotate-12  transform  rounded-lg bg-[#EAAB40] px-6 py-3 text-center text-xl font-bold text-white hover:bg-yellow-400 focus:outline-none focus:ring-4 focus:ring-blue-300   "
+              >
+                Customer
+              </button>
+              <p className="mb-3 pb-16 pt-16 font-normal text-ajo_darkBlue">
+                Customers/Organisations staff can go through Finkia’s self
+                on-boarding process or He/She can be onboarded by an
+                organisation..
+              </p>
+              <button
+                onClick={() => router.push("/signup/customer")}
+                type="button"
+                className="mb-16 rounded-lg bg-[#EAAB40] px-2 py-2 text-center text-sm font-medium text-white hover:bg-yellow-400  "
+              >
+                Register as a customer
+              </button>
+            </div>
+          </div>
         </div>
-    )
+      </div>
+    );
 }

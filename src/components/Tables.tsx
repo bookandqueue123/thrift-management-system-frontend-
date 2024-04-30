@@ -21,7 +21,7 @@ const TransactionsTable = ({
             ))}
           </tr>
         </thead>
-        <tbody className="">
+        <tbody >
           {content}
         </tbody>
 

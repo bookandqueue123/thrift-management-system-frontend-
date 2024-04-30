@@ -1,10 +1,9 @@
 "use client";
 import HomePage from "@/modules/HomePage/homePage";
-// import { tailspin } from "ldrs";
 import VerifyOrgSubdomain from "@/utils/VerifyOrgSubdomain";
-import type {} from "ldrs";
 import { useEffect, useState } from "react";
 import Landing from "./landing";
+import Image from "next/image";
 
 export default function Home() {
   VerifyOrgSubdomain();
@@ -13,12 +12,6 @@ export default function Home() {
   const [host, setHost] = useState("");
 
   useEffect(() => {
-    async function getLoader() {
-      const { tailspin } = await import("ldrs");
-      tailspin.register();
-    }
-    getLoader();
-
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       setHost(url.host);
@@ -35,13 +28,13 @@ export default function Home() {
 
   if (!isHomepageSet) {
     return (
-      <div className="flex h-[100vh] justify-center bg-ajo_darkBlue pt-[10%]">
-        <l-tailspin
-          size="80"
-          stroke="8"
-          speed="0.8"
-          color="#F2F0FF"
-        ></l-tailspin>
+      <div className="flex min-h-[100vh] justify-center bg-ajo_darkBlue pt-[10%]">
+        <Image
+          src="/loadingSpinner.svg"
+          alt="loading spinner"
+          width={80}
+          height={80}
+        />
       </div>
     );
   }
