@@ -154,7 +154,7 @@ const MerchantDashboard = () => {
   };
   return (
     <>
-      {!user.kycVerified && (
+      {!user?.kycVerified && (
         <Alert
           variant="error"
           buttonLabel="Get Verified"
