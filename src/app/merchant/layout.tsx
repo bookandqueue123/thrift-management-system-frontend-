@@ -28,7 +28,6 @@ export default function RootLayout({
         <main
           className={`w-full px-4 md:px-12 ${leftPadding} min-h-screen bg-ajo_darkBlue`}
         >
-          {/* <section> */}
           <Sidebar onShow={ShowSidebar} setShow={setShowSidebar} />
           <div className="flex justify-end py-6">
             <AvatarDropdown
@@ -38,7 +37,6 @@ export default function RootLayout({
           </div>
 
           {children}
-          {/* </section> */}
         </main>
       </body>
     </html>

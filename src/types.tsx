@@ -351,6 +351,8 @@ export interface UpdateKycProps {
   bvn: any;
   organisation: string;
   bankAcctNo: string;
+  // bankAcctName: string;
+  // bankName: string;
 }
 
 export interface WithdrawalProps {
@@ -437,20 +439,21 @@ export interface UpdateMerchantKycProps {
   country: string;
   state: string;
   lga: string;
-  region: string;
+  city: string;
   phoneNumber: string;
   organisationLogo: null;
   tradingName: string;
   organisationName: string;
   description: string;
-  prefferedUrl: string;
+  websiteUrl: string;
   email: string;
   facebook: string;
   instagram: string;
   linkedIn: string;
   twitter: string;
-  pintrest: string;
+  pinterest: string;
   officeAddress: string;
+  address2: string,
   BankRecommendation: null;
   CourtAffidavit: null;
   CommunityRecommendation: null;
@@ -499,3 +502,26 @@ export interface setUpSavingsProps {
     userId: string
     savingID?: string
 }
+
+
+export interface createRoleProps {
+    roleName: string,
+    description: string,
+    postPermissions: {
+      viewMyPostReports: boolean,
+      viewAllPostReports: boolean,
+      postPayment: boolean,
+      debit: boolean,
+      export: boolean,
+    },
+    withdrawalPermissions: {
+      viewWithdrawals: boolean,
+      export: boolean,
+    },
+    customerPermissions: {
+      viewCustomerDetails: boolean,
+      viewAssignedCustomers: boolean,
+      editAssignedCustomers: boolean,
+      viewAllCustomers: boolean,
+    },
+  };

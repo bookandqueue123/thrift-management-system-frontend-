@@ -8,11 +8,11 @@ const Banner = () => {
     <section className="mb-4 md:mb-0 md:w-1/2">
       <Link href="/" tabIndex={-1}>
         <Image
-          src="/MAXWELL.png"
-          alt="Ajo Logo"
-          className="relative -left-[-1.5rem] -top-[-1rem] m-0"
-          width={158}
-          height={140}
+          src="/Logo.svg"
+          alt="Finkia Logo"
+          className="relative -left-[-1.15rem] -top-[-1rem] m-0"
+          width={148}
+          height={55}
           loading="eager"
           tabIndex={-1}
         />

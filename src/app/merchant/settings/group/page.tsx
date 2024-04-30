@@ -201,7 +201,7 @@ const GroupSettings = () => {
                 )
               }
             />
-            <PaginationBar apiResponse={DummyGroups.groups} />
+            {/* <PaginationBar apiResponse={DummyGroups.groups} /> */}
           </div>
 
           {/* <SuccessToaster message="hey" /> */}
