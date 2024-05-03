@@ -453,7 +453,7 @@ export interface UpdateMerchantKycProps {
   twitter: string;
   pinterest: string;
   officeAddress: string;
-  address2: string,
+  address2: string;
   BankRecommendation: null;
   CourtAffidavit: null;
   CommunityRecommendation: null;
@@ -482,46 +482,67 @@ export interface OrganisationGroupsProps {
   isArchieve: boolean;
   isVerified: boolean;
   savingIdentities: any[];
-  createdAt:        Date;
-  updatedAt:        Date;
-  __v:              number;
+  createdAt: Date;
+  updatedAt: Date;
+  __v: number;
 }
 export interface setUpSavingsProps {
-  accountType: string,
-    percentageBased: string,
-    amountBased: string,
-    accountNumber: string,
-    accountName: string,
-    purpose: string,
-    amount: string,
-    frequency: string,
-    startDate: string,
-    endDate: string,
-    totalexpectedSavings: string,
-    collectionDate: string,
-    userId: string
-    savingID?: string
+  accountType: string;
+  percentageBased: string;
+  amountBased: string;
+  accountNumber: string;
+  accountName: string;
+  purpose: string;
+  amount: string;
+  frequency: string;
+  startDate: string;
+  endDate: string;
+  totalexpectedSavings: string;
+  collectionDate: string;
+  userId: string;
+  savingID?: string;
 }
 
-
 export interface createRoleProps {
-    roleName: string,
-    description: string,
-    postPermissions: {
-      viewMyPostReports: boolean,
-      viewAllPostReports: boolean,
-      postPayment: boolean,
-      debit: boolean,
-      export: boolean,
-    },
-    withdrawalPermissions: {
-      viewWithdrawals: boolean,
-      export: boolean,
-    },
-    customerPermissions: {
-      viewCustomerDetails: boolean,
-      viewAssignedCustomers: boolean,
-      editAssignedCustomers: boolean,
-      viewAllCustomers: boolean,
-    },
+  roleName: string;
+  description: string;
+  postPermissions: {
+    viewMyPostReports: boolean;
+    viewAllPostReports: boolean;
+    postPayment: boolean;
+    debit: boolean;
+    export: boolean;
   };
+  withdrawalPermissions: {
+    viewWithdrawals: boolean;
+    export: boolean;
+  };
+  customerPermissions: {
+    viewCustomerDetails: boolean;
+    viewAssignedCustomers: boolean;
+    editAssignedCustomers: boolean;
+    viewAllCustomers: boolean;
+  };
+}
+
+export interface mutateUserProps {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  homeAddress: string;
+  dept_unit: string;
+  userPicture: null;
+  guarantor2ID: null;
+  guarantorForm: null;
+  idType: string;
+  guarantor1Name: string;
+  guarantor1Email: string;
+  guarantor1Phone: string;
+  guarantor1Address: string;
+  guarantor2Name: string;
+  guarantor2Email: string;
+  guarantor2Phone: string;
+  guarantor2Address: string;
+  allCustomers: string[];
+}

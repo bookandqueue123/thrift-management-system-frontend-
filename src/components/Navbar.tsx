@@ -432,6 +432,7 @@ export const SuperAdminSidebar = ({
     "group",
     "commission",
     "roles",
+    "users",
   ];
 
   const MenuBtn = ({

@@ -588,8 +588,8 @@ const MutateUser = ({
         setFieldValue,
         submitForm,
       }) => (
-        <form className=" flex flex-col items-center" onSubmit={handleSubmit}>
-          <div className=" mb-10 w-full space-y-10 rounded-md bg-white px-[5%] py-[3%]">
+        <form className="flex flex-col items-center" onSubmit={handleSubmit}>
+          <div className="mb-10 w-full space-y-10 rounded-md bg-white px-[5%] py-[3%]">
             {/* Personal Details */}
             <section>
               <div className="my-3 flex flex-col gap-4 md:flex-row">
