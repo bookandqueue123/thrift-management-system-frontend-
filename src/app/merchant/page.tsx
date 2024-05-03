@@ -1,9 +1,7 @@
 "use client";
-import DummyTransactions from "@/api/dummyTransactions.json";
 import { useAuth } from "@/api/hooks/useAuth";
 import { FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
-import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 
@@ -11,20 +9,15 @@ import AmountFormatter from "@/utils/AmountFormatter";
 
 import { useQuery } from "@tanstack/react-query";
 
-import { allSavingsResponse, customer, savings } from "@/types";
+import { savings } from "@/types";
+import { extractDate, extractTime } from "@/utils/TimeStampFormatter";
 import { ChangeEvent, SetStateAction, useState } from "react";
-import {
-  extractDate,
-  extractTime,
-  formatToDateAndTime,
-} from "@/utils/TimeStampFormatter";
-import { Badge } from "@/components/StatusBadge";
 import { CiExport } from "react-icons/ci";
-import { MdKeyboardArrowLeft } from "react-icons/md";
-import { MdKeyboardArrowRight } from "react-icons/md";
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 
-import { AxiosError, AxiosResponse } from "axios";
+import { AxiosError } from "axios";
 
+import Alert from "@/components/Alert";
 import { useSelector } from "react-redux";
 
 const MerchantDashboard = () => {
@@ -161,6 +154,14 @@ const MerchantDashboard = () => {
   };
   return (
     <>
+      {!user?.kycVerified && (
+        <Alert
+          variant="error"
+          buttonLabel="Get Verified"
+          content="Attention: Your custom portal link will show a “Page Not Found” error to your customers unless you are verified. Please complete the verification process to ensure uninterrupted access to your services."
+          endpoint="/welcome"
+        />
+      )}
       <div className="mb-4 space-y-2">
         <p className="text-base font-bold text-ajo_offWhite text-opacity-60">
           Dashboard
