@@ -39,6 +39,7 @@ const Posting = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const organizationId = useSelector(selectOrganizationId);
+
   const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
   const [filteredSavings, setFilteredSavings] = useState<allSavingsResponse[]>(
@@ -386,7 +387,8 @@ const PostingForm = ({
   setCustomerAcctNo: Dispatch<SetStateAction<string>>;
 }) => {
   const organizationId = useSelector(selectOrganizationId);
-
+  
+  
   const { client } = useAuth();
 
   const [filteredSavingIds, setFilteredSavingIds] =
@@ -657,6 +659,7 @@ const PostingForm = ({
             ? singleDay
             : datesInRange;
 
+      console.log(dateValue)
       const endpoint =
         postDetails.postingType === "individual"
           ? `/api/saving/post-savings?userId=${postDetails.customerId}&savingId=${postDetails.savingId}`
@@ -675,6 +678,7 @@ const PostingForm = ({
     },
     onSuccess(response: AxiosResponse<postSavingsResponse, any>) {
       setPostingResponse(response.data);
+      console.log(response)
       setPostingResponse(
         (prev) =>
           ({

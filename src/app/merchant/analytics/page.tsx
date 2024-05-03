@@ -89,8 +89,9 @@ export default function Analytics(){
     
   ];
   const PAGE_SIZE = 5;
-
+  
   const organizationId = useSelector(selectOrganizationId)
+  // const organizationId = useSelector(selectOrganizationId)
 
   const { client } = useAuth();
   const [selectedYear, setSelectedYear] = useState<{ name: string; value: number }>(yearsOption[2]);
