@@ -10,7 +10,7 @@ const nextConfig = {
   env: {
     BACKEND_API: isProd
       ? "https://api-prod.finkia.com.ng/"
-      : "https://test.finkia.com.ng/",
+      : "https://api-test.finkia.com.ng/",
     PASSWORD_ENCRYPTION_KEY: process.env.PASSWORD_ENCRYPTION_KEY,
   },
 };
