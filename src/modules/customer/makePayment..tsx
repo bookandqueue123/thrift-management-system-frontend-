@@ -43,7 +43,7 @@ export default function MakePayment(){
                     <div className="flex  border">
                         
                         
-                            <input type="number" id="search-dropdown" className="bg-ajo_darkBlue block p-2.5  w-full z-20 text-sm  border border-gray-300" placeholder="Total" required />
+                            <input type="number" id="search-dropdown" className="bg-ajo_darkBlue text-white block p-2.5  w-full z-20 text-sm  border border-gray-300" placeholder="Total" required />
                             <button type="submit" className="w-full bg-green-400 text-white">
                                 Make Payment
                             </button>
