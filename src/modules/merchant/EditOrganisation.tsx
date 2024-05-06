@@ -164,24 +164,24 @@ export const EditOrganisation = ({
                 description: customerInfo.description,
                
               }}
-              // validationSchema={Yup.object({
-              //   organisationName: Yup.string().required("Required"),
-              //   accountNumber: Yup.string().required("Required"),
-              //   otherName: Yup.string().optional(),
-              //   email: Yup.string().required("Required"),
-              //   businessEmailAdress: Yup.string().required("Required"),
-              //   // officeAddress1: Yup.string().required("Required"),
-              //   // officeAddress2: Yup.string().required("Required"),
-              //   country: Yup.string().required("Required"),
-              //   state: Yup.string().required("Required"),
-              //   lga: Yup.string().required("Required"),
-              //   city: Yup.string().required("Required"),
-              //   region: Yup.string().required("Required"),
-              //   // tradingName: Yup.string().required("Required"),
-              //   website: Yup.string().required("Required"),
-              //   organisation: Yup.string().required("Required"),
-              //   description: Yup.string().required("Required"),
-              // })}
+              validationSchema={Yup.object({
+                organisationName: Yup.string().required("Required"),
+                accountNumber: Yup.string().required("Required"),
+                otherName: Yup.string().optional(),
+                email: Yup.string().required("Required"),
+                businessEmailAdress: Yup.string().required("Required"),
+                // officeAddress1: Yup.string().required("Required"),
+                // officeAddress2: Yup.string().required("Required"),
+                country: Yup.string().required("Required"),
+                state: Yup.string().required("Required"),
+                lga: Yup.string().required("Required"),
+                city: Yup.string().required("Required"),
+                region: Yup.string().required("Required"),
+                // tradingName: Yup.string().required("Required"),
+                website: Yup.string().required("Required"),
+                organisation: Yup.string().required("Required"),
+                description: Yup.string().required("Required"),
+              })}
               onSubmit={(values, { setSubmitting }) => {
                 console.log(12345)
                 updateUserInfo(values);
@@ -202,82 +202,41 @@ export const EditOrganisation = ({
                 <Form
                   encType="multipart/form-data"
                   name="IdImage"
-                  className="mt-8 w-full"
+                  className="mx-auto mt-4 w-[90%] space-y-3 md:w-[80%]"
                 >
-                  <div className="p-6 md:flex ">
-                    <div className="mr-6 md:w-1/6 ">
-                      <div className="">
-                        {/* <div className="mb-4 ">
-                          {values.photo && values.photo[0] ? (
-                            <Image
-                              src={URL.createObjectURL(values.photo[0])} // Display placeholder image or actual image URL
-                              alt="photo"
-                              className="h-auto w-full"
-                              style={{ maxWidth: "100%" }}
-                              width={500}
-                              height={300}
-                            />
-                          ) : (
-                            <Image
-                              src={customerInfo.photo} // Display placeholder image or actual image URL
-                              alt="photo"
-                              className="h-auto w-full"
-                              style={{ maxWidth: "100%" }}
-                              width={500}
-                              height={300}
-                            />
-                          )}
-                        </div> */}
-  
-                        <div>
-                          <label
-                            htmlFor="photo"
-                            className="mt-4 cursor-pointer rounded-md bg-gray-300  px-4 py-2 text-white hover:bg-gray-400"
-                          >
-                            Change
-                            <input
-                              id="photo"
-                              name="photo"
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(event) => {
-                                const file = event.target.files;
-                                setFieldValue("photo", file); // Store the selected file in state
-                              }}
-                            />
-                          </label>
-                          {isSubmitting && (
-                            <span className="ml-2">Uploading...</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-8 flex w-5/6 flex-wrap md:mx-16">
-                      <div className="mb-8">
+                  
+                  
+                    <div className="mt-8">
+                      <div className="mb-8 ">
                         
-                          <div className="mb-3 w-full">
-                            <label
-                              htmlFor="organisationName"
-                              className="text-normal m-0 font-bold "
-                            >
-                              Name{" "}
-                              <span className="font-base font-semibold text-[#FF0000]">
-                                *
-                              </span>
-                            </label>
-                            <Field
-                              id="organisationName"
-                              name="organisationName"
-                              type="text"
-                              className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                            />
-                            <ErrorMessage
-                              name="organisationName"
-                              component="div"
-                              className="text-red-500"
-                            />
-                          </div>
+                          <div className="items-center gap-6 ">
+                            <div className="md:flex">
+                              <label
+                                htmlFor="organisationName"
+                                className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                              >
+                                Name{" "}
+                                <span className="font-base font-semibold text-[#FF0000]">
+                                  *
+                                </span>
+                              </label>
+                              <div>
+                                <Field
+                                  id="organisationName"
+                                  name="organisationName"
+                                  type="text"
+                                  className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                                />
+                                <ErrorMessage
+                                  name="organisationName"
+                                  component="div"
+                                  className="text-red-500"
+                                 />
+                              </div>
+                             
+                            </div>
+                            
+                        </div>
                           
                        
   
@@ -663,7 +622,7 @@ export const EditOrganisation = ({
                       )}
                       <MyEffectComponent formikValues={values} />
                     </div>
-                  </div>
+                 
                 </Form>
               )}
             </Formik>

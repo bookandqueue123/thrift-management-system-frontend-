@@ -247,8 +247,8 @@ export default function Analytics(){
     
     function filterDatesWithMonthAndDay(dates: any[], year: number, month: number, day: number) {
       return dates.some(dateString => {
-          const date = new Date(dateString);
-          return date.getFullYear() === year && date.getMonth() + 1 === month && date.getDate() === day;
+        const date = new Date(dateString);
+        return date.getFullYear() === year && date.getMonth() + 1 === month && date.getDate() === day;
       });
    }
   
@@ -432,14 +432,20 @@ export default function Analytics(){
                 </td>
                 
                 {days.map((day) => (
-                  <td key={day} className="whitespace-nowrap px-6 py-4 text-sm">
-                  {filterDatesWithMonthAndDay(transaction.savedDates, selectedYear.value, selectedMonth.value, day)
-                      ? AmountFormatter(transaction.amount)
-                      : '---'}
-              </td>
-              
-                ))}
-                
+    <td key={day} className="whitespace-nowrap px-6 py-4 text-sm">
+        {transaction.calculatedPaidDays.some((paidDay: { datePaid: string | number | Date; }) => {
+            const date = new Date(paidDay.datePaid);
+            return date.getFullYear() === selectedYear.value && date.getMonth() + 1 === selectedMonth.value && date.getDate() === day;
+        }) 
+            ? AmountFormatter(transaction.calculatedPaidDays.find((paidDay: { datePaid: string | number | Date; }) => {
+                const date = new Date(paidDay.datePaid);
+                return date.getFullYear() === selectedYear.value && date.getMonth() + 1 === selectedMonth.value && date.getDate() === day;
+            }).amountPerDay)
+            : '---'
+        }
+    </td>
+))}
+
 
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                 
