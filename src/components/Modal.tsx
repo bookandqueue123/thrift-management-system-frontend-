@@ -167,7 +167,7 @@ export const NoBackgroundModal = ({
               >
                 <path
                   d="M48 16L16 48M16 16L48 48"
-                  stroke="#F2F0FF"
+                  stroke="#221C3E"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"

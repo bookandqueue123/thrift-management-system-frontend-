@@ -37,7 +37,7 @@ export const ViewOrganisation = ({
       <div>
         <div className="mx-auto mt-8 w-[100%] overflow-hidden rounded-md bg-white p-4 shadow-md">
           {/* Image and First Batch of Details Section */}
-          <p className="mb-8 mt-2 text-xl font-bold">Customer Details</p>
+          <p className="mb-8 mt-2 text-xl text-gray-600 font-bold">Customer Details</p>
           <div className="rounded-lg md:border">
             <div className="p-6  ">
               {/* <div className="mr-6 md:w-1/6 ">
