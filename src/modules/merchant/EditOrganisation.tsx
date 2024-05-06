@@ -1,5 +1,5 @@
 import { useAuth } from "@/api/hooks/useAuth";
-import { StateProps, UpdateKycProps, customer, getOrganizationProps } from "@/types";
+import { Organisation, StateProps, UpdateKycProps, customer, getOrganizationProps } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { useEffect, useState } from "react";
@@ -35,7 +35,7 @@ export const EditOrganisation = ({
       queryFn: async () => {
         return client
           .get(`/api/user/${organisationId}`)
-          .then((response: AxiosResponse<customer, any>) => {
+          .then((response: AxiosResponse<Organisation, any>) => {
             return response.data;
           })
           .catch((error: AxiosError<any, any>) => {
@@ -70,44 +70,26 @@ export const EditOrganisation = ({
       isError,
     } = useMutation({
       mutationKey: ["user update"],
-      mutationFn: async (values: UpdateKycProps) => {
+      mutationFn: async (values: Organisation) => {
+        console.log(values)
         const formData = new FormData();
-  
-        formData.append("firstName", values.firstName);
-        formData.append("lastName", values.lastName);
-        formData.append("otherName", values.otherName);
+        formData.append("description", values.description)
+        formData.append("organisationName", values.organisationName);
+        formData.append("accountNumber", values.accountNumber);
         formData.append("phoneNumber", values.phoneNumber);
         formData.append("email", values.email);
+        formData.append("businessEmailAdress", values.businessEmailAdress);
+        formData.append("officeAddress1", values.officeAddress1);
+        formData.append("officeAddress2", values.officeAddress2);
+        formData.append("region", values.region);
+        formData.append("tradingName", values.tradingName)
+        formData.append("website", values.website)
         formData.append("country", values.country);
         formData.append("state", values.state);
-        formData.append("lga", values.lga);
+       
         formData.append("city", values.city);
-        // formData.append("popularMarket", values.popularMarket);
-        // formData.append("nok", values.nok);
-        // formData.append("nokRelationship", values.nokRelationship);
-        // formData.append("nokPhone", values.nokPhone);
-        formData.append("homeAddress", values.homeAddress);
-        // formData.append("userType", values.userType);
-        formData.append("organisation", values.organisation);
-        formData.append("nin", values.nin);
-        formData.append("bvn", values.bvn);
-        // formData.append("meansOfID", values.meansOfID);
-        formData.append("bankAcctNo", values.bankAcctNo);
-        // Append images
-        if (values.photo) {
-          formData.append("photo", values.photo[0]); // Assuming photo is an array of File objects
-        }
-        if (!values.photo) {
-          formData.append("photo", customerInfo?.photo); // Assuming photo is an array of File objects
-        }
-  
-        if (values.meansOfIDPhoto) {
-          formData.append("meansOfIDPhoto", values.meansOfIDPhoto[0]);
-        }
-        if (values.meansOfIDPhoto) {
-          formData.append("meansOfIDPhoto", customerInfo?.meansOfIDPhoto);
-        }
-  
+        
+      
         return client.put(`/api/user/${organisationId}`, formData);
       },
       onSuccess(response) {
@@ -150,61 +132,62 @@ export const EditOrganisation = ({
         );
         // If state is found, return its LGAs
         if (stateObject) {
-          console.log(stateObject.lgas);
+         
           setSelectesLGAArray(stateObject.lgas);
         } else {
           // If state is not found, return an empty array
         }
       }
     }, [selectedCountry, selectedState]);
+   
     return (
       <div className="mx-auto mt-8 w-[100%] overflow-hidden rounded-md bg-white p-4 shadow-md">
         <div>
           {customerInfo && (
             <Formik
               initialValues={{
-                firstName: customerInfo?.firstName,
-                lastName: customerInfo?.lastName,
-                otherName: customerInfo?.otherName,
+                organisationName: customerInfo?.organisationName,
+                accountNumber: customerInfo?.accountNumber,
+            
                 phoneNumber: customerInfo?.phoneNumber,
                 email: customerInfo?.email,
-                homeAddress: customerInfo?.homeAddress,
+                businessEmailAdress: customerInfo.businessEmailAdress,
+                officeAddress1: customerInfo?.officeAddress1,
+                officeAddress2: customerInfo?.officeAddress2,
                 country: customerInfo?.country,
                 state: customerInfo?.state,
-                lga: customerInfo?.lga,
+                // lga: customerInfo?.lga,
                 city: customerInfo?.city,
-                organisation: customerInfo?.organisation,
-                meansOfIDPhoto: null,
-                photo: null,
-                nin: customerInfo?.nin,
-                bvn: customerInfo?.bvn,
-                ninslip: null,
-                nok: "",
-                nokRelationship: "",
-                nokPhone: "",
-                popularMarket: "",
-                userType: "",
-                meansOfID: "",
-                bankAcctNo: "",
+                region: customerInfo.region,
+                tradingName: customerInfo.tradingName,
+                website: customerInfo.website,
+                description: customerInfo.description,
+               
               }}
-              validationSchema={Yup.object({
-                firstName: Yup.string().required("Required"),
-                lastName: Yup.string().required("Required"),
-                otherName: Yup.string().optional(),
-                email: Yup.string().required("Required"),
-                homeAddress: Yup.string().required("Required"),
-                country: Yup.string().required("Required"),
-                state: Yup.string().required("Required"),
-                lga: Yup.string().required("Required"),
-                city: Yup.string().required("Required"),
-                organisation: Yup.string().required("Required"),
-              })}
+              // validationSchema={Yup.object({
+              //   organisationName: Yup.string().required("Required"),
+              //   accountNumber: Yup.string().required("Required"),
+              //   otherName: Yup.string().optional(),
+              //   email: Yup.string().required("Required"),
+              //   businessEmailAdress: Yup.string().required("Required"),
+              //   // officeAddress1: Yup.string().required("Required"),
+              //   // officeAddress2: Yup.string().required("Required"),
+              //   country: Yup.string().required("Required"),
+              //   state: Yup.string().required("Required"),
+              //   lga: Yup.string().required("Required"),
+              //   city: Yup.string().required("Required"),
+              //   region: Yup.string().required("Required"),
+              //   // tradingName: Yup.string().required("Required"),
+              //   website: Yup.string().required("Required"),
+              //   organisation: Yup.string().required("Required"),
+              //   description: Yup.string().required("Required"),
+              // })}
               onSubmit={(values, { setSubmitting }) => {
-                console.log(values);
+                console.log(12345)
                 updateUserInfo(values);
                 setTimeout(() => {
                   setShowSuccessToast(false);
-                  setShowErrorToast(false);
+                    setShowErrorToast(false);
                   setSubmitting(false);
                 }, 400);
               }}
@@ -224,7 +207,7 @@ export const EditOrganisation = ({
                   <div className="p-6 md:flex ">
                     <div className="mr-6 md:w-1/6 ">
                       <div className="">
-                        <div className="mb-4 ">
+                        {/* <div className="mb-4 ">
                           {values.photo && values.photo[0] ? (
                             <Image
                               src={URL.createObjectURL(values.photo[0])} // Display placeholder image or actual image URL
@@ -244,7 +227,7 @@ export const EditOrganisation = ({
                               height={300}
                             />
                           )}
-                        </div>
+                        </div> */}
   
                         <div>
                           <label
@@ -272,63 +255,42 @@ export const EditOrganisation = ({
                     </div>
                     <div className="mt-8 flex w-5/6 flex-wrap md:mx-16">
                       <div className="mb-8">
-                        <div className="w-full justify-between gap-4 md:flex md:items-center">
+                        
                           <div className="mb-3 w-full">
                             <label
-                              htmlFor="firstName"
+                              htmlFor="organisationName"
                               className="text-normal m-0 font-bold "
                             >
-                              First Name{" "}
+                              Name{" "}
                               <span className="font-base font-semibold text-[#FF0000]">
                                 *
                               </span>
                             </label>
                             <Field
-                              id="firstName"
-                              name="firstName"
+                              id="organisationName"
+                              name="organisationName"
                               type="text"
                               className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                             />
                             <ErrorMessage
-                              name="firstName"
+                              name="organisationName"
                               component="div"
                               className="text-red-500"
                             />
                           </div>
-                          <div className="mb-3 w-full">
-                            <label
-                              htmlFor="lastName"
-                              className="text-normal m-0 font-bold "
-                            >
-                              Last Name{" "}
-                              <span className="font-base font-semibold text-[#FF0000]">
-                                *
-                              </span>
-                            </label>
-                            <Field
-                              id="lastName"
-                              name="lastName"
-                              type="text"
-                              className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                            />
-                            <ErrorMessage
-                              name="lastName"
-                              component="div"
-                              className="text-red-500"
-                            />
-                          </div>
-                        </div>
+                          
+                       
   
                         <div className="mb-3">
                           <label
-                            htmlFor="otherName"
+                            htmlFor="accountNumber                            "
                             className="text-normal m-0 font-bold "
                           >
-                            Other Names
+                            Account Number
                           </label>
                           <Field
-                            id="otherName"
-                            name="otherName"
+                            id="accountNumber"
+                            name="accountNumber"
                             type="text"
                             className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                           />
@@ -381,10 +343,33 @@ export const EditOrganisation = ({
                             className="text-red-500"
                           />
                         </div>
+
+                        <div className="mb-3">
+                          <label
+                            htmlFor="businessEmailAdress"
+                            className="text-normal m-0 font-bold "
+                          >
+                            business Email Adress {" "}
+                            <span className="font-base font-semibold text-[#FF0000]">
+                              *
+                            </span>
+                          </label>
+                          <Field
+                            id="businessEmailAdress"
+                            name="businessEmailAdress"
+                            type="businessEmailAdress"
+                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          />
+                          <ErrorMessage
+                            name="businessEmailAdress"
+                            component="div"
+                            className="text-red-500"
+                          />
+                        </div>
   
                         <div className="mb-3">
                           <label
-                            htmlFor="homeAddress"
+                            htmlFor="officeAddress1"
                             className="text-normal m-0 font-bold "
                           >
                             Home Address{" "}
@@ -394,14 +379,39 @@ export const EditOrganisation = ({
                           </label>
                           <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
                             <Field
-                              id="homeAddress"
-                              name="homeAddress"
+                              id="officeAddress1"
+                              name="officeAddress1"
                               type="text"
                               className="bg-transparent outline-none"
                             />
                           </div>
                           <ErrorMessage
-                            name="homeAddress"
+                            name="officeAddress1"
+                            component="div"
+                            className="text-red-500"
+                          />
+                        </div>
+
+                        <div className="mb-3">
+                          <label
+                            htmlFor="officeAddress2"
+                            className="text-normal m-0 font-bold "
+                          >
+                            Office Address2{" "}
+                            <span className="font-base font-semibold text-[#FF0000]">
+                              *
+                            </span>
+                          </label>
+                          <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                            <Field
+                              id="officeAddress2"
+                              name="officeAddress2"
+                              type="text"
+                              className="bg-transparent outline-none"
+                            />
+                          </div>
+                          <ErrorMessage
+                            name="officeAddress2"
                             component="div"
                             className="text-red-500"
                           />
@@ -412,7 +422,7 @@ export const EditOrganisation = ({
                             htmlFor="country"
                             className="text-normal m-0 font-bold "
                           >
-                            Country of Residence
+                            Country
                           </label>
                           <Field
                             onChange={handleChange}
@@ -471,7 +481,7 @@ export const EditOrganisation = ({
                             className="text-xs text-red-500"
                           />
                         </div>
-                        <div className="mb-3">
+                        {/* <div className="mb-3">
                           <label
                             htmlFor="lga"
                             className="text-normal m-0 font-bold"
@@ -499,7 +509,7 @@ export const EditOrganisation = ({
                             component="div"
                             className="text-xs text-red-500"
                           />
-                        </div>
+                        </div> */}
   
                         <div className="mb-3">
                           <label
@@ -525,118 +535,107 @@ export const EditOrganisation = ({
                             className="text-red-500"
                           />
                         </div>
-                        {/* Organization Search Input */}
-                        {
-                          <div className="mb-3">
-                            <label
-                              htmlFor="organisation"
-                              className="m-0 text-xs font-medium"
-                            >
-                              Select Organisation i.e Thrift Collector
-                              <span className="font-base font-semibold text-[#FF0000]">
-                                *
-                              </span>
-                            </label>
+
+                        <div className="mb-3">
+                          <label
+                            htmlFor="region"
+                            className="text-normal m-0 font-bold "
+                          >
+                            region{" "}
+                            <span className="font-base font-semibold text-[#FF0000]">
+                              *
+                            </span>
+                          </label>
+                          <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
                             <Field
-                              disabled
-                              as="select"
-                              id="organisation"
-                              name="organisation"
-                              className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                            >
-                              <option value="">Select Organization</option>
-                              {organizations?.map((org: getOrganizationProps) => (
-                                <option key={org._id} value={org._id}>
-                                  {org.organisationName}
-                                </option>
-                              ))}
-                            </Field>
-                            <ErrorMessage
-                              name="organisation"
-                              component="div"
-                              className="text-red-500"
+                              id="region"
+                              name="region"
+                              type="region"
+                              className="bg-transparent outline-none"
                             />
                           </div>
-                        }
-                        <div className="mb-3">
-                          <label htmlFor="nin" className="m-0 text-xs font-bold ">
-                            NIN number
-                          </label>
-                          <Field
-                            name="nin"
-                            type="text"
-                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                          />
                           <ErrorMessage
-                            name="nin"
+                            name="region"
                             component="div"
-                            className="text-xs text-red-500"
+                            className="text-red-500"
                           />
                         </div>
+
                         <div className="mb-3">
-                          <label htmlFor="bvn" className="m-0 text-xs font-bold ">
-                            BVN number
+                          <label
+                            htmlFor="tradingName"
+                            className="text-normal m-0 font-bold "
+                          >
+                            Trading Name{" "}
+                            <span className="font-base font-semibold text-[#FF0000]">
+                              *
+                            </span>
                           </label>
-                          <Field
-                            name="bvn"
-                            type="text"
-                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                          />
+                          <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                            <Field
+                              id="tradingName"
+                              name="tradingName"
+                              type="tradingName"
+                              className="bg-transparent outline-none"
+                            />
+                          </div>
                           <ErrorMessage
-                            name="bvn"
+                            name="tradingName"
                             component="div"
-                            className="text-xs text-red-500"
+                            className="text-red-500"
                           />
                         </div>
-  
-                        <div className="flex items-center">
-                          <div className="mr-4">
-                            {values.meansOfIDPhoto && values.meansOfIDPhoto[0] ? (
-                              <Image
-                                src={URL.createObjectURL(
-                                  values.meansOfIDPhoto[0],
-                                )} // Display placeholder image or actual image URL
-                                alt="meansOfIDPhoto"
-                                className="max-w-full"
-                                style={{ maxWidth: "100%" }}
-                                width={300}
-                                height={200}
-                              />
-                            ) : (
-                              <Image
-                                src={customerInfo.meansOfIDPhoto} // Display placeholder image or actual image URL
-                                alt="meansOfIDPhoto"
-                                className="max-w-full"
-                                style={{ maxWidth: "100%" }}
-                                width={300}
-                                height={200}
-                              />
-                            )}
+
+                        <div className="mb-3">
+                          <label
+                            htmlFor="website"
+                            className="text-normal m-0 font-bold "
+                          >
+                            Website{" "}
+                            <span className="font-base font-semibold text-[#FF0000]">
+                              *
+                            </span>
+                          </label>
+                          <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                            <Field
+                              id="website"
+                              name="website"
+                              type="website"
+                              className="bg-transparent outline-none"
+                            />
                           </div>
-  
-                          <div>
-                            <label
-                              htmlFor="meansOfIDPhoto"
-                              className="cursor-pointer rounded-md bg-gray-300  px-4 py-2 text-white hover:bg-gray-400"
-                            >
-                              Change Doc
-                              <input
-                                id="meansOfIDPhoto"
-                                name="meansOfIDPhoto"
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={(event) => {
-                                  const file = event.target.files;
-                                  setFieldValue("meansOfIDPhoto", file); // Store the selected file in state
-                                }}
-                              />
-                            </label>
-                            {isSubmitting && (
-                              <span className="ml-2">Uploading...</span>
-                            )}
-                          </div>
+                          <ErrorMessage
+                            name="website"
+                            component="div"
+                            className="text-red-500"
+                          />
                         </div>
+
+                        <div className="mb-3">
+                          <label
+                            htmlFor="description"
+                            className="text-normal m-0 font-bold "
+                          >
+                            Description{" "}
+                            <span className="font-base font-semibold text-[#FF0000]">
+                              *
+                            </span>
+                          </label>
+                          <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                            <Field
+                              id="description"
+                              name="description"
+                              type="description"
+                              className="bg-transparent outline-none"
+                            />
+                          </div>
+                          <ErrorMessage
+                            name="description"
+                            component="div"
+                            className="text-red-500"
+                          />
+                        </div>
+                       
                       </div>
   
                       {/* Submit Button */}
