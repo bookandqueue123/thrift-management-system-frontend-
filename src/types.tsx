@@ -1,4 +1,5 @@
 export type customer = {
+  officeAddress1: string;
   organisationName?: string;
   _id: string;
   firstName: string;
@@ -374,22 +375,44 @@ export interface WithdrawalProps {
 }
 
 export interface Organisation {
-  isVerified: boolean;
-  _id: string;
+  accountNumber: string;
+  assignedCustomer?: any[]; 
+  businessEmailAdress: string;
+  city: string;
+  country: string;
+  createdAt?: string; // Consider using Date type if you parse this string into a Date object
+  description: string;
   email: string;
-  phoneNumber: string;
+  groupMember?: any[]; // You may want to replace 'any[]' with the appropriate type
+  isArchive?: boolean;
+  isVerified?: boolean;
+  kycEmailSent?: boolean;
+  kycVerified?: boolean;
+  officeAddress1: string;
+  officeAddress2: string;
   organisationName: string;
-  password: string;
-  userType: string;
-  groupMember: any[];
-  role: string;
-  prefferedUrl: string;
-  kycVerified: boolean;
-  isArchieve: boolean;
-  savingIdentities: any[];
-  createdAt: Date;
-  updatedAt: Date;
-  __v: number;
+  organisations?: any[]; // You may want to replace 'any[]' with the appropriate type
+  phoneNumber: string;
+  preferredUrl?: string;
+  region: string;
+  role?: string;
+  roles?: any[]; // You may want to replace 'any[]' with the appropriate type
+  savingIdentities?: any[]; // You may want to replace 'any[]' with the appropriate type
+  socialMedia?: {
+    facebook: string;
+    twitter: string;
+    instagram: string;
+    linkedIn: string;
+    pintrest: string;
+  };
+  state: string;
+  tradingName: string;
+  updatedAt?: string; // Consider using Date type if you parse this string into a Date object
+  userType?: string;
+  website: string;
+  __v?: number;
+  _id?: string;
+  photo?: string;
 }
 
 export interface User {

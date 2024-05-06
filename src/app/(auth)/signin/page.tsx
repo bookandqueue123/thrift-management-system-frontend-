@@ -145,7 +145,7 @@ const SignInForm = () => {
         password: Yup.string().required("Password is required"),
       })}
       onSubmit={(values, { setSubmitting }) => {
-        
+        console.log(12345)
         const encryptedPassword = encryptPassword(values.password, secretKey);
         if (rememberPassword) {
           setCookie(null, "rememberedPassword", encryptedPassword, {
@@ -165,6 +165,7 @@ const SignInForm = () => {
           // console.log("rememberedPassword: ", cookies.rememberedPassword);
           // console.log("rememberedEmail: ", cookies.rememberedEmail);
         }
+   
         UserSignIn(values);
         setTimeout(() => {
           setSubmitting(false);
