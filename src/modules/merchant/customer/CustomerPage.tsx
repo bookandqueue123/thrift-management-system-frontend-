@@ -1961,7 +1961,7 @@ const CreateCustomer = ({
           .required("Phone number is required"),
         email: Yup.string()
           .email("Invalid email address")
-          .required("Email is required"),
+          .optional(),
         country: Yup.string().required("Required"),
         state: Yup.string().required("Required"),
         lga: Yup.string().required("Required"),
@@ -1970,7 +1970,7 @@ const CreateCustomer = ({
         nok: Yup.string().required("Required"),
         nokRelationship: Yup.string().required("Required"),
         nokPhone: Yup.string().required("Required"),
-        homeAddress: Yup.string().required("Required"),
+        homeAddress: Yup.string().optional(),
         photo: Yup.mixed()
           .required("Required")
           .test(
@@ -2011,7 +2011,7 @@ const CreateCustomer = ({
         //     "Account name should only contain alphabets and spaces",
         //   ),
         bankAcctNo: Yup.string()
-          .required("Required")
+          .optional()
           .length(10, "Account number must be exactly 10 digits")
           .matches(/^\d{10}$/, "Account number should only contain digits"),
       })}

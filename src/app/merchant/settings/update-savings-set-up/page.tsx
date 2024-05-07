@@ -243,6 +243,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
           });
       },
     });
+    console.log(allCustomers)
   
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;

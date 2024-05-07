@@ -3,6 +3,7 @@ import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import CustomerAction from "@/components/CustomerAction";
 import TransactionsTable from "@/components/Tables";
+import OrganisationAction from "@/modules/merchant/OrganisationAction";
 import { getOrganizationProps } from "@/types";
 import { extractDate, extractTime, formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
@@ -256,9 +257,9 @@ export default function SuperAdminOrganisation(){
                     {extractDate(organisation.createdAt)} 
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                <CustomerAction
+                <OrganisationAction
                   index={index}
-                  customerId={organisation._id}
+                  organisationId={organisation._id}
                   />
                 </td>
             </tr>
