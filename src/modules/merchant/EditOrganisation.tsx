@@ -218,7 +218,7 @@ export const EditOrganisation = ({
                   className="mx-auto mt-4 w-[90%] space-y-3 md:w-[80%]"
                 >
                   
-                  
+                  <p className="mb-8 mt-2 text-xl text-gray-600 font-bold">Edit Organisation Details</p>
                     <div className="mt-8">
                       <div className="mb-8 ">
                         

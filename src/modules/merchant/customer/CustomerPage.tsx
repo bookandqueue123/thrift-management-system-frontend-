@@ -1346,7 +1346,7 @@ export const EditCustomer = ({
                 encType="multipart/form-data"
                 name="IdImage"
                 className="mt-8 w-full"
-              >
+              >          <p className="mb-8 mt-2 text-xl text-gray-600 font-bold">Edit Customer Details</p>
                 <div className="p-6 md:flex ">
                   <div className="mr-6 md:w-1/6 ">
                     <div className="">
