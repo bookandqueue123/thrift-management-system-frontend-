@@ -205,16 +205,16 @@ export default function SuperAdminCustomer(){
               type="date"
               value={fromDate}
                 onChange={handleFromDateChange}
-              className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+              className="px-4  py-2  border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
             />
 
 
-            <p className="mx-2 text-white">to</p>
+            <p className="mx-2 text-white ">to</p>
             <input
               type="date"
               value={toDate}
               onChange={handleToDateChange}
-              className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+              className="px-4 py-2  border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
             />
             </div>
               <div className="flex mt-4">
