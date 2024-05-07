@@ -182,7 +182,7 @@ export default function SuperAdminDashboard(){
             "Account Number",
             "email",
             // "Organisation ID",
-            "Total Number of Customers",
+            // "Total Number of Customers",
             "Registration Date",
             "Action"
             ]}
@@ -204,9 +204,9 @@ export default function SuperAdminDashboard(){
                 {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {organisation._id}
                 </td> */}
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     --- customers
-                </td>
+                </td> */}
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {extractDate(organisation.createdAt) || "---"} 
                 </td>
