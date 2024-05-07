@@ -953,7 +953,7 @@ export const ViewCustomer = ({
     <div>
       <div className="mx-auto mt-8 w-[100%] overflow-hidden rounded-md bg-white p-4 shadow-md">
         {/* Image and First Batch of Details Section */}
-        <p className="mb-8 mt-2 text-xl font-bold">Customer Details</p>
+        <p className="mb-8 mt-2 text-xl font-bold text-gray-600">Customer Details</p>
         <div className="rounded-lg md:border">
           <div className="p-6 md:flex ">
             <div className="mr-6 md:w-1/6 ">
@@ -1016,7 +1016,7 @@ export const ViewCustomer = ({
           </div>
 
           {/* Second Batch of Details Section */}
-          <div className="p-6">
+          <div className="p-6 ">
             <div className="mb-4 flex flex-wrap">
               <div className="w-full sm:w-1/3">
                 <p className="font-semibold text-gray-600">
@@ -1069,7 +1069,7 @@ export const ViewCustomer = ({
           </div>
         </div>
 
-        <div className=" mt-8 rounded-lg">
+        <div className=" mt-8 rounded-lg text-gray-600">
           <div className="md:flex ">
             <div className="w-[60%] rounded-lg p-6 md:border">
               <p className="mb-8 mt-2 text-xl font-bold">Next of Kin Details</p>
@@ -1115,7 +1115,7 @@ export const ViewCustomer = ({
               </div>
             </div>
 
-            <div className="ml-8 w-[40%] border p-6">
+            <div className="md:ml-8 md:w-[40%] border p-6">
               <p className="mb-8 mt-2 text-xl font-bold">
                 Means Of ID: {customerInfo?.meansOfID ?? ""}
               </p>
@@ -1396,47 +1396,53 @@ export const EditCustomer = ({
                       </div>
                     </div>
                   </div>
-                  <div className="mt-8 flex w-5/6 flex-wrap md:mx-16">
+                  <div className="mt-8 w-5/6 flex-wrap md:mx-16">
                     <div className="mb-8">
-                      <div className="w-full justify-between gap-4 md:flex md:items-center">
+                      <div className="w-full justify-between fl gap-4 md:items-center">
                         <div className="mb-3 w-full">
                           <label
                             htmlFor="firstName"
-                            className="text-normal m-0 font-bold "
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                           >
                             First Name{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
-                          <Field
+                          <div>
+                            <Field
                             id="firstName"
                             name="firstName"
                             type="text"
-                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                           />
                           <ErrorMessage
                             name="firstName"
                             component="div"
                             className="text-red-500"
                           />
+                          </div>
+                          
                         </div>
                         <div className="mb-3 w-full">
                           <label
                             htmlFor="lastName"
-                            className="text-normal m-0 font-bold "
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                           >
                             Last Name{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
-                          <Field
+                          <div>
+                            <Field
                             id="lastName"
                             name="lastName"
                             type="text"
-                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                           />
+                          </div>
+                          
                           <ErrorMessage
                             name="lastName"
                             component="div"
@@ -1448,22 +1454,25 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="otherName"
-                          className="text-normal m-0 font-bold "
+                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                         >
                           Other Names
                         </label>
-                        <Field
+                        <div>
+                          <Field
                           id="otherName"
                           name="otherName"
                           type="text"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                         />
+                        </div>
+                        
                       </div>
 
                       <div className="mb-3">
                         <label
                           htmlFor="phoneNumber"
-                          className="text-normal m-0 font-bold "
+                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                         >
                           Phone Number{" "}
                           <span className="font-base font-semibold text-[#FF0000]">
@@ -1488,18 +1497,19 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="email"
-                          className="text-normal m-0 font-bold "
+                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                         >
                           Email address{" "}
                           <span className="font-base font-semibold text-[#FF0000]">
                             *
                           </span>
                         </label>
+                        <div></div>
                         <Field
                           id="email"
                           name="email"
                           type="email"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                         />
                         <ErrorMessage
                           name="email"
@@ -1511,7 +1521,7 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="homeAddress"
-                          className="text-normal m-0 font-bold "
+                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                         >
                           Home Address{" "}
                           <span className="font-base font-semibold text-[#FF0000]">
@@ -1533,13 +1543,16 @@ export const EditCustomer = ({
                         />
                       </div>
 
-                      <div className="mb-3">
+                      <div className="mb-3 w-full">
                         <label
                           htmlFor="country"
-                          className="text-normal m-0 font-bold "
+                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                         >
                           Country of Residence
                         </label>
+                        <div>
+
+                        
                         <Field
                           onChange={handleChange}
                           as="select"
@@ -1548,7 +1561,7 @@ export const EditCustomer = ({
                           id="country"
                           // type="text"
                           placeholder="country"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                         >
                           <option>Select Country</option>
                           {StatesAndLGAs &&
@@ -1561,6 +1574,7 @@ export const EditCustomer = ({
                               </option>
                             ))}
                         </Field>
+                        </div>
                         <ErrorMessage
                           name="country"
                           component="div"
@@ -1571,16 +1585,19 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="state"
-                          className="text-normal m-0 font-bold "
+                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                         >
                           State
                         </label>
+                        <div>
+
+                       
                         <Field
                           as="select"
                           id="state"
                           name="state"
                           // type="text"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                         >
                           <option>Select State</option>
 
@@ -1590,7 +1607,7 @@ export const EditCustomer = ({
                                 {state.name}
                               </option>
                             ))}
-                        </Field>
+                        </Field> </div>
                         <ErrorMessage
                           name="state"
                           component="div"
@@ -1600,16 +1617,17 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="lga"
-                          className="text-normal m-0 font-bold"
+                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                         >
                           Local Government Area (lga)
                         </label>
+                        <div>
                         <Field
                           as="select"
                           id="lga"
                           name="lga"
                           // type="text"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                         >
                           <option>Select LGA</option>
 
@@ -1620,6 +1638,7 @@ export const EditCustomer = ({
                               </option>
                             ))}
                         </Field>
+                        </div>
                         <ErrorMessage
                           name="lga"
                           component="div"
@@ -1630,7 +1649,7 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="city"
-                          className="text-normal m-0 font-bold "
+                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                         >
                           City{" "}
                           <span className="font-base font-semibold text-[#FF0000]">
@@ -1656,19 +1675,20 @@ export const EditCustomer = ({
                         <div className="mb-3">
                           <label
                             htmlFor="organisation"
-                            className="m-0 text-xs font-medium"
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                           >
                             Select Organisation i.e Thrift Collector
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
+                          <div>
                           <Field
                             disabled
                             as="select"
                             id="organisation"
                             name="organisation"
-                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                           >
                             <option value="">Select Organization</option>
                             {organizations?.map((org: getOrganizationProps) => (
@@ -1677,6 +1697,7 @@ export const EditCustomer = ({
                               </option>
                             ))}
                           </Field>
+                          </div>
                           <ErrorMessage
                             name="organisation"
                             component="div"
@@ -1685,14 +1706,17 @@ export const EditCustomer = ({
                         </div>
                       }
                       <div className="mb-3">
-                        <label htmlFor="nin" className="m-0 text-xs font-bold ">
+                        <label htmlFor="nin" 
+                        className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium ">
                           NIN number
                         </label>
+                        <div>
                         <Field
                           name="nin"
                           type="text"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                         />
+                        </div>
                         <ErrorMessage
                           name="nin"
                           component="div"
@@ -1700,14 +1724,16 @@ export const EditCustomer = ({
                         />
                       </div>
                       <div className="mb-3">
-                        <label htmlFor="bvn" className="m-0 text-xs font-bold ">
+                        <label htmlFor="bvn"
+                         className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium ">
                           BVN number
                         </label>
+                        <div>
                         <Field
                           name="bvn"
                           type="text"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        />
+                          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                        /></div>
                         <ErrorMessage
                           name="bvn"
                           component="div"
@@ -2053,7 +2079,7 @@ const CreateCustomer = ({
                 id="firstName"
                 name="firstName"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="firstName"
@@ -2075,7 +2101,7 @@ const CreateCustomer = ({
                 id="lastName"
                 name="lastName"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="lastName"
@@ -2096,7 +2122,7 @@ const CreateCustomer = ({
               id="otherName"
               name="otherName"
               type="text"
-              className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
             />
           </div>
 
@@ -2135,7 +2161,7 @@ const CreateCustomer = ({
               id="email"
               name="email"
               type="email"
-              className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
             />
             <ErrorMessage
               name="email"
@@ -2160,7 +2186,7 @@ const CreateCustomer = ({
                 id="country"
                 // type="text"
                 placeholder="country"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               >
                 <option>Select Country</option>
                 {StatesAndLGAs &&
@@ -2190,7 +2216,7 @@ const CreateCustomer = ({
                 id="state"
                 name="state"
                 // type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               >
                 <option>Select State</option>
 
@@ -2219,7 +2245,7 @@ const CreateCustomer = ({
                 id="lga"
                 name="lga"
                 // type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               >
                 <option>Select LGA</option>
 
@@ -2251,7 +2277,7 @@ const CreateCustomer = ({
               <Field
                 name="city"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="city"
@@ -2270,7 +2296,7 @@ const CreateCustomer = ({
               <Field
                 name="popularMarket"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="popularMarket"
@@ -2291,7 +2317,7 @@ const CreateCustomer = ({
               <Field
                 name="nok"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="nok"
@@ -2310,7 +2336,7 @@ const CreateCustomer = ({
               <Field
                 name="nokRelationship"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="nokRelationship"
@@ -2349,7 +2375,7 @@ const CreateCustomer = ({
               <Field
                 name="homeAddress"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="homeAddress"
@@ -2478,7 +2504,7 @@ const CreateCustomer = ({
               <Field
                 name="nin"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="nin"
@@ -2496,7 +2522,7 @@ const CreateCustomer = ({
               <Field
                 name="bvn"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="bvn"
@@ -2514,7 +2540,7 @@ const CreateCustomer = ({
                     <Field
                       name="bankName"
                       type="text"
-                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                      className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                     />
                     <ErrorMessage
                       name="bankName"
@@ -2532,7 +2558,7 @@ const CreateCustomer = ({
                     <Field
                       name="bankAcctName"
                       type="text"
-                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                      className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                     />
                     <ErrorMessage
                       name="bankAcctName"
@@ -2551,7 +2577,7 @@ const CreateCustomer = ({
               <Field
                 name="bankAcctNo"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="bankAcctNo"

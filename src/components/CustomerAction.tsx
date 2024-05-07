@@ -59,7 +59,6 @@ export default function CustomerAction({index, customerId}: CustomerActionProps)
                         setModalToShow("edit");
                         setModalState(true);
                         setModalContent("form");
-
                         setCustomerToBeEdited(customerId);
                     },
                     () => {
