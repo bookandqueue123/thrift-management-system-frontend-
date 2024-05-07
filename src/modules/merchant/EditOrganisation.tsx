@@ -2,7 +2,7 @@ import { useAuth } from "@/api/hooks/useAuth";
 import { Organisation, StateProps, UpdateKycProps, customer, getOrganizationProps } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import StatesAndLGAs from "@/api/statesAndLGAs.json";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
@@ -12,12 +12,14 @@ import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { useSelector } from "react-redux";
 import { selectUserId } from "@/slices/OrganizationIdSlice";
 
+
 interface ShowModalProps{
-    organisationId: string
+    organisationId: string,
+    closeModal: Dispatch<SetStateAction<boolean>>;
 }
 export const EditOrganisation = ({
     organisationId,
-   
+    closeModal
   }: ShowModalProps) => {
     const [showSuccessToast, setShowSuccessToast] = useState(false);
     const [showErrorToast, setShowErrorToast] = useState(false);
@@ -111,8 +113,13 @@ export const EditOrganisation = ({
         // router.push("/customer");
         console.log(response);
         setShowSuccessToast(true);
-        // setSuccessMessage((response as any).response.data.message);
-      },
+    
+        // Delay the execution of closeModal(false) by 5 seconds
+        setTimeout(() => {
+            closeModal(false);
+        }, 5000); // 5000 milliseconds = 5 seconds
+    },
+    
       onError(error: AxiosError<any, any>) {
         console.log(error);
         setShowErrorToast(true);
@@ -155,6 +162,7 @@ export const EditOrganisation = ({
       }
     }, [selectedCountry, selectedState]);
    
+    console.log(customerInfo)
     return (
       <div className="mx-auto mt-8 w-[100%] overflow-hidden rounded-md bg-white p-4 shadow-md">
         <div>
