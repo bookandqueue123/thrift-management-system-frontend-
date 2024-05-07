@@ -953,7 +953,7 @@ export const ViewCustomer = ({
     <div>
       <div className="mx-auto mt-8 w-[100%] overflow-hidden rounded-md bg-white p-4 shadow-md">
         {/* Image and First Batch of Details Section */}
-        <p className="mb-8 mt-2 text-xl font-bold">Customer Details</p>
+        <p className="mb-8 mt-2 text-xl font-bold text-gray-600">Customer Details</p>
         <div className="rounded-lg md:border">
           <div className="p-6 md:flex ">
             <div className="mr-6 md:w-1/6 ">
@@ -1016,7 +1016,7 @@ export const ViewCustomer = ({
           </div>
 
           {/* Second Batch of Details Section */}
-          <div className="p-6">
+          <div className="p-6 ">
             <div className="mb-4 flex flex-wrap">
               <div className="w-full sm:w-1/3">
                 <p className="font-semibold text-gray-600">
@@ -1069,7 +1069,7 @@ export const ViewCustomer = ({
           </div>
         </div>
 
-        <div className=" mt-8 rounded-lg">
+        <div className=" mt-8 rounded-lg text-gray-600">
           <div className="md:flex ">
             <div className="w-[60%] rounded-lg p-6 md:border">
               <p className="mb-8 mt-2 text-xl font-bold">Next of Kin Details</p>
@@ -1115,7 +1115,7 @@ export const ViewCustomer = ({
               </div>
             </div>
 
-            <div className="ml-8 w-[40%] border p-6">
+            <div className="md:ml-8 md:w-[40%] border p-6">
               <p className="mb-8 mt-2 text-xl font-bold">
                 Means Of ID: {customerInfo?.meansOfID ?? ""}
               </p>
