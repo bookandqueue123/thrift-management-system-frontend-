@@ -1238,10 +1238,15 @@ export const EditCustomer = ({
     },
     onSuccess(response) {
       // router.push("/customer");
-      console.log(response);
+     
       setShowSuccessToast(true);
-      // setSuccessMessage((response as any).response.data.message);
-    },
+  
+      // Delay the execution of closeModal(false) by 5 seconds
+      setTimeout(() => {
+          closeModal(false);
+      }, 5000); // 5000 milliseconds = 5 seconds
+  },
+  
     onError(error: AxiosError<any, any>) {
       console.log(error);
       setShowErrorToast(true);

@@ -120,7 +120,7 @@ export default function OrganisationAction({index, organisationId}: Organisation
                 //   content={
                 //     modalContent === "confirmation" ? "confirmation" : "form"
                 //   }
-                //   closeModal={setModalState}
+                  closeModal={setModalState}
                 />
               ) : (
                 ""
