@@ -9,6 +9,8 @@ import * as Yup from "yup";
 import Image from "next/image";
 import { CustomButton } from "@/components/Buttons";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
+import { useSelector } from "react-redux";
+import { selectUserId } from "@/slices/OrganizationIdSlice";
 
 interface ShowModalProps{
     organisationId: string
@@ -29,6 +31,7 @@ export const EditOrganisation = ({
     );
     const [selectedState, setSelectedState] = useState("");
   
+    
     const { client } = useAuth();
     const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
       queryKey: ["customerInfo"],
@@ -75,19 +78,31 @@ export const EditOrganisation = ({
         const formData = new FormData();
         formData.append("description", values.description)
         formData.append("organisationName", values.organisationName);
+       
         formData.append("accountNumber", values.accountNumber);
+        
         formData.append("phoneNumber", values.phoneNumber);
+        
         formData.append("email", values.email);
+        
         formData.append("businessEmailAdress", values.businessEmailAdress);
+        
         formData.append("officeAddress1", values.officeAddress1);
+        
         formData.append("officeAddress2", values.officeAddress2);
+        
         formData.append("region", values.region);
+        
         formData.append("tradingName", values.tradingName)
+        
         formData.append("website", values.website)
+        
         formData.append("country", values.country);
+        
         formData.append("state", values.state);
        
         formData.append("city", values.city);
+        // formData.append("description", values.description);
         
       
         return client.put(`/api/user/${organisationId}`, formData);
@@ -148,7 +163,6 @@ export const EditOrganisation = ({
               initialValues={{
                 organisationName: customerInfo?.organisationName,
                 accountNumber: customerInfo?.accountNumber,
-            
                 phoneNumber: customerInfo?.phoneNumber,
                 email: customerInfo?.email,
                 businessEmailAdress: customerInfo.businessEmailAdress,
@@ -167,23 +181,22 @@ export const EditOrganisation = ({
               validationSchema={Yup.object({
                 organisationName: Yup.string().required("Required"),
                 accountNumber: Yup.string().required("Required"),
-                otherName: Yup.string().optional(),
+                phoneNumber: Yup.string().required(),
                 email: Yup.string().required("Required"),
                 businessEmailAdress: Yup.string().required("Required"),
-                // officeAddress1: Yup.string().required("Required"),
-                // officeAddress2: Yup.string().required("Required"),
+                 officeAddress1: Yup.string().optional(),
+                officeAddress2: Yup.string().optional(),
                 country: Yup.string().required("Required"),
-                state: Yup.string().required("Required"),
-                lga: Yup.string().required("Required"),
+                state: Yup.string().required("Required"),           
                 city: Yup.string().required("Required"),
                 region: Yup.string().required("Required"),
-                // tradingName: Yup.string().required("Required"),
+                 tradingName: Yup.string().optional(),
                 website: Yup.string().required("Required"),
-                organisation: Yup.string().required("Required"),
+               
                 description: Yup.string().required("Required"),
               })}
               onSubmit={(values, { setSubmitting }) => {
-                console.log(12345)
+              
                 updateUserInfo(values);
                 setTimeout(() => {
                   setShowSuccessToast(false);
@@ -209,110 +222,147 @@ export const EditOrganisation = ({
                     <div className="mt-8">
                       <div className="mb-8 ">
                         
-                          <div className="items-center gap-6 ">
-                            <div className="md:flex">
-                              <label
-                                htmlFor="organisationName"
-                                className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
-                              >
-                                Name{" "}
-                                <span className="font-base font-semibold text-[#FF0000]">
-                                  *
-                                </span>
-                              </label>
-                              <div>
-                                <Field
-                                  id="organisationName"
-                                  name="organisationName"
-                                  type="text"
-                                  className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                                />
-                                <ErrorMessage
-                                  name="organisationName"
-                                  component="div"
-                                  className="text-red-500"
-                                 />
-                              </div>
-                             
+                        <div className="items-center gap-6 ">
+                          <div className="md:flex">
+                            <label
+                              htmlFor="organisationName"
+                              className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                            >
+                              Name{" "}
+                              <span className="font-base font-semibold text-[#FF0000]">
+                                *
+                              </span>
+                            </label>
+                            <div className="w-full">
+                              <Field
+                                id="organisationName"
+                                name="organisationName"
+                                type="text"
+                                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                              />
+                              <ErrorMessage
+                                name="organisationName"
+                                component="div"
+                                className="text-red-700"
+                              />
                             </div>
+                             
+                          </div>
                             
                         </div>
                           
                        
   
-                        <div className="mb-3">
-                          <label
-                            htmlFor="accountNumber                            "
-                            className="text-normal m-0 font-bold "
-                          >
-                            Account Number
-                          </label>
-                          <Field
-                            id="accountNumber"
-                            name="accountNumber"
-                            type="text"
-                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                          />
+                        <div className="my-8">
+                          <div className="items-center gap-6 ">
+                            <div className="md:flex">
+                              <label
+                                htmlFor="accountNumber                            "
+                                className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                              >
+                                Account Number{" "}
+
+                                <span className="font-base font-semibold text-[#FF0000]">
+                                *
+                              </span>
+                              </label>
+                              <div className="w-full">
+                              <Field
+                                  id="accountNumber"
+                                  name="accountNumber"
+                                  type="text"
+                                  className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                                />
+                                <ErrorMessage
+                                name="accountNumber"
+                                component="div"
+                                className="text-red-700"
+                              />
+                              </div>
+                            
+                            </div>
+                           
+                          </div>
+                          
                         </div>
   
-                        <div className="mb-3">
+                        <div className="mb-8">
+                          <div className="items-center gap-6 ">
+                          <div className="md:flex">
                           <label
                             htmlFor="phoneNumber"
-                            className="text-normal m-0 font-bold "
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                           >
                             Phone Number{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
-                          <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                          <div className="w-full">
                             <Field
                               id="phoneNumber"
                               name="phoneNumber"
                               type="tel"
-                              className="bg-transparent outline-none"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                             />
-                          </div>
-                          <ErrorMessage
+                            <ErrorMessage
                             name="phoneNumber"
                             component="div"
-                            className="text-red-500"
+                            className="text-red-700"
                           />
+                          </div>
+                          
+                          </div>
+                          </div>
+                          
                         </div>
   
-                        <div className="mb-3">
-                          <label
+                        <div className="mb-8">
+                        <div className="items-center gap-6 ">
+                           <div className="md:flex">
+                           <label
                             htmlFor="email"
-                            className="text-normal m-0 font-bold "
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                           >
                             Email address{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
+                          
+                          <div className="w-full">
                           <Field
                             id="email"
                             name="email"
                             type="email"
-                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                           />
                           <ErrorMessage
                             name="email"
                             component="div"
-                            className="text-red-500"
+                            className="text-red-700"
                           />
+                          </div>
+                           </div>
+                        </div>
+                         
+                          
+                          
                         </div>
 
-                        <div className="mb-3">
+                        <div className="mb-8">
+                        <div className="items-center gap-6 ">
+                          <div className="md:flex">
                           <label
                             htmlFor="businessEmailAdress"
-                            className="text-normal m-0 font-bold "
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                           >
-                            business Email Adress {" "}
+                            Business Email Adress {" "}
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
+                          <div className="w-full">
                           <Field
                             id="businessEmailAdress"
                             name="businessEmailAdress"
@@ -322,67 +372,94 @@ export const EditOrganisation = ({
                           <ErrorMessage
                             name="businessEmailAdress"
                             component="div"
-                            className="text-red-500"
+                            className="text-red-700"
                           />
+                          </div>
+                          
+                          </div>
+                        </div>
+                          
                         </div>
   
-                        <div className="mb-3">
+                        <div className="mb-8">
+                        <div className="items-center gap-6 ">
+                          <div className="md:flex">
                           <label
                             htmlFor="officeAddress1"
-                            className="text-normal m-0 font-bold "
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium "
                           >
-                            Home Address{" "}
+                            Office Address1{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
-                          <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+
+                          <div className="w-full">
                             <Field
                               id="officeAddress1"
                               name="officeAddress1"
                               type="text"
-                              className="bg-transparent outline-none"
-                            />
-                          </div>
-                          <ErrorMessage
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            /> 
+                            <ErrorMessage
                             name="officeAddress1"
                             component="div"
-                            className="text-red-500"
+                            className="text-red-700"
                           />
+                          </div>
+                         
+
+                          </div>
+                        </div>
+                          
+                          
+                          
                         </div>
 
-                        <div className="mb-3">
+                        <div className="mb-8">
+                        <div className="items-center gap-6 ">
+                          <div className="md:flex">
                           <label
                             htmlFor="officeAddress2"
-                            className="text-normal m-0 font-bold "
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                           >
                             Office Address2{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
-                          <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+
+                          <div className="w-full">
                             <Field
                               id="officeAddress2"
                               name="officeAddress2"
                               type="text"
-                              className="bg-transparent outline-none"
-                            />
-                          </div>
-                          <ErrorMessage
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            /> 
+                            <ErrorMessage
                             name="officeAddress2"
                             component="div"
-                            className="text-red-500"
+                            className="text-red-700"
                           />
+                          </div>
+                         
+                          </div>
+                        </div>
+                         
+                          
+                          
                         </div>
   
-                        <div className="mb-3">
+                        <div className="mb-8">
+                        <div className="items-center gap-6 ">
+                          <div className="md:flex">
                           <label
                             htmlFor="country"
-                            className="text-normal m-0 font-bold "
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                           >
                             Country
                           </label>
+                          <div className="w-full">
                           <Field
                             onChange={handleChange}
                             as="select"
@@ -398,7 +475,7 @@ export const EditOrganisation = ({
                               StatesAndLGAs.map((countries) => (
                                 <option
                                   key={countries.country}
-                                  value={countries.country}
+                                  value={countries  .country}
                                 >
                                   {countries.country}
                                 </option>
@@ -407,23 +484,31 @@ export const EditOrganisation = ({
                           <ErrorMessage
                             name="country"
                             component="div"
-                            className="text-xs text-red-500"
+                            className="text-xs text-red-700"
                           />
+                          </div>
+                          </div>
+                        </div>
+                          
+                          
                         </div>
   
-                        <div className="mb-3">
-                          <label
+                        <div className="mb-8">
+                        <div className="items-center gap-6 ">
+                          <div className="md:flex">
+                            <label
                             htmlFor="state"
-                            className="text-normal m-0 font-bold "
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium "
                           >
                             State
                           </label>
+                          <div className="w-full">
                           <Field
                             as="select"
                             id="state"
                             name="state"
                             // type="text"
-                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                           >
                             <option>Select State</option>
   
@@ -437,13 +522,19 @@ export const EditOrganisation = ({
                           <ErrorMessage
                             name="state"
                             component="div"
-                            className="text-xs text-red-500"
+                            className="text-xs text-red-700"
                           />
+                          </div>
+                          </div>
+                        </div>
+                          
+                          
+                          
                         </div>
                         {/* <div className="mb-3">
                           <label
                             htmlFor="lga"
-                            className="text-normal m-0 font-bold"
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
                           >
                             Local Government Area (lga)
                           </label>
@@ -466,134 +557,167 @@ export const EditOrganisation = ({
                           <ErrorMessage
                             name="lga"
                             component="div"
-                            className="text-xs text-red-500"
+                            className="text-xs text-red-700"
                           />
                         </div> */}
   
-                        <div className="mb-3">
+                        <div className="mb-8">
+                        <div className="items-center gap-6 ">
+                          <div className="md:flex">
+                            
                           <label
                             htmlFor="city"
-                            className="text-normal m-0 font-bold "
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium "
                           >
                             City{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
-                          <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                          <div className="w-full">
                             <Field
                               id="city"
                               name="city"
                               type="city"
-                              className="bg-transparent outline-none"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                             />
-                          </div>
-                          <ErrorMessage
+                            <ErrorMessage
                             name="city"
                             component="div"
-                            className="text-red-500"
+                            className="text-red-700"
                           />
+                          </div>
+                          
+                          </div>
+                        </div>
+                          
                         </div>
 
-                        <div className="mb-3">
+                        <div className="mb-8">
+                        <div className="items-center gap-6 ">
+                          <div className="md:flex">
                           <label
                             htmlFor="region"
-                            className="text-normal m-0 font-bold "
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium "
                           >
                             region{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
-                          <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                          <div className="w-full">
                             <Field
                               id="region"
                               name="region"
                               type="region"
-                              className="bg-transparent outline-none"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                             />
-                          </div>
-                          <ErrorMessage
+                            <ErrorMessage
                             name="region"
                             component="div"
-                            className="text-red-500"
+                            className="text-red-700"
                           />
+                          </div>
+                          
+                          </div>
+                        </div>
+                          
+                          
                         </div>
 
-                        <div className="mb-3">
+                        <div className="mb-8">
+                        <div className="items-center gap-6 ">
+                          <div className="md:flex">
                           <label
                             htmlFor="tradingName"
-                            className="text-normal m-0 font-bold "
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium "
                           >
                             Trading Name{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
-                          <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                          <div className="w-full">
                             <Field
                               id="tradingName"
                               name="tradingName"
                               type="tradingName"
-                              className="bg-transparent outline-none"
-                            />
-                          </div>
-                          <ErrorMessage
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            /><ErrorMessage
                             name="tradingName"
                             component="div"
-                            className="text-red-500"
+                            className="text-red-700"
                           />
+                          </div>
+                          
+                          </div>
+                        </div>
+                          
+                          
                         </div>
 
-                        <div className="mb-3">
-                          <label
+                        <div className="mb-8">
+                        <div className="items-center gap-6 ">
+                           <div className="md:flex">
+                           <label
                             htmlFor="website"
-                            className="text-normal m-0 font-bold "
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium "
                           >
                             Website{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
-                          <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                          <div className="w-full">
                             <Field
                               id="website"
                               name="website"
                               type="website"
-                              className="bg-transparent outline-none"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                             />
-                          </div>
-                          <ErrorMessage
+                            <ErrorMessage
                             name="website"
                             component="div"
-                            className="text-red-500"
+                            className="text-red-700"
                           />
+                          </div>
+                          
+                           </div>
+                        </div>
+                         
+                          
                         </div>
 
-                        <div className="mb-3">
+                        <div className="mb-8">
+                        <div className="items-center gap-6 ">
+                          <div className="md:flex">
                           <label
                             htmlFor="description"
-                            className="text-normal m-0 font-bold "
+                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium "
                           >
                             Description{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
-                          <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                          <div className="w-full">
                             <Field
                               id="description"
                               name="description"
                               type="description"
-                              className="bg-transparent outline-none"
-                            />
-                          </div>
-                          <ErrorMessage
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            /><ErrorMessage
                             name="description"
                             component="div"
-                            className="text-red-500"
+                            className="text-red-700"
                           />
+                          </div>
+                          
                         </div>
+                          </div>
+                        </div>
+                          
+                          
                        
                       </div>
   
@@ -631,3 +755,5 @@ export const EditOrganisation = ({
       </div>
     );
   };
+
+

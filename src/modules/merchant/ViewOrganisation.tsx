@@ -31,7 +31,7 @@ export const ViewOrganisation = ({
       },
     });
 
-    console.log(customerInfo)
+
   
     return (
       <div>

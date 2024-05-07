@@ -44,8 +44,8 @@ export default function OrganisationAction({index, organisationId}: Organisation
                 dropdownEnabled
                 dropdownContents={{
                     labels: [
-                    "View Customer",
-                    "Edit Customer",
+                    "View Organisations",
+                    "Edit Organisations",
                     "Savings Settings",
                     "Disable/Enable",
                     ],
