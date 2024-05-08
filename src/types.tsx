@@ -376,7 +376,7 @@ export interface WithdrawalProps {
 
 export interface Organisation {
   accountNumber: string;
-  assignedCustomer?: any[]; 
+  assignedCustomer?: any[];
   businessEmailAdress: string;
   city: string;
   country: string;
@@ -545,6 +545,26 @@ export interface createRoleProps {
     viewAssignedCustomers: boolean;
     editAssignedCustomers: boolean;
     viewAllCustomers: boolean;
+  };
+}
+
+export interface createSuperRoleProps {
+  roleName: string;
+  description: string;
+  viewPermissions: {
+    viewOrgDetails: boolean;
+    viewOrgCustomerDetails: boolean;
+    viewOrg: boolean;
+    generalPostingReport: boolean;
+    withdrawalReport: boolean;
+  };
+  editPermissions: {
+    editOrgCustomerDetails: boolean;
+    editOrgDetails: boolean;
+  };
+  actionPermissions: {
+    enableOrg: boolean;
+    disableOrg: boolean;
   };
 }
 

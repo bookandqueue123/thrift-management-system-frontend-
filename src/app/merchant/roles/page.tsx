@@ -258,7 +258,6 @@ const Roles = () => {
                           setModalToShow("edit-role");
                           setModalState(true);
                           setRoleToBeEdited(role._id);
-
                         }}
                         className="cursor-pointer"
                       />
@@ -568,11 +567,11 @@ const MutateRole = ({
               </div>
             </div>
 
-            <p className="mb-2 py-4 text-lg font-medium text-white">
+            <p className="mb-2 py-4 text-lg font-medium text-ajo_darkBlue">
               Assign Permission
             </p>
 
-            <span className="mb-1 block  text-sm text-ajo_offWhite">
+            <span className="mb-1 block  text-sm text-ajo_darkBlue">
               Post Permissions
             </span>
             {postPermissionArr.map((permission) => {
@@ -589,7 +588,7 @@ const MutateRole = ({
                   />
                   <label
                     htmlFor={permission}
-                    className="m-0 text-sm capitalize text-ajo_offWhite"
+                    className="m-0 text-sm capitalize text-ajo_darkBlue"
                   >
                     {permission === "viewMyPostReports"
                       ? "view my post reports"
@@ -602,7 +601,7 @@ const MutateRole = ({
                 </div>
               );
             })}
-            <span className="mb-1 mt-6 block text-sm text-ajo_offWhite">
+            <span className="mb-1 mt-6 block text-sm text-ajo_darkBlue">
               Withdrawal Permissions
             </span>
             {withdrawalPermissionArr.map((permission) => {
@@ -619,7 +618,7 @@ const MutateRole = ({
                   />
                   <label
                     htmlFor={permission}
-                    className="m-0 text-sm capitalize text-ajo_offWhite"
+                    className="m-0 text-sm capitalize text-ajo_darkBlue"
                   >
                     {permission === "viewMyPostReports"
                       ? "view my post reports"
@@ -632,7 +631,7 @@ const MutateRole = ({
                 </div>
               );
             })}
-            <span className="mb-1 mt-6 block text-sm text-ajo_offWhite">
+            <span className="mb-1 mt-6 block text-sm text-ajo_darkBlue">
               Customer Permissions
             </span>
             {customerPermissionArr.map((permission) => {
@@ -649,7 +648,7 @@ const MutateRole = ({
                   />
                   <label
                     htmlFor={permission}
-                    className="m-0 text-sm capitalize text-ajo_offWhite"
+                    className="m-0 text-sm capitalize text-ajo_darkBlue"
                   >
                     {permission === "viewMyPostReports"
                       ? "view my post reports"
