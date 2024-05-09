@@ -7,6 +7,7 @@ import { CustomerSignUpProps, getOrganizationProps } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import * as Yup from "yup";
@@ -361,7 +362,19 @@ const Page = () => {
           <CustomButton
             type="submit"
             style="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
-            label={isSubmitting ? "Creating account..." : "Create account"}
+            label={
+              isSubmitting ? (
+                <Image
+                  src="/loadingSpinner.svg"
+                  alt="loading spinner"
+                  className="relative left-1/2"
+                  width={25}
+                  height={25}
+                />
+              ) : (
+                "Create account"
+              )
+            }
           />
 
           {/* Toast Messages */}

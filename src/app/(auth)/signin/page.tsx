@@ -254,8 +254,8 @@ const SignInForm = () => {
                 src="/loadingSpinner.svg"
                 alt="loading spinner"
                 className="relative left-1/2"
-                width={40}
-                height={40}
+                width={25}
+                height={25}
               />
             ) : (
               "Log in"
