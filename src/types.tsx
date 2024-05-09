@@ -529,22 +529,16 @@ export interface setUpSavingsProps {
 export interface createRoleProps {
   roleName: string;
   description: string;
-  postPermissions: {
-    viewMyPostReports: boolean;
-    viewAllPostReports: boolean;
-    postPayment: boolean;
-    debit: boolean;
-    export: boolean;
-  };
-  withdrawalPermissions: {
-    viewWithdrawals: boolean;
-    export: boolean;
-  };
-  customerPermissions: {
-    viewCustomerDetails: boolean;
-    viewAssignedCustomers: boolean;
-    editAssignedCustomers: boolean;
-    viewAllCustomers: boolean;
+  permissions: {
+    "edit-user": boolean;
+    "view-assigned-users": boolean;
+    "export-withdrawal": boolean;
+    "view-withdrawals": boolean;
+    "view-savings": boolean;
+    "export-saving": boolean;
+    "post-saving": boolean;
+    "set-saving": boolean;
+    "view-user": boolean;
   };
 }
 
@@ -587,5 +581,25 @@ export interface mutateUserProps {
   guarantor2Email: string;
   guarantor2Phone: string;
   guarantor2Address: string;
-  allCustomers: string[];
+  assignedCustomers: string[];
+  roles: string[];
+}
+
+export interface permissionObject {
+  _id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface roleResponse {
+  _id: string;
+  name: string;
+  description: string;
+  permissions: string[];
+  organisation: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }

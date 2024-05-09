@@ -85,21 +85,21 @@ const Users = () => {
       setFilteredUsers(filtered);
     }
   };
-  const handleDateFilter = () => {
-    // Filter the data based on the date range
-    if (allUsers) {
-      const filtered = allUsers.filter((item) => {
-        const itemDate = new Date(item.createdAt); // Convert item date to Date object
-        const startDateObj = new Date(fromDate);
-        const endDateObj = new Date(toDate);
+  // const handleDateFilter = () => {
+  //   // Filter the data based on the date range
+  //   if (allUsers) {
+  //     const filtered = allUsers.filter((item) => {
+  //       const itemDate = new Date(item.createdAt); // Convert item date to Date object
+  //       const startDateObj = new Date(fromDate);
+  //       const endDateObj = new Date(toDate);
 
-        return itemDate >= startDateObj && itemDate <= endDateObj;
-      });
+  //       return itemDate >= startDateObj && itemDate <= endDateObj;
+  //     });
 
-      // Update the filtered data state
-      setFilteredUsers(filtered);
-    }
-  };
+  //     // Update the filtered data state
+  //     setFilteredUsers(filtered);
+  //   }
+  // };
 
   const paginatedRoles = filteredUsers?.slice(
     (currentPage - 1) * PAGE_SIZE,
@@ -301,6 +301,9 @@ const MutateUser = ({
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   setUserMutated: Dispatch<SetStateAction<boolean>>;
 }) => {
+  const { client } = useAuth();
+  const organizationId = useSelector(selectOrganizationId);
+  console.log(organizationId);
   const initialValues: mutateUserProps = {
     firstName: "",
     lastName: "",
@@ -320,53 +323,66 @@ const MutateUser = ({
     guarantor2Email: "",
     guarantor2Phone: "",
     guarantor2Address: "",
-    allCustomers: [],
+    assignedCustomers: [],
+    roles: [],
   };
 
+  const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
+    queryKey: ["allCustomers"],
+    queryFn: async () => {
+      return client
+        .get(
+          `/api/user?role=customer&organisation=${organizationId}&userType=individual`,
+          {},
+        )
+        .then((response: AxiosResponse<customer[], any>) => {
+          console.log("allCustomers", response.data);
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          throw error;
+        });
+    },
+  });
+
+  const { data: allRoles, isLoading: isLoadingAllRoles } = useQuery({
+    queryKey: ["allRoles"],
+    queryFn: async () => {
+      return client
+        .get(`/api/role?organisation==${organizationId}`, {})
+        .then((response: AxiosResponse<string[], any>) => {
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          throw error;
+        });
+    },
+  });
   const { mutate: createUser, isPending: isCreatingRole } = useMutation({
-    mutationKey: ["create role"],
     mutationFn: async (values: mutateUserProps) => {
-      // const socials = {
-      //   facebook: values.facebook,
-      //   twitter: values.instagram,
-      //   instagram: values.linkedIn,
-      //   linkedIn: values.twitter,
-      //   pintrest: values.pinterest,
-      // };
-
-      // const formData = new FormData();
-
-      // formData.append("description", values.description);
-      // formData.append("region", values.city);
-      // formData.append("country", values.country);
-      // formData.append("state", values.state);
-      // formData.append("city", values.lga);
-      // formData.append("socialMedia", JSON.stringify(socials));
-      // formData.append("tradingName", values.tradingName);
-      // formData.append("website", values.websiteUrl);
-      // formData.append("businessEmailAdress", values.email);
-      // formData.append("officeAddress1", values.officeAddress);
-      // formData.append("officeAddress2", values.address2);
-      // formData.append("organisationName", values.organisationName);
-      // formData.append("email", values.email);
-      // formData.append("phoneNumber", values.phoneNumber);
-
-      // if (values.organisationLogo) {
-      //   formData.append("organisationLogo", values.organisationLogo[0]);
-      // }
-      //  if (values.BankRecommendation) {
-      //   formData.append("BankRecommendation", values.BankRecommendation[0]);
-      // }
-      //  if (values.CommunityRecommendation) {
-      //   formData.append("CommunityRecommendation", values.CommunityRecommendation[0]);
-      // }
-      //  if (values.CourtAffidavit) {
-      //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
-      //  }
-      console.log(values);
       console.log("role created");
-      return;
-      //  client.put(`/api/user/${userId}`, formData);
+      return client.put(`/api/user/create-staff`, {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        phoneNumber: values.phone,
+        organisation: organizationId,
+        homeAddress: values.homeAddress,
+        email: values.email,
+        guarantor1: {
+          fullName: values.guarantor1Name,
+          homeAddress: values.guarantor1Address,
+          email: values.guarantor1Email,
+          phoneNumber: values.guarantor1Phone,
+        },
+        guarantor2: {
+          fullName: values.guarantor2Name,
+          homeAddress: values.guarantor2Address,
+          email: values.guarantor2Email,
+          phoneNumber: values.guarantor2Phone,
+        },
+        roles: values.roles,
+        assignedUser: values.assignedCustomers,
+      });
     },
 
     onSuccess(response) {
@@ -532,10 +548,11 @@ const MutateUser = ({
           )
           .required("Required"),
         guarantor2Address: Yup.string().required("Required"),
-        allCustomers: Yup.object({
-          allCustomers: Yup.array().of(Yup.string()).required("Required"),
-        }),
-        role: Yup.string().required("Required"),
+        assignedCustomers: Yup.array()
+          .of(Yup.string())
+          .min(1, "At least one customer must be selected")
+          .required("required"),
+        roles: Yup.string().required("Required"),
         guarantorForm: Yup.mixed()
           .required("Required")
           .test(
@@ -1105,47 +1122,46 @@ const MutateUser = ({
                 <Field
                   as="select"
                   placeholder="make a selection"
-                  id="role"
-                  name="role"
+                  id="roles"
+                  name="roles"
                   className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
                 >
-                  {/* {StatesAndLGAs.map((country) => (
-                    <option key={country.country} value={country.country}>
-                      {country.country}
+                  {allRoles?.map((role) => (
+                    <option key={role} value={role}>
+                      {role}
                     </option>
-                  ))} */}
+                  ))}
                   <option className="invisible"></option>
                 </Field>
                 <ErrorMessage
-                  name="role"
+                  name="roles"
                   component="div"
                   className="text-xs text-red-500"
                 />
               </div>
               <div className="mb-4 w-3/4">
                 <label
-                  htmlFor="allCustomers"
+                  htmlFor="assignedCustomers"
                   className="m-0 text-xs font-medium text-ajo_darkBlue"
                 >
                   Assign Customers
                 </label>
                 <Field
                   as="select"
-                  multiple
                   placeholder="make a selection"
-                  id="allCustomers"
-                  name="allCustomers"
+                  id="assignedCustomers"
+                  name="assignedCustomers"
                   className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
                 >
-                  {/* {StatesAndLGAs.map((country) => (
-                    <option key={country.country} value={country.country}>
-                      {country.country}
+                  {allCustomers?.map((customer) => (
+                    <option key={customer._id} value={customer._id}>
+                      {customer.firstName + " " + customer.lastName}
                     </option>
-                  ))} */}
+                  ))}
                   <option className="invisible"></option>
                 </Field>
                 <ErrorMessage
-                  name="allCustomers"
+                  name="assignedCustomers"
                   component="div"
                   className="text-xs text-red-500"
                 />
@@ -1159,13 +1175,12 @@ const MutateUser = ({
                     if (e.target.checked) {
                       // Select all options
                       setFieldValue(
-                        "allCustomers",
-                        // StatesAndLGAs.map((country) => country.country),
-                        () => {},
+                        "assignedCustomers",
+                        allCustomers?.map((customer) => customer._id),
                       );
                     } else {
                       // Deselect all
-                      setFieldValue("allCustomers", []);
+                      setFieldValue("assignedCustomers", []);
                     }
                   }}
                 />
