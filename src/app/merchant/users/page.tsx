@@ -6,7 +6,7 @@ import PaginationBar from "@/components/Pagination";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import { MyFileList, customer, mutateUserProps } from "@/types";
+import { MyFileList, customer, mutateUserProps, roleResponse } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
@@ -25,7 +25,12 @@ const Users = () => {
   const PAGE_SIZE = 5;
   const organisationId = useSelector(selectOrganizationId);
 
-  const [isUserMutated, setIsUserMutated] = useState(false);
+  const [isUserCreated, setIsUserCreated] = useState(false);
+  const [isUserEdited, setIsUserEdited] = useState(false);
+  const [modalContent, setModalContent] = useState<"status" | "form" | "">(
+    "form",
+  );
+  const [mutationResponse, setMutationResponse] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [fromDate, setFromDate] = useState("");
@@ -53,15 +58,16 @@ const Users = () => {
     isLoading: isLoadingAllUsers,
     refetch,
   } = useQuery({
-    queryKey: ["allRoles"],
+    queryKey: ["allUsers"],
     queryFn: async () => {
       return client
         .get(
-          `/api/user?role=customer&organisation=${organisationId}&userType=individual`,
+          `/api/user?role=staff&organisation=${organisationId}&userType=individual`,
           {},
         )
         .then((response: AxiosResponse<customer[], any>) => {
           setFilteredUsers(response.data);
+          console.log(response.data)
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -71,6 +77,47 @@ const Users = () => {
     },
     staleTime: 5000,
   });
+
+  const {
+    data: allRoles,
+    isLoading: isLoadingAllRoles,
+    refetch: refetchAllRoles,
+  } = useQuery({
+    queryKey: ["allRoles"],
+    queryFn: async () => {
+      return client
+        .get(`/api/role?organisation=${organisationId}`, {})
+        .then((response: AxiosResponse<roleResponse[], any>) => {
+          console.log(response.data);
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          console.log(error);
+          throw error;
+        });
+    },
+    staleTime: 5000,
+  });
+
+
+    const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
+      queryKey: ["allCustomers"],
+      queryFn: async () => {
+        return client
+          .get(
+            `/api/user?role=customer&organisation=${organisationId}&userType=individual`,
+            {},
+          )
+          .then((response: AxiosResponse<customer[], any>) => {
+            console.log("allCustomers", response.data);
+            return response.data;
+          })
+          .catch((error: AxiosError<any, any>) => {
+            throw error;
+          });
+      },
+    });
+
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
     console.log(e.target.value);
@@ -112,7 +159,8 @@ const Users = () => {
 
   useEffect(() => {
     refetch();
-  }, [isUserMutated, refetch]);
+    refetchAllRoles()
+  }, [isUserCreated, isUserEdited, modalContent, refetch, refetchAllRoles]);
 
   return (
     <>
@@ -160,6 +208,8 @@ const Users = () => {
             onButtonClick={() => {
               setModalState(true);
               setModalToShow("create-user");
+              setModalContent("form");
+              setIsUserCreated(false);
             }}
           />
         </div>
@@ -175,8 +225,8 @@ const Users = () => {
               "Account  Created On",
               "Email Address",
               "Phone Number",
-              "State",
-              "LGA ",
+              "Roles",
+              "Assigned Customers",
               "Action",
             ]}
             content={
@@ -200,13 +250,36 @@ const Users = () => {
                       {user.email || "----"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {user.phone || "----"}
+                      {user.phoneNumber || "----"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {user.state || "----"}
+                      {allRoles
+                        ?.filter((role) =>
+                          user?.roles.some(
+                            (eachRole: string) => eachRole === role._id,
+                          ),
+                        )
+                        .map((filteredRole) => (
+                          <ul key={filteredRole._id}>
+                            <li className="my-1 list-disc marker:text-ajo_offWhite">
+                              {filteredRole.name}
+                            </li>
+                          </ul>
+                        )) || "----"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {user.LGA || "----"}
+                      {allCustomers?.filter((customer) =>
+                          user?.assignedUser.some(
+                            (eachUser: string) => eachUser === customer._id,
+                          ),
+                        )
+                        .map((filteredUser) => (
+                          <ul key={filteredUser._id}>
+                            <li className="my-1 list-disc marker:text-ajo_offWhite">
+                              {filteredUser.firstName + " " + filteredUser.lastName}
+                            </li>
+                          </ul>
+                        )) || "----"}
                     </td>
 
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
@@ -259,24 +332,27 @@ const Users = () => {
                       : ""
               }
             >
-              {!isUserMutated ? (
+              {modalContent === "form" ? (
                 <div className="px-[10%]">
                   {modalToShow === "view-user" ? (
                     <ViewUser userId={userToBeEdited} />
                   ) : (
                     <MutateUser
                       setCloseModal={setModalState}
-                      setUserMutated={setIsUserMutated}
+                      setUserCreated={setIsUserCreated}
+                      setUserEdited={setIsUserEdited}
+                      setModalContent={setModalContent}
+                      setMutationResponse={setMutationResponse}
                       actionToTake={modalToShow}
                     />
                   )}
                 </div>
               ) : (
                 <ModalConfirmation
-                  successTitle={`Role ${modalToShow === "create-user" ? "Creation" : "Editing"} Successful`}
-                  errorTitle={`Role ${modalToShow === "create-user" ? "Creation" : "Editing"} Failed`}
-                  status={isUserMutated ? "success" : "failed"}
-                  responseMessage=""
+                  successTitle={`User ${modalToShow === "create-user" ? "Creation" : "Editing"} Successful`}
+                  errorTitle={`User ${modalToShow === "create-user" ? "Creation" : "Editing"} Failed`}
+                  status={isUserCreated || isUserEdited ? "success" : "failed"}
+                  responseMessage={mutationResponse}
                 />
               )}
             </Modal>
@@ -293,17 +369,22 @@ const Users = () => {
 };
 
 const MutateUser = ({
-  setUserMutated,
+  setUserCreated,
+  setUserEdited,
   setCloseModal,
+  setModalContent,
   actionToTake,
+  setMutationResponse,
 }: {
   actionToTake: "create-user" | "edit-user" | "view-user" | "";
   setCloseModal: Dispatch<SetStateAction<boolean>>;
-  setUserMutated: Dispatch<SetStateAction<boolean>>;
+  setUserCreated: Dispatch<SetStateAction<boolean>>;
+  setUserEdited: Dispatch<SetStateAction<boolean>>;
+  setModalContent: Dispatch<SetStateAction<"" | "status" | "form">>;
+  setMutationResponse: Dispatch<SetStateAction<string>>;
 }) => {
   const { client } = useAuth();
   const organizationId = useSelector(selectOrganizationId);
-  console.log(organizationId);
   const initialValues: mutateUserProps = {
     firstName: "",
     lastName: "",
@@ -324,7 +405,7 @@ const MutateUser = ({
     guarantor2Phone: "",
     guarantor2Address: "",
     assignedCustomers: [],
-    roles: [],
+    roles: "",
   };
 
   const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
@@ -349,8 +430,8 @@ const MutateUser = ({
     queryKey: ["allRoles"],
     queryFn: async () => {
       return client
-        .get(`/api/role?organisation==${organizationId}`, {})
-        .then((response: AxiosResponse<string[], any>) => {
+        .get(`/api/role?organisation=${organizationId}`)
+        .then((response: AxiosResponse<roleResponse[], any>) => {
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -361,7 +442,7 @@ const MutateUser = ({
   const { mutate: createUser, isPending: isCreatingRole } = useMutation({
     mutationFn: async (values: mutateUserProps) => {
       console.log("role created");
-      return client.put(`/api/user/create-staff`, {
+      return client.post(`/api/user/create-staff`, {
         firstName: values.firstName,
         lastName: values.lastName,
         phoneNumber: values.phone,
@@ -380,21 +461,25 @@ const MutateUser = ({
           email: values.guarantor2Email,
           phoneNumber: values.guarantor2Phone,
         },
-        roles: values.roles,
+        roles: [values.roles],
         assignedUser: values.assignedCustomers,
       });
     },
 
     onSuccess(response) {
-      setUserMutated(true);
+      setUserCreated(true);
+      setModalContent("status");
+      setMutationResponse(response?.data.message);
       setTimeout(() => {
         setCloseModal(false);
       }, 5000);
     },
 
     onError(error: AxiosError<any, any>) {
-      setUserMutated(false);
+      setUserCreated(false);
+      setModalContent("status");
       console.log(error.response?.data.message);
+      setMutationResponse(error.response?.data.message);
     },
   });
 
@@ -445,15 +530,19 @@ const MutateUser = ({
     },
 
     onSuccess(response) {
-      setUserMutated(true);
+      setUserEdited(true);
+      setModalContent("status");
+      // setMutationResponse();
       setTimeout(() => {
         setCloseModal(false);
       }, 5000);
     },
 
     onError(error: AxiosError<any, any>) {
-      setUserMutated(false);
+      setUserEdited(false);
+      setModalContent("status");
       console.log(error.response?.data.message);
+      setMutationResponse(error.response?.data.message);
     },
   });
 
@@ -472,8 +561,7 @@ const MutateUser = ({
           )
           .required("Required"),
         homeAddress: Yup.string().required("Required"),
-        dept_unit: Yup.string().required("Required"),
-        lga: Yup.string().required("Required"),
+        dept_unit: Yup.string().optional(),
         userPicture: Yup.mixed()
           .required("Required")
           .test(
@@ -498,31 +586,31 @@ const MutateUser = ({
               return true;
             },
           ),
-        guarantor2ID: Yup.mixed()
-          .required("Required")
-          .test(
-            "fileSize",
-            "File size must be less than 2MB",
-            (value: MyFileList) => {
-              if (value) {
-                return value[0].size <= 2097152;
-              }
-              return true;
-            },
-          )
-          .test(
-            "fileType",
-            "Only .jpg, .png files are allowed",
-            (value: MyFileList) => {
-              if (value) {
-                const file = value[0];
-                const fileType = file.type;
-                return fileType === "image/jpeg" || fileType === "image/png";
-              }
-              return true;
-            },
-          ),
-        idType: Yup.string().required("Required"),
+        // guarantor2ID: Yup.mixed()
+        //   .required("required")
+        //   .test(
+        //     "fileSize",
+        //     "File size must be less than 2MB",
+        //     (value: MyFileList) => {
+        //       if (value) {
+        //         return value[0].size <= 2097152;
+        //       }
+        //       return true;
+        //     },
+        //   )
+        //   .test(
+        //     "fileType",
+        //     "Only .jpg, .png files are allowed",
+        //     (value: MyFileList) => {
+        //       if (value) {
+        //         const file = value[0];
+        //         const fileType = file.type;
+        //         return fileType === "image/jpeg" || fileType === "image/png";
+        //       }
+        //       return true;
+        //     },
+        //   ),
+        idType: Yup.string().optional(),
         guarantor1Name: Yup.string().required("Required"),
         guarantor1Email: Yup.string()
           .required("Required")
@@ -536,17 +624,8 @@ const MutateUser = ({
         guarantor1Address: Yup.string().required("Required"),
         guarantor2Name: Yup.string().required("Required"),
         guarantor2Email: Yup.string()
-          .matches(
-            /^(?:\+234\d{10}|\d{11})$/,
-            "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
-          )
-          .required("Required"),
-        guarantor2Phone: Yup.string()
-          .matches(
-            /^(?:\+234\d{10}|\d{11})$/,
-            "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
-          )
-          .required("Required"),
+          .required("Required")
+          .email("Invalid email address"),
         guarantor2Address: Yup.string().required("Required"),
         assignedCustomers: Yup.array()
           .of(Yup.string())
@@ -883,63 +962,6 @@ const MutateUser = ({
                     className="text-xs text-red-500"
                   />
                 </div>
-                <div className="mt-4">
-                  <label
-                    htmlFor="guarantorForm"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    Upload Filled Guarantor’s Form
-                  </label>
-                  <label
-                    htmlFor="guarantorForm"
-                    className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
-                  >
-                    <input
-                      type="file"
-                      name="guarantorForm"
-                      id="guarantorForm"
-                      className="hidden w-full"
-                      onChange={(e) => {
-                        setFieldValue("userPicture", e.target.files);
-                      }}
-                      accept="application/pdf, .jpg, .png"
-                    />
-                    <div className="flex flex-col items-center justify-center">
-                      <Image
-                        src="/upload.svg"
-                        alt="guarantor form upload icon"
-                        width={48}
-                        height={48}
-                      />
-                      <p className="text-center text-[gray]">
-                        Drag n drop a{" "}
-                        <span className="font-semibold">.pdf, .jpg, .png</span>{" "}
-                        here, or click to select one
-                      </p>
-                    </div>
-                  </label>
-                  {values.userPicture &&
-                    values.userPicture[0] &&
-                    ((values.userPicture[0] as File).type.includes("image") ? (
-                      <Image
-                        src={URL.createObjectURL(values.userPicture[0])}
-                        alt="guarantorForm"
-                        className="mt-4 max-w-full rounded-md"
-                        style={{ maxWidth: "100%" }}
-                        width={100}
-                        height={100}
-                      />
-                    ) : (
-                      <iframe
-                        src={URL.createObjectURL(values.userPicture[0])}
-                        className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
-                        title="Guarantor Form"
-                      ></iframe>
-                    ))}
-                  <div className="text-xs text-red-600">
-                    <ErrorMessage name="guarantorForm" />
-                  </div>
-                </div>
               </div>
 
               {/* Guarantor 2 Details */}
@@ -1055,22 +1077,22 @@ const MutateUser = ({
                 </div>
                 <div className="mt-4">
                   <label
-                    htmlFor="guarantor2ID"
+                    htmlFor="guarantorForm"
                     className="m-0 text-xs font-medium text-ajo_darkBlue"
                   >
                     Upload Filled Guarantor’s Form
                   </label>
                   <label
-                    htmlFor="guarantor2ID"
+                    htmlFor="guarantorForm"
                     className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
                   >
                     <input
                       type="file"
-                      name="guarantor2ID"
-                      id="guarantor2ID"
+                      name="guarantorForm"
+                      id="guarantorForm"
                       className="hidden w-full"
                       onChange={(e) => {
-                        setFieldValue("userPicture", e.target.files);
+                        setFieldValue("guarantorForm", e.target.files);
                       }}
                       accept="application/pdf, .jpg, .png"
                     />
@@ -1088,11 +1110,13 @@ const MutateUser = ({
                       </p>
                     </div>
                   </label>
-                  {values.userPicture &&
-                    values.userPicture[0] &&
-                    ((values.userPicture[0] as File).type.includes("image") ? (
+                  {values.guarantorForm &&
+                    values.guarantorForm[0] &&
+                    ((values.guarantorForm[0] as File).type.includes(
+                      "image",
+                    ) ? (
                       <Image
-                        src={URL.createObjectURL(values.userPicture[0])}
+                        src={URL.createObjectURL(values.guarantorForm[0])}
                         alt="guarantor2ID"
                         className="mt-4 max-w-full rounded-md"
                         style={{ maxWidth: "100%" }}
@@ -1101,13 +1125,13 @@ const MutateUser = ({
                       />
                     ) : (
                       <iframe
-                        src={URL.createObjectURL(values.userPicture[0])}
+                        src={URL.createObjectURL(values.guarantorForm[0])}
                         className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
-                        title="Guarantor ID"
+                        title="Guarantor Form"
                       ></iframe>
                     ))}
                   <div className="text-xs text-red-600">
-                    <ErrorMessage name="guarantor2ID" />
+                    <ErrorMessage name="guarantorForm" />
                   </div>
                 </div>
               </div>
@@ -1126,12 +1150,12 @@ const MutateUser = ({
                   name="roles"
                   className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
                 >
-                  {allRoles?.map((role) => (
-                    <option key={role} value={role}>
-                      {role}
+                  {allRoles?.map((role: roleResponse) => (
+                    <option key={role?._id} value={role?._id}>
+                      {role?.name + ":  " + role?.description}
                     </option>
                   ))}
-                  <option className="invisible"></option>
+                  <option className="hidden"></option>
                 </Field>
                 <ErrorMessage
                   name="roles"
@@ -1152,41 +1176,54 @@ const MutateUser = ({
                   id="assignedCustomers"
                   name="assignedCustomers"
                   className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
+                  onChange={(e: { target: { options: any } }) => {
+                    const options = e.target.options;
+                    const value = [];
+                    for (let i = 0, l = options.length; i < l; i++) {
+                      if (options[i].selected) {
+                        value.push(options[i].value);
+                      }
+                    }
+                    setFieldValue("assignedCustomers", value);
+                  }}
                 >
                   {allCustomers?.map((customer) => (
-                    <option key={customer._id} value={customer._id}>
-                      {customer.firstName + " " + customer.lastName}
+                    <option key={customer?._id} value={customer?._id}>
+                      {customer?.firstName + " " + customer?.lastName}
                     </option>
                   ))}
-                  <option className="invisible"></option>
+                  <option className="hidden"></option>
                 </Field>
                 <ErrorMessage
-                  name="assignedCustomers"
+                  name="allCustomers"
                   component="div"
                   className="text-xs text-red-500"
                 />
               </div>
               <div className="flex gap-x-3">
                 <Field
+                  id="selectAllCustomers"
                   name="selectAllCustomers"
                   type="checkbox"
                   className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                  checked={
+                    values.assignedCustomers.length === allCustomers?.length
+                  }
                   onChange={(e: { target: { checked: any } }) => {
                     if (e.target.checked) {
-                      // Select all options
                       setFieldValue(
                         "assignedCustomers",
                         allCustomers?.map((customer) => customer._id),
                       );
+                      console.log("checked: ", values.assignedCustomers);
                     } else {
-                      // Deselect all
                       setFieldValue("assignedCustomers", []);
                     }
                   }}
                 />
 
                 <label
-                  htmlFor="allCustomers"
+                  htmlFor="selectAllCustomers"
                   className="m-0 text-sm capitalize text-ajo_darkBlue"
                 >
                   Select all Customers
@@ -1197,7 +1234,10 @@ const MutateUser = ({
           <button
             type="submit"
             className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
-            onClick={() => submitForm()}
+            onClick={() => {
+              console.log(errors);
+              submitForm();
+            }}
             disabled={isSubmitting || isCreatingRole}
           >
             {isSubmitting || isCreatingRole || isEditingRole ? (
