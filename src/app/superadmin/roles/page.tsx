@@ -5,7 +5,7 @@ import Modal, { ModalConfirmation } from "@/components/Modal";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import { createRoleProps, customer } from "@/types";
+import { createSuperRoleProps, customer } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
@@ -59,6 +59,7 @@ const Roles = () => {
           // setFilteredRoles(response.data);
           setFilteredRoles([
             {
+              id: "234555",
               roleTitle: "Organisation Manager 1",
               affiliatedOrganisation: "Raoatech Technologies",
               organisationManagerDetails: {
@@ -68,6 +69,7 @@ const Roles = () => {
               },
             },
             {
+              id: "234555",
               roleTitle: "Organisation Manager 2",
               affiliatedOrganisation: "Cooperative Union",
               organisationManagerDetails: {
@@ -77,6 +79,7 @@ const Roles = () => {
               },
             },
             {
+              id: "234555",
               roleTitle: "Organisation Manager 3",
               affiliatedOrganisation: "AlajoShomolu Cooperative Society",
               organisationManagerDetails: {
@@ -86,6 +89,7 @@ const Roles = () => {
               },
             },
             {
+              id: "234555",
               roleTitle: "Organisation Manager 4",
               affiliatedOrganisation: "Teachers Union Savings Group",
               organisationManagerDetails: {
@@ -95,16 +99,19 @@ const Roles = () => {
               },
             },
             {
+              id: "234555",
               roleTitle: "Customer",
               affiliatedOrganisation: null,
               organisationManagerDetails: null,
             },
             {
+              id: "234555",
               roleTitle: "Organisation",
               affiliatedOrganisation: "Teachers Union Savings Group",
               organisationManagerDetails: null,
             },
             {
+              id: "234555",
               roleTitle: "Super Admin",
               affiliatedOrganisation: null,
               organisationManagerDetails: {
@@ -332,31 +339,30 @@ const MutateRole = ({
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   setRoleMutated: Dispatch<SetStateAction<boolean>>;
 }) => {
-  const initialValues: createRoleProps = {
+  const [assignType, setAssignType] = useState<"single" | "all">("single");
+  const initialValues: createSuperRoleProps = {
     roleName: "",
     description: "",
-    postPermissions: {
-      viewMyPostReports: false,
-      viewAllPostReports: false,
-      postPayment: false,
-      debit: false,
-      export: false,
+    viewPermissions: {
+      viewOrgDetails: false,
+      viewOrgCustomerDetails: false,
+      viewOrg: false,
+      generalPostingReport: false,
+      withdrawalReport: false,
     },
-    withdrawalPermissions: {
-      viewWithdrawals: false,
-      export: false,
+    editPermissions: {
+      editOrgCustomerDetails: false,
+      editOrgDetails: false,
     },
-    customerPermissions: {
-      viewCustomerDetails: false,
-      viewAssignedCustomers: false,
-      editAssignedCustomers: false,
-      viewAllCustomers: false,
+    actionPermissions: {
+      enableOrg: false,
+      disableOrg: false,
     },
   };
 
   const { mutate: createRole, isPending: isCreatingRole } = useMutation({
     mutationKey: ["create role"],
-    mutationFn: async (values: createRoleProps) => {
+    mutationFn: async (values: createSuperRoleProps) => {
       // const socials = {
       //   facebook: values.facebook,
       //   twitter: values.instagram,
@@ -415,7 +421,7 @@ const MutateRole = ({
 
   const { mutate: editRole, isPending: isEditingRole } = useMutation({
     mutationKey: ["edit role"],
-    mutationFn: async (values: createRoleProps) => {
+    mutationFn: async (values: createSuperRoleProps) => {
       // const socials = {
       //   facebook: values.facebook,
       //   twitter: values.instagram,
@@ -472,25 +478,20 @@ const MutateRole = ({
     },
   });
 
-  type PostPermissionKeys = keyof createRoleProps["postPermissions"];
-  const postPermissionArr = [
-    "viewMyPostReports",
-    "viewAllPostReports",
-    "postPayment",
-    "debit",
-    "export",
+  type viewPermissionKeys = keyof createSuperRoleProps["viewPermissions"];
+  const viewPermissionArr = [
+    "viewOrgDetails",
+    "viewOrgCustomerDetails",
+    "viewOrg",
+    "generalPostingReport",
+    "withdrawalReport",
   ];
 
-  type CustomerPermissionKeys = keyof createRoleProps["customerPermissions"];
-  const customerPermissionArr = [
-    "viewCustomerDetails",
-    "viewAssignedCustomers",
-    "editAssignedCustomers",
-  ];
+  type editPermissionKeys = keyof createSuperRoleProps["editPermissions"];
+  const editPermissionArr = ["editOrgCustomerDetails", "editOrgDetails"];
 
-  type WithdrawalPermissionKeys =
-    keyof createRoleProps["withdrawalPermissions"];
-  const withdrawalPermissionArr = ["viewWithdrawals", "export"];
+  type actionPermissionKeys = keyof createSuperRoleProps["actionPermissions"];
+  const actionPermissionArr = ["enableOrg", "disableOrg"];
 
   return (
     <Formik
@@ -526,12 +527,12 @@ const MutateRole = ({
           className="flex flex-col items-center space-y-10"
           onSubmit={handleSubmit}
         >
-          <div className="mb-10 w-full space-y-10 rounded-md bg-white px-[5%] py-[3%]">
+          <div className="mb-10 w-full space-y-5 rounded-md bg-white px-[5%] py-[3%]">
             <div className="space-y-3">
               <div className="">
                 <label
                   htmlFor="roleName"
-                  className="m-0 text-xs font-medium text-white"
+                  className="m-0 text-xs font-medium text-ajo_darkBlue"
                 >
                   Role Name / Title
                 </label>
@@ -550,7 +551,7 @@ const MutateRole = ({
               <div className="">
                 <label
                   htmlFor="description"
-                  className="m-0 text-xs font-medium text-white"
+                  className="m-0 text-xs font-medium text-ajo_darkBlue"
                 >
                   Description
                 </label>
@@ -568,98 +569,147 @@ const MutateRole = ({
                   className="text-xs text-red-500"
                 />
               </div>
+              <div className="my-3 flex flex-col gap-4 md:flex-row">
+                <div className="mb-4 flex-1">
+                  <label
+                    htmlFor="singleAssign"
+                    className="m-0 text-xs font-medium text-ajo_darkBlue"
+                  >
+                    Assign to Super User
+                  </label>
+                  <Field
+                    as="select"
+                    id="singleAssign"
+                    name="singleAssign"
+                    className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
+                  >
+                    {/* {organisationGroups?.map(
+                      (group: OrganisationGroupsProps) => (
+                        <option key={group._id} value={group._id}>
+                          {group.groupName}
+                        </option>
+                      ),
+                    )} */}
+                    <option className="invisible"></option>
+                  </Field>
+                  <ErrorMessage
+                    name="singleAssign"
+                    component="div"
+                    className="text-xs text-red-500"
+                  />
+                </div>
+                <div className="flex w-1/2 flex-row items-center gap-x-1">
+                  <Field
+                    id="allAssign"
+                    name="allAssign"
+                    type="radio"
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                    onChange={(e: any) => {
+                      handleChange(e);
+                      setAssignType("all");
+                    }}
+                    checked={assignType === "all" ? true : false}
+                  />
+                  <label
+                    htmlFor="allAssign"
+                    className="text-sm font-semibold capitalize text-[#131313]"
+                  >
+                    All Super Users
+                  </label>
+                </div>
+              </div>
             </div>
 
-            <p className="mb-2 py-4 text-lg font-medium text-white">
-              Assign Permission
+            <p className="mb-2 py-4 text-lg font-medium text-ajo_darkBlue underline">
+              Permissions
             </p>
 
-            <span className="mb-1 block  text-sm text-ajo_offWhite">
-              Post Permissions
+            <span className="mb-1 block  text-sm text-ajo_darkBlue">
+              View Permissions
             </span>
-            {postPermissionArr.map((permission) => {
-              const permissionKey = permission as PostPermissionKeys;
+            {viewPermissionArr.map((permission) => {
+              const permissionKey = permission as viewPermissionKeys;
               return (
                 <div className="flex gap-x-3" key={permission}>
                   <Field
                     id={permission}
-                    name={`postPermissions.${permission}`}
+                    name={`viewPermissions.${permission}`}
                     type="checkbox"
                     className="block h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                     onChange={handleChange}
-                    checked={values.postPermissions[permissionKey]}
+                    checked={values.viewPermissions[permissionKey]}
                   />
                   <label
                     htmlFor={permission}
-                    className="m-0 text-sm capitalize text-ajo_offWhite"
+                    className="m-0 text-sm capitalize text-ajo_darkBlue"
                   >
-                    {permission === "viewMyPostReports"
-                      ? "view my post reports"
-                      : permission === "viewAllPostReports"
-                        ? "view all post reports"
-                        : permission === "postPayment"
-                          ? "post payment"
-                          : permission}
+                    {permission === "viewOrgDetails"
+                      ? "View Organisation Details"
+                      : permission === "viewOrgCustomerDetails"
+                        ? "view Organisation Customer Details"
+                        : permission === "viewOrg"
+                          ? "View Organisation"
+                          : permission === "generalPostingReport"
+                            ? "General Posting Report"
+                            : permission === "withdrawalReport"
+                              ? "Withdrawal Report"
+                              : permission}
                   </label>
                 </div>
               );
             })}
-            <span className="mb-1 mt-6 block text-sm text-ajo_offWhite">
-              Withdrawal Permissions
+            <span className="mb-1 mt-6 block text-sm text-ajo_darkBlue">
+              Edit Permissions
             </span>
-            {withdrawalPermissionArr.map((permission) => {
-              const permissionKey = permission as WithdrawalPermissionKeys;
+            {editPermissionArr.map((permission) => {
+              const permissionKey = permission as editPermissionKeys;
               return (
                 <div className="flex gap-x-3" key={permission}>
                   <Field
                     id={permission}
-                    name={`withdrawalPermissions.${permission}`}
+                    name={`editPermissions.${permission}`}
                     type="checkbox"
                     className="block h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                     onChange={handleChange}
-                    checked={values.withdrawalPermissions[permissionKey]}
+                    checked={values.editPermissions[permissionKey]}
                   />
                   <label
                     htmlFor={permission}
-                    className="m-0 text-sm capitalize text-ajo_offWhite"
+                    className="m-0 text-sm capitalize text-ajo_darkBlue"
                   >
-                    {permission === "viewMyPostReports"
-                      ? "view my post reports"
-                      : permission === "viewAllPostReports"
-                        ? "view all post reports"
-                        : permission === "postPayment"
-                          ? "post payment"
-                          : permission}
+                    {permission === "editOrgCustomerDetails"
+                      ? "Edit Organisation Customer Details"
+                      : permission === "editOrgDetails"
+                        ? "Edit Organisation Details"
+                        : permission}
                   </label>
                 </div>
               );
             })}
-            <span className="mb-1 mt-6 block text-sm text-ajo_offWhite">
-              Customer Permissions
+            <span className="mb-1 mt-6 block text-sm text-ajo_darkBlue">
+              Action Permissions
             </span>
-            {customerPermissionArr.map((permission) => {
-              const permissionKey = permission as CustomerPermissionKeys;
+            {actionPermissionArr.map((permission) => {
+              const permissionKey = permission as actionPermissionKeys;
               return (
                 <div className="flex gap-x-3" key={permission}>
                   <Field
                     id={permission}
-                    name={`customerPermissions.${permission}`}
+                    name={`actionPermissions.${permission}`}
                     type="checkbox"
                     className="block h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                     onChange={handleChange}
-                    checked={values.customerPermissions[permissionKey]}
+                    checked={values.actionPermissions[permissionKey]}
                   />
                   <label
                     htmlFor={permission}
-                    className="m-0 text-sm capitalize text-ajo_offWhite"
+                    className="m-0 text-sm capitalize text-ajo_darkBlue"
                   >
-                    {permission === "viewMyPostReports"
-                      ? "view my post reports"
-                      : permission === "viewAllPostReports"
-                        ? "view all post reports"
-                        : permission === "postPayment"
-                          ? "post payment"
-                          : permission}
+                    {permission === "enableOrg"
+                      ? "Enable Organisation"
+                      : permission === "disableOrg"
+                        ? "Disable Organisation"
+                        : permission}
                   </label>
                 </div>
               );
