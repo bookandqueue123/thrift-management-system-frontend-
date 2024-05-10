@@ -146,25 +146,25 @@ const SignInForm = () => {
       })}
       onSubmit={(values, { setSubmitting }) => {
        
-        // const encryptedPassword = encryptPassword(values.password, secretKey);
-        // if (rememberPassword) {
-        //   setCookie(null, "rememberedPassword", encryptedPassword, {
-        //     maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
-        //     path: "/signin",
-        //   });
-        //   setCookie(null, "rememberedEmail", values.email, {
-        //     maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
-        //     path: "/signin",
-        //   });
-        // } else {
-        //   destroyCookie(null, "rememberedPassword", { path: "/signin" });
-        //   destroyCookie(null, "rememberedEmail", { path: "/signin" });
+        const encryptedPassword = encryptPassword(values.password, secretKey);
+        if (rememberPassword) {
+          setCookie(null, "rememberedPassword", encryptedPassword, {
+            maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
+            path: "/signin",
+          });
+          setCookie(null, "rememberedEmail", values.email, {
+            maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
+            path: "/signin",
+          });
+        } else {
+          destroyCookie(null, "rememberedPassword", { path: "/signin" });
+          destroyCookie(null, "rememberedEmail", { path: "/signin" });
 
-        //   // const cookies = parseCookies();
+          // const cookies = parseCookies();
 
-        //   // console.log("rememberedPassword: ", cookies.rememberedPassword);
-        //   // console.log("rememberedEmail: ", cookies.rememberedEmail);
-        // }
+          // console.log("rememberedPassword: ", cookies.rememberedPassword);
+          // console.log("rememberedEmail: ", cookies.rememberedEmail);
+        }
    
         UserSignIn(values);
         setTimeout(() => {
