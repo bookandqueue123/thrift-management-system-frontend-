@@ -47,12 +47,17 @@ export const CustomButton = ({
 }: {
   type: "button" | "submit";
   style: string;
-  onButtonClick?: (() => void) |((e: React.FormEvent) => void);
-  label: string;
+  onButtonClick?: (() => void) | ((e: React.FormEvent) => void);
+  label: string | React.ReactElement;
   disabled?: boolean;
 }) => {
   return (
-    <button type={type} className={style} onClick={onButtonClick} disabled={disabled}>
+    <button
+      type={type}
+      className={style}
+      onClick={onButtonClick}
+      disabled={disabled}
+    >
       {label}
     </button>
   );

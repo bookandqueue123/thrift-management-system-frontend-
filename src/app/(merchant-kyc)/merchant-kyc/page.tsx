@@ -101,18 +101,24 @@ const Kyc = () => {
       formData.append("email", values.email);
       formData.append("phoneNumber", values.phoneNumber);
 
-      // if (values.organisationLogo) {
-      //   formData.append("organisationLogo", values.organisationLogo[0]);
-      // }
-      //  if (values.BankRecommendation) {
-      //   formData.append("BankRecommendation", values.BankRecommendation[0]);
-      // }
-      //  if (values.CommunityRecommendation) {
-      //   formData.append("CommunityRecommendation", values.CommunityRecommendation[0]);
-      // }
-      //  if (values.CourtAffidavit) {
-      //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
-      //  }
+      if (values.organisationLogo) {
+        formData.append("businessLogo", values.organisationLogo[0]);
+      }
+      if (values.BankRecommendation) {
+        formData.append(
+          "bankLetterOfRecommendation",
+          values.BankRecommendation[0],
+        );
+      }
+      if (values.CommunityRecommendation) {
+        formData.append(
+          "letterOfRecommendation",
+          values.CommunityRecommendation[0],
+        );
+      }
+      if (values.CourtAffidavit) {
+        formData.append("courtAffidavit", values.CourtAffidavit[0]);
+      }
       return client.put(`/api/user/${userId}`, formData);
     },
 

@@ -5,7 +5,7 @@ import Modal, { ModalConfirmation } from "@/components/Modal";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import { createRoleProps, customer } from "@/types";
+import { createRoleProps, permissionObject, roleResponse } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
@@ -24,23 +24,22 @@ const Roles = () => {
   const PAGE_SIZE = 10;
   const organisationId = useSelector(selectOrganizationId);
 
-  const [isRoleMutated, setIsRoleMutated] = useState(false);
+  const [isRoleCreated, setIsRoleCreated] = useState(false);
+  const [isRoleEdited, setIsRoleEdited] = useState(false);
   const [filteredRoles, setFilteredRoles] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
   const { client } = useAuth();
-  // const router = useRouter();
-  // const pathname = usePathname();
 
   const [modalState, setModalState] = useState(false);
-  const [modalContent, setModalContent] = useState<"form" | "confirmation">(
-    "form",
-  );
   const [modalToShow, setModalToShow] = useState<
     "edit-role" | "create-role" | ""
   >("");
+  const [modalContent, setModalContent] = useState<"status" | "form" | "">(
+    "form",
+  );
   const [roleToBeEdited, setRoleToBeEdited] = useState("");
 
   const {
@@ -51,69 +50,10 @@ const Roles = () => {
     queryKey: ["allRoles"],
     queryFn: async () => {
       return client
-        .get(
-          `/api/user?role=customer&organisation=${organisationId}&userType=individual`,
-          {},
-        )
-        .then((response: AxiosResponse<customer[], any>) => {
-          // setFilteredRoles(response.data);
-          setFilteredRoles([
-            {
-              roleTitle: "Organisation Manager 1",
-              affiliatedOrganisation: "Raoatech Technologies",
-              organisationManagerDetails: {
-                name: "Olanrewaju Sokumnbi",
-                email: "sokunmbi@gmail.com",
-                phone: "+234 9085798782",
-              },
-            },
-            {
-              roleTitle: "Organisation Manager 2",
-              affiliatedOrganisation: "Cooperative Union",
-              organisationManagerDetails: {
-                name: "Olanrewaju Sokumnbi",
-                email: "sokunmbi@gmail.com",
-                phone: "+234 9085798782",
-              },
-            },
-            {
-              roleTitle: "Organisation Manager 3",
-              affiliatedOrganisation: "AlajoShomolu Cooperative Society",
-              organisationManagerDetails: {
-                name: "Olanrewaju Sokumnbi",
-                email: "sokunmbi@gmail.com",
-                phone: "+234 9085798782",
-              },
-            },
-            {
-              roleTitle: "Organisation Manager 4",
-              affiliatedOrganisation: "Teachers Union Savings Group",
-              organisationManagerDetails: {
-                name: "Olanrewaju Sokumnbi",
-                email: "sokunmbi@gmail.com",
-                phone: "+234 9085798782",
-              },
-            },
-            {
-              roleTitle: "Customer",
-              affiliatedOrganisation: null,
-              organisationManagerDetails: null,
-            },
-            {
-              roleTitle: "Organisation",
-              affiliatedOrganisation: "Teachers Union Savings Group",
-              organisationManagerDetails: null,
-            },
-            {
-              roleTitle: "Super Admin",
-              affiliatedOrganisation: null,
-              organisationManagerDetails: {
-                name: "Olanrewaju Sokumnbi",
-                email: "sokunmbi@gmail.com",
-                phone: "+234 9085798782",
-              },
-            },
-          ]);
+        .get(`/api/role?organisation=${organisationId}`, {})
+        .then((response: AxiosResponse<roleResponse[], any>) => {
+          console.log(response.data);
+          setFilteredRoles(response.data);
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -123,30 +63,27 @@ const Roles = () => {
     },
     staleTime: 5000,
   });
+
+  const { data: allPermissions } = useQuery({
+    queryKey: ["allPermissions"],
+    queryFn: async () => {
+      return client
+        .get("api/permission")
+        .then((response: AxiosResponse<permissionObject[], any>) => {
+          return response.data;
+        })
+        .catch((error: AxiosResponse<any, any>) => {
+          throw error;
+        });
+    },
+  });
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    // setSearchResult(e.target.value);
     console.log(e.target.value);
 
     if (allRoles) {
       const filtered = allRoles.filter((item) =>
-        String(item.accountNumber).includes(String(e.target.value)),
+        String(item).includes(String(e.target.value)),
       );
-      // Update the filtered data state
-      setFilteredRoles(filtered);
-    }
-  };
-  const handleDateFilter = () => {
-    // Filter the data based on the date range
-    if (allRoles) {
-      const filtered = allRoles.filter((item) => {
-        const itemDate = new Date(item.createdAt); // Convert item date to Date object
-        const startDateObj = new Date(fromDate);
-        const endDateObj = new Date(toDate);
-
-        return itemDate >= startDateObj && itemDate <= endDateObj;
-      });
-
-      // Update the filtered data state
       setFilteredRoles(filtered);
     }
   };
@@ -163,7 +100,9 @@ const Roles = () => {
   useEffect(() => {
     // Calling refetch to rerun the allRoles query
     refetch();
-  }, [isRoleMutated, refetch]);
+  }, [isRoleCreated, isRoleEdited, refetch]);
+
+  console.log("Role Created", isRoleCreated);
 
   return (
     <>
@@ -211,6 +150,8 @@ const Roles = () => {
             onButtonClick={() => {
               setModalState(true);
               setModalToShow("create-role");
+              setModalContent("form");
+              setIsRoleCreated(false);
             }}
           />
         </div>
@@ -223,8 +164,8 @@ const Roles = () => {
           <TransactionsTable
             headers={[
               "Role Title/Name",
-              "Affiliated Organisation",
-              "Organisation Manager Details",
+              "Description",
+              "Permissions",
               "Action",
             ]}
             content={
@@ -235,17 +176,30 @@ const Roles = () => {
                   </p>
                 </tr>
               ) : (
-                paginatedRoles?.map((role, index) => (
+                paginatedRoles?.map((role: roleResponse, index) => (
                   <tr className="" key={index + 1}>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {role.roleTitle || "----"}
+                      {role.name || "----"}
                     </td>
 
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {role.organisation || "----"}
+                      {role.description || "----"}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {role.manager || "----"}
+                    <td className="whitespace-nowrap px-6 py-4 text-sm capitalize">
+                      {allPermissions
+                        ?.filter((permission) =>
+                          role.permissions.some(
+                            (eachPermission) =>
+                              eachPermission === permission._id,
+                          ),
+                        )
+                        .map((filteredPermission) => (
+                          <ul key={filteredPermission._id}>
+                            <li className="my-1 list-disc marker:text-ajo_offWhite">
+                              {filteredPermission.title.replaceAll("-", " ")}
+                            </li>
+                          </ul>
+                        )) || "----"}
                     </td>
 
                     <td className="flex gap-2 whitespace-nowrap px-6 py-4 text-sm">
@@ -258,7 +212,8 @@ const Roles = () => {
                           setModalToShow("edit-role");
                           setModalState(true);
                           setRoleToBeEdited(role._id);
-
+                          setModalContent("form");
+                          setIsRoleEdited(false);
                         }}
                         className="cursor-pointer"
                       />
@@ -295,11 +250,13 @@ const Roles = () => {
                     : ""
               }
             >
-              {!isRoleMutated ? (
+              {modalContent === "form" ? (
                 <div className="px-[10%]">
                   <MutateRole
                     setCloseModal={setModalState}
-                    setRoleMutated={setIsRoleMutated}
+                    setRoleCreated={setIsRoleCreated}
+                    setRoleEdited={setIsRoleEdited}
+                    setModalContent={setModalContent}
                     actionToTake={modalToShow}
                   />
                 </div>
@@ -307,7 +264,7 @@ const Roles = () => {
                 <ModalConfirmation
                   successTitle={`Role ${modalToShow === "create-role" ? "Creation" : "Editing"} Successful`}
                   errorTitle={`Role ${modalToShow === "create-role" ? "Creation" : "Editing"} Failed`}
-                  status={isRoleMutated ? "success" : "failed"}
+                  status={isRoleCreated || isRoleEdited ? "success" : "failed"}
                   responseMessage=""
                 />
               )}
@@ -325,173 +282,106 @@ const Roles = () => {
 };
 
 const MutateRole = ({
-  setRoleMutated,
+  setRoleEdited,
+  setRoleCreated,
   setCloseModal,
   actionToTake,
+  setModalContent,
 }: {
   actionToTake: "create-role" | "edit-role" | "";
   setCloseModal: Dispatch<SetStateAction<boolean>>;
-  setRoleMutated: Dispatch<SetStateAction<boolean>>;
+  setRoleCreated: Dispatch<SetStateAction<boolean>>;
+  setRoleEdited: Dispatch<SetStateAction<boolean>>;
+  setModalContent: Dispatch<SetStateAction<"" | "status" | "form">>;
 }) => {
+  const { client } = useAuth();
+  const organisationId = useSelector(selectOrganizationId);
+  const [assignedPermissions, setAssignedPermissions] = useState<string[]>([]);
   const initialValues: createRoleProps = {
     roleName: "",
     description: "",
-    postPermissions: {
-      viewMyPostReports: false,
-      viewAllPostReports: false,
-      postPayment: false,
-      debit: false,
-      export: false,
-    },
-    withdrawalPermissions: {
-      viewWithdrawals: false,
-      export: false,
-    },
-    customerPermissions: {
-      viewCustomerDetails: false,
-      viewAssignedCustomers: false,
-      editAssignedCustomers: false,
-      viewAllCustomers: false,
+    permissions: {
+      "edit-user": false,
+      "view-assigned-users": false,
+      "export-withdrawal": false,
+      "view-withdrawals": false,
+      "view-savings": false,
+      "export-saving": false,
+      "post-saving": false,
+      "set-saving": false,
+      "view-user": false,
     },
   };
+  const { data: allPermissions, isLoading: isLoadingAllPermissions } = useQuery(
+    {
+      queryKey: ["allPermissions"],
+      queryFn: async () => {
+        return client
+          .get("api/permission")
+          .then((response) => {
+            return response.data;
+          })
+          .catch((error) => {
+            throw error;
+          });
+      },
+    },
+  );
 
   const { mutate: createRole, isPending: isCreatingRole } = useMutation({
     mutationKey: ["create role"],
     mutationFn: async (values: createRoleProps) => {
-      // const socials = {
-      //   facebook: values.facebook,
-      //   twitter: values.instagram,
-      //   instagram: values.linkedIn,
-      //   linkedIn: values.twitter,
-      //   pintrest: values.pinterest,
-      // };
-
-      // const formData = new FormData();
-
-      // formData.append("description", values.description);
-      // formData.append("region", values.city);
-      // formData.append("country", values.country);
-      // formData.append("state", values.state);
-      // formData.append("city", values.lga);
-      // formData.append("socialMedia", JSON.stringify(socials));
-      // formData.append("tradingName", values.tradingName);
-      // formData.append("website", values.websiteUrl);
-      // formData.append("businessEmailAdress", values.email);
-      // formData.append("officeAddress1", values.officeAddress);
-      // formData.append("officeAddress2", values.address2);
-      // formData.append("organisationName", values.organisationName);
-      // formData.append("email", values.email);
-      // formData.append("phoneNumber", values.phoneNumber);
-
-      // if (values.organisationLogo) {
-      //   formData.append("organisationLogo", values.organisationLogo[0]);
-      // }
-      //  if (values.BankRecommendation) {
-      //   formData.append("BankRecommendation", values.BankRecommendation[0]);
-      // }
-      //  if (values.CommunityRecommendation) {
-      //   formData.append("CommunityRecommendation", values.CommunityRecommendation[0]);
-      // }
-      //  if (values.CourtAffidavit) {
-      //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
-      //  }
-      console.log(values);
-      console.log("role created");
-      return;
-      //  client.put(`/api/user/${userId}`, formData);
+      return client.post(`/api/role`, {
+        name: values.roleName,
+        description: values.description,
+        organisation: organisationId,
+        permissions: assignedPermissions,
+      });
     },
 
     onSuccess(response) {
-      setRoleMutated(true);
+      setRoleCreated(true);
+      setModalContent("status");
       setTimeout(() => {
         setCloseModal(false);
       }, 5000);
     },
 
     onError(error: AxiosError<any, any>) {
-      setRoleMutated(false);
-      console.log(error.response?.data.message);
+      setRoleCreated(false);
+      setModalContent("status");
+      
+      console.log(error.response?.data);
     },
   });
 
   const { mutate: editRole, isPending: isEditingRole } = useMutation({
     mutationKey: ["edit role"],
     mutationFn: async (values: createRoleProps) => {
-      // const socials = {
-      //   facebook: values.facebook,
-      //   twitter: values.instagram,
-      //   instagram: values.linkedIn,
-      //   linkedIn: values.twitter,
-      //   pintrest: values.pinterest,
-      // };
-
-      // const formData = new FormData();
-
-      // formData.append("description", values.description);
-      // formData.append("region", values.city);
-      // formData.append("country", values.country);
-      // formData.append("state", values.state);
-      // formData.append("city", values.lga);
-      // formData.append("socialMedia", JSON.stringify(socials));
-      // formData.append("tradingName", values.tradingName);
-      // formData.append("website", values.websiteUrl);
-      // formData.append("businessEmailAdress", values.email);
-      // formData.append("officeAddress1", values.officeAddress);
-      // formData.append("officeAddress2", values.address2);
-      // formData.append("organisationName", values.organisationName);
-      // formData.append("email", values.email);
-      // formData.append("phoneNumber", values.phoneNumber);
-
-      // if (values.organisationLogo) {
-      //   formData.append("organisationLogo", values.organisationLogo[0]);
-      // }
-      //  if (values.BankRecommendation) {
-      //   formData.append("BankRecommendation", values.BankRecommendation[0]);
-      // }
-      //  if (values.CommunityRecommendation) {
-      //   formData.append("CommunityRecommendation", values.CommunityRecommendation[0]);
-      // }
-      //  if (values.CourtAffidavit) {
-      //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
-      //  }
-      console.log(values);
-      console.log("role edited");
-      return;
-      //  client.put(`/api/user/${userId}`, formData);
+      return client.put(`/api/role`, {
+        name: values.roleName,
+        description: values.description,
+        organisation: organisationId,
+        permissions: assignedPermissions,
+      });
     },
 
     onSuccess(response) {
-      setRoleMutated(true);
+      setRoleEdited(true);
+      setModalContent("status");
+
       setTimeout(() => {
         setCloseModal(false);
       }, 5000);
     },
 
     onError(error: AxiosError<any, any>) {
-      setRoleMutated(false);
+      setRoleEdited(false);
+      setModalContent("status");
+
       console.log(error.response?.data.message);
     },
   });
-
-  type PostPermissionKeys = keyof createRoleProps["postPermissions"];
-  const postPermissionArr = [
-    "viewMyPostReports",
-    "viewAllPostReports",
-    "postPayment",
-    "debit",
-    "export",
-  ];
-
-  type CustomerPermissionKeys = keyof createRoleProps["customerPermissions"];
-  const customerPermissionArr = [
-    "viewCustomerDetails",
-    "viewAssignedCustomers",
-    "editAssignedCustomers",
-  ];
-
-  type WithdrawalPermissionKeys =
-    keyof createRoleProps["withdrawalPermissions"];
-  const withdrawalPermissionArr = ["viewWithdrawals", "export"];
 
   return (
     <Formik
@@ -523,13 +413,13 @@ const MutateRole = ({
         setFieldValue,
         submitForm,
       }) => (
-        <form className="space-y-10" onSubmit={handleSubmit}>
-          <div>
+        <form className="flex flex-col items-center" onSubmit={handleSubmit}>
+          <div className="mb-10 w-full rounded-md bg-white px-[5%] py-[3%]">
             <div className="space-y-3">
               <div className="">
                 <label
                   htmlFor="roleName"
-                  className="m-0 text-xs font-medium text-white"
+                  className="m-0 text-xs font-medium text-ajo_darkBlue"
                 >
                   Role Name / Title
                 </label>
@@ -537,7 +427,7 @@ const MutateRole = ({
                   onChange={handleChange}
                   name="roleName"
                   type="text"
-                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
                 />
                 <ErrorMessage
                   name="roleName"
@@ -548,14 +438,14 @@ const MutateRole = ({
               <div className="">
                 <label
                   htmlFor="description"
-                  className="m-0 text-xs font-medium text-white"
+                  className="m-0 text-xs font-medium text-ajo_darkBlue"
                 >
                   Description
                 </label>
                 <Field
                   name="description"
                   type="text"
-                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
                   component="textarea"
                   rows={4}
                   cols={50}
@@ -568,104 +458,55 @@ const MutateRole = ({
               </div>
             </div>
 
-            <p className="mb-2 py-4 text-lg font-medium text-white">
-              Assign Permission
+            <p className="mb-2 pb-2 pt-4 text-xl font-semibold text-ajo_darkBlue">
+              Assign Permissions
             </p>
-
-            <span className="mb-1 block  text-sm text-ajo_offWhite">
-              Post Permissions
-            </span>
-            {postPermissionArr.map((permission) => {
-              const permissionKey = permission as PostPermissionKeys;
-              return (
-                <div className="flex gap-x-3" key={permission}>
-                  <Field
-                    id={permission}
-                    name={`postPermissions.${permission}`}
-                    type="checkbox"
-                    className="block h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    onChange={handleChange}
-                    checked={values.postPermissions[permissionKey]}
-                  />
-                  <label
-                    htmlFor={permission}
-                    className="m-0 text-sm capitalize text-ajo_offWhite"
-                  >
-                    {permission === "viewMyPostReports"
-                      ? "view my post reports"
-                      : permission === "viewAllPostReports"
-                        ? "view all post reports"
-                        : permission === "postPayment"
-                          ? "post payment"
-                          : permission}
-                  </label>
-                </div>
-              );
-            })}
-            <span className="mb-1 mt-6 block text-sm text-ajo_offWhite">
-              Withdrawal Permissions
-            </span>
-            {withdrawalPermissionArr.map((permission) => {
-              const permissionKey = permission as WithdrawalPermissionKeys;
-              return (
-                <div className="flex gap-x-3" key={permission}>
-                  <Field
-                    id={permission}
-                    name={`withdrawalPermissions.${permission}`}
-                    type="checkbox"
-                    className="block h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    onChange={handleChange}
-                    checked={values.withdrawalPermissions[permissionKey]}
-                  />
-                  <label
-                    htmlFor={permission}
-                    className="m-0 text-sm capitalize text-ajo_offWhite"
-                  >
-                    {permission === "viewMyPostReports"
-                      ? "view my post reports"
-                      : permission === "viewAllPostReports"
-                        ? "view all post reports"
-                        : permission === "postPayment"
-                          ? "post payment"
-                          : permission}
-                  </label>
-                </div>
-              );
-            })}
-            <span className="mb-1 mt-6 block text-sm text-ajo_offWhite">
-              Customer Permissions
-            </span>
-            {customerPermissionArr.map((permission) => {
-              const permissionKey = permission as CustomerPermissionKeys;
-              return (
-                <div className="flex gap-x-3" key={permission}>
-                  <Field
-                    id={permission}
-                    name={`customerPermissions.${permission}`}
-                    type="checkbox"
-                    className="block h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    onChange={handleChange}
-                    checked={values.customerPermissions[permissionKey]}
-                  />
-                  <label
-                    htmlFor={permission}
-                    className="m-0 text-sm capitalize text-ajo_offWhite"
-                  >
-                    {permission === "viewMyPostReports"
-                      ? "view my post reports"
-                      : permission === "viewAllPostReports"
-                        ? "view all post reports"
-                        : permission === "postPayment"
-                          ? "post payment"
-                          : permission}
-                  </label>
-                </div>
-              );
-            })}
+            <div className="space-y-3">
+              {isLoadingAllPermissions ? (
+                <Image
+                  src="/loadingSpinner.svg"
+                  alt="loading spinner"
+                  className="relative left-1/2"
+                  width={40}
+                  height={40}
+                />
+              ) : (
+                allPermissions?.map((permission: permissionObject) => {
+                  return (
+                    <div className="flex gap-x-3" key={permission._id}>
+                      <Field
+                        id={permission._id}
+                        name={`${permission.title}`}
+                        type="checkbox"
+                        className="block h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        onChange={(e: any) => {
+                          handleChange(e);
+                          setAssignedPermissions((prev) => {
+                            const isIdPresent = prev.includes(permission._id);
+                            if (isIdPresent) {
+                              return prev.filter((id) => id !== permission._id);
+                            } else {
+                              return [...prev, permission._id];
+                            }
+                          });
+                        }}
+                        checked={assignedPermissions.includes(permission._id)}
+                      />
+                      <label
+                        htmlFor={permission._id}
+                        className="m-0 text-sm capitalize text-ajo_darkBlue"
+                      >
+                        {permission.title.replaceAll("-", " ")}
+                      </label>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
           <button
             type="submit"
-            className="w-full  flex-1 items-center rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
+            className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
             onClick={() => submitForm()}
             disabled={isSubmitting || isCreatingRole}
           >
