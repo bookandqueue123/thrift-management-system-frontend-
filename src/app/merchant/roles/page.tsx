@@ -102,7 +102,6 @@ const Roles = () => {
     refetch();
   }, [isRoleCreated, isRoleEdited, refetch]);
 
-  console.log("Role Created", isRoleCreated);
 
   return (
     <>

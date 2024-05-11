@@ -582,8 +582,10 @@ export interface mutateUserProps {
   guarantor2Phone: string;
   guarantor2Address: string;
   assignedCustomers: string[];
+
   roles: string[];
   allCustomers?: string[];
+
 }
 
 export interface permissionObject {
@@ -600,6 +602,42 @@ export interface roleResponse {
   description: string;
   permissions: string[];
   organisation: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface staffResponse {
+  guarantor1: {
+    fullName: string;
+    phoneNumber: string;
+    email: string;
+    homeAddress: string;
+  };
+  guarantor2: {
+    fullName: string;
+    phoneNumber: string;
+    email: string;
+    homeAddress: string;
+  };
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  homeAddress: string;
+  phoneNumber: string;
+  userType: string;
+  groupMember: string[];
+  role: "staff";
+  organisations: string[];
+  kycVerified: boolean;
+  kycEmailSent: boolean;
+  isArchieve: boolean;
+  isVerified: boolean;
+  savingIdentities: string[];
+  organisation: string;
+  assignedUser: string[];
+  roles: string[];
   createdAt: string;
   updatedAt: string;
   __v: number;
