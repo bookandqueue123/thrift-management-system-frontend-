@@ -6,7 +6,13 @@ import PaginationBar from "@/components/Pagination";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import { MyFileList, customer, mutateUserProps, roleResponse } from "@/types";
+import {
+  MyFileList,
+  customer,
+  mutateUserProps,
+  roleResponse,
+  staffResponse,
+} from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
@@ -67,7 +73,7 @@ const Users = () => {
         )
         .then((response: AxiosResponse<customer[], any>) => {
           setFilteredUsers(response.data);
-          console.log(response.data)
+          console.log(response.data);
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -99,24 +105,23 @@ const Users = () => {
     staleTime: 5000,
   });
 
-
-    const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
-      queryKey: ["allCustomers"],
-      queryFn: async () => {
-        return client
-          .get(
-            `/api/user?role=customer&organisation=${organisationId}&userType=individual`,
-            {},
-          )
-          .then((response: AxiosResponse<customer[], any>) => {
-            console.log("allCustomers", response.data);
-            return response.data;
-          })
-          .catch((error: AxiosError<any, any>) => {
-            throw error;
-          });
-      },
-    });
+  const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
+    queryKey: ["allCustomers"],
+    queryFn: async () => {
+      return client
+        .get(
+          `/api/user?role=customer&organisation=${organisationId}&userType=individual`,
+          {},
+        )
+        .then((response: AxiosResponse<customer[], any>) => {
+          console.log("allCustomers", response.data);
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          throw error;
+        });
+    },
+  });
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
@@ -159,7 +164,7 @@ const Users = () => {
 
   useEffect(() => {
     refetch();
-    refetchAllRoles()
+    refetchAllRoles();
   }, [isUserCreated, isUserEdited, modalContent, refetch, refetchAllRoles]);
 
   return (
@@ -268,7 +273,8 @@ const Users = () => {
                         )) || "----"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {allCustomers?.filter((customer) =>
+                      {allCustomers
+                        ?.filter((customer) =>
                           user?.assignedUser.some(
                             (eachUser: string) => eachUser === customer._id,
                           ),
@@ -276,7 +282,9 @@ const Users = () => {
                         .map((filteredUser) => (
                           <ul key={filteredUser._id}>
                             <li className="my-1 list-disc marker:text-ajo_offWhite">
-                              {filteredUser.firstName + " " + filteredUser.lastName}
+                              {filteredUser.firstName +
+                                " " +
+                                filteredUser.lastName}
                             </li>
                           </ul>
                         )) || "----"}
@@ -301,6 +309,7 @@ const Users = () => {
                               setModalState(true);
                               setModalToShow("view-user");
                               setUserToBeEdited(user._id);
+                              console.log(user._id);
                             },
                             () => {
                               setModalToShow("edit-user");
@@ -484,7 +493,7 @@ const MutateUser = ({
   });
 
   const { mutate: editUser, isPending: isEditingRole } = useMutation({
-    mutationKey: ["edit role"],
+    mutationKey: ["edit user"],
     mutationFn: async (values: mutateUserProps) => {
       // const socials = {
       //   facebook: values.facebook,
@@ -525,14 +534,34 @@ const MutateUser = ({
       //  }
       console.log(values);
       console.log("role edited");
-      return;
-      //  client.put(`/api/user/${userId}`, formData);
+      // return client.put(`/api/user/${userId}`, formData);
+      return client.put(`/api/user/create-staff`, {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        phoneNumber: values.phone,
+        organisation: organizationId,
+        homeAddress: values.homeAddress,
+        email: values.email,
+        guarantor1: {
+          fullName: values.guarantor1Name,
+          homeAddress: values.guarantor1Address,
+          email: values.guarantor1Email,
+          phoneNumber: values.guarantor1Phone,
+        },
+        guarantor2: {
+          fullName: values.guarantor2Name,
+          homeAddress: values.guarantor2Address,
+          email: values.guarantor2Email,
+          phoneNumber: values.guarantor2Phone,
+        },
+        roles: [values.roles],
+        assignedUser: values.assignedCustomers,
+      });
     },
 
     onSuccess(response) {
       setUserEdited(true);
       setModalContent("status");
-      // setMutationResponse();
       setTimeout(() => {
         setCloseModal(false);
       }, 5000);
@@ -1258,54 +1287,34 @@ const MutateUser = ({
   );
 };
 
-const dummyUserInfo = {
-  image: "/userImage.png", // Placeholder image path
-  firstName: "John",
-  lastName: "Doe",
-  email: "john.doe@example.com",
-  phone: "+1234567890",
-  address: "123 Main St, Anytown, AT 12345",
-  guarantors: [
-    {
-      name: "Jane Smith",
-      phone: "+0987654321",
-      email: "jane.smith@example.com",
-      address: "456 Elm St, Othertown, OT 67890",
-    },
-    {
-      name: "Mike Johnson",
-      phone: "+1122334455",
-      email: "mike.johnson@example.com",
-      address: "789 Oak St, Anycity, AC 10112",
-    },
-  ],
-  fileName: "Guarantor_Agreement.pdf", // Placeholder file name
-};
 
 const ViewUser = ({ userId }: { userId: string }) => {
   const { client } = useAuth();
-  // const { data: userInfo, isLoading: isLoadingUserInfo } = useQuery({
-  //   queryKey: ["userInfo"],
-  //   queryFn: async () => {
-  //     return client
-  //       .get(`/api/user/${userId}`)
-  //       .then((response: AxiosResponse<any, any>) => {
-  //         // console.log(response.data);
-  //         return response.data;
-  //       })
-  //       .catch((error: AxiosError<any, any>) => {
-  //         console.log(error.response ?? error.message);
-  //         throw error;
-  //       });
-  //   },
-  // });
+  const { data: userInfo, isLoading: isLoadingUserInfo } = useQuery({
+    queryKey: ["userInfo"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user/${userId}`)
+        .then((response: AxiosResponse<staffResponse, any>) => {
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          console.log(error.response ?? error.message);
+          throw error;
+        });
+    },
+  });
 
-  const userInfo = dummyUserInfo;
-  const isLoadingUserInfo = false;
-
-  const Detail = ({ title, value }: { title: string; value: string }) => (
+  const Detail = ({
+    title,
+    value,
+  }: {
+    title: string | undefined;
+    value: string | undefined;
+  }) => (
     <p className="flex-1 whitespace-nowrap text-base font-semibold">
-      {title}: <span className="ms-2 font-normal text-gray-500">{value}</span>
+      {title ?? "-----"}:{" "}
+      <span className="ms-2 font-normal text-gray-500">{value ?? "-----"}</span>
     </p>
   );
   if (isLoadingUserInfo) {
@@ -1326,9 +1335,10 @@ const ViewUser = ({ userId }: { userId: string }) => {
       <div className="m-0 rounded-md border border-gray-300 px-6 py-4">
         <div className="flex gap-4">
           <Image
-            src={userInfo?.image}
-            alt="user image"
-            className="rounded-md"
+            // src={userInfo?.image ?? "/user"}
+            src="/man-woman.png"
+            alt={`${userInfo?.firstName}'s image`}
+            className="rounded-md h-full"
             width={120}
             height={120}
           />
@@ -1336,34 +1346,59 @@ const ViewUser = ({ userId }: { userId: string }) => {
             <Detail title="First name" value={userInfo?.firstName} />
             <Detail title="Last name" value={userInfo?.lastName} />
             <Detail title="Email address" value={userInfo?.email} />
-            <Detail title="Phone number" value={userInfo?.phone} />
-            <Detail title="Home Address" value={userInfo?.address} />
+            <Detail title="Phone number" value={userInfo?.phoneNumber} />
+            <Detail title="Home Address" value={userInfo?.homeAddress} />
           </div>
         </div>
       </div>
       <div className="m-0 rounded-md border border-gray-300 px-6 py-4">
         <p className="font-bold uppercase">Guarantor&lsquo;s Details</p>
-        {userInfo?.guarantors?.map((guarantor: any, index: number) => (
-          <div key={index} className="mt-8 space-y-2">
-            <p className="font-semibold text-ajo_darkBlue">
-              Guarantor {index + 1}:
-            </p>
-            <Detail title="Full Name" value={guarantor.name} />
-            <Detail title="Phone number" value={guarantor.phone} />
-            <Detail title="Email address" value={guarantor.email} />
-            <Detail title="Home address" value={guarantor.address} />
-            <button className="rounded-md border border-gray-300 p-2">
-              <Image
-                src="/pdfLogo.svg"
-                alt="pdf"
-                width={16}
-                height={16}
-                className="rounded-sm"
-              />
-              {userInfo.fileName}
-            </button>
-          </div>
-        ))}
+        <div key={userInfo?.guarantor1.phoneNumber} className="mt-8 space-y-2">
+          <p className="font-semibold text-ajo_darkBlue">Guarantor 1:</p>
+          <Detail title="Full Name" value={userInfo?.guarantor1.fullName} />
+          <Detail
+            title="Phone number"
+            value={userInfo?.guarantor1.phoneNumber}
+          />
+          <Detail title="Email address" value={userInfo?.guarantor1.email} />
+          <Detail
+            title="Home address"
+            value={userInfo?.guarantor1.homeAddress}
+          />
+          {/* <button className="flex rounded-md border border-gray-300 p-2">
+            <Image
+              src="/pdfLogo.svg"
+              alt="pdf"
+              width={16}
+              height={16}
+              className="rounded-sm"
+            />
+            {userInfo?.guarantor2.fullName}
+          </button> */}
+        </div>
+        <div key={userInfo?.guarantor2.phoneNumber} className="mt-8 space-y-2">
+          <p className="font-semibold text-ajo_darkBlue">Guarantor 2:</p>
+          <Detail title="Full Name" value={userInfo?.guarantor2.fullName} />
+          <Detail
+            title="Phone number"
+            value={userInfo?.guarantor2.phoneNumber}
+          />
+          <Detail title="Email address" value={userInfo?.guarantor2.email} />
+          <Detail
+            title="Home address"
+            value={userInfo?.guarantor2.homeAddress}
+          />
+          {/* <button className="flex rounded-md border border-gray-300 p-2">
+            <Image
+              src="/pdfLogo.svg"
+              alt="pdf"
+              width={16}
+              height={16}
+              className="rounded-sm"
+            />
+            {userInfo?.guarantor2.fullName}
+          </button> */}
+        </div>
       </div>
     </div>
   );

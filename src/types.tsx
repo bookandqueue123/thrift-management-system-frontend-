@@ -603,3 +603,39 @@ export interface roleResponse {
   updatedAt: string;
   __v: number;
 }
+
+export interface staffResponse {
+  guarantor1: {
+    fullName: string;
+    phoneNumber: string;
+    email: string;
+    homeAddress: string;
+  };
+  guarantor2: {
+    fullName: string;
+    phoneNumber: string;
+    email: string;
+    homeAddress: string;
+  };
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  homeAddress: string;
+  phoneNumber: string;
+  userType: string;
+  groupMember: string[];
+  role: "staff";
+  organisations: string[];
+  kycVerified: boolean;
+  kycEmailSent: boolean;
+  isArchieve: boolean;
+  isVerified: boolean;
+  savingIdentities: string[];
+  organisation: string;
+  assignedUser: string[];
+  roles: string[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
