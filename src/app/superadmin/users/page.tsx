@@ -334,6 +334,8 @@ const MutateUser = ({
     guarantor2Phone: "",
     guarantor2Address: "",
     allCustomers: [],
+    assignedCustomers: [],
+    roles: [],
   };
 
   const [assignType, setAssignType] = useState<"single" | "group">("single");

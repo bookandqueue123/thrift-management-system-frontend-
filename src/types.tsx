@@ -583,6 +583,7 @@ export interface mutateUserProps {
   guarantor2Address: string;
   assignedCustomers: string[];
   roles: string[];
+  allCustomers?: string[];
 }
 
 export interface permissionObject {
