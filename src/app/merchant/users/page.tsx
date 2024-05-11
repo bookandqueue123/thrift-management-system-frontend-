@@ -414,7 +414,7 @@ const MutateUser = ({
     guarantor2Phone: "",
     guarantor2Address: "",
     assignedCustomers: [],
-    roles: "",
+    roles: [],
   };
 
   const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
