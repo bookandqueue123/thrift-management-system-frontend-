@@ -337,10 +337,6 @@ const MutateUser = ({
     allCustomers: [],
     assignedCustomers: [],
     roles: [],
-
-    assignedCustomers: [],
-    roles: "",
-
   };
 
   const [assignType, setAssignType] = useState<"single" | "group">("single");
