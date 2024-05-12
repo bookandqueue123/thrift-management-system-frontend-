@@ -118,7 +118,7 @@ const Page = () => {
         });
     },
   });
- 
+ console.log(organizations)
   return (
     <Formik
       initialValues={initialValues}
