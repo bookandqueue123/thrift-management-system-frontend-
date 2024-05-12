@@ -5,7 +5,10 @@ import Modal, { ModalConfirmation } from "@/components/Modal";
 import PaginationBar from "@/components/Pagination";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
+import {
+  selectOrganizationId,
+  selectUserId,
+} from "@/slices/OrganizationIdSlice";
 import {
   MyFileList,
   customer,
@@ -309,12 +312,15 @@ const Users = () => {
                               setModalState(true);
                               setModalToShow("view-user");
                               setUserToBeEdited(user._id);
+                              setIsUserEdited(false);
+
                               console.log(user._id);
                             },
                             () => {
                               setModalToShow("edit-user");
                               setModalState(true);
                               setUserToBeEdited(user._id);
+                              setIsUserEdited(false);
                             },
                           ],
                         }}
@@ -352,7 +358,8 @@ const Users = () => {
                       setUserEdited={setIsUserEdited}
                       setModalContent={setModalContent}
                       setMutationResponse={setMutationResponse}
-                      actionToTake={modalToShow}
+                        actionToTake={modalToShow}
+                        userToBeEdited={userToBeEdited}
                     />
                   )}
                 </div>
@@ -384,21 +391,24 @@ const MutateUser = ({
   setModalContent,
   actionToTake,
   setMutationResponse,
+  userToBeEdited,
 }: {
   actionToTake: "create-user" | "edit-user" | "view-user" | "";
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   setUserCreated: Dispatch<SetStateAction<boolean>>;
   setUserEdited: Dispatch<SetStateAction<boolean>>;
   setModalContent: Dispatch<SetStateAction<"" | "status" | "form">>;
-  setMutationResponse: Dispatch<SetStateAction<string>>;
+    setMutationResponse: Dispatch<SetStateAction<string>>;
+    userToBeEdited: string;
 }) => {
   const { client } = useAuth();
   const organizationId = useSelector(selectOrganizationId);
+  const userId = useSelector(selectUserId);
   const initialValues: mutateUserProps = {
     firstName: "",
     lastName: "",
     email: "",
-    phone: "",
+    phone: actionToTake === "edit-user" ? "08104532178" : "",
     homeAddress: "",
     dept_unit: "",
     userPicture: null,
@@ -535,10 +545,10 @@ const MutateUser = ({
       console.log(values);
       console.log("role edited");
       // return client.put(`/api/user/${userId}`, formData);
-      return client.put(`/api/user/create-staff`, {
+      return client.put(`/api/user/${userToBeEdited}`, {
         firstName: values.firstName,
         lastName: values.lastName,
-        phoneNumber: values.phone,
+        // phoneNumber: values.phone,
         organisation: organizationId,
         homeAddress: values.homeAddress,
         email: values.email,
@@ -662,11 +672,11 @@ const MutateUser = ({
           .required("required"),
         roles: Yup.string().required("Required"),
         guarantorForm: Yup.mixed()
-          .required("Required")
+          .optional()
           .test(
             "fileSize",
             "File size must be less than 2MB",
-            (value: MyFileList) => {
+            (value?: MyFileList) => {
               if (value) {
                 return value[0].size <= 2097152;
               }
@@ -676,7 +686,7 @@ const MutateUser = ({
           .test(
             "fileType",
             "Only .pdf, .jpg, .png files are allowed",
-            (value: MyFileList) => {
+            (value?: MyFileList) => {
               if (value) {
                 const file = value[0];
                 const fileType = file.type;
@@ -776,7 +786,7 @@ const MutateUser = ({
                     className="text-xs text-red-500"
                   />
                 </div>
-                <div className="flex-1">
+                {/* <div className="flex-1">
                   <label
                     htmlFor="phone"
                     className="text-ajo_darkBluee m-0 text-xs font-medium"
@@ -793,7 +803,7 @@ const MutateUser = ({
                     component="div"
                     className="text-xs text-red-500"
                   />
-                </div>
+                </div> */}
               </div>
               <div className="my-3 flex flex-col gap-4 md:flex-row">
                 <div className="flex-1">
@@ -1091,12 +1101,18 @@ const MutateUser = ({
                     name="idType"
                     className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
                   >
-                    {/* {StatesAndLGAs.map((country) => (
-                    <option key={country.country} value={country.country}>
-                      {country.country}
+                    <option value="International Passport">
+                      International Passport
                     </option>
-                  ))} */}
-                    <option className="invisible"></option>
+                    <option value="Utility Bill">Utility Bill</option>
+                    <option value="NIN">NIN</option>
+                    <option value="Drivers License">Drivers License</option>
+                    <option value="Voters Card">Voters Card</option>
+                    <option value="Association Membership ID">
+                      Association Membership ID
+                    </option>
+                    <option value="School ID">School ID</option>
+                    <option className="hidden"></option>
                   </Field>
                   <ErrorMessage
                     name="idType"
@@ -1287,7 +1303,6 @@ const MutateUser = ({
   );
 };
 
-
 const ViewUser = ({ userId }: { userId: string }) => {
   const { client } = useAuth();
   const { data: userInfo, isLoading: isLoadingUserInfo } = useQuery({
@@ -1338,7 +1353,7 @@ const ViewUser = ({ userId }: { userId: string }) => {
             // src={userInfo?.image ?? "/user"}
             src="/man-woman.png"
             alt={`${userInfo?.firstName}'s image`}
-            className="rounded-md h-full"
+            className="h-full rounded-md"
             width={120}
             height={120}
           />
@@ -1365,7 +1380,7 @@ const ViewUser = ({ userId }: { userId: string }) => {
             title="Home address"
             value={userInfo?.guarantor1.homeAddress}
           />
-          {/* <button className="flex rounded-md border border-gray-300 p-2">
+          <button className="flex rounded-md border border-gray-300 p-2">
             <Image
               src="/pdfLogo.svg"
               alt="pdf"
@@ -1374,7 +1389,7 @@ const ViewUser = ({ userId }: { userId: string }) => {
               className="rounded-sm"
             />
             {userInfo?.guarantor2.fullName}
-          </button> */}
+          </button>
         </div>
         <div key={userInfo?.guarantor2.phoneNumber} className="mt-8 space-y-2">
           <p className="font-semibold text-ajo_darkBlue">Guarantor 2:</p>
