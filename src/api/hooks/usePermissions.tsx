@@ -68,9 +68,9 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
       };
       fetchData();
     }
-    console.log("permissionMap", permissionsMap);
-    console.log("userPermissions", userPermissions);
   }, [user]);
+  console.log("permissionMap", permissionsMap);
+  console.log("userPermissions", userPermissions);
 
   return (
     <PermissionsContext.Provider
