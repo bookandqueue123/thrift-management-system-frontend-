@@ -128,53 +128,30 @@ export interface PaidDay {
 }
 
 export type savings = {
+  [x: string]: any;
   _id: string;
   purposeName: string;
   amount: number;
   startDate: string;
   endDate: string;
+  totalAmountSaved: number;
   frequency: string;
-  user: {
-    groupMember: any[];
-    isArchieve: boolean;
-    savingIdentities: any[];
-    _id: string;
-    firstName: string;
-    lastName: string;
-    otherName: string;
-    email: string;
-    homeAddress: string;
-    phoneNumber: string;
-    country: string;
-    state: string;
-    lga: string;
-    city: string;
-    popularMarket: string;
-    nok: string;
-    nokRelationship: string;
-    nokPhone: string;
-    nin: number;
-    bvn: number;
-    meansOfIDPhoto: File;
-    meansOfID: string;
-    photo: File;
-    accountNumber: number;
-    userType: string;
-    role: "customer" | "merchant" | "organization";
-    kycVerified: boolean;
-    organisation: string;
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
-  };
-  organisation: string;
+  user: User;
+  organisation: Organisation;
   isPaid: string;
-  paidDays: any[];
+  paidDays: PaidDay[];
   createdAt: string;
   updatedAt: string;
   __v: number;
-  savedDates: any[];
-  specificDates: any[];
+  savedDates: string[];
+  specificDates: string[];
+  adminFee: number;
+  appliedServiceCharge: number;
+  serviceCharge: number;
+  appliedPercentage: number;
+  amountPayable: number;
+  calculatedPaidDays: { datePaid: string; amountPerDay: number }[];
+  adminMargin: number;
   id: string;
 };
 export type allSavingsResponse = {
@@ -418,7 +395,6 @@ export interface Organisation {
 }
 
 export interface User {
-  isVerified: boolean;
   _id: string;
   firstName: string;
   lastName: string;
@@ -430,17 +406,35 @@ export interface User {
   userType: string;
   groupMember: any[];
   role: string;
+  organisations: any[];
   kycVerified: boolean;
+  kycEmailSent: boolean;
   isArchieve: boolean;
-  savingIdentities: string[];
+  isVerified: boolean;
+  savingIdentities: any[];
   organisation: string;
   organisationName: string;
-  createdAt: Date;
-  updatedAt: Date;
+  assignedUser: string[];
   totalCustomer: number;
   pendingPayout: number;
-  roles: any[];
+  roles: string[];
+  createdAt: string;
+  updatedAt: string;
   __v: number;
+  bvn: number;
+  city: string;
+  country: string;
+  homeAddress: string;
+  lga: string;
+  meansOfID: string;
+  meansOfIDPhoto: string;
+  nin: number;
+  nok: string;
+  nokPhone: string;
+  nokRelationship: string;
+  photo: string;
+  popularMarket: string;
+  state: string;
 }
 
 export interface CountryAndStateProps {
@@ -658,4 +652,12 @@ export interface PermissionsProviderProps {
 
 export interface PermissionsMap {
   [key: string]: string;
+}
+
+
+export interface SavingsInterface {
+  savings: savings[];
+  currentSavingsBalance: number;
+  totalAmountCollected: number;
+  nextWithdrawalDate: string;
 }

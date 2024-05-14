@@ -358,8 +358,8 @@ const Users = () => {
                       setUserEdited={setIsUserEdited}
                       setModalContent={setModalContent}
                       setMutationResponse={setMutationResponse}
-                        actionToTake={modalToShow}
-                        userToBeEdited={userToBeEdited}
+                      actionToTake={modalToShow}
+                      userToBeEdited={userToBeEdited}
                     />
                   )}
                 </div>
@@ -398,8 +398,8 @@ const MutateUser = ({
   setUserCreated: Dispatch<SetStateAction<boolean>>;
   setUserEdited: Dispatch<SetStateAction<boolean>>;
   setModalContent: Dispatch<SetStateAction<"" | "status" | "form">>;
-    setMutationResponse: Dispatch<SetStateAction<string>>;
-    userToBeEdited: string;
+  setMutationResponse: Dispatch<SetStateAction<string>>;
+  userToBeEdited: string;
 }) => {
   const { client } = useAuth();
   const organizationId = useSelector(selectOrganizationId);
@@ -408,7 +408,7 @@ const MutateUser = ({
     firstName: "",
     lastName: "",
     email: "",
-    phone: actionToTake === "edit-user" ? "08104532178" : "",
+    phone: "",
     homeAddress: "",
     dept_unit: "",
     userPicture: null,
@@ -548,7 +548,7 @@ const MutateUser = ({
       return client.put(`/api/user/${userToBeEdited}`, {
         firstName: values.firstName,
         lastName: values.lastName,
-        // phoneNumber: values.phone,
+        phoneNumber: values.phone,
         organisation: organizationId,
         homeAddress: values.homeAddress,
         email: values.email,
@@ -786,7 +786,7 @@ const MutateUser = ({
                     className="text-xs text-red-500"
                   />
                 </div>
-                {/* <div className="flex-1">
+                <div className="flex-1">
                   <label
                     htmlFor="phone"
                     className="text-ajo_darkBluee m-0 text-xs font-medium"
@@ -803,7 +803,7 @@ const MutateUser = ({
                     component="div"
                     className="text-xs text-red-500"
                   />
-                </div> */}
+                </div>
               </div>
               <div className="my-3 flex flex-col gap-4 md:flex-row">
                 <div className="flex-1">

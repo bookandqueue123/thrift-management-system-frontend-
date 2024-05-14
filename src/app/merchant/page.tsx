@@ -9,16 +9,16 @@ import AmountFormatter from "@/utils/AmountFormatter";
 
 import { useQuery } from "@tanstack/react-query";
 
-import { savings } from "@/types";
+import { SavingsInterface, savings } from "@/types";
 import { extractDate, extractTime } from "@/utils/TimeStampFormatter";
 import { ChangeEvent, SetStateAction, useState } from "react";
 import { CiExport } from "react-icons/ci";
-import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 
-import { AxiosError } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 
 import { usePermissions } from "@/api/hooks/usePermissions";
 import Alert from "@/components/Alert";
+import PaginationBar from "@/components/Pagination";
 import { useSelector } from "react-redux";
 
 const MerchantDashboard = () => {
@@ -26,7 +26,6 @@ const MerchantDashboard = () => {
   const { client } = useAuth();
   const { userPermissions, permissionsLoading, permissionsMap } =
     usePermissions();
-  // how to use
 
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -38,20 +37,16 @@ const MerchantDashboard = () => {
   const [isBalanceVisible, setIsBalanceVisible] = useState(false);
 
   // const token = useSelector(selectToken)
-  // const user = useSelector(selectUser)
-  // console.log(user)
+  const user = useSelector(selectUser);
+  console.log(user);
 
   //   console.log(organizationId)
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    // setSearchResult(e.target.value);
-
     if (allTransactions) {
-      const filtered = allTransactions.savings.filter(
-        (item: { [x: string]: any; accountNumber: any }) =>
-          String(item.user.accountNumber).includes(String(e.target.value)),
+      const filtered = allTransactions.filter((item: savings) =>
+        String(item.user.accountNumber).includes(String(e.target.value)),
       );
-      // Update the filtered data state
       setFilteredTransactions(filtered);
     }
   };
@@ -59,7 +54,7 @@ const MerchantDashboard = () => {
   const handleDateFilter = () => {
     // Filter the data based on the date range
     if (allTransactions) {
-      const filtered = allTransactions.savings.filter(
+      const filtered = allTransactions.filter(
         (item: { createdAt: string | number | Date }) => {
           const itemDate = new Date(item.createdAt); // Convert item date to Date object
           const startDateObj = new Date(fromDate);
@@ -76,10 +71,6 @@ const MerchantDashboard = () => {
 
   const [totalAmtCollected, setTotalAmtCollected] = useState(0);
 
-  // const token = useSelector(selectToken)
-  const user = useSelector(selectUser);
-
-
   const { data: allTransactions, isLoading: isLoadingAllTransactions } =
     useQuery({
       queryKey: ["allTransactions"],
@@ -87,48 +78,40 @@ const MerchantDashboard = () => {
       queryFn: async () => {
         return client
           .get(`/api/saving/get-savings?organisation=${organizationId}`)
-          .then((response) => {
-            setFilteredTransactions(response.data.savings);
+          .then((response: AxiosResponse<SavingsInterface, any>) => {
+            console.log(response.data);
+            if (user?.role === "staff") {
+              let assignedUsersSavings = response.data.savings.filter(
+                (saving) => user.assignedUser.includes(saving.user._id),
+              );
+              setFilteredTransactions(assignedUsersSavings);
+            } else {
+              setFilteredTransactions(response.data.savings);
+            }
             setTotalAmtCollected(response?.data?.totalAmountCollected);
-            return response.data;
+            return response.data.savings;
           })
           .catch((error: AxiosError<any, any>) => {
             throw error;
           });
       },
     });
-  console.log(allTransactions);
+  // console.log(allTransactions);
 
   let totalPages = 0;
   if (allTransactions) {
-    totalPages = Math.ceil(allTransactions.savings.length / PAGE_SIZE);
+    totalPages = Math.ceil(allTransactions.length / PAGE_SIZE);
   }
 
   const paginatedTransactions = filteredTransactions.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
-  // let paginatedTransactions: any[];
-  // if (Array.isArray(filteredTransactions)) {
-  //   paginatedTransactions = filteredTransactions.slice(
-  //     (currentPage - 1) * PAGE_SIZE,
-  //     currentPage * PAGE_SIZE
-  //   );
-  // } else {
-  //   // Handle the case where filteredTransactions is not an array
-  //   // For example, assign an empty array to paginatedTransactions
-  //   paginatedTransactions = [];
-  // }
 
   if (allTransactions) {
     totalPages = Math.ceil(allTransactions.length / PAGE_SIZE);
   }
 
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
   const handleFromDateChange = (event: {
     target: { value: SetStateAction<string> };
   }) => {
@@ -143,12 +126,6 @@ const MerchantDashboard = () => {
     handleDateFilter();
   };
 
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
   // console.log("paginatedTransactions" + paginatedTransactions);
   const organization = {
     Name: user?.organisationName ?? user?.firstName + " " + user?.lastName,
@@ -156,10 +133,11 @@ const MerchantDashboard = () => {
     totalAmtCollected: totalAmtCollected ?? 0,
     totalCustomers: user?.totalCustomer ?? 0,
     pendingPayout: user?.pendingPayout ?? 0,
+    kycVerified: user?.kycVerified,
   };
   return (
     <>
-      {!user?.kycVerified && (
+      {!organization.kycVerified && (
         <Alert
           variant="error"
           buttonLabel="Get Verified"
@@ -258,7 +236,6 @@ const MerchantDashboard = () => {
             Recent Transactions
           </p>
           <span className="flex items-center gap-3">
-            {/* <SearchInput onSearch={() => ("")}/> */}
             <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
               <input
                 onChange={handleSearch}
@@ -299,18 +276,17 @@ const MerchantDashboard = () => {
           </span>
         </div>
 
-        <div className="justify-between md:flex">
+        <div className="space-y-2">
+          <label htmlFor="fromDate" className="font-semibold mb-2 text-sm text-white">
+            Select range from:
+          </label>
           <div className="flex items-center">
-            <label htmlFor="fromDate" className="font-lg mr-2 text-white">
-              Select range from:
-            </label>
-
             <input
               id="fromDate"
               type="date"
               value={fromDate}
               onChange={handleFromDateChange}
-              className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+              className="rounded-lg bg-[rgba(255,255,255,0.1)] p-3 text-ajo_offWhite caret-ajo_offWhite dark:[color-scheme:dark]"
             />
 
             <label htmlFor="toDate" className="mx-2 text-white">
@@ -321,24 +297,27 @@ const MerchantDashboard = () => {
               type="date"
               value={toDate}
               onChange={handleToDateChange}
-              className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+              className="rounded-lg bg-[rgba(255,255,255,0.1)] p-3 text-ajo_offWhite caret-ajo_offWhite dark:[color-scheme:dark]"
             />
           </div>
-          <div className="mt-4 flex">
-            <button className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
-              Export as CSV{" "}
-              <span className="ml-2 mt-1">
-                <CiExport />
-              </span>
-            </button>
-            <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
-              <u>Export as Excel</u>
-            </button>
-          </div>
+
+          {userPermissions.includes(permissionsMap["export-saving"]) && (
+            <div className="mt-4 flex">
+              <button className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
+                Export as CSV{" "}
+                <span className="ml-2 mt-1">
+                  <CiExport />
+                </span>
+              </button>
+              <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
+                <u>Export as Excel</u>
+              </button>
+            </div>
+          )}
         </div>
 
         <div>
-          <p className="pl-2 text-xs text-ajo_offWhite">
+          <p className="pl-2 text-xs text-ajo_offWhite mt-8">
             *Please Scroll sideways to view all content
           </p>
           <TransactionsTable
@@ -397,50 +376,11 @@ const MerchantDashboard = () => {
               )
             }
           />
-
-          <div className="flex items-center justify-center  space-x-2">
-            <button
-              className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={goToPreviousPage}
-            >
-              <MdKeyboardArrowLeft />
-            </button>
-
-            <button
-              className="cursor-pointer  rounded-md p-2 text-blue-500 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={() => setCurrentPage(currentPage)}
-            >
-              {currentPage}
-            </button>
-
-            <button
-              className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={() => setCurrentPage(currentPage + 1)}
-            >
-              {currentPage + 1}
-            </button>
-            <button
-              className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={() => setCurrentPage(currentPage + 2)}
-            >
-              {currentPage + 2}
-            </button>
-
-            <button
-              className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={goToNextPage}
-            >
-              <MdKeyboardArrowRight />
-            </button>
-
-            {/* <button
-                className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-                onClick={() => dispatch(setCurrentPage(currentPage + 6))}
-              >
-                {currentPage + 6}
-              </button> */}
-          </div>
-          {/* <PaginationBar apiResponse={DummyTransactions} /> */}
+          <PaginationBar
+            setCurrentPage={setCurrentPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+          />
         </div>
       </section>
     </>
