@@ -4,6 +4,7 @@ import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 // import DummyCustomers from "@/api/dummyCustomers.json";
 import { useAuth } from "@/api/hooks/useAuth";
+import { usePermissions } from "@/api/hooks/usePermissions";
 import DateRangeComponent from "@/components/DateArrayFile";
 import Modal from "@/components/Modal";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
@@ -61,6 +62,10 @@ const Posting = () => {
     startDate: "",
     endDate: "",
   };
+
+  const { userPermissions, permissionsLoading, permissionsMap } =
+    usePermissions();
+
   const { data: allSavings, isLoading: isLoadingAllSavings } = useQuery({
     queryKey: ["allSavings"],
     staleTime: 5000,
@@ -195,15 +200,19 @@ const Posting = () => {
               ]}
             />
           </span>
-          <CustomButton
-            type="button"
-            label="Post Payment"
-            style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-            onButtonClick={() => {
-              setModalState(true);
-              setModalContent("form");
-            }}
-          />
+
+          {userPermissions.includes(permissionsMap["export-saving"]) && (
+            <CustomButton
+              type="button"
+              label="Post Payment"
+              style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+              onButtonClick={() => {
+                setModalState(true);
+                setModalContent("form");
+              }}
+            />
+          )}
+
           {modalState && (
             <Modal
               setModalState={setModalState}
@@ -244,17 +253,19 @@ const Posting = () => {
               className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
             />
           </div>
-          <div className="mt-4 flex">
-            <button className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
-              Export as CSV{" "}
-              <span className="ml-2 mt-1">
-                <CiExport />
-              </span>
-            </button>
-            <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
-              <u>Export as Excel</u>
-            </button>
-          </div>
+          {userPermissions.includes(permissionsMap["export-saving"]) && (
+            <div className="mt-4 flex">
+              <button className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
+                Export as CSV{" "}
+                <span className="ml-2 mt-1">
+                  <CiExport />
+                </span>
+              </button>
+              <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
+                <u>Export as Excel</u>
+              </button>
+            </div>
+          )}
         </div>
 
         <div>
@@ -387,8 +398,7 @@ const PostingForm = ({
   setCustomerAcctNo: Dispatch<SetStateAction<string>>;
 }) => {
   const organizationId = useSelector(selectOrganizationId);
-  
-  
+
   const { client } = useAuth();
 
   const [filteredSavingIds, setFilteredSavingIds] =
@@ -659,7 +669,7 @@ const PostingForm = ({
             ? singleDay
             : datesInRange;
 
-      console.log(dateValue)
+      console.log(dateValue);
       const endpoint =
         postDetails.postingType === "individual"
           ? `/api/saving/post-savings?userId=${postDetails.customerId}&savingId=${postDetails.savingId}`
@@ -678,7 +688,7 @@ const PostingForm = ({
     },
     onSuccess(response: AxiosResponse<postSavingsResponse, any>) {
       setPostingResponse(response.data);
-      console.log(response)
+      console.log(response);
       setPostingResponse(
         (prev) =>
           ({

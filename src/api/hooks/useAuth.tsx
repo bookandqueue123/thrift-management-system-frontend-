@@ -1,5 +1,3 @@
-
-import React from "react";
 import { clearAuthData, selectToken } from "@/slices/OrganizationIdSlice";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -7,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 const apiUrl = process.env.BACKEND_API;
 // console.log(apiUrl);
+
 const BASE_URL = apiUrl;
 
 export const useAuth = () => {
@@ -46,4 +45,3 @@ export const useAuth = () => {
 //   setAuthToken(token);
 //   console.log(token)
 // };
-

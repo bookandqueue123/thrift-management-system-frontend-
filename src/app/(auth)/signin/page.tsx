@@ -90,10 +90,7 @@ const SignInForm = () => {
         }
       }
 
-      if (
-        response.data.role === "customer" ||
-        response.data.role === "staff"
-      ) {
+      if (response.data.role === "customer" || response.data.role === "staff") {
         dispatch(
           setAuthData({
             organizationId: response.data.organisation,
@@ -152,10 +149,10 @@ const SignInForm = () => {
           destroyCookie(null, "rememberedPassword", { path: "/signin" });
           destroyCookie(null, "rememberedEmail", { path: "/signin" });
 
-          // const cookies = parseCookies();
+          //   // const cookies = parseCookies();
 
-          // console.log("rememberedPassword: ", cookies.rememberedPassword);
-          // console.log("rememberedEmail: ", cookies.rememberedEmail);
+          //   // console.log("rememberedPassword: ", cookies.rememberedPassword);
+          //   // console.log("rememberedEmail: ", cookies.rememberedEmail);
         }
 
         UserSignIn(values);
