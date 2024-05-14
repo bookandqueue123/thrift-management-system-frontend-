@@ -2394,7 +2394,7 @@ const CreateCustomer = ({
           <div className="mb-8">
             <div className="">
               <label
-                htmlFor="photo"
+                htmlFor="photoUpload"
                 className="text-md block font-medium text-white"
               >
                 Photo
@@ -2403,12 +2403,12 @@ const CreateCustomer = ({
                 <input
                   type="file"
                   name="photo"
-                  id="photo"
+                  id="photoUpload"
                   className="hidden"
                   onChange={(e) => setFieldValue("photo", e.target.files)}
                   accept="image/*"
                 />
-                <label htmlFor="photo" className="cursor-pointer">
+                <label htmlFor="photoUpload" className="cursor-pointer">
                   <p className="text-center text-white">
                     Drag n drop an image here, or click to select one
                   </p>
