@@ -1,10 +1,14 @@
 "use client";
-import { CustomButton, FilterDropdown } from "@/components/Buttons";
-import { SearchInput } from "@/components/Forms";
-import TransactionsTable from "@/components/Tables";
 import { useAuth } from "@/api/hooks/useAuth";
+import { usePermissions } from "@/api/hooks/usePermissions";
+import StatesAndLGAs from "@/api/statesAndLGAs.json";
+import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import Modal, { ModalConfirmation } from "@/components/Modal";
+import PaginationBar from "@/components/Pagination";
 import { StatusIndicator } from "@/components/StatusIndicator";
+import TransactionsTable from "@/components/Tables";
+import SuccessToaster, { ErrorToaster } from "@/components/toast";
+import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 import {
   CustomerSignUpProps,
   FormErrors,
@@ -16,9 +20,12 @@ import {
   getOrganizationProps,
   setSavingsResponse,
 } from "@/types";
-import { extractDate, formatToDateAndTime } from "@/utils/TimeStampFormatter";
+import { extractDate } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
+import { ErrorMessage, Field, Form, Formik } from "formik";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ChangeEvent,
   Dispatch,
@@ -26,20 +33,10 @@ import {
   useEffect,
   useState,
 } from "react";
-import Image from "next/image";
-import { useSelector } from "react-redux";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import DatePicker from "react-datepicker";
 import { CiExport } from "react-icons/ci";
-import { MdKeyboardArrowLeft } from "react-icons/md";
-import { MdKeyboardArrowRight } from "react-icons/md";
-import passport from "../../../../public/passport.svg";
-import ninslip from "../../../../public/NIN.svg";
-import SuccessToaster, { ErrorToaster } from "@/components/toast";
-import { ErrorMessage, Field, Form, Formik } from "formik";
+import { useSelector } from "react-redux";
 import * as Yup from "yup";
-import StatesAndLGAs from "@/api/statesAndLGAs.json";
-import { usePathname, useRouter } from "next/navigation";
+import ninslip from "../../../../public/NIN.svg";
 
 const initialValues: CustomerSignUpProps = {
   firstName: "",
@@ -85,6 +82,9 @@ const validationSchema = Yup.object().shape({
 
 const Customers = () => {
   const PAGE_SIZE = 5;
+  const { userPermissions, permissionsMap } = usePermissions();
+    const [permissionError, setPermissionError] = useState("");
+
 
   const [isCustomerCreated, setIsCustomerCreated] = useState(false);
   const [searchResult, setSearchResult] = useState("");
@@ -147,6 +147,9 @@ const Customers = () => {
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
+          if (error.response?.data.message.includes("unauthorized")) {
+            setPermissionError(error.response?.data.message);
+          }
           console.log(error);
           throw error;
         });
@@ -210,7 +213,7 @@ const Customers = () => {
   return (
     <>
       <div className="mb-4 space-y-2">
-        <p className="text-2xl text-base font-bold text-ajo_offWhite text-opacity-60">
+        <p className="text-base font-bold text-ajo_offWhite text-opacity-60">
           Customers
         </p>
       </div>
@@ -220,9 +223,8 @@ const Customers = () => {
             <FilterDropdown
               options={[
                 "Account Number",
-                // "Timestamp",
-                // "Name",
-                // "Email",
+                "Customer Name",
+                "Email Address",
                 // "Phone",
                 // "Channel",
                 // "Amount",
@@ -257,51 +259,64 @@ const Customers = () => {
               </svg>
             </form>
           </span>
-          <CustomButton
-            type="button"
-            label="Create New Customer"
-            style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-            onButtonClick={() => {
-              setModalState(true);
-              setModalToShow("create-customer");
-            }}
-          />
+          {userPermissions.includes(permissionsMap["create-customer"]) && (
+            <CustomButton
+              type="button"
+              label="Create New Customer"
+              style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+              onButtonClick={() => {
+                setModalState(true);
+                setModalToShow("create-customer");
+              }}
+            />
+          )}
         </div>
 
-        <div className="">
-          <div className="my-8 justify-between md:flex">
+        <div className="my-8">
+          <label
+            htmlFor="fromDate"
+            className="mb-2 text-sm font-semibold text-white"
+          >
+            Select range from:
+          </label>
+          <div className="justify-between space-y-2 md:flex">
             <div className="flex items-center">
-              <p className="font-lg mr-2 text-white">Select range from:</p>
               <input
+                id="fromDate"
                 type="date"
                 value={fromDate}
                 onChange={handleFromDateChange}
-                className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                className="rounded-lg bg-[rgba(255,255,255,0.1)] p-3 text-ajo_offWhite caret-ajo_offWhite dark:[color-scheme:dark]"
               />
 
-              <p className="mx-2 text-white">to</p>
+              <label htmlFor="toDate" className="mx-2 text-white">
+                to
+              </label>
               <input
+                id="toDate"
                 type="date"
                 value={toDate}
                 onChange={handleToDateChange}
-                className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                className="rounded-lg bg-[rgba(255,255,255,0.1)] p-3 text-ajo_offWhite caret-ajo_offWhite dark:[color-scheme:dark]"
               />
             </div>
-            <div className="mt-4 flex">
-              <button className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
-                Export as CSV{" "}
-                <span className="ml-2 mt-1">
-                  <CiExport />
-                </span>
-              </button>
-              <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
-                <u>Export as Excel</u>
-              </button>
-            </div>
+            {userPermissions.includes(permissionsMap["export-saving"]) && (
+              <div className="mt-4 flex">
+                <button className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite">
+                  Export as CSV{" "}
+                  <span className="ml-2 mt-1">
+                    <CiExport />
+                  </span>
+                </button>
+                <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
+                  <u>Export as Excel</u>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        <p className="mb-2 text-xl text-white">Customer List</p>
+        {/* <p className="mb-2 text-xl text-white">Customer List</p> */}
 
         <div>
           <TransactionsTable
@@ -318,91 +333,101 @@ const Customers = () => {
               "Organisation",
               "Action",
             ]}
-            content={paginatedCustomers?.map((customer, index) => (
-              <tr className="" key={index + 1}>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.firstName + " " + customer.lastName || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.accountNumber}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {extractDate(customer.createdAt) || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.email || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.phoneNumber || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.country || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.state || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.lga || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.city || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.organisation || "----"}
-                </td>
+            content={
+              paginatedCustomers?.length === 0 ? (
+                <tr>
+                  <p className="relative left-[80%] text-center text-sm font-semibold text-ajo_offWhite md:left-[250%] ">
+                    {!permissionError ? "No Customers yet" :  permissionError + ", contact your admin for permissions"}
+                  </p>
+                </tr>
+              ) : (
+                paginatedCustomers?.map((customer, index) => (
+                  <tr className="" key={index + 1}>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.firstName + " " + customer.lastName || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.accountNumber}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {extractDate(customer.createdAt) || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.email || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.phoneNumber || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.country || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.state || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.lga || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.city || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.organisation || "----"}
+                    </td>
 
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  <StatusIndicator
-                    label={`Actions`}
-                    clickHandler={() => {
-                      setOpenDropdown(index + 1);
-                      if (index + 1 === openDropdown) {
-                        toggleDropdown(openDropdown);
-                      } else {
-                        toggleDropdown(index + 1);
-                      }
-                    }}
-                    dropdownEnabled
-                    dropdownContents={{
-                      labels: [
-                        "View Customer",
-                        "Edit Customer",
-                        "Savings Settings",
-                        "Disable/Enable",
-                      ],
-                      actions: [
-                        () => {
-                          setModalState(true);
-                          setModalContent("form");
-                          setModalToShow("view");
-                          setCustomerToBeEdited(customer._id);
-                          console.log("View Customer");
-                        },
-                        () => {
-                          setModalToShow("edit");
-                          setModalState(true);
-                          setModalContent("form");
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      <StatusIndicator
+                        label={`Actions`}
+                        clickHandler={() => {
+                          setOpenDropdown(index + 1);
+                          if (index + 1 === openDropdown) {
+                            toggleDropdown(openDropdown);
+                          } else {
+                            toggleDropdown(index + 1);
+                          }
+                        }}
+                        dropdownEnabled
+                        dropdownContents={{
+                          labels: [
+                            "View Customer",
+                            "Edit Customer",
+                            "Savings Settings",
+                            "Disable/Enable",
+                          ],
+                          actions: [
+                            () => {
+                              setModalState(true);
+                              setModalContent("form");
+                              setModalToShow("view");
+                              setCustomerToBeEdited(customer._id);
+                              console.log("View Customer");
+                            },
+                            () => {
+                              setModalToShow("edit");
+                              setModalState(true);
+                              setModalContent("form");
 
-                          setCustomerToBeEdited(customer._id);
-                        },
-                        () => {
-                          setModalState(true);
-                          setModalToShow("savings");
-                          setModalContent("form");
-                          setCustomerToBeEdited(customer._id);
-                        },
-                        () => {
-                          console.log("Disable/Enable");
-                        },
-                      ],
-                    }}
-                    openDropdown={openDropdown}
-                    toggleDropdown={toggleDropdown}
-                    currentIndex={index + 1}
-                  />
-                </td>
-              </tr>
-            ))}
+                              setCustomerToBeEdited(customer._id);
+                            },
+                            () => {
+                              setModalState(true);
+                              setModalToShow("savings");
+                              setModalContent("form");
+                              setCustomerToBeEdited(customer._id);
+                            },
+                            () => {
+                              console.log("Disable/Enable");
+                            },
+                          ],
+                        }}
+                        openDropdown={openDropdown}
+                        toggleDropdown={toggleDropdown}
+                        currentIndex={index + 1}
+                      />
+                    </td>
+                  </tr>
+                ))
+              )
+            }
           />
           {modalState && (
             <Modal
@@ -472,41 +497,11 @@ const Customers = () => {
             </Modal>
           )}
           <div className="flex justify-center">
-            <div className="flex items-center justify-center  space-x-2">
-              <button
-                className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={goToPreviousPage}
-              >
-                <MdKeyboardArrowLeft />
-              </button>
-
-              <button
-                className="cursor-pointer  rounded-md p-2 text-blue-500 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={() => setCurrentPage(currentPage)}
-              >
-                {currentPage}
-              </button>
-
-              <button
-                className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={() => setCurrentPage(currentPage + 1)}
-              >
-                {currentPage + 1}
-              </button>
-              <button
-                className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={() => setCurrentPage(currentPage + 2)}
-              >
-                {currentPage + 2}
-              </button>
-
-              <button
-                className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={goToNextPage}
-              >
-                <MdKeyboardArrowRight />
-              </button>
-            </div>
+            <PaginationBar
+              setCurrentPage={setCurrentPage}
+              currentPage={currentPage}
+              totalPages={totalPages}
+            />
             {/* <PaginationBar apiResponse={DummyCustomers} /> */}
           </div>
         </div>
@@ -953,7 +948,9 @@ export const ViewCustomer = ({
     <div>
       <div className="mx-auto mt-8 w-[100%] overflow-hidden rounded-md bg-white p-4 shadow-md">
         {/* Image and First Batch of Details Section */}
-        <p className="mb-8 mt-2 text-xl font-bold text-gray-600">Customer Details</p>
+        <p className="mb-8 mt-2 text-xl font-bold text-gray-600">
+          Customer Details
+        </p>
         <div className="rounded-lg md:border">
           <div className="p-6 md:flex ">
             <div className="mr-6 md:w-1/6 ">
@@ -1115,7 +1112,7 @@ export const ViewCustomer = ({
               </div>
             </div>
 
-            <div className="md:ml-8 md:w-[40%] border p-6">
+            <div className="border p-6 md:ml-8 md:w-[40%]">
               <p className="mb-8 mt-2 text-xl font-bold">
                 Means Of ID: {customerInfo?.meansOfID ?? ""}
               </p>
@@ -1238,15 +1235,15 @@ export const EditCustomer = ({
     },
     onSuccess(response) {
       // router.push("/customer");
-     
+
       setShowSuccessToast(true);
-  
+
       // Delay the execution of closeModal(false) by 5 seconds
       setTimeout(() => {
-          closeModal(false);
+        closeModal(false);
       }, 5000); // 5000 milliseconds = 5 seconds
-  },
-  
+    },
+
     onError(error: AxiosError<any, any>) {
       console.log(error);
       setShowErrorToast(true);
@@ -1351,7 +1348,11 @@ export const EditCustomer = ({
                 encType="multipart/form-data"
                 name="IdImage"
                 className="mt-8 w-full"
-              >          <p className="mb-8 mt-2 text-xl text-gray-600 font-bold">Edit Customer Details</p>
+              >
+                {" "}
+                <p className="mb-8 mt-2 text-xl font-bold text-gray-600">
+                  Edit Customer Details
+                </p>
                 <div className="p-6 md:flex ">
                   <div className="mr-6 md:w-1/6 ">
                     <div className="">
@@ -1403,11 +1404,11 @@ export const EditCustomer = ({
                   </div>
                   <div className="mt-8 w-5/6 flex-wrap md:mx-16">
                     <div className="mb-8">
-                      <div className="w-full justify-between fl gap-4 md:items-center">
+                      <div className="fl w-full justify-between gap-4 md:items-center">
                         <div className="mb-3 w-full">
                           <label
                             htmlFor="firstName"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                            className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                           >
                             First Name{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
@@ -1416,23 +1417,22 @@ export const EditCustomer = ({
                           </label>
                           <div>
                             <Field
-                            id="firstName"
-                            name="firstName"
-                            type="text"
-                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                          />
-                          <ErrorMessage
-                            name="firstName"
-                            component="div"
-                            className="text-red-500"
-                          />
+                              id="firstName"
+                              name="firstName"
+                              type="text"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            />
+                            <ErrorMessage
+                              name="firstName"
+                              component="div"
+                              className="text-red-500"
+                            />
                           </div>
-                          
                         </div>
                         <div className="mb-3 w-full">
                           <label
                             htmlFor="lastName"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                            className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                           >
                             Last Name{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
@@ -1441,13 +1441,13 @@ export const EditCustomer = ({
                           </label>
                           <div>
                             <Field
-                            id="lastName"
-                            name="lastName"
-                            type="text"
-                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                          />
+                              id="lastName"
+                              name="lastName"
+                              type="text"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            />
                           </div>
-                          
+
                           <ErrorMessage
                             name="lastName"
                             component="div"
@@ -1459,25 +1459,24 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="otherName"
-                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           Other Names
                         </label>
                         <div>
                           <Field
-                          id="otherName"
-                          name="otherName"
-                          type="text"
-                          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        />
+                            id="otherName"
+                            name="otherName"
+                            type="text"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          />
                         </div>
-                        
                       </div>
 
                       <div className="mb-3">
                         <label
                           htmlFor="phoneNumber"
-                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           Phone Number{" "}
                           <span className="font-base font-semibold text-[#FF0000]">
@@ -1502,7 +1501,7 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="email"
-                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           Email address{" "}
                           <span className="font-base font-semibold text-[#FF0000]">
@@ -1526,7 +1525,7 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="homeAddress"
-                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           Home Address{" "}
                           <span className="font-base font-semibold text-[#FF0000]">
@@ -1551,34 +1550,32 @@ export const EditCustomer = ({
                       <div className="mb-3 w-full">
                         <label
                           htmlFor="country"
-                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           Country of Residence
                         </label>
                         <div>
-
-                        
-                        <Field
-                          onChange={handleChange}
-                          as="select"
-                          isInvalid={!!errors.country}
-                          name="country"
-                          id="country"
-                          // type="text"
-                          placeholder="country"
-                          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        >
-                          <option>Select Country</option>
-                          {StatesAndLGAs &&
-                            StatesAndLGAs.map((countries) => (
-                              <option
-                                key={countries.country}
-                                value={countries.country}
-                              >
-                                {countries.country}
-                              </option>
-                            ))}
-                        </Field>
+                          <Field
+                            onChange={handleChange}
+                            as="select"
+                            isInvalid={!!errors.country}
+                            name="country"
+                            id="country"
+                            // type="text"
+                            placeholder="country"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          >
+                            <option>Select Country</option>
+                            {StatesAndLGAs &&
+                              StatesAndLGAs.map((countries) => (
+                                <option
+                                  key={countries.country}
+                                  value={countries.country}
+                                >
+                                  {countries.country}
+                                </option>
+                              ))}
+                          </Field>
                         </div>
                         <ErrorMessage
                           name="country"
@@ -1590,29 +1587,28 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="state"
-                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           State
                         </label>
                         <div>
+                          <Field
+                            as="select"
+                            id="state"
+                            name="state"
+                            // type="text"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          >
+                            <option>Select State</option>
 
-                       
-                        <Field
-                          as="select"
-                          id="state"
-                          name="state"
-                          // type="text"
-                          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        >
-                          <option>Select State</option>
-
-                          {selectedStateArray &&
-                            selectedStateArray.map((state) => (
-                              <option key={state.name} value={state.name}>
-                                {state.name}
-                              </option>
-                            ))}
-                        </Field> </div>
+                            {selectedStateArray &&
+                              selectedStateArray.map((state) => (
+                                <option key={state.name} value={state.name}>
+                                  {state.name}
+                                </option>
+                              ))}
+                          </Field>{" "}
+                        </div>
                         <ErrorMessage
                           name="state"
                           component="div"
@@ -1622,27 +1618,27 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="lga"
-                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           Local Government Area (lga)
                         </label>
                         <div>
-                        <Field
-                          as="select"
-                          id="lga"
-                          name="lga"
-                          // type="text"
-                          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        >
-                          <option>Select LGA</option>
+                          <Field
+                            as="select"
+                            id="lga"
+                            name="lga"
+                            // type="text"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          >
+                            <option>Select LGA</option>
 
-                          {selectedLGAArray &&
-                            selectedLGAArray.map((lga) => (
-                              <option key={lga} value={lga}>
-                                {lga}
-                              </option>
-                            ))}
-                        </Field>
+                            {selectedLGAArray &&
+                              selectedLGAArray.map((lga) => (
+                                <option key={lga} value={lga}>
+                                  {lga}
+                                </option>
+                              ))}
+                          </Field>
                         </div>
                         <ErrorMessage
                           name="lga"
@@ -1654,7 +1650,7 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="city"
-                          className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           City{" "}
                           <span className="font-base font-semibold text-[#FF0000]">
@@ -1680,7 +1676,7 @@ export const EditCustomer = ({
                         <div className="mb-3">
                           <label
                             htmlFor="organisation"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                            className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                           >
                             Select Organisation i.e Thrift Collector
                             <span className="font-base font-semibold text-[#FF0000]">
@@ -1688,20 +1684,22 @@ export const EditCustomer = ({
                             </span>
                           </label>
                           <div>
-                          <Field
-                            disabled
-                            as="select"
-                            id="organisation"
-                            name="organisation"
-                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                          >
-                            <option value="">Select Organization</option>
-                            {organizations?.map((org: getOrganizationProps) => (
-                              <option key={org._id} value={org._id}>
-                                {org.organisationName}
-                              </option>
-                            ))}
-                          </Field>
+                            <Field
+                              disabled
+                              as="select"
+                              id="organisation"
+                              name="organisation"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            >
+                              <option value="">Select Organization</option>
+                              {organizations?.map(
+                                (org: getOrganizationProps) => (
+                                  <option key={org._id} value={org._id}>
+                                    {org.organisationName}
+                                  </option>
+                                ),
+                              )}
+                            </Field>
                           </div>
                           <ErrorMessage
                             name="organisation"
@@ -1711,16 +1709,18 @@ export const EditCustomer = ({
                         </div>
                       }
                       <div className="mb-3">
-                        <label htmlFor="nin" 
-                        className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium ">
+                        <label
+                          htmlFor="nin"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%] "
+                        >
                           NIN number
                         </label>
                         <div>
-                        <Field
-                          name="nin"
-                          type="text"
-                          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        />
+                          <Field
+                            name="nin"
+                            type="text"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          />
                         </div>
                         <ErrorMessage
                           name="nin"
@@ -1729,16 +1729,19 @@ export const EditCustomer = ({
                         />
                       </div>
                       <div className="mb-3">
-                        <label htmlFor="bvn"
-                         className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium ">
+                        <label
+                          htmlFor="bvn"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%] "
+                        >
                           BVN number
                         </label>
                         <div>
-                        <Field
-                          name="bvn"
-                          type="text"
-                          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        /></div>
+                          <Field
+                            name="bvn"
+                            type="text"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          />
+                        </div>
                         <ErrorMessage
                           name="bvn"
                           component="div"
@@ -1990,9 +1993,7 @@ const CreateCustomer = ({
             "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
           )
           .required("Phone number is required"),
-        email: Yup.string()
-          .email("Invalid email address")
-          .optional(),
+        email: Yup.string().email("Invalid email address").optional(),
         country: Yup.string().required("Required"),
         state: Yup.string().required("Required"),
         lga: Yup.string().required("Required"),
