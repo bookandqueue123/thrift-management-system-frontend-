@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 export type customer = {
   officeAddress1: string;
   organisationName?: string;
@@ -437,6 +439,7 @@ export interface User {
   updatedAt: Date;
   totalCustomer: number;
   pendingPayout: number;
+  roles: any[];
   __v: number;
 }
 
@@ -585,7 +588,6 @@ export interface mutateUserProps {
 
   roles: string[];
   allCustomers?: string[];
-
 }
 
 export interface permissionObject {
@@ -641,4 +643,19 @@ export interface staffResponse {
   createdAt: string;
   updatedAt: string;
   __v: number;
+}
+
+export interface permissionsState {
+  permissionsMap: { [key: string]: string };
+  userPermissions: string[];
+  permissionsLoading: boolean;
+  // setPermissionsLoading: boolean;
+}
+
+export interface PermissionsProviderProps {
+  children: ReactNode;
+}
+
+export interface PermissionsMap {
+  [key: string]: string;
 }

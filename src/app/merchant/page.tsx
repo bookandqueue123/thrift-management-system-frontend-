@@ -19,10 +19,13 @@ import { AxiosError } from "axios";
 
 import Alert from "@/components/Alert";
 import { useSelector } from "react-redux";
+import { usePermissions } from "@/api/hooks/usePermissions";
 
 const MerchantDashboard = () => {
   const PAGE_SIZE = 5;
   const { client } = useAuth();
+  const { userPermissions, permissionsLoading, permissionsMap } = usePermissions();
+  // how to use
 
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");

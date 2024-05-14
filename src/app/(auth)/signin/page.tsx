@@ -90,7 +90,10 @@ const SignInForm = () => {
         }
       }
 
-      if (response.data.role === "customer") {
+      if (
+        response.data.role === "customer" ||
+        response.data.role === "staff"
+      ) {
         dispatch(
           setAuthData({
             organizationId: response.data.organisation,
@@ -99,16 +102,7 @@ const SignInForm = () => {
             userId: response.data._id,
           }),
         );
-      } else if (response.data.role === "superadmin") {
-        dispatch(
-          setAuthData({
-            organizationId: response.data._id,
-            token: response.data.token,
-            user: response.data,
-            userId: response.data._id,
-          }),
-        );
-      } else if (response.data.role === "organisation") {
+      } else {
         dispatch(
           setAuthData({
             organizationId: response.data._id,

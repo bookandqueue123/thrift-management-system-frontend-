@@ -7,6 +7,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import TanstackProvider from "../../providers/TanstackProvider";
 import { store } from "../../store/store";
+import { PermissionsProvider } from "@/api/hooks/usePermissions";
 const montserrat = Montserrat({ subsets: ["latin"] });
 
 // export const metadata: Metadata = {
@@ -20,18 +21,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-
+    <html lang="en" suppressHydrationWarning>
       <head></head>
 
       <body className={montserrat.className}>
         <Provider store={store}>
           <TanstackProvider>
             <PreferredUrlProvider>
-              <div className="">
-                <ToastContainer />
-                {children}
-              </div>
+              <PermissionsProvider>
+                <div className="">
+                  <ToastContainer />
+                  {children}
+                </div>
+              </PermissionsProvider>
             </PreferredUrlProvider>
           </TanstackProvider>
         </Provider>
