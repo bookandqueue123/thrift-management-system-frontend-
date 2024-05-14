@@ -40,7 +40,7 @@ const MerchantDashboard = () => {
 
   // const token = useSelector(selectToken)
   const user = useSelector(selectUser);
-  console.log(user);
+  // console.log(user);
 
   //   console.log(organizationId)
 
@@ -394,9 +394,6 @@ const MerchantDashboard = () => {
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
                         {transaction.isPaid}
                       </td>
-                      {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  <StatusIndicator label={transaction.transactionStatus} />
-                </td> */}
                     </tr>
                   ))
                 )
