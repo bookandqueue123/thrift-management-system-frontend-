@@ -27,7 +27,7 @@ const MerchantDashboard = () => {
   const { client } = useAuth();
   const { userPermissions, permissionsLoading, permissionsMap } =
     usePermissions();
-
+  
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);

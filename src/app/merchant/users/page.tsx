@@ -458,6 +458,8 @@ const MutateUser = ({
         });
     },
   });
+
+  console.log(allRoles)
   const { mutate: createUser, isPending: isCreatingRole } = useMutation({
     mutationFn: async (values: mutateUserProps) => {
       console.log("role created");

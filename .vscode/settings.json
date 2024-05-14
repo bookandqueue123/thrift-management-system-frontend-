@@ -7,6 +7,7 @@
     "source.organizeImports": "explicit"
   },
   "cSpell.words": ["organisation", "Tanstack"],
-  "files.autoSave": "afterDelay",
-  "files.autoSaveDelay": 1000
+  "files.autoSave": "off",
+  "files.autoSaveDelay": 1000,
+  "files.autoSaveWhenNoErrors": true
 }
