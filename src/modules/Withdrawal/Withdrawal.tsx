@@ -16,7 +16,7 @@ import { useSelector } from "react-redux";
 import * as Yup from "yup";
 
 const WithdrawalFormScema = Yup.object().shape({
-  accountName: Yup.string().required("Account Name is required"),
+  // accountName: Yup.string().required("Account Name is required"),
   selectedAccountPurpose: Yup.string().required(
     "Selected Account Purpose is required",
   ),
@@ -115,38 +115,15 @@ const WithdrawalForm = () => {
     },
   });
 
-  // const {
-  //   mutate: WithdrawerMutation,
-  //   isPending: isWithdrawalPending,
-  //   isError: isWithdrawalError,
-  // } = useMutation({
-  //   mutationKey: ["withdrawal mutation"],
-  //   mutationFn: async (values :withdrawValuesProps) => {
-  //     console.log(values)
-  //     return client.post(`/api/withdrawal/${userId}`, {
-  //       amount: values.amount,
-  //       savingId: values.selectedAccountPurpose
-
-  //   });
-  //   },
-
-  //   onSuccess(response: AxiosResponse<any, any>) {
-
-  //   },
-
-  //   onError(error: AxiosError<any, any>) {
-
-  //   },
-  // });
-
   useEffect(() => {
     if (allSavings?.savings) {
       const filtered = allSavings.savings.filter(
-        (item) => item.user?._id === selectedNameId,
+        (item) => item.user?._id === userId,
       );
+
       setFilteredArray(filtered);
     }
-  }, [allSavings?.savings, selectedNameId]);
+  }, [allSavings?.savings, userId]);
 
   return (
     <div>
@@ -206,7 +183,7 @@ const WithdrawalForm = () => {
                 <div className="text flex  flex-col">
                   <div className="text-white">
                     <div className="sm:flex sm:space-x-4">
-                      <div className="w-full sm:w-1/2 md:p-4">
+                      {/* <div className="w-full sm:w-1/2 md:p-4">
                         <label
                           htmlFor="accountName"
                           className="block font-medium"
@@ -237,7 +214,7 @@ const WithdrawalForm = () => {
                           component="div"
                           className="text-red-500"
                         />
-                      </div>
+                      </div> */}
 
                       <div className="w-full sm:w-1/2 md:p-4">
                         <label
@@ -253,7 +230,7 @@ const WithdrawalForm = () => {
                           name="selectedAccountPurpose"
                           className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6] p-3 text-[#7D7D7D]"
                         >
-                          <option value="">Select Account Name</option>
+                          <option value="">Select Account Purpose</option>
                           {filteredArray &&
                             filteredArray?.map((savings: any) => (
                               <option key={savings._id} value={savings._id}>

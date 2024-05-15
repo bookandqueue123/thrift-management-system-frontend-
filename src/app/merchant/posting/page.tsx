@@ -7,7 +7,7 @@ import { useAuth } from "@/api/hooks/useAuth";
 import { usePermissions } from "@/api/hooks/usePermissions";
 import DateRangeComponent from "@/components/DateArrayFile";
 import Modal from "@/components/Modal";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 import {
   FormErrors,
   FormValues,
@@ -24,6 +24,7 @@ import {
 } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import { useRouter } from "next/navigation";
 import {
   ChangeEvent,
   Dispatch,
@@ -36,6 +37,7 @@ import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { useSelector } from "react-redux";
 
 const Posting = () => {
+  const router = useRouter();
   const PAGE_SIZE = 5;
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -53,6 +55,7 @@ const Posting = () => {
   const [postingResponse, setPostingResponse] = useState<postSavingsResponse>();
   const [customerAcctNumber, setCustomerAcctNumber] = useState("");
 
+  const user = useSelector(selectUser);
   interface CustomAxiosRequestConfig extends AxiosRequestConfig {
     startDate: string;
     endDate: string;
@@ -149,6 +152,10 @@ const Posting = () => {
     }
   };
 
+  if (user && user.role === "customer") {
+    router.push("/signin");
+  }
+
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -201,7 +208,9 @@ const Posting = () => {
             />
           </span>
 
-          {userPermissions.includes(permissionsMap["post-saving"]) && (
+          {(user?.role === "organisation" ||
+            (user?.role === "staff" &&
+              userPermissions.includes(permissionsMap["post-saving"]))) && (
             <CustomButton
               type="button"
               label="Post Payment"
@@ -253,7 +262,10 @@ const Posting = () => {
               className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
             />
           </div>
-          {userPermissions.includes(permissionsMap["export-saving"]) && (
+
+          {(user?.role === "organisation" ||
+            (user?.role === "staff" &&
+              userPermissions.includes(permissionsMap["export-saving"]))) && (
             <div className="mt-4 flex">
               <button className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
                 Export as CSV{" "}

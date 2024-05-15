@@ -178,164 +178,153 @@ export default function WithDrawalReportSettings() {
           )}
         </div>
 
-        {userPermissions.includes(permissionsMap["view-withdrawals"]) ? (
-          <div>
-            {/* {withdrawals &&  */}
-            <TransactionsTable
-              headers={[
-                "Customer Account",
-                "Saving Purpose",
-                "Transaction Date & Time",
-                "Amount",
-                "Narration",
-                "Reference ID",
-                "Status",
-                "Withdrawal Request",
-                "Payment Confirmation ",
-                "Evidence of Payment",
-                "Payment Mode",
-              ]}
-              content={withdrawals?.map(
-                (withdrawal: WithdrawalProps, index: number) => (
-                  <tr className="" key={index}>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {withdrawal.user && withdrawal.user.accountNumber}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {withdrawal.saving && withdrawal.saving.purposeName}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {withdrawal.updatedAt
-                        ? new Date(withdrawal.updatedAt).toLocaleDateString()
-                        : "Invalid Date"}{" "}
-                      {withdrawal.updatedAt
-                        ? new Date(withdrawal.updatedAt).toLocaleTimeString()
-                        : "Invalid Date"}
-                    </td>
+        <div>
+          {/* {withdrawals &&  */}
+          <TransactionsTable
+            headers={[
+              "Customer Account",
+              "Saving Purpose",
+              "Transaction Date & Time",
+              "Amount",
+              "Narration",
+              "Reference ID",
+              "Status",
+              "Withdrawal Request",
+              "Payment Confirmation ",
+              "Evidence of Payment",
+              "Payment Mode",
+            ]}
+            content={withdrawals?.map(
+              (withdrawal: WithdrawalProps, index: number) => (
+                <tr className="" key={index}>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {withdrawal.user && withdrawal.user.accountNumber}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {withdrawal.saving && withdrawal.saving.purposeName}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {withdrawal.updatedAt
+                      ? new Date(withdrawal.updatedAt).toLocaleDateString()
+                      : "Invalid Date"}{" "}
+                    {withdrawal.updatedAt
+                      ? new Date(withdrawal.updatedAt).toLocaleTimeString()
+                      : "Invalid Date"}
+                  </td>
 
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {AmountFormatter(Number(withdrawal.amount))} NGN
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm"></td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {withdrawal._id}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {/* <Badge status={withdrawal.status} onClick={() => ""}/>  */}
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {AmountFormatter(Number(withdrawal.amount))} NGN
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm"></td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {withdrawal._id}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {/* <Badge status={withdrawal.status} onClick={() => ""}/>  */}
 
-                      <div className="">
+                    <div className="">
+                      <button
+                        style={{
+                          borderRadius: "5px",
+                          padding: "4px",
+                          backgroundColor:
+                            withdrawal.status === "paid" ? "green" : "#FF535B",
+                          color:
+                            withdrawal.status === "paid" ? "white" : "white",
+                        }}
+                        onClick={() => handleStatus(index)}
+                      >
+                        {withdrawal.status === "paid" ? "Paid" : "Unpaid"}
+                      </button>
+                    </div>
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {/* <StatusBadge status={withdrawal.withdrawalRequest} /> */}
+                    <Badge
+                      status={withdrawal.withdrawalRequest}
+                      onClick={() => ""}
+                    />
+                  </td>
+
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {/* <Badge status={withdrawal.paymentConfirmation} onClick={() => console.log(12)}/> */}
+                    <div className="">
+                      <button
+                        style={{
+                          borderRadius: "5px",
+                          padding: "4px",
+                          // backgroundColor: withdrawal.status === 'paid' ? 'green' : '#FF535B',
+                          color:
+                            withdrawal.paymentConfirmation === "confirmed"
+                              ? "green"
+                              : "#FF535B",
+                        }}
+                        // onClick={() => handleStatus(index)}
+                      >
+                        {withdrawal.paymentConfirmation === "confirmed"
+                          ? "Confirmed"
+                          : "Unconfirmed"}
+                      </button>
+                    </div>
+                  </td>
+
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {withdrawal.paymentEvidence ? (
+                      <Link target="_blank" href={withdrawal.paymentEvidence}>
                         <button
                           style={{
                             borderRadius: "5px",
-                            padding: "4px",
-                            backgroundColor:
-                              withdrawal.status === "paid"
-                                ? "green"
-                                : "#FF535B",
-                            color:
-                              withdrawal.status === "paid" ? "white" : "white",
+                            padding: "8px",
+                            paddingRight: "16px",
+                            paddingLeft: "16px",
+                            backgroundColor: "#F2F2F2",
+                            color: "black",
                           }}
-                          onClick={() => handleStatus(index)}
+                          //  onClick={() => router.push(withdrawal.paymentEvidence)}
                         >
-                          {withdrawal.status === "paid" ? "Paid" : "Unpaid"}
+                          View Evidence
                         </button>
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {/* <StatusBadge status={withdrawal.withdrawalRequest} /> */}
-                      <Badge
-                        status={withdrawal.withdrawalRequest}
-                        onClick={() => ""}
-                      />
-                    </td>
+                      </Link>
+                    ) : (
+                      "No Evidence"
+                    )}
+                  </td>
 
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {/* <Badge status={withdrawal.paymentConfirmation} onClick={() => console.log(12)}/> */}
-                      <div className="">
-                        <button
-                          style={{
-                            borderRadius: "5px",
-                            padding: "4px",
-                            // backgroundColor: withdrawal.status === 'paid' ? 'green' : '#FF535B',
-                            color:
-                              withdrawal.paymentConfirmation === "confirmed"
-                                ? "green"
-                                : "#FF535B",
-                          }}
-                          // onClick={() => handleStatus(index)}
-                        >
-                          {withdrawal.paymentConfirmation === "confirmed"
-                            ? "Confirmed"
-                            : "Unconfirmed"}
-                        </button>
-                      </div>
-                    </td>
-
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {withdrawal.paymentEvidence ? (
-                        <Link target="_blank" href={withdrawal.paymentEvidence}>
-                          <button
-                            style={{
-                              borderRadius: "5px",
-                              padding: "8px",
-                              paddingRight: "16px",
-                              paddingLeft: "16px",
-                              backgroundColor: "#F2F2F2",
-                              color: "black",
-                            }}
-                            //  onClick={() => router.push(withdrawal.paymentEvidence)}
-                          >
-                            View Evidence
-                          </button>
-                        </Link>
-                      ) : (
-                        "No Evidence"
-                      )}
-                    </td>
-
-                    <td>
-                      <div className="items-center gap-6 md:flex">
-                        <select
-                          value={withdrawal.paymentMode}
-                          id="paymentMode"
-                          name="paymentMode"
-                          className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 capitalize text-[#7D7D7D]"
-                          defaultValue={"Select a category"}
-                          onChange={(e) => handlePaymentMode(e, withdrawal._id)}
-                          required
-                        >
-                          <option value={""} defaultValue={"Filter"}>
-                            select Payment mode
-                          </option>
-                          <option value={"online"} className="capitalize">
-                            online
-                          </option>
-                          <option value={"cash"} className="capitalize">
-                            cash
-                          </option>
-                        </select>
-                      </div>
-                    </td>
-                  </tr>
-                ),
-              )}
-            />
-            {imageURL && (
-              <div>
-                <Image
-                  width={1000}
-                  height={1000}
-                  src={imageURL}
-                  alt="Evidence"
-                />
-                <button onClick={() => setImageURL("")}>Close</button>
-              </div>
+                  <td>
+                    <div className="items-center gap-6 md:flex">
+                      <select
+                        value={withdrawal.paymentMode}
+                        id="paymentMode"
+                        name="paymentMode"
+                        className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 capitalize text-[#7D7D7D]"
+                        defaultValue={"Select a category"}
+                        onChange={(e) => handlePaymentMode(e, withdrawal._id)}
+                        required
+                      >
+                        <option value={""} defaultValue={"Filter"}>
+                          select Payment mode
+                        </option>
+                        <option value={"online"} className="capitalize">
+                          online
+                        </option>
+                        <option value={"cash"} className="capitalize">
+                          cash
+                        </option>
+                      </select>
+                    </div>
+                  </td>
+                </tr>
+              ),
             )}
-            {/* <PaginationBar apiResponse={DummyTransactions} /> */}
-          </div>
-        ) : (
-          <div className="text-white">You are unauthorized</div>
-        )}
+          />
+          {imageURL && (
+            <div>
+              <Image width={1000} height={1000} src={imageURL} alt="Evidence" />
+              <button onClick={() => setImageURL("")}>Close</button>
+            </div>
+          )}
+          {/* <PaginationBar apiResponse={DummyTransactions} /> */}
+        </div>
       </section>
     </div>
   );
