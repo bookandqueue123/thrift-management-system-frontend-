@@ -7,7 +7,7 @@ import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { parseCookies } from "nookies";
+import { destroyCookie, parseCookies, setCookie } from "nookies";
 import { useEffect, useState } from "react";
 import * as Yup from "yup";
 
@@ -15,7 +15,7 @@ import { setAuthData } from "@/slices/OrganizationIdSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectUser } from "@/slices/OrganizationIdSlice";
-import { decryptPassword } from "@/utils/Encryptpassword";
+import { decryptPassword, encryptPassword } from "@/utils/Encryptpassword";
 import Image from "next/image";
 
 const SignInForm = () => {
@@ -135,25 +135,25 @@ const SignInForm = () => {
         password: Yup.string().required("Password is required"),
       })}
       onSubmit={(values, { setSubmitting }) => {
-        // const encryptedPassword = encryptPassword(values.password, secretKey);
-        // if (rememberPassword) {
-        //   setCookie(null, "rememberedPassword", encryptedPassword, {
-        //     maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
-        //     path: "/signin",
-        //   });
-        //   setCookie(null, "rememberedEmail", values.email, {
-        //     maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
-        //     path: "/signin",
-        //   });
-        // } else {
-        //   destroyCookie(null, "rememberedPassword", { path: "/signin" });
-        //   destroyCookie(null, "rememberedEmail", { path: "/signin" });
+        const encryptedPassword = encryptPassword(values.password, secretKey);
+        if (rememberPassword) {
+          setCookie(null, "rememberedPassword", encryptedPassword, {
+            maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
+            path: "/signin",
+          });
+          setCookie(null, "rememberedEmail", values.email, {
+            maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
+            path: "/signin",
+          });
+        } else {
+          destroyCookie(null, "rememberedPassword", { path: "/signin" });
+          destroyCookie(null, "rememberedEmail", { path: "/signin" });
 
         //   // const cookies = parseCookies();
 
         //   // console.log("rememberedPassword: ", cookies.rememberedPassword);
         //   // console.log("rememberedEmail: ", cookies.rememberedEmail);
-        // }
+         }
 
         UserSignIn(values);
         setTimeout(() => {

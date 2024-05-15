@@ -1,17 +1,17 @@
 
  'use client'
 import { useAuth } from '@/api/hooks/useAuth';
+import { usePermissions } from '@/api/hooks/usePermissions';
 import { CustomButton } from '@/components/Buttons';
 import ErrorModal from '@/components/ErrorModal';
-import Modal, { NoBackgroundModal } from '@/components/Modal';
 import SuccessModal from '@/components/SuccessModal';
-import { selectOrganizationId } from '@/slices/OrganizationIdSlice';
+import { selectOrganizationId, selectUser } from '@/slices/OrganizationIdSlice';
 import { customer, setUpSavingsProps } from '@/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { AxiosError, AxiosResponse } from 'axios';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ChangeEvent, ChangeEventHandler, Dispatch, FormEvent, SetStateAction, useEffect, useState } from 'react';
+import { ChangeEvent, Dispatch, FormEvent, SetStateAction, useEffect, useState } from 'react';
 import { IoMdSearch } from 'react-icons/io';
 import { useSelector } from 'react-redux';
 
@@ -26,8 +26,15 @@ import { useSelector } from 'react-redux';
 
 
 export default function Page(){
+  const user = useSelector(selectUser)
   const [successModal, setSuccessModal ] = useState(false)
   const [modalState, setModalState] = useState(false);
+  const { userPermissions, permissionsLoading, permissionsMap } = usePermissions();
+
+  if(user?.role === "staff" || user?.role === "customer" && !userPermissions.includes(permissionsMap["set-saving"])){
+    return <div className="text-center text-3xl text-white mt-12">You are unauthorized</div>;
+  }
+
   return (
     <div className="">
       <div className="mb-4 space-y-2 ">
@@ -99,6 +106,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
     totalexpectedSavings: '',
     collectionDate: ''
   });
+
 
 
   const [totalexpectedSavings, setTotalExpectedSavings] = useState("")
@@ -284,9 +292,8 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
     setFilteredAccountNumbers([])
   };
 
-
   
-
+  
   return (
     <div className="">
       
