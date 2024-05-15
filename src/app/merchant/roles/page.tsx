@@ -1,5 +1,6 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
+import { usePermissions } from "@/api/hooks/usePermissions";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import Modal, { ModalConfirmation } from "@/components/Modal";
 import PaginationBar from "@/components/Pagination";
@@ -23,6 +24,7 @@ import * as Yup from "yup";
 const Roles = () => {
   const PAGE_SIZE = 10;
   const organisationId = useSelector(selectOrganizationId);
+  const { userPermissions, permissionsMap } = usePermissions();
 
   const [isRoleCreated, setIsRoleCreated] = useState(false);
   const [isRoleEdited, setIsRoleEdited] = useState(false);
@@ -102,7 +104,6 @@ const Roles = () => {
     refetch();
   }, [isRoleCreated, isRoleEdited, refetch]);
 
-
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -142,17 +143,19 @@ const Roles = () => {
               </svg>
             </form>
           </span>
-          <CustomButton
-            type="button"
-            label="Create a Role"
-            style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-            onButtonClick={() => {
-              setModalState(true);
-              setModalToShow("create-role");
-              setModalContent("form");
-              setIsRoleCreated(false);
-            }}
-          />
+          {userPermissions.includes(permissionsMap["create-role"]) && (
+            <CustomButton
+              type="button"
+              label="Create a Role"
+              style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+              onButtonClick={() => {
+                setModalState(true);
+                setModalToShow("create-role");
+                setModalContent("form");
+                setIsRoleCreated(false);
+              }}
+            />
+          )}
         </div>
 
         <p className="mb-2 text-base font-medium text-white">
@@ -202,7 +205,7 @@ const Roles = () => {
                     </td>
 
                     <td className="flex gap-2 whitespace-nowrap px-6 py-4 text-sm">
-                      <Image
+                      {userPermissions.includes(permissionsMap["edit-role"]) && <Image
                         src="/pencil.svg"
                         alt="pencil"
                         width={20}
@@ -215,7 +218,7 @@ const Roles = () => {
                           setIsRoleEdited(false);
                         }}
                         className="cursor-pointer"
-                      />
+                      />}
                       <Image
                         src="/trash.svg"
                         alt="pencil"
@@ -349,7 +352,7 @@ const MutateRole = ({
     onError(error: AxiosError<any, any>) {
       setRoleCreated(false);
       setModalContent("status");
-      
+
       console.log(error.response?.data);
     },
   });
