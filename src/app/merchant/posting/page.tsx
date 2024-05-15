@@ -24,6 +24,7 @@ import {
 } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import { useRouter } from "next/navigation";
 import {
   ChangeEvent,
   Dispatch,
@@ -36,6 +37,7 @@ import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { useSelector } from "react-redux";
 
 const Posting = () => {
+  const router = useRouter();
   const PAGE_SIZE = 5;
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -54,6 +56,7 @@ const Posting = () => {
   const [postingResponse, setPostingResponse] = useState<postSavingsResponse>();
   const [customerAcctNumber, setCustomerAcctNumber] = useState("");
 
+ 
   interface CustomAxiosRequestConfig extends AxiosRequestConfig {
     startDate: string;
     endDate: string;
@@ -149,6 +152,10 @@ const Posting = () => {
       setCurrentPage(currentPage + 1);
     }
   };
+
+  if (user && user.role === "customer") {
+    router.push("/signin");
+  }
 
   return (
     <>
@@ -262,6 +269,9 @@ const Posting = () => {
               className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
             />
           </div>
+
+
+
           {(user?.role === "organisation" ||
             (user?.role === "staff" &&
               userPermissions.includes(permissionsMap["export-saving"]))) && (
