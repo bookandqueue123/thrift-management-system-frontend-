@@ -1,71 +1,31 @@
-'use client'
+"use client";
 import { useAuth } from "@/api/hooks/useAuth";
+import { usePermissions } from "@/api/hooks/usePermissions";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
-import Modal from "@/components/Modal";
-import { StatusIndicator } from "@/components/StatusIndicator";
+import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
-import CreateCommissionForm from "@/modules/superAdmin/CreateCommission";
-import ViewCommission from "@/modules/superAdmin/ViewCommission";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import { allSavingsResponse } from "@/types";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { SavingsInterface, allSavingsResponse, savings } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { useQuery } from "@tanstack/react-query";
-import { AxiosError } from "axios";
-import Link from "next/link";
+import { AxiosError, AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";
 import React, { ChangeEvent, SetStateAction, useEffect, useState } from "react";
 import { CiExport } from "react-icons/ci";
-import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { useSelector } from "react-redux";
 
-
-const mockData = [
-    {
-      "organisation": "ABC Corporation",
-      "organisationIdNo": "123456",
-      "Appliedlowest": 1000,
-      "AdminFeeLowest": 50,
-      "Apliedhigest": 5000,
-      "AdminFeeHiest": 100,
-      "AppliedServiceCharge": 0.5,
-      "serviceCharge": 20,
-      "comment": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-      "action": "View"
-    },
-    {
-      "organisation": "XYZ Corp",
-      "organisationIdNo": "789012",
-      "Appliedlowest": 2000,
-      "AdminFeeLowest": 70,
-      "Apliedhigest": 6000,
-      "AdminFeeHiest": 120,
-      "AppliedServiceCharge": 0.7,
-      "serviceCharge": 25,
-      "comment": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-      "action": "Edit"
-    },
-    {
-      "organisation": "Example Corp",
-      "organisationIdNo": "345678",
-      "Appliedlowest": 1500,
-      "AdminFeeLowest": 60,
-      "Apliedhigest": 5500,
-      "AdminFeeHiest": 110,
-      "AppliedServiceCharge": 0.6,
-      "serviceCharge": 22,
-      "comment": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-      "action": "Delete"
-    }
-  ]
-
-  
-interface monthOptionsProps{
-   name: string;
-    value: number; 
+interface monthOptionsProps {
+  name: string;
+  value: number;
 }
-  
-export default function Analytics(){
-  const monthOptions: monthOptionsProps[]  = [
+
+export default function Analytics() {
+  const {
+    userPermissions,
+
+    permissionsMap,
+  } = usePermissions();
+  const monthOptions: monthOptionsProps[] = [
     { name: "January", value: 1 },
     { name: "February", value: 2 },
     { name: "March", value: 3 },
@@ -77,222 +37,223 @@ export default function Analytics(){
     { name: "September", value: 9 },
     { name: "October", value: 10 },
     { name: "November", value: 11 },
-    { name: "December", value: 12 }
+    { name: "December", value: 12 },
   ];
-  const yearsOption: monthOptionsProps[]  = [
+  const yearsOption: monthOptionsProps[] = [
     { name: "2022", value: 2022 },
     { name: "2023", value: 2023 },
     { name: "2024", value: 2024 },
     { name: "2025", value: 2025 },
     { name: "2026", value: 2026 },
     { name: "2027", value: 2027 },
-    
   ];
   const PAGE_SIZE = 5;
-  
-  const organizationId = useSelector(selectOrganizationId)
-  // const organizationId = useSelector(selectOrganizationId)
+
+  const organizationId = useSelector(selectOrganizationId);
+  const user = useSelector(selectUser);
 
   const { client } = useAuth();
-  const [selectedYear, setSelectedYear] = useState<{ name: string; value: number }>(yearsOption[2]);
-  const [selectedMonth, setSelectedMonth] = useState<{ name: string; value: number }>(monthOptions[3]);
-  const [searchResult, setSearchResult] = useState("");
-  const [filteredTransactions, setFilteredTransactions] = useState<allSavingsResponse[]>([]);
+  const [selectedYear, setSelectedYear] = useState<{
+    name: string;
+    value: number;
+  }>(yearsOption[2]);
+  const [selectedMonth, setSelectedMonth] = useState<{
+    name: string;
+    value: number;
+  }>(monthOptions[3]);
+  // const [searchResult, setSearchResult] = useState("");
+  const [filteredTransactions, setFilteredTransactions] = useState<savings[]>(
+    [],
+  );
+  const [permissionError, setPermissionError] = useState("");
+
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const router = useRouter()
-    const [showModal, setShowModal] = useState(false)
-    const [openDropdown, setOpenDropdown] = useState<number>(0);
-    
-    const [filteredDates, setFilteredDates] = useState([]);
-   
-    const days = Array(31).fill(null).map((_, day) => day + 1); 
-  const toggleDropdown = (val: number) => {
-      if (openDropdown === val) {
-        setOpenDropdown(0);
-      } else {
-        setOpenDropdown(val);
-      }
-    };
+  const days = Array(31)
+    .fill(null)
+    .map((_, day) => day + 1);
 
-    const handleMonthChange = (event: { target: { value: any; }; }) => {
-      const selectedValue = event.target.value;
-      const selected = monthOptions.find(option => option.value.toString() === selectedValue);
-      if (selected) {
-        setSelectedMonth(selected);
-        
-      }
-    };
+  const handleMonthChange = (event: { target: { value: any } }) => {
+    const selectedValue = event.target.value;
+    const selected = monthOptions.find(
+      (option) => option.value.toString() === selectedValue,
+    );
+    if (selected) {
+      setSelectedMonth(selected);
+    }
+  };
 
-    const handleYearChange = (event: { target: { value: any; }; }) => {
-      const selectedValue = event.target.value;
-      const selected = yearsOption.find(option => option.value.toString() === selectedValue);
-      if (selected) {
-        setSelectedYear(selected);
-        
-      }
-    };
-    
-    const { data: allTransactions, isLoading: isLoadingAllTransactions } =
-    useQuery({
-      queryKey: ["allTransactions"],
-      staleTime: 5000,
-      queryFn: async () => {
-        return client
-          .get(`/api/saving/get-savings?organisation=${organizationId}`)
-          .then((response) => {
-         
-            setFilteredTransactions(response.data.savings)
-            
-            return response.data.savings;
-          })
-          .catch((error: AxiosError<any, any>) => {
-       
-            throw error;
-          });
-      },
-    });
+  const handleYearChange = (event: { target: { value: any } }) => {
+    const selectedValue = event.target.value;
+    const selected = yearsOption.find(
+      (option) => option.value.toString() === selectedValue,
+    );
+    if (selected) {
+      setSelectedYear(selected);
+    }
+  };
 
-    const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-      setSearchResult(e.target.value);
+  const { data: allTransactions } = useQuery({
+    queryKey: ["allTransactions"],
+    staleTime: 5000,
+    queryFn: async () => {
+      return client
+        .get(`/api/saving/get-savings?organisation=${organizationId}`)
+        .then((response: AxiosResponse<SavingsInterface, any>) => {
+          if (user?.role === "staff") {
+            let assignedUsersSavings = response.data.savings.filter((saving) =>
+              user.assignedUser.includes(saving.user._id),
+            );
+            setFilteredTransactions(assignedUsersSavings);
+          } else {
+            setFilteredTransactions(response.data.savings);
+          }
+          return response.data.savings;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          if (error.response?.data.message.includes("unauthorized")) {
+            setPermissionError(error.response?.data.message);
+          }
+          throw error;
+        });
+    },
+  });
 
-  
-      if (allTransactions) {
-        const filtered = allTransactions.filter((item: {
-          user: any; accountNumber: any; 
-}) =>
-          String(item.user.accountNumber).includes(String(e.target.value)),
-        );
-  
-        // Update the filtered data state
-        setFilteredTransactions(filtered);
-      }
-    };
- 
-    
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    if (allTransactions) {
+      const filtered = allTransactions.filter((item: savings) =>
+        String(item.user.accountNumber).includes(String(e.target.value)),
+      );
+      setFilteredTransactions(filtered);
+    }
+  };
 
-    const handleFromDateChange = (event: {
-      target: { value: SetStateAction<string> };
-    }) => {
-      setFromDate(event.target.value);
-    };
-  
-    const handleToDateChange = (event: {
-      target: { value: SetStateAction<string> };
-    }) => {
-      setToDate(event.target.value);
-  
-      handleDateFilter();
-    };
+  const handleFromDateChange = (event: {
+    target: { value: SetStateAction<string> };
+  }) => {
+    setFromDate(event.target.value);
+  };
 
-    const handleDateFilter = () => {
-      // Filter the data based on the date range
-      if (allTransactions) {
-        const filtered = allTransactions.filter((item: { createdAt: string | number | Date; }) => {
+  const handleToDateChange = (event: {
+    target: { value: SetStateAction<string> };
+  }) => {
+    setToDate(event.target.value);
+
+    handleDateFilter();
+  };
+
+  const handleDateFilter = () => {
+    // Filter the data based on the date range
+    if (allTransactions) {
+      const filtered = allTransactions.filter(
+        (item: { createdAt: string | number | Date }) => {
           const itemDate = new Date(item.createdAt); // Convert item date to Date object
           const startDateObj = new Date(fromDate);
           const endDateObj = new Date(toDate);
-  
+
           return itemDate >= startDateObj && itemDate <= endDateObj;
-        });
-  
-        // Update the filtered data state
-        setFilteredTransactions(filtered);
-       
-      }
-    };
-    
-    const paginatedTransactions = filteredTransactions?.slice(
-      (currentPage - 1) * PAGE_SIZE,
-      currentPage * PAGE_SIZE,
-    );
-    console.log(paginatedTransactions)
+        },
+      );
 
-
-    // useEffect(() => {
-    //   // Filter dates for April (target month: 4)
-    //   const aprilDates = filteredDates(paginatedTransactions.map(tra), 4);
-    //   setFilteredDates(aprilDates);
-    // }, []);
-  
-    let totalPages = 0;
-    if (filteredTransactions) {
-      totalPages = Math.ceil(filteredTransactions.length / PAGE_SIZE);
+      // Update the filtered data state
+      setFilteredTransactions(filtered);
     }
+  };
 
-    const goToPreviousPage = () => {
-      if (currentPage > 1) {
-        setCurrentPage(currentPage - 1);
-      }
-    };
-  
-    const goToNextPage = () => {
-      if (currentPage < totalPages) {
-        setCurrentPage(currentPage + 1);
-      }
-    };
-  
-  
+  const paginatedTransactions = filteredTransactions?.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+  console.log(paginatedTransactions);
 
-    const month = "January";
-    const daysInMonth = Array.from({ length: 31 }, (_, i) => `${i + 1}`);
-  
-    // Generate headers including the month and its days
-    const headers = ["Transaction ID", ...daysInMonth.map(day => `${month} ${day}`), "Date"];
-  
-  
-    
-    
-    function filterDatesWithMonthAndDay(dates: any[], year: number, month: number, day: number) {
-      return dates.some(dateString => {
-        const date = new Date(dateString);
-        return date.getFullYear() === year && date.getMonth() + 1 === month && date.getDate() === day;
-      });
-   }
-  
-  
-    return(
-        <div>
-        
+  // useEffect(() => {
+  //   // Filter dates for April (target month: 4)
+  //   const aprilDates = filteredDates(paginatedTransactions.map(tra), 4);
+  //   setFilteredDates(aprilDates);
+  // }, []);
 
-           
-           <div className="mb-4 space-y-2">
-                <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
-                 General Report
-                </p>
-            </div>
+  let totalPages = 0;
+  if (filteredTransactions) {
+    totalPages = Math.ceil(filteredTransactions.length / PAGE_SIZE);
+  }
 
-            <section>
+  // const goToPreviousPage = () => {
+  //   if (currentPage > 1) {
+  //     setCurrentPage(currentPage - 1);
+  //   }
+  // };
+
+  // const goToNextPage = () => {
+  //   if (currentPage < totalPages) {
+  //     setCurrentPage(currentPage + 1);
+  //   }
+  // };
+
+  const month = "January";
+  const daysInMonth = Array.from({ length: 31 }, (_, i) => `${i + 1}`);
+
+  // Generate headers including the month and its days
+  const headers = [
+    "Transaction ID",
+    ...daysInMonth.map((day) => `${month} ${day}`),
+    "Date",
+  ];
+
+  // function filterDatesWithMonthAndDay(
+  //   dates: any[],
+  //   year: number,
+  //   month: number,
+  //   day: number,
+  // ) {
+  //   return dates.some((dateString) => {
+  //     const date = new Date(dateString);
+  //     return (
+  //       date.getFullYear() === year &&
+  //       date.getMonth() + 1 === month &&
+  //       date.getDate() === day
+  //     );
+  //   });
+  // }
+
+  return (
+    <div>
+      <div className="mb-4 space-y-2">
+        <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
+          General Report
+        </p>
+      </div>
+
+      <section>
         <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <span className="flex items-center gap-3">
             <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
-            <input
-             onChange={handleSearch}
-              type="search"
-              placeholder="Search"
-              className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
-            />
-            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-              <circle
-                cx="8.60996"
-                cy="8.10312"
-                r="7.10312"
-                stroke="#EAEAFF"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <input
+                onChange={handleSearch}
+                type="search"
+                placeholder="Search"
+                className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
               />
-              <path
-                d="M13.4121 13.4121L16.9997 16.9997"
-                stroke="#EAEAFF"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </form>
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                <circle
+                  cx="8.60996"
+                  cy="8.10312"
+                  r="7.10312"
+                  stroke="#EAEAFF"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M13.4121 13.4121L16.9997 16.9997"
+                  stroke="#EAEAFF"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </form>
             <FilterDropdown
               options={[
                 "Timestamp",
@@ -305,226 +266,189 @@ export default function Analytics(){
               ]}
             />
           </span>
-          
         </div>
 
-        <div className="md:flex justify-between my-8">
-          <div className="md:flex items-center">
-          <div className="flex items-center mb-2">
-              <p className="mr-2 font-lg text-white">Select Year:</p>
-              <select className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" id="monthSelect" value={selectedYear.value} onChange={handleYearChange}>
-              {yearsOption.map(option => (
-                <option key={option.value} value={option.value}>{option.name}</option>
-              ))} 
-              </select>
-            </div>
-          
-            {/* <p className="mr-2 font-lg text-white">Select range from:</p>
-            <input
-              type="date"
-              value={fromDate}
-                onChange={handleFromDateChange}
-              className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-            /> */}
-
-
-            {/* <p className="mx-2 text-white">to</p> */}
-            
-            <div className="flex items-center mb-2 md:ml-2">
-              <p className="mr-2 font-lg text-white">Select Month:</p>
-              <select className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500" id="monthSelect" value={selectedMonth.value} onChange={handleMonthChange}>
-              {monthOptions.map(option => (
-                <option key={option.value} value={option.value}>{option.name}</option>
-              ))} 
-              </select>
-            </div>
-            {/* <input
-              type="date"
-              value={toDate}
-               onChange={handleToDateChange}
-              className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-            /> */}
-            </div>
-              <div className="flex mt-4">
-                <button className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
-                <button className="px-4 py-2 text-white rounded-md border-none bg-transparent relative">
-                  
-                  <u>Export as Excel</u>
-                </button>
-              </div>
-          </div>
-          
-        
-
-          <div className="mb-4">
-        <p className="text-white text-xl"></p>
-      </div>
-
-      <TransactionsTable
-        headers={[
-        "S/N",
-        "Name",
-        "Account No",
-        "General %",
-        "General Fee",
-        "Applied %",
-        "Admin Fee",
-        "Service Charge",
-        "Applied Service Charge %",
-        
-        ...Array.from({ length: 31 }, (_, i) => i + 1).map(day => `${selectedMonth.name} ${day}`),
-        "Total",
-        "Total Amount Payable",
-        "Margin",
-        "Action"
-        ]}
-
-        content={paginatedTransactions.map((transaction, index) => (
-          
-          
-            <tr className="" key={index}>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  
-                  {index + 1}
-                 
-                </td>
-
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                 
-                  {transaction.user.firstName} {transaction.user.lastName} {transaction.user.groupName}
-                 
-                </td>
-
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                 
-                  {transaction.user.accountNumber || "---"}
-                 
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                 
-                  General %
-                 
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                 
-                  General fee
-                 
-                </td>
-
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {transaction.appliedPercentage}
-                
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                
-                 {AmountFormatter(transaction.adminFee)}
-                
-                    
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                
-                  {AmountFormatter(transaction.serviceCharge)}
-                
-                     
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {transaction.appliedServiceCharge}  
-                </td>
-                
-                {days.map((day) => (
-    <td key={day} className="whitespace-nowrap px-6 py-4 text-sm">
-        {transaction.calculatedPaidDays.some((paidDay: { datePaid: string | number | Date; }) => {
-            const date = new Date(paidDay.datePaid);
-            return date.getFullYear() === selectedYear.value && date.getMonth() + 1 === selectedMonth.value && date.getDate() === day;
-        }) 
-            ? AmountFormatter(transaction.calculatedPaidDays.find((paidDay: { datePaid: string | number | Date; }) => {
-                const date = new Date(paidDay.datePaid);
-                return date.getFullYear() === selectedYear.value && date.getMonth() + 1 === selectedMonth.value && date.getDate() === day;
-            }).amountPerDay)
-            : '---'
-        }
-    </td>
-))}
-
-
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                
-                  {transaction.totalAmountSaved}
-                 
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                
-                  {transaction.amountPayable}
-                 
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {transaction.adminMargin}
-                </td>
-            
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  
-                  Action
-                  
-                    
-                </td>
-               
-              
-
-               
-            </tr>
-           
-        ))}
-      />
-
-      < div className="flex justify-center items-center  space-x-2">
-            <button
-              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-              onClick={goToPreviousPage}
-            >
-              <MdKeyboardArrowLeft />
-            </button>
-
-            <button
-              className="p-2  text-blue-500 rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-              onClick={() => setCurrentPage(currentPage)}
-            >
-              {currentPage}
-            </button>
-
-            <button
-              className="p-2  rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-              onClick={() =>(setCurrentPage(currentPage + 1))}
-            >
-              {currentPage + 1}
-            </button>
-            <button
-              className="p-2  rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-              onClick={() =>(setCurrentPage(currentPage + 2))}
-            >
-              {currentPage + 2}
-            </button>
-
-            <button
-              className="p-2 border border-blue-500 rounded-md hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-              onClick={goToNextPage}
-            >
-              <MdKeyboardArrowRight />
-            </button> 
-
-              {/* <button
-                className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
-                onClick={() => dispatch(setCurrentPage(currentPage + 6))}
+        <div className="my-8 justify-between md:flex">
+          <div className="items-center md:flex">
+            <div className="mb-2 flex items-center">
+              <p className="font-lg mr-2 text-white">Select Year:</p>
+              <select
+                title="select a year"
+                className="w-48 appearance-none rounded-md border-0 border-gray-300 bg-[#F3F4F6] bg-dropdown-icon bg-[position:92%_center] bg-no-repeat px-4 py-2 focus:border-blue-500 focus:outline-none"
+                id="yearSelect"
+                value={selectedYear.value}
+                onChange={handleYearChange}
               >
-                {currentPage + 6}
-              </button> */}
+                {yearsOption.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                    
-         </div>
-      </section>
-
-     
+            <div className="mb-2 flex items-center md:ml-2">
+              <p className="font-lg mr-2 text-white">Select Month:</p>
+              <select
+                title="select a month"
+                className="w-48 appearance-none rounded-md border-0 border-gray-300 bg-[#F3F4F6] bg-dropdown-icon bg-[position:92%_center] bg-no-repeat px-4 py-2 focus:border-blue-500 focus:outline-none"
+                id="monthSelect"
+                value={selectedMonth.value}
+                onChange={handleMonthChange}
+              >
+                {monthOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {(user?.role === "organisation" ||
+            (user?.role === "staff" &&
+              userPermissions.includes(permissionsMap["export-saving"]))) && (
+            <div className="mt-4 flex">
+              <button className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite">
+                Export as CSV{" "}
+                <span className="ml-2 mt-1">
+                  <CiExport />
+                </span>
+              </button>
+              <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
+                <u>Export as Excel</u>
+              </button>
+            </div>
+          )}
         </div>
-    )
+
+        {/* <div className="mb-4">
+          <p className="text-xl text-white"></p>
+        </div> */}
+
+        <TransactionsTable
+          headers={[
+            "S/N",
+            "Name",
+            "Account No",
+            "General %",
+            "General Fee",
+            "Applied %",
+            "Admin Fee",
+            "Service Charge",
+            "Applied Service Charge %",
+
+            ...Array.from({ length: 31 }, (_, i) => i + 1).map(
+              (day) => `${selectedMonth.name} ${day}`,
+            ),
+            "Total",
+            "Total Amount Payable",
+            "Margin",
+            "Action",
+          ]}
+          content={
+            filteredTransactions?.length === 0 ? (
+              <tr>
+                <p className="relative left-[80%] text-center text-sm font-semibold text-ajo_offWhite md:left-[700%] ">
+                  {!permissionError
+                    ? "No Transactions yet"
+                    : permissionError + ", contact your admin for permissions"}
+                </p>
+              </tr>
+            ) : (
+              paginatedTransactions.map((transaction, index) => (
+                <tr className="" key={index}>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {index + 1}
+                  </td>
+
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {transaction.user.firstName} {transaction.user.lastName}{" "}
+                    {transaction.user.groupName}
+                  </td>
+
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {transaction.user.accountNumber || "---"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    General %
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    General fee
+                  </td>
+
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {transaction.appliedPercentage}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {AmountFormatter(transaction.adminFee)}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {AmountFormatter(transaction.serviceCharge)}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {transaction.appliedServiceCharge}
+                  </td>
+
+                  {days.map((day) => (
+                    <td
+                      key={day}
+                      className="whitespace-nowrap px-6 py-4 text-sm"
+                    >
+                      {transaction.calculatedPaidDays.some(
+                        (paidDay: { datePaid: string | number | Date }) => {
+                          const date = new Date(paidDay.datePaid);
+                          return (
+                            date.getFullYear() === selectedYear.value &&
+                            date.getMonth() + 1 === selectedMonth.value &&
+                            date.getDate() === day
+                          );
+                        },
+                      )
+                        ? AmountFormatter(
+                            transaction?.calculatedPaidDays?.find(
+                              (paidDay: {
+                                datePaid: string | number | Date;
+                              }) => {
+                                const date = new Date(paidDay.datePaid);
+                                return (
+                                  date.getFullYear() === selectedYear.value &&
+                                  date.getMonth() + 1 === selectedMonth.value &&
+                                  date.getDate() === day
+                                );
+                              },
+                            )?.amountPerDay ?? 0,
+                          )
+                        : "---"}
+                    </td>
+                  ))}
+
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {transaction.totalAmountSaved}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {transaction.amountPayable}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {transaction.adminMargin}
+                  </td>
+
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    Action
+                  </td>
+                </tr>
+              ))
+            )
+          }
+        />
+
+        <div className="flex justify-center">
+          <PaginationBar
+            setCurrentPage={setCurrentPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+          />
+        </div>
+      </section>
+    </div>
+  );
 }
-
-

@@ -5,12 +5,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Dispatch, ReactElement, SetStateAction, useState } from "react";
 import AvatarDropdown from "./Dropdowns";
+import { usePermissions } from "@/api/hooks/usePermissions";
+import { useSelector } from "react-redux";
+import { selectUser } from "@/slices/OrganizationIdSlice";
 
 const CustomerNavbar = () => {
   // const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
   const [DropdownMenuIsOpen, setDropdownMenuIsOpen] = useState(false);
 
-  const endpoints = ["dashboard", "make-payment", "withdrawals", "transactions"];
+  const endpoints = [
+    "dashboard",
+    "make-payment",
+    "withdrawals",
+    "transactions",
+  ];
   const { SignOut } = useAuth();
 
   return (
@@ -80,7 +88,7 @@ const CustomerNavbar = () => {
                     }
                     className={`rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}
                   >
-                    {route === 'make-payment' ? 'Make Payment' : route}
+                    {route === "make-payment" ? "Make Payment" : route}
                   </Link>
                 );
               })}
@@ -130,7 +138,8 @@ export const Sidebar = ({
   setShow: Dispatch<SetStateAction<boolean>>;
 }) => {
   const { SignOut } = useAuth();
-  const router = useRouter();
+  const { userPermissions, permissionsMap } = usePermissions();
+  const user = useSelector(selectUser);
 
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
   const [setupdropdownOpen, setSetupDropdownOpen] = useState(false);
@@ -150,10 +159,30 @@ export const Sidebar = ({
     "location",
     "history",
     "analytics",
-    "withdrawals",
-    "users",
-    "roles",
-  ];
+    user?.role === "organisation"
+      ? "withdrawals"
+      : user?.role === "staff" &&
+          (userPermissions.includes(permissionsMap["export-withdrawal"]) ||
+            userPermissions.includes(permissionsMap["view-withdrawals"]))
+        ? "withdrawals"
+        : "",
+    user?.role === "organisation"
+      ? "users"
+      : (user?.role === "staff" &&
+            (userPermissions.includes(permissionsMap["create-staff"]) ||
+              userPermissions.includes(permissionsMap["edit-user"]))) ||
+          userPermissions.includes(permissionsMap["view-users"])
+        ? "users"
+        : "",
+    user?.role === "organisation"
+      ? "roles"
+      : (user?.role === "staff" &&
+            (userPermissions.includes(permissionsMap["create-role"]) ||
+              userPermissions.includes(permissionsMap["edit-role"]))) ||
+          userPermissions.includes(permissionsMap["view-role"])
+        ? "roles"
+        : "",
+  ].filter(Boolean) as string[];
 
   const MenuBtn = ({
     icon,

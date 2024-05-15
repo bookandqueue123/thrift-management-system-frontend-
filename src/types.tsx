@@ -54,35 +54,6 @@ export type setSavingsResponse = {
   id: string;
 };
 
-// export type postSavingsResponse = {
-//   paymentMode: "cash" | "online";
-//   message: string;
-//   narrative: string;
-//   purposeName: string;
-//   amount: 50000;
-//   startDate: string;
-//   endDate: string;
-//   frequency: "daily";
-//   paidDays: [
-//     {
-//       datesPaid: string[];
-//       amount: 50000;
-//       dayOfpayment: string;
-//       _id: string;
-//     },
-//   ];
-//   user: string;
-//   isPaid: "unpaid" | "paid";
-//   _id: string;
-//   createdAt: string;
-//   updatedAt: string;
-//   __v: 0;
-//   savedDates: [];
-//   specificDates: string[];
-//   id: string;
-//   status: "failed" | "success" | undefined;
-// };
-
 export interface postSavingsResponse {
   status: "failed" | "success" | undefined;
   message: string;
@@ -435,6 +406,7 @@ export interface User {
   photo: string;
   popularMarket: string;
   state: string;
+  groupName: string;
 }
 
 export interface CountryAndStateProps {

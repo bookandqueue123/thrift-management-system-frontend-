@@ -1,5 +1,6 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
+import { usePermissions } from "@/api/hooks/usePermissions";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import Modal, { ModalConfirmation } from "@/components/Modal";
 import PaginationBar from "@/components/Pagination";
@@ -7,6 +8,7 @@ import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import {
   selectOrganizationId,
+  selectUser,
   selectUserId,
 } from "@/slices/OrganizationIdSlice";
 import {
@@ -33,6 +35,7 @@ import * as Yup from "yup";
 const Users = () => {
   const PAGE_SIZE = 5;
   const organisationId = useSelector(selectOrganizationId);
+  const { userPermissions, permissionsMap } = usePermissions();
 
   const [isUserCreated, setIsUserCreated] = useState(false);
   const [isUserEdited, setIsUserEdited] = useState(false);
@@ -42,10 +45,11 @@ const Users = () => {
   const [mutationResponse, setMutationResponse] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  // const [fromDate, setFromDate] = useState("");
+  // const [toDate, setToDate] = useState("");
 
   const { client } = useAuth();
+  const user = useSelector(selectUser);
 
   const [modalState, setModalState] = useState(false);
   const [modalToShow, setModalToShow] = useState<
@@ -209,17 +213,21 @@ const Users = () => {
               </svg>
             </form>
           </span>
-          <CustomButton
-            type="button"
-            label="Create User"
-            style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-            onButtonClick={() => {
-              setModalState(true);
-              setModalToShow("create-user");
-              setModalContent("form");
-              setIsUserCreated(false);
-            }}
-          />
+          {(user?.role === "organisation" ||
+            (user?.role === "staff" &&
+              userPermissions.includes(permissionsMap["create-staff"]))) && (
+            <CustomButton
+              type="button"
+              label="Create User"
+              style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+              onButtonClick={() => {
+                setModalState(true);
+                setModalToShow("create-user");
+                setModalContent("form");
+                setIsUserCreated(false);
+              }}
+            />
+          )}
         </div>
 
         <p className="mb-2 text-base font-medium text-white">
@@ -306,21 +314,50 @@ const Users = () => {
                         }}
                         dropdownEnabled
                         dropdownContents={{
-                          labels: ["View User", "Edit User"],
+                          labels: [
+                            (user?.role === "organisation" ||
+                              (user?.role === "staff" &&
+                                userPermissions.includes(
+                                  permissionsMap["view-users"],
+                                ))) &&
+                              "View User",
+                            (user?.role === "organisation" ||
+                              (user?.role === "staff" &&
+                                userPermissions.includes(
+                                  permissionsMap["edit-user"],
+                                ))) &&
+                              "Edit User",
+                          ].filter(Boolean) as string[],
                           actions: [
                             () => {
-                              setModalState(true);
-                              setModalToShow("view-user");
-                              setUserToBeEdited(user._id);
-                              setIsUserEdited(false);
+                              if (
+                                user?.role === "organisation" ||
+                                (user?.role === "staff" &&
+                                  userPermissions.includes(
+                                    permissionsMap["view-users"],
+                                  ))
+                              ) {
+                                setModalState(true);
+                                setModalToShow("view-user");
+                                setUserToBeEdited(user._id);
+                                setIsUserEdited(false);
 
-                              console.log(user._id);
+                                console.log(user._id);
+                              }
                             },
                             () => {
-                              setModalToShow("edit-user");
-                              setModalState(true);
-                              setUserToBeEdited(user._id);
-                              setIsUserEdited(false);
+                              if (
+                                user?.role === "organisation" ||
+                                (user?.role === "staff" &&
+                                  userPermissions.includes(
+                                    permissionsMap["edit-user"],
+                                  ))
+                              ) {
+                                setModalToShow("edit-user");
+                                setModalState(true);
+                                setUserToBeEdited(user._id);
+                                setIsUserEdited(false);
+                              }
                             },
                           ],
                         }}
@@ -459,7 +496,7 @@ const MutateUser = ({
     },
   });
 
-  console.log(allRoles)
+  console.log(allRoles);
   const { mutate: createUser, isPending: isCreatingRole } = useMutation({
     mutationFn: async (values: mutateUserProps) => {
       console.log("role created");

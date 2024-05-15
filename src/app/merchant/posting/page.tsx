@@ -42,6 +42,7 @@ const Posting = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const organizationId = useSelector(selectOrganizationId);
+  const user = useSelector(selectUser)
 
   const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
@@ -246,22 +247,30 @@ const Posting = () => {
         </div>
         <div className="my-8 justify-between md:flex">
           <div className="flex items-center">
-            <p className="font-lg mr-2 text-white">Select range from:</p>
+            <label htmlFor="from" className="font-lg mr-2 text-white">
+              Select range from:
+            </label>
             <input
+              id="from"
               type="date"
               value={fromDate}
               onChange={handleFromDateChange}
               className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
             />
 
-            <p className="mx-2 text-white">to</p>
+            <label htmlFor="to" className="mx-2 text-white">
+              to
+            </label>
             <input
+              id="to"
               type="date"
               value={toDate}
               onChange={handleToDateChange}
               className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
             />
           </div>
+
+
 
           {(user?.role === "organisation" ||
             (user?.role === "staff" &&
