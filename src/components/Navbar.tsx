@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Dispatch, ReactElement, SetStateAction, useState } from "react";
 import AvatarDropdown from "./Dropdowns";
+import { usePermissions } from "@/api/hooks/usePermissions";
 
 const CustomerNavbar = () => {
   // const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
@@ -130,6 +131,7 @@ export const Sidebar = ({
   setShow: Dispatch<SetStateAction<boolean>>;
 }) => {
   const { SignOut } = useAuth();
+  const {userPermissions, permissionsMap} = usePermissions()
   const router = useRouter();
 
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
@@ -150,10 +152,16 @@ export const Sidebar = ({
     "location",
     "history",
     "analytics",
-    "withdrawals",
-    "users",
-    "roles",
-  ];
+    userPermissions.includes(
+      permissionsMap["export-withdrawal" || "view-withdrawals"],
+    ) && "withdrawals",
+    userPermissions.includes(
+      permissionsMap["create-staff" || "edit-user" || "view-users"],
+    ) && "users",
+    userPermissions.includes(
+      permissionsMap["create-role" || "edit-role" || "view-role"],
+    ) && "roles",
+  ].filter(Boolean) as string[];
 
   const MenuBtn = ({
     icon,
