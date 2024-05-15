@@ -5,11 +5,12 @@ import { useMutation } from '@tanstack/react-query';
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction, useState } from 'react';
 import { AxiosError, AxiosResponse } from 'axios';
 import { useSelector } from 'react-redux';
-import { selectOrganizationId } from '@/slices/OrganizationIdSlice';
+import { selectOrganizationId, selectUser } from '@/slices/OrganizationIdSlice';
 import SuccessModal from '@/components/SuccessModal';
 import ErrorModal from '@/components/ErrorModal';
 import { CustomButton } from '@/components/Buttons';
 import Image from 'next/image';
+import { usePermissions } from '@/api/hooks/usePermissions';
 interface setUpSavingsProps{
   accountType: string,
     percentageBased: string,
@@ -28,7 +29,13 @@ interface setUpSavingsProps{
 export default function Page(){
   const [successModal, setSuccessModal ] = useState(false)
   const [modalState, setModalState] = useState(false);
-
+  const user = useSelector(selectUser)
+  const { userPermissions, permissionsLoading, permissionsMap } =
+   usePermissions();
+ 
+   if(user?.role === "staff" || user?.role === "customer" && !userPermissions.includes(permissionsMap["set-saving"])){
+     return <div className="text-center text-3xl text-white mt-12">You are unauthorized</div>;
+   }
   return (
     <div className="">
 

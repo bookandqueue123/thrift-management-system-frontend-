@@ -4,7 +4,7 @@ import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton } from "@/components/Buttons";
 import ErrorModal from "@/components/ErrorModal";
 import SuccessModal from "@/components/SuccessModal";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -14,8 +14,15 @@ import { useSelector } from "react-redux";
 import { AxiosError, AxiosResponse } from 'axios';
 import { allSavingsResponse, customer, setUpSavingsProps } from "@/types";
 import { extractDate } from "@/utils/TimeStampFormatter";
+import { usePermissions } from "@/api/hooks/usePermissions";
 export default function UpdateSavingsSetup(){
     const [modalState, setModalState] = useState(false);
+    const user = useSelector(selectUser)
+    const { userPermissions, permissionsLoading, permissionsMap } = usePermissions();
+
+    if(user?.role === "staff" || user?.role === "customer" && !userPermissions.includes(permissionsMap["set-saving"])){
+      return <div className="text-center text-3xl text-white mt-12">You are unauthorized</div>;
+    }
     return(
         <div className="">
 
@@ -45,7 +52,7 @@ export default function UpdateSavingsSetup(){
        
         <CustomButton
           type="button"
-          label="Savings SetUp"
+          label="Update Savings SetUp"
           style="rounded-md bg-indigo-800 py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
           onButtonClick={() => setModalState(true)}
         /></div>
@@ -62,6 +69,7 @@ export default function UpdateSavingsSetup(){
 
 const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>>}) => {
     const { client } = useAuth();
+    const user = useSelector(selectUser)
     const organisationId = useSelector(selectOrganizationId);
     const router = useRouter()
     const [showModal, setShowModal] = useState(false)
@@ -327,7 +335,6 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
       
    }
 
-    
   
     return (
       <div className="">
