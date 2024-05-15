@@ -201,7 +201,7 @@ const Posting = () => {
             />
           </span>
 
-          {userPermissions.includes(permissionsMap["export-saving"]) && (
+          {userPermissions.includes(permissionsMap["post-saving"]) && (
             <CustomButton
               type="button"
               label="Post Payment"
