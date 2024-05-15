@@ -56,7 +56,7 @@ const Posting = () => {
   const [postingResponse, setPostingResponse] = useState<postSavingsResponse>();
   const [customerAcctNumber, setCustomerAcctNumber] = useState("");
 
-  const user = useSelector(selectUser);
+ 
   interface CustomAxiosRequestConfig extends AxiosRequestConfig {
     startDate: string;
     endDate: string;
