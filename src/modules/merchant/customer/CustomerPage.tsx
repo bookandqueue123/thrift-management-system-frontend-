@@ -8,7 +8,7 @@ import PaginationBar from "@/components/Pagination";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 import {
   CustomerSignUpProps,
   FormErrors,
@@ -94,8 +94,9 @@ const Customers = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const { client } = useAuth();
-  const router = useRouter();
-  const pathname = usePathname();
+  // const router = useRouter();
+  // const pathname = usePathname();
+  const user = useSelector(selectUser)
 
   const [modalState, setModalState] = useState(false);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
