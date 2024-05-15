@@ -5,7 +5,7 @@ import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import Modal, { ModalConfirmation } from "@/components/Modal";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 import { createRoleProps, permissionObject, roleResponse } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
@@ -34,6 +34,7 @@ const Roles = () => {
   const [toDate, setToDate] = useState("");
 
   const { client } = useAuth();
+  const user = useSelector(selectUser);
 
   const [modalState, setModalState] = useState(false);
   const [modalToShow, setModalToShow] = useState<
@@ -143,7 +144,9 @@ const Roles = () => {
               </svg>
             </form>
           </span>
-          {userPermissions.includes(permissionsMap["create-role"]) && (
+          {(user?.role === "organisation" ||
+            (user?.role === "staff" &&
+              userPermissions.includes(permissionsMap["create-role"]))) && (
             <CustomButton
               type="button"
               label="Create a Role"
@@ -205,20 +208,26 @@ const Roles = () => {
                     </td>
 
                     <td className="flex gap-2 whitespace-nowrap px-6 py-4 text-sm">
-                      {userPermissions.includes(permissionsMap["edit-role"]) && <Image
-                        src="/pencil.svg"
-                        alt="pencil"
-                        width={20}
-                        height={20}
-                        onClick={() => {
-                          setModalToShow("edit-role");
-                          setModalState(true);
-                          setRoleToBeEdited(role._id);
-                          setModalContent("form");
-                          setIsRoleEdited(false);
-                        }}
-                        className="cursor-pointer"
-                      />}
+                      {(user?.role === "organisation" ||
+                        (user?.role === "staff" &&
+                          userPermissions.includes(
+                            permissionsMap["edit-role"],
+                          ))) && (
+                        <Image
+                          src="/pencil.svg"
+                          alt="pencil"
+                          width={20}
+                          height={20}
+                          onClick={() => {
+                            setModalToShow("edit-role");
+                            setModalState(true);
+                            setRoleToBeEdited(role._id);
+                            setModalContent("form");
+                            setIsRoleEdited(false);
+                          }}
+                          className="cursor-pointer"
+                        />
+                      )}
                       <Image
                         src="/trash.svg"
                         alt="pencil"

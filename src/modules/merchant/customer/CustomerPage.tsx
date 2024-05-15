@@ -259,7 +259,9 @@ const Customers = () => {
               </svg>
             </form>
           </span>
-          {userPermissions.includes(permissionsMap["create-customer"]) && (
+          {(user?.role === "organisation" ||
+            (user?.role === "staff" &&
+              userPermissions.includes(permissionsMap["create-customer"]))) && (
             <CustomButton
               type="button"
               label="Create New Customer"
@@ -300,7 +302,9 @@ const Customers = () => {
                 className="rounded-lg bg-[rgba(255,255,255,0.1)] p-3 text-ajo_offWhite caret-ajo_offWhite dark:[color-scheme:dark]"
               />
             </div>
-            {userPermissions.includes(permissionsMap["export-saving"]) && (
+            {(user?.role === "organisation" ||
+              (user?.role === "staff" &&
+                userPermissions.includes(permissionsMap["export-saving"]))) && (
               <div className="mt-4 flex">
                 <button className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite">
                   Export as CSV{" "}
@@ -337,7 +341,10 @@ const Customers = () => {
               paginatedCustomers?.length === 0 ? (
                 <tr>
                   <p className="relative left-[80%] text-center text-sm font-semibold text-ajo_offWhite md:left-[250%] ">
-                    {!permissionError ? "No Customers yet" :  permissionError + ", contact your admin for permissions"}
+                    {!permissionError
+                      ? "No Customers yet"
+                      : permissionError +
+                        ", contact your admin for permissions"}
                   </p>
                 </tr>
               ) : (

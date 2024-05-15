@@ -174,9 +174,6 @@ export const Sidebar = ({
           userPermissions.includes(permissionsMap["view-users"])
         ? "users"
         : "",
-    userPermissions.includes(
-      permissionsMap["create-role" || "edit-role" || "view-role"],
-    ) && "roles",
     user?.role === "organisation"
       ? "roles"
       : (user?.role === "staff" &&

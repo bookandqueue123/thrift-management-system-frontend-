@@ -8,6 +8,7 @@ import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import {
   selectOrganizationId,
+  selectUser,
   selectUserId,
 } from "@/slices/OrganizationIdSlice";
 import {
@@ -48,6 +49,7 @@ const Users = () => {
   // const [toDate, setToDate] = useState("");
 
   const { client } = useAuth();
+  const user = useSelector(selectUser);
 
   const [modalState, setModalState] = useState(false);
   const [modalToShow, setModalToShow] = useState<
@@ -211,7 +213,9 @@ const Users = () => {
               </svg>
             </form>
           </span>
-          {userPermissions.includes(permissionsMap["create-staff"]) && (
+          {(user?.role === "organisation" ||
+            (user?.role === "staff" &&
+              userPermissions.includes(permissionsMap["create-staff"]))) && (
             <CustomButton
               type="button"
               label="Create User"
@@ -311,19 +315,27 @@ const Users = () => {
                         dropdownEnabled
                         dropdownContents={{
                           labels: [
-                            userPermissions.includes(
-                              permissionsMap["view-users"],
-                            ) && "View User",
-                            userPermissions.includes(
-                              permissionsMap["edit-user"],
-                            ) && "Edit User",
+                            (user?.role === "organisation" ||
+                              (user?.role === "staff" &&
+                                userPermissions.includes(
+                                  permissionsMap["view-users"],
+                                ))) &&
+                              "View User",
+                            (user?.role === "organisation" ||
+                              (user?.role === "staff" &&
+                                userPermissions.includes(
+                                  permissionsMap["edit-user"],
+                                ))) &&
+                              "Edit User",
                           ].filter(Boolean) as string[],
                           actions: [
                             () => {
                               if (
-                                userPermissions.includes(
-                                  permissionsMap["view-users"],
-                                )
+                                user?.role === "organisation" ||
+                                (user?.role === "staff" &&
+                                  userPermissions.includes(
+                                    permissionsMap["view-users"],
+                                  ))
                               ) {
                                 setModalState(true);
                                 setModalToShow("view-user");
@@ -335,9 +347,11 @@ const Users = () => {
                             },
                             () => {
                               if (
-                                userPermissions.includes(
-                                  permissionsMap["edit-user"],
-                                )
+                                user?.role === "organisation" ||
+                                (user?.role === "staff" &&
+                                  userPermissions.includes(
+                                    permissionsMap["edit-user"],
+                                  ))
                               ) {
                                 setModalToShow("edit-user");
                                 setModalState(true);

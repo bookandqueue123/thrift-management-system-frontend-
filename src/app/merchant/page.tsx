@@ -323,7 +323,11 @@ const MerchantDashboard = () => {
                   className="rounded-lg bg-[rgba(255,255,255,0.1)] p-3 text-ajo_offWhite caret-ajo_offWhite dark:[color-scheme:dark]"
                 />
               </div>
-              {userPermissions.includes(permissionsMap["export-saving"]) && (
+              {(user?.role === "organisation" ||
+                (user?.role === "staff" &&
+                  userPermissions.includes(
+                    permissionsMap["export-saving"],
+                  ))) && (
                 <div className="mt-4 flex">
                   <button className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite">
                     Export as CSV{" "}

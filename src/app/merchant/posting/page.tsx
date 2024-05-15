@@ -7,7 +7,7 @@ import { useAuth } from "@/api/hooks/useAuth";
 import { usePermissions } from "@/api/hooks/usePermissions";
 import DateRangeComponent from "@/components/DateArrayFile";
 import Modal from "@/components/Modal";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 import {
   FormErrors,
   FormValues,
@@ -40,6 +40,7 @@ const Posting = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const organizationId = useSelector(selectOrganizationId);
+  const user = useSelector(selectUser)
 
   const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
@@ -201,7 +202,9 @@ const Posting = () => {
             />
           </span>
 
-          {userPermissions.includes(permissionsMap["export-saving"]) && (
+          {(user?.role === "organisation" ||
+            (user?.role === "staff" &&
+              userPermissions.includes(permissionsMap["post-saving"]))) && (
             <CustomButton
               type="button"
               label="Post Payment"
@@ -237,23 +240,31 @@ const Posting = () => {
         </div>
         <div className="my-8 justify-between md:flex">
           <div className="flex items-center">
-            <p className="font-lg mr-2 text-white">Select range from:</p>
+            <label htmlFor="from" className="font-lg mr-2 text-white">
+              Select range from:
+            </label>
             <input
+              id="from"
               type="date"
               value={fromDate}
               onChange={handleFromDateChange}
               className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
             />
 
-            <p className="mx-2 text-white">to</p>
+            <label htmlFor="to" className="mx-2 text-white">
+              to
+            </label>
             <input
+              id="to"
               type="date"
               value={toDate}
               onChange={handleToDateChange}
               className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
             />
           </div>
-          {userPermissions.includes(permissionsMap["export-saving"]) && (
+          {(user?.role === "organisation" ||
+            (user?.role === "staff" &&
+              userPermissions.includes(permissionsMap["export-saving"]))) && (
             <div className="mt-4 flex">
               <button className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
                 Export as CSV{" "}
