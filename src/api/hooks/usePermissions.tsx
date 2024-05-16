@@ -49,7 +49,7 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
           const response: AxiosResponse<roleResponse[], any> = await client.get(
             `/api/role?organisation=${user?.role === "organisation" ? user._id : user.organisation}`,
           );
-
+          console.log("roles", response.data);
           const userPermissionsUpdate = user.roles.flatMap(
             (roleId) =>
               response.data.find((role) => role._id === roleId)?.permissions ||
