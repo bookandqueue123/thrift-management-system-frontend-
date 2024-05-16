@@ -83,8 +83,7 @@ const validationSchema = Yup.object().shape({
 const Customers = () => {
   const PAGE_SIZE = 5;
   const { userPermissions, permissionsMap } = usePermissions();
-    const [permissionError, setPermissionError] = useState("");
-
+  const [permissionError, setPermissionError] = useState("");
 
   const [isCustomerCreated, setIsCustomerCreated] = useState(false);
   const [searchResult, setSearchResult] = useState("");
@@ -96,7 +95,7 @@ const Customers = () => {
   const { client } = useAuth();
   // const router = useRouter();
   // const pathname = usePathname();
-  const user = useSelector(selectUser)
+  const user = useSelector(selectUser);
 
   const [modalState, setModalState] = useState(false);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
@@ -270,6 +269,7 @@ const Customers = () => {
               onButtonClick={() => {
                 setModalState(true);
                 setModalToShow("create-customer");
+                setModalContent("form");
               }}
             />
           )}
@@ -483,11 +483,12 @@ const Customers = () => {
                 />
               ) : modalToShow === "create-customer" ? (
                 <>
-                  {!isCustomerCreated ? (
+                  {modalContent === "form" ? (
                     <div className="px-[10%]">
                       <CreateCustomer
                         setCloseModal={setModalState}
                         setCustomerCreated={setIsCustomerCreated}
+                        setModalContent={setModalContent}
                       />
                     </div>
                   ) : (
@@ -717,7 +718,7 @@ export const SavingsSettings = ({
                 </p>
                 <p className="overflow-hidden text-nowrap text-sm font-semibold text-ajo_offWhite md:text-base">
                   Phone number:{" "}
-                  <span className="font-normal">
+                  <span className="font-normal ">
                     {customerInfo?.phoneNumber}
                   </span>
                 </p>
@@ -1845,9 +1846,11 @@ export const EditCustomer = ({
 const CreateCustomer = ({
   setCustomerCreated,
   setCloseModal,
+  setModalContent,
 }: {
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   setCustomerCreated: Dispatch<SetStateAction<boolean>>;
+  setModalContent: Dispatch<SetStateAction<"form" | "confirmation">>;
 }) => {
   const { client } = useAuth();
   const [selectedCountry, setSelectedCountry] = useState("");
@@ -1856,7 +1859,7 @@ const CreateCustomer = ({
   );
   const [selectedState, setSelectedState] = useState("");
   const organizationId = useSelector(selectOrganizationId);
-  console.log("ID:  " + organizationId);
+  // console.log("ID:  " + organizationId);
   const [selectedLGAArray, setSelectesLGAArray] = useState<string[]>([]);
 
   const initialValues: UpdateKycProps = {
@@ -1970,6 +1973,7 @@ const CreateCustomer = ({
       console.log(response);
       console.log("customer created successfully");
       setCustomerCreated(true);
+      setModalContent("confirmation");
       setTimeout(() => {
         setCloseModal(false);
       }, 5000);
@@ -1977,6 +1981,7 @@ const CreateCustomer = ({
 
     onError(error: AxiosError<any, any>) {
       setCustomerCreated(false);
+      setModalContent("confirmation");
       if (error.response?.status === 413) {
         console.log("Request Entity Too Large (413 Error)");
         console.log(
@@ -2153,7 +2158,7 @@ const CreateCustomer = ({
                 id="phoneNumber"
                 name="phoneNumber"
                 type="tel"
-                className="bg-transparent outline-none"
+                className="w-full bg-transparent outline-none"
               />
             </div>
             <ErrorMessage
@@ -2607,7 +2612,17 @@ const CreateCustomer = ({
             className="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
             disabled={isSubmitting}
           >
-            {isSubmitting || isPending ? "Creating Customer......" : "Submit"}
+            {isSubmitting || isPending ? (
+              <Image
+                src="/loadingSpinner.svg"
+                alt="loading spinner"
+                className="relative left-1/2"
+                width={25}
+                height={25}
+              />
+            ) : (
+              "Submit"
+            )}
           </button>
           <MyEffectComponent formikValues={values} />
         </Form>
