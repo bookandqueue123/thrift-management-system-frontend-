@@ -507,7 +507,11 @@ const MutateRole = ({
                         htmlFor={permission._id}
                         className="m-0 text-sm capitalize text-ajo_darkBlue"
                       >
-                        {permission.title.replaceAll("-", " ")}
+                        {permission.title === "create-staff"
+                          ? "Create User"
+                          : permission.title === "view-assigned-users"
+                            ? "View Assigned Customers"
+                            : permission.title.replaceAll("-", " ")}
                       </label>
                     </div>
                   );
