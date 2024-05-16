@@ -42,7 +42,7 @@ const Posting = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const organizationId = useSelector(selectOrganizationId);
-  const user = useSelector(selectUser)
+  const user = useSelector(selectUser);
 
   const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
@@ -56,7 +56,6 @@ const Posting = () => {
   const [postingResponse, setPostingResponse] = useState<postSavingsResponse>();
   const [customerAcctNumber, setCustomerAcctNumber] = useState("");
 
- 
   interface CustomAxiosRequestConfig extends AxiosRequestConfig {
     startDate: string;
     endDate: string;
@@ -270,8 +269,6 @@ const Posting = () => {
             />
           </div>
 
-
-
           {(user?.role === "organisation" ||
             (user?.role === "staff" &&
               userPermissions.includes(permissionsMap["export-saving"]))) && (
@@ -419,6 +416,7 @@ const PostingForm = ({
   setCustomerAcctNo: Dispatch<SetStateAction<string>>;
 }) => {
   const organizationId = useSelector(selectOrganizationId);
+  const user = useSelector(selectUser);
 
   const { client } = useAuth();
 
@@ -637,11 +635,11 @@ const PostingForm = ({
   }, [postDetails.todayPayment]);
 
   const {
-    data: groups,
+    data: users,
     isLoading: isUserLoading,
     isError,
   } = useQuery({
-    queryKey: ["allgroups", postDetails.postingType],
+    queryKey: ["postingUsers", postDetails.postingType],
     queryFn: async () => {
       return client
         .get(
@@ -649,7 +647,14 @@ const PostingForm = ({
           {},
         )
         .then((response) => {
-          return response.data;
+          if (user?.role === "staff") {
+            let assignedUsers = response.data.filter((staff: { assignedUser: string | string[]; }) =>
+              staff.assignedUser.includes(user._id),
+            );
+            return assignedUsers;
+          } else {
+            return response.data;
+          }
         })
         .catch((error) => {
           throw error;
@@ -856,17 +861,17 @@ const PostingForm = ({
               <option defaultValue={"Select a user"} className="hidden">
                 Select a user
               </option>
-              {groups &&
-                groups.length > 0 &&
-                groups?.map((group: customer) => {
+              {users &&
+                users.length > 0 &&
+                users?.map((user: customer) => {
                   return (
                     <>
                       <option
-                        key={group._id}
-                        value={group._id}
+                        key={user._id}
+                        value={user._id}
                         className="capitalize"
                       >
-                        {group.firstName} {group.lastName}
+                        {user.firstName} {user.lastName}
                       </option>
                     </>
                   );
@@ -900,9 +905,9 @@ const PostingForm = ({
               <option defaultValue={"Select a user"} className="hidden">
                 Select a group
               </option>
-              {groups?.map((option: any) => (
-                <option key={option._id} value={option._id}>
-                  {option.groupName} {option.lastName}
+              {users?.map((group: any) => (
+                <option key={group._id} value={group._id}>
+                  {group.groupName} {group.lastName}
                 </option>
               ))}
             </select>
