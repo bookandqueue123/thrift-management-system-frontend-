@@ -507,6 +507,8 @@ const MutateUser = ({
         organisation: organizationId,
         homeAddress: values.homeAddress,
         email: values.email,
+        photo: values.userPicture,
+        guarantorForm: values.guarantorForm,
         guarantor1: {
           fullName: values.guarantor1Name,
           homeAddress: values.guarantor1Address,
