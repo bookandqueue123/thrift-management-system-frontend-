@@ -91,6 +91,7 @@ const Customers = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [error, setError] = useState("");
 
   const { client } = useAuth();
   // const router = useRouter();
@@ -192,18 +193,6 @@ const Customers = () => {
   if (allCustomers) {
     totalPages = Math.ceil(allCustomers.length / PAGE_SIZE);
   }
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
 
   useEffect(() => {
     // Calling refetch to rerun the allCustomers query
@@ -489,6 +478,7 @@ const Customers = () => {
                         setCloseModal={setModalState}
                         setCustomerCreated={setIsCustomerCreated}
                         setModalContent={setModalContent}
+                        setError={setError}
                       />
                     </div>
                   ) : (
@@ -496,7 +486,7 @@ const Customers = () => {
                       successTitle="Customer creation successful"
                       errorTitle="Customer Creation Failed"
                       status={isCustomerCreated ? "success" : "failed"}
-                      responseMessage=""
+                      responseMessage={error}
                     />
                   )}
                 </>
@@ -1847,10 +1837,12 @@ const CreateCustomer = ({
   setCustomerCreated,
   setCloseModal,
   setModalContent,
+  setError,
 }: {
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   setCustomerCreated: Dispatch<SetStateAction<boolean>>;
   setModalContent: Dispatch<SetStateAction<"form" | "confirmation">>;
+  setError: Dispatch<SetStateAction<string>>;
 }) => {
   const { client } = useAuth();
   const [selectedCountry, setSelectedCountry] = useState("");
@@ -1982,6 +1974,7 @@ const CreateCustomer = ({
     onError(error: AxiosError<any, any>) {
       setCustomerCreated(false);
       setModalContent("confirmation");
+      setError(error.response?.data.message ?? error.message);
       if (error.response?.status === 413) {
         console.log("Request Entity Too Large (413 Error)");
         console.log(
