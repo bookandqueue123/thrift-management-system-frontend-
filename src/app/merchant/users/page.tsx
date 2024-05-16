@@ -441,6 +441,9 @@ const MutateUser = ({
   const { client } = useAuth();
   const organizationId = useSelector(selectOrganizationId);
   const userId = useSelector(selectUserId);
+  const [selectedOptions, setSelectedOptions] = useState<
+    (customer | undefined)[]
+  >([]);
   const initialValues: mutateUserProps = {
     firstName: "",
     lastName: "",
@@ -623,6 +626,24 @@ const MutateUser = ({
       setMutationResponse(error.response?.data.message);
     },
   });
+
+  const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    const selectedOption = allCustomers?.find(
+      (option) => option._id === selectedId,
+    );
+    if (
+      !selectedOptions.some((option) => option?._id === selectedOption?._id)
+    ) {
+      setSelectedOptions([...selectedOptions, selectedOption!]);
+    }
+  };
+
+  const handleRemoveOption = (index: number) => {
+    const updatedOptions = [...selectedOptions];
+    updatedOptions.splice(index, 1);
+    setSelectedOptions(updatedOptions);
+  };
 
   return (
     <Formik
@@ -1254,7 +1275,7 @@ const MutateUser = ({
                 >
                   Assign Customers
                 </label>
-                <Field
+                {/* <Field
                   as="select"
                   placeholder="make a selection"
                   id="assignedCustomers"
@@ -1277,9 +1298,71 @@ const MutateUser = ({
                     </option>
                   ))}
                   <option className="hidden"></option>
-                </Field>
+                </Field> */}
+                <div className="w-full">
+                  <Field
+                    as="select"
+                    title="Select an option"
+                    name="assignedCustomers"
+                    className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                      handleOptionChange(e);
+                      const assignedCustomers = values.assignedCustomers;
+
+                      if (!assignedCustomers.includes(e.target.value)) {
+                        const updatedAssignedCustomers = [
+                          ...assignedCustomers,
+                          e.target.value,
+                        ];
+                        setFieldValue(
+                          "assignedCustomers",
+                          updatedAssignedCustomers,
+                        );
+                      }
+                    }}
+                  >
+                    <option value="hidden"></option>
+                    {allCustomers?.map((option) => (
+                      <option key={option._id} value={option._id}>
+                        {option.firstName} {option.lastName}
+                      </option>
+                    ))}
+                  </Field>
+
+                  <div className="space-x-1 space-y-2">
+                    {values.assignedCustomers.map((customerId, index) => {
+                      const option = allCustomers?.find(
+                        (user) => user._id === customerId,
+                      );
+                      return (
+                        <div key={index} className="mb-2 mr-2 inline-block">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleRemoveOption(index);
+                              const updatedCustomers =
+                                values.assignedCustomers.filter(
+                                  (id) => id !== customerId,
+                                );
+                              setFieldValue(
+                                "assignedCustomers",
+                                updatedCustomers,
+                              );
+                            }}
+                            className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
+                          >
+                            {option?.firstName} {option?.lastName}
+                            <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
+                              ×
+                            </span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
                 <ErrorMessage
-                  name="allCustomers"
+                  name="assignedCustomers"
                   component="div"
                   className="text-xs text-red-500"
                 />
