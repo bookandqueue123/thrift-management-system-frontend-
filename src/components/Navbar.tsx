@@ -158,7 +158,12 @@ export const Sidebar = ({
     "posting",
     "location",
     "history",
-    "analytics",
+    user?.role === "organisation"
+      ? "analytics"
+      : user?.role === "staff" &&
+          (userPermissions.includes(permissionsMap["view-reports"]))
+        ? "analytics"
+        : "",
     user?.role === "organisation"
       ? "withdrawals"
       : user?.role === "staff" &&

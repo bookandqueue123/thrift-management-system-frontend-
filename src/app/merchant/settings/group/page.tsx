@@ -23,8 +23,9 @@ import { AxiosError, AxiosResponse } from "axios";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useSelector } from "react-redux";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 import { usePathname, useRouter } from "next/navigation";
+import { usePermissions } from "@/api/hooks/usePermissions";
 
 const GroupSettings = () => {
   const [modalState, setModalState] = useState(false);
@@ -243,6 +244,8 @@ const CreateGroupForm = ({
   refetchAllGroups,
 }: iCreateGroupProps) => {
   const organizationId = useSelector(selectOrganizationId);
+  const user = useSelector(selectUser);
+  const {assignedCustomers} = usePermissions()
   const { client } = useAuth();
   const [selectedOptions, setSelectedOptions] = useState<
     (customer | undefined)[]
@@ -277,7 +280,13 @@ const CreateGroupForm = ({
       return client
         .get(`/api/user?organisation=${organizationId}&userType=individual`, {})
         .then((response: AxiosResponse<customer[], any>) => {
-          return response.data;
+          if (
+            user?.role === "staff"
+          ) {
+            return assignedCustomers;
+          } else {
+            return response.data;
+          }
         })
         .catch((error) => {
           throw error;

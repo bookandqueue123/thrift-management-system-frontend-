@@ -1,10 +1,11 @@
-import { selectUser } from "@/slices/OrganizationIdSlice";
+import { selectUser, selectUserId } from "@/slices/OrganizationIdSlice";
 import {
+  AssignedUser,
   PermissionsMap,
   PermissionsProviderProps,
+  User,
   permissionObject,
   permissionsState,
-  roleResponse,
 } from "@/types";
 import { AxiosResponse } from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -18,15 +19,36 @@ const PermissionsContext = createContext<permissionsState | undefined>(
 export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
   const { client } = useAuth();
   const user = useSelector(selectUser);
+  const userId = useSelector(selectUserId);
   const [permissionsMap, setPermissionsMap] = useState<{
     [key: string]: string;
   }>({});
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
   const [permissionsLoading, setPermissionsLoading] = useState<boolean>(true);
+  const [assignedCustomers, setAssignedCustomers] = useState<AssignedUser[]>(
+    [],
+  );
 
   useEffect(() => {
     setPermissionsLoading(true);
     if (user && user.role !== "customer") {
+      const fetchActiveUser = async () => {
+        try {
+          const response: AxiosResponse<User, any> = await client.get(
+            `api/user/${userId}`,
+          );
+          console.log("activeUser", response.data);
+          const userPermissionsUpdate = response.data.roles.flatMap((role) =>
+            role.permissions.map((permission) => permission._id),
+          );
+          setAssignedCustomers(response.data.assignedUser);
+          setUserPermissions(userPermissionsUpdate);
+          return response.data;
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
       const fetchPermissions = async () => {
         try {
           const response: AxiosResponse<permissionObject[], any> =
@@ -44,37 +66,27 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
         }
       };
 
-      const fetchRoles = async () => {
-        try {
-          const response: AxiosResponse<roleResponse[], any> = await client.get(
-            `/api/role?organisation=${user?.role === "organisation" ? user._id : user.organisation}`,
-          );
-          console.log("roles", response.data);
-          const userPermissionsUpdate = user.roles.flatMap(
-            (roleId) =>
-              response.data.find((role) => role._id === roleId)?.permissions ||
-              [],
-          );
-          setUserPermissions(userPermissionsUpdate);
-        } catch (error) {
-          console.error(error);
-        }
-      };
-
       const fetchData = async () => {
+        await fetchActiveUser();
         await fetchPermissions();
-        await fetchRoles();
+        // await fetchRoles();
         setPermissionsLoading(false);
       };
       fetchData();
     }
   }, [user]);
+  console.log("assignedCustomers", assignedCustomers);
   console.log("permissionMap", permissionsMap);
   console.log("userPermissions", userPermissions);
 
   return (
     <PermissionsContext.Provider
-      value={{ permissionsMap, permissionsLoading, userPermissions }}
+      value={{
+        permissionsMap,
+        permissionsLoading,
+        userPermissions,
+        assignedCustomers,
+      }}
     >
       {children}
     </PermissionsContext.Provider>

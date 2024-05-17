@@ -1,9 +1,10 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
+import { usePermissions } from "@/api/hooks/usePermissions";
 import { CustomButton } from "@/components/Buttons";
 import Modal from "@/components/Modal";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import { FormErrors, FormValues, customer } from "@/types";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { AssignedUser, FormErrors, FormValues, customer } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
 import Image from "next/image";
@@ -15,7 +16,7 @@ const Settings = () => {
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
     "form",
   );
-  
+
   return (
     <div className="">
       <div className="mb-4 space-y-2 ">
@@ -75,9 +76,11 @@ const SetUpSavingsForm = ({
   closeModal,
 }: SetUpSavingsProps) => {
   const organizationId = useSelector(selectOrganizationId);
+  const user = useSelector(selectUser);
+  const { assignedCustomers } = usePermissions();
 
   const { client } = useAuth();
-  const [selectedOptions, setSelectedOptions] = useState<customer[]>([]);
+  const [selectedOptions, setSelectedOptions] = useState<AssignedUser[]>([]);
   const [displayConfirmationModal, setDisplayConfirmationMedal] =
     useState(false);
   const [saveDetails, setSaveDetails] = useState({
@@ -132,12 +135,18 @@ const SetUpSavingsForm = ({
 
       return client
         .get(endpoint, {})
-        .then((response: AxiosResponse<customer[], any>) => {
-          
-          return response.data;
+        .then((response: AxiosResponse<AssignedUser[], any>) => {
+          if (
+            user?.role === "staff" &&
+            saveDetails.savingsType !== "named group"
+          ) {
+            return assignedCustomers;
+          } else {
+            console.log(response.data);
+            return response.data;
+          }
         })
         .catch((error) => {
-          
           throw error;
         });
     },
@@ -176,13 +185,11 @@ const SetUpSavingsForm = ({
     },
     onSuccess: (response) => {
       // console.log(response);
-      
+
       setContent("confirmation");
       setDisplayConfirmationMedal(true);
-     
     },
     onError: (error) => {
- 
       // setContent("confirmation")
       // setDisplayConfirmationMedal(true)
       console.error("Error creating user:", error);
@@ -225,7 +232,6 @@ const SetUpSavingsForm = ({
     value: string,
     savingType: "named group" | "nameless group",
   ) => {
-    
     switch (name) {
       case "purposeName":
         if (!value.trim()) return "Savings purpose is required";
@@ -346,7 +352,6 @@ const SetUpSavingsForm = ({
       console.log("Form is valid, submitting...");
       postNamedGroups();
     } else {
-      
       console.log("Form is invalid, showing errors...");
     }
 
@@ -400,6 +405,7 @@ const SetUpSavingsForm = ({
                       ...prev,
                       ["savingsType"]: "named group",
                     }));
+
                   }}
                   checked={saveDetails.savingsType === "named group"}
                   required
@@ -481,8 +487,8 @@ const SetUpSavingsForm = ({
                   <option className="hidden lowercase text-opacity-10">
                     Select a group
                   </option>
-                  {users?.map((option: customer) => (
-                    <option key={option._id} value={option._id}>
+                  {users?.map((option: AssignedUser) => (
+                    <option key={option._id} value={option._id} className="">
                       {option.groupName}
                     </option>
                   ))}
@@ -497,12 +503,6 @@ const SetUpSavingsForm = ({
           )}
 
           {saveDetails.savingsType === "nameless group" && (
-            // <MultiSelectDropdown
-            //         options={["Option 1", "Option 2", "Option 3"]}
-            //         label="Add Customers: "
-            //         placeholder="Choose customers"
-            //       />
-
             <div className="items-center gap-6 md:flex">
               <label
                 htmlFor="addCustomers"
@@ -530,11 +530,12 @@ const SetUpSavingsForm = ({
                     ))}
                   </select>
 
-                  {(isTouched.addCustomers || formErrors.addCustomers) && selectedIds.length === 0 && (
-                    <p className="mt-2 text-sm font-semibold text-red-600">
-                      {formErrors.addCustomers}
-                    </p>
-                  )}
+                  {(isTouched.addCustomers || formErrors.addCustomers) &&
+                    selectedIds.length === 0 && (
+                      <p className="mt-2 text-sm font-semibold text-red-600">
+                        {formErrors.addCustomers}
+                      </p>
+                    )}
                 </span>
 
                 <div className="space-x-1 space-y-2">

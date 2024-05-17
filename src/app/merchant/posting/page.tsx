@@ -35,6 +35,7 @@ import {
 import { CiExport } from "react-icons/ci";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { useSelector } from "react-redux";
+import PaginationBar from "@/components/Pagination";
 
 const Posting = () => {
   const router = useRouter();
@@ -360,42 +361,11 @@ const Posting = () => {
             ))}
           />
 
-          <div className="flex items-center justify-center  space-x-2">
-            <button
-              className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={goToPreviousPage}
-            >
-              <MdKeyboardArrowLeft />
-            </button>
-
-            <button
-              className="cursor-pointer  rounded-md p-2 text-blue-500 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={() => setCurrentPage(currentPage)}
-            >
-              {currentPage}
-            </button>
-
-            <button
-              className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={() => setCurrentPage(currentPage + 1)}
-            >
-              {currentPage + 1}
-            </button>
-            <button
-              className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={() => setCurrentPage(currentPage + 2)}
-            >
-              {currentPage + 2}
-            </button>
-
-            <button
-              className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={goToNextPage}
-            >
-              <MdKeyboardArrowRight />
-            </button>
-          </div>
-          {/* <PaginationBar apiResponse={DummyCustomers} /> */}
+          <PaginationBar
+            setCurrentPage={setCurrentPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+          />
         </div>
       </section>
     </>
@@ -417,6 +387,7 @@ const PostingForm = ({
 }) => {
   const organizationId = useSelector(selectOrganizationId);
   const user = useSelector(selectUser);
+  const { assignedCustomers } = usePermissions();
 
   const { client } = useAuth();
 
@@ -647,11 +618,8 @@ const PostingForm = ({
           {},
         )
         .then((response) => {
-          if (user?.role === "staff") {
-            let assignedUsers = response.data.filter((staff: { assignedUser: string | string[]; }) =>
-              staff.assignedUser.includes(user._id),
-            );
-            return assignedUsers;
+          if (user?.role === "staff" && postDetails.postingType === 'individual') {
+            return assignedCustomers;
           } else {
             return response.data;
           }
@@ -805,6 +773,10 @@ const PostingForm = ({
                     ...prev,
                     ["postingType"]: "individual",
                   }));
+                  setFormValues({
+                    ...formValues,
+                    ["groupId"]: "",
+                  });
                 }}
                 checked={postDetails.postingType === "individual"}
                 required
@@ -827,6 +799,10 @@ const PostingForm = ({
                     ...prev,
                     ["postingType"]: "group",
                   }));
+                  setFormValues({
+                    ...formValues,
+                    ["customerId"]: "",
+                  });
                 }}
                 required
                 checked={postDetails.postingType === "group"}

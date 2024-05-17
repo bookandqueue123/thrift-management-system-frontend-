@@ -365,15 +365,82 @@ export interface Organisation {
   photo?: string;
 }
 
+export interface Guarantor {
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  homeAddress: string;
+}
+
+export interface Role {
+  createdAt: string;
+  description: string;
+  name: string;
+  organisation: string;
+  permissions: Permission[];
+  updatedAt: string;
+  __v: number;
+  _id: string;
+}
+
+export interface Permission {
+  _id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface AssignedUser {
+  accountNumber: string;
+  assignedUser: AssignedUser[];
+  bvn: number;
+  city: string;
+  country: string;
+  createdAt: string;
+  email: string;
+  firstName: string;
+  groupMember: any[];
+  officeAddress1: string;
+  organisationName?: string;
+  homeAddress: string;
+  isArchieve: boolean;
+  isVerified: boolean;
+  kycEmailSent: boolean;
+  kycVerified: boolean;
+  lastName: string;
+  lga: string;
+  meansOfID: string;
+  meansOfIDPhoto: string;
+  nin: number;
+  nok: string;
+  nokPhone: string;
+  nokRelationship: string;
+  organisation: string;
+  organisations: any[];
+  otherName: string;
+  phoneNumber: string;
+  photo: string;
+  popularMarket: string;
+  role: string;
+  roles: any[];
+  savingIdentities: any[];
+  state: string;
+  updatedAt: string;
+  userType: string;
+  groupName: string;
+  __v: number;
+  _id: string;
+}
 export interface User {
   _id: string;
   firstName: string;
   lastName: string;
-  otherName: string;
+  otherName?: string;
   email: string;
   phoneNumber: string;
-  password: string;
-  accountNumber: string;
+  password?: string;
+  accountNumber?: string;
   userType: string;
   groupMember: any[];
   role: string;
@@ -384,30 +451,33 @@ export interface User {
   isVerified: boolean;
   savingIdentities: any[];
   organisation: string;
-  organisationName: string;
-  assignedUser: string[];
-  totalCustomer: number;
-  pendingPayout: number;
-  roles: string[];
+  organisationName?: string;
+  assignedUser: AssignedUser[];
+  totalCustomer?: number;
+  pendingPayout?: number;
+  roles: Role[];
   createdAt: string;
   updatedAt: string;
   __v: number;
-  bvn: number;
-  city: string;
-  country: string;
+  bvn?: number;
+  city?: string;
+  country?: string;
   homeAddress: string;
-  lga: string;
-  meansOfID: string;
-  meansOfIDPhoto: string;
-  nin: number;
-  nok: string;
-  nokPhone: string;
-  nokRelationship: string;
-  photo: string;
-  popularMarket: string;
-  state: string;
-  groupName: string;
+  lga?: string;
+  meansOfID?: string;
+  meansOfIDPhoto?: string;
+  nin?: number;
+  nok?: string;
+  nokPhone?: string;
+  nokRelationship?: string;
+  photo?: string;
+  popularMarket?: string;
+  state?: string;
+  groupName?: string;
+  guarantor1?: Guarantor;
+  guarantor2?: Guarantor;
 }
+
 
 export interface CountryAndStateProps {
   country: string;
@@ -568,7 +638,7 @@ export interface roleResponse {
   _id: string;
   name: string;
   description: string;
-  permissions: string[];
+  permissions: Permission[];
   organisation: string;
   createdAt: string;
   updatedAt: string;
@@ -615,7 +685,7 @@ export interface permissionsState {
   permissionsMap: { [key: string]: string };
   userPermissions: string[];
   permissionsLoading: boolean;
-  // setPermissionsLoading: boolean;
+  assignedCustomers: AssignedUser[]
 }
 
 export interface PermissionsProviderProps {

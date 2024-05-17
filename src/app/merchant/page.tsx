@@ -81,10 +81,13 @@ const MerchantDashboard = () => {
         return client
           .get(`/api/saving/get-savings?organisation=${organizationId}`)
           .then((response: AxiosResponse<SavingsInterface, any>) => {
-            console.log(response.data);
+            // console.log(response.data);
             if (user?.role === "staff") {
               let assignedUsersSavings = response.data.savings.filter(
-                (saving) => user.assignedUser.includes(saving.user._id),
+                (saving) =>
+                  user.assignedUser.find(
+                    (assignee) => assignee._id === saving.user._id,
+                  ),
               );
               setFilteredTransactions(assignedUsersSavings);
             } else {

@@ -191,11 +191,12 @@ const Roles = () => {
                       {role.description || "----"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm capitalize">
+                      
                       {allPermissions
                         ?.filter((permission) =>
                           role.permissions.some(
                             (eachPermission) =>
-                              eachPermission === permission._id,
+                              eachPermission._id === permission._id,
                           ),
                         )
                         .map((filteredPermission) => (
