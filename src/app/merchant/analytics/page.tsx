@@ -24,6 +24,7 @@ export default function Analytics() {
     userPermissions,
 
     permissionsMap,
+    assignedCustomers
   } = usePermissions();
   const monthOptions: monthOptionsProps[] = [
     { name: "January", value: 1 },
@@ -104,7 +105,9 @@ export default function Analytics() {
         .then((response: AxiosResponse<SavingsInterface, any>) => {
           if (user?.role === "staff") {
             let assignedUsersSavings = response.data.savings.filter((saving) =>
-              user.assignedUser.includes(saving.user._id),
+              assignedCustomers.find(
+                (assignee) => assignee._id === saving.user._id,
+              ),
             );
             setFilteredTransactions(assignedUsersSavings);
           } else {

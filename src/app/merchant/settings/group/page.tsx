@@ -17,7 +17,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useAuth } from "@/api/hooks/useAuth";
-import { customer, postSavingsResponse } from "@/types";
+import { AssignedUser, customer, postSavingsResponse } from "@/types";
 import { AxiosError, AxiosResponse } from "axios";
 
 import { Formik, Form, Field, ErrorMessage } from "formik";
@@ -248,7 +248,7 @@ const CreateGroupForm = ({
   const {assignedCustomers} = usePermissions()
   const { client } = useAuth();
   const [selectedOptions, setSelectedOptions] = useState<
-    (customer | undefined)[]
+    (AssignedUser | undefined)[]
   >([]);
   const [groupsChanged, setGroupsChanged] = useState(false);
   const [isTouched, setIsTouched] = useState(false);
@@ -279,7 +279,7 @@ const CreateGroupForm = ({
     queryFn: async () => {
       return client
         .get(`/api/user?organisation=${organizationId}&userType=individual`, {})
-        .then((response: AxiosResponse<customer[], any>) => {
+        .then((response: AxiosResponse<AssignedUser[], any>) => {
           if (
             user?.role === "staff"
           ) {

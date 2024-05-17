@@ -25,7 +25,7 @@ import Image from "next/image";
 const MerchantDashboard = () => {
   const PAGE_SIZE = 5;
   const { client } = useAuth();
-  const { userPermissions, permissionsLoading, permissionsMap } =
+  const { userPermissions, permissionsLoading, permissionsMap, assignedCustomers } =
     usePermissions();
   
   const [fromDate, setFromDate] = useState("");
@@ -85,7 +85,7 @@ const MerchantDashboard = () => {
             if (user?.role === "staff") {
               let assignedUsersSavings = response.data.savings.filter(
                 (saving) =>
-                  user.assignedUser.find(
+                  assignedCustomers.find(
                     (assignee) => assignee._id === saving.user._id,
                   ),
               );
