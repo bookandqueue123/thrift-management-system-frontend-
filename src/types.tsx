@@ -519,6 +519,21 @@ export interface UpdateMerchantKycProps {
   BankRecommendation: null;
   CourtAffidavit: null;
   CommunityRecommendation: null;
+  FormCacBn: null;
+  CertOfBusinessName: null;
+  percentOwnership: string;
+  contactPhoto: null;
+  cacNumber: string;
+  contactBvn: string;
+  contactNIN: string;
+  contactNationality: string;
+  OrgRole: string;
+  contactDOB: string;
+  contactEmail: string;
+  contactPhoneNumber: string;
+  contactFullName: string;
+  bankName: string;
+  acctNo: string;
 }
 
 type MyFile = {
