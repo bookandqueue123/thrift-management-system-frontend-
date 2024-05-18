@@ -4,6 +4,7 @@ import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
 import CustomerAction from "@/components/CustomerAction";
 import TransactionsTable from "@/components/Tables";
+import OrganisationAction from "@/modules/merchant/OrganisationAction";
 import { customer, getOrganizationProps } from "@/types";
 import { extractDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
@@ -181,7 +182,7 @@ export default function SuperAdminDashboard(){
             "Account Number",
             "email",
             // "Organisation ID",
-            "Total Number of Customers",
+            // "Total Number of Customers",
             "Registration Date",
             "Action"
             ]}
@@ -192,27 +193,27 @@ export default function SuperAdminDashboard(){
                     {index}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.organisationName}
+                    {organisation.organisationName || "---"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.accountNumber}
+                    {organisation.accountNumber || "---"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.email}
+                    {organisation.email || "---"}
                 </td>
                 {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {organisation._id}
                 </td> */}
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     --- customers
+                </td> */}
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {extractDate(organisation.createdAt) || "---"} 
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {extractDate(organisation.createdAt)} 
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                <CustomerAction
+                <OrganisationAction
                   index={index}
-                  customerId={organisation._id}
+                  organisationId={organisation._id}
                   />
                 </td>
             </tr>
@@ -245,25 +246,25 @@ export default function SuperAdminDashboard(){
         content={paginatedCustomers.map((customer, index) => (
             <tr className="" key={index}>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {customer.firstName} {customer.lastName}
+                    {customer.firstName || '---'} {customer.lastName || "---"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {extractDate(customer.createdAt)}
+                    {extractDate(customer.createdAt) || "---"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {customer.email}
+                    {customer.email || "---"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {customer.phoneNumber} 
+                    {customer.phoneNumber || "---"} 
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {customer.state}
+                    {customer.state || "---"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {customer.lga}
+                    {customer.lga || "---"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {customer.organisation}
+                    {customer.organisation || "---"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                 <CustomerAction

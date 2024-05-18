@@ -4,9 +4,10 @@ import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 // import DummyCustomers from "@/api/dummyCustomers.json";
 import { useAuth } from "@/api/hooks/useAuth";
+import { usePermissions } from "@/api/hooks/usePermissions";
 import DateRangeComponent from "@/components/DateArrayFile";
 import Modal from "@/components/Modal";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 import {
   FormErrors,
   FormValues,
@@ -23,6 +24,7 @@ import {
 } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import { useRouter } from "next/navigation";
 import {
   ChangeEvent,
   Dispatch,
@@ -33,12 +35,15 @@ import {
 import { CiExport } from "react-icons/ci";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { useSelector } from "react-redux";
+import PaginationBar from "@/components/Pagination";
 
 const Posting = () => {
+  const router = useRouter();
   const PAGE_SIZE = 5;
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const organizationId = useSelector(selectOrganizationId);
+  const user = useSelector(selectUser);
 
   const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
@@ -61,6 +66,10 @@ const Posting = () => {
     startDate: "",
     endDate: "",
   };
+
+  const { userPermissions, permissionsLoading, permissionsMap } =
+    usePermissions();
+
   const { data: allSavings, isLoading: isLoadingAllSavings } = useQuery({
     queryKey: ["allSavings"],
     staleTime: 5000,
@@ -144,6 +153,10 @@ const Posting = () => {
     }
   };
 
+  if (user && user.role === "customer") {
+    router.push("/signin");
+  }
+
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -195,15 +208,21 @@ const Posting = () => {
               ]}
             />
           </span>
-          <CustomButton
-            type="button"
-            label="Post Payment"
-            style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-            onButtonClick={() => {
-              setModalState(true);
-              setModalContent("form");
-            }}
-          />
+
+          {(user?.role === "organisation" ||
+            (user?.role === "staff" &&
+              userPermissions.includes(permissionsMap["post-saving"]))) && (
+            <CustomButton
+              type="button"
+              label="Post Payment"
+              style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+              onButtonClick={() => {
+                setModalState(true);
+                setModalContent("form");
+              }}
+            />
+          )}
+
           {modalState && (
             <Modal
               setModalState={setModalState}
@@ -228,33 +247,44 @@ const Posting = () => {
         </div>
         <div className="my-8 justify-between md:flex">
           <div className="flex items-center">
-            <p className="font-lg mr-2 text-white">Select range from:</p>
+            <label htmlFor="from" className="font-lg mr-2 text-white">
+              Select range from:
+            </label>
             <input
+              id="from"
               type="date"
               value={fromDate}
               onChange={handleFromDateChange}
               className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
             />
 
-            <p className="mx-2 text-white">to</p>
+            <label htmlFor="to" className="mx-2 text-white">
+              to
+            </label>
             <input
+              id="to"
               type="date"
               value={toDate}
               onChange={handleToDateChange}
               className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
             />
           </div>
-          <div className="mt-4 flex">
-            <button className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
-              Export as CSV{" "}
-              <span className="ml-2 mt-1">
-                <CiExport />
-              </span>
-            </button>
-            <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
-              <u>Export as Excel</u>
-            </button>
-          </div>
+
+          {(user?.role === "organisation" ||
+            (user?.role === "staff" &&
+              userPermissions.includes(permissionsMap["export-saving"]))) && (
+            <div className="mt-4 flex">
+              <button className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
+                Export as CSV{" "}
+                <span className="ml-2 mt-1">
+                  <CiExport />
+                </span>
+              </button>
+              <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
+                <u>Export as Excel</u>
+              </button>
+            </div>
+          )}
         </div>
 
         <div>
@@ -331,42 +361,11 @@ const Posting = () => {
             ))}
           />
 
-          <div className="flex items-center justify-center  space-x-2">
-            <button
-              className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={goToPreviousPage}
-            >
-              <MdKeyboardArrowLeft />
-            </button>
-
-            <button
-              className="cursor-pointer  rounded-md p-2 text-blue-500 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={() => setCurrentPage(currentPage)}
-            >
-              {currentPage}
-            </button>
-
-            <button
-              className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={() => setCurrentPage(currentPage + 1)}
-            >
-              {currentPage + 1}
-            </button>
-            <button
-              className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={() => setCurrentPage(currentPage + 2)}
-            >
-              {currentPage + 2}
-            </button>
-
-            <button
-              className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-              onClick={goToNextPage}
-            >
-              <MdKeyboardArrowRight />
-            </button>
-          </div>
-          {/* <PaginationBar apiResponse={DummyCustomers} /> */}
+          <PaginationBar
+            setCurrentPage={setCurrentPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+          />
         </div>
       </section>
     </>
@@ -387,8 +386,9 @@ const PostingForm = ({
   setCustomerAcctNo: Dispatch<SetStateAction<string>>;
 }) => {
   const organizationId = useSelector(selectOrganizationId);
-  
-  
+  const user = useSelector(selectUser);
+  const { assignedCustomers } = usePermissions();
+
   const { client } = useAuth();
 
   const [filteredSavingIds, setFilteredSavingIds] =
@@ -606,11 +606,11 @@ const PostingForm = ({
   }, [postDetails.todayPayment]);
 
   const {
-    data: groups,
+    data: users,
     isLoading: isUserLoading,
     isError,
   } = useQuery({
-    queryKey: ["allgroups", postDetails.postingType],
+    queryKey: ["postingUsers", postDetails.postingType],
     queryFn: async () => {
       return client
         .get(
@@ -618,7 +618,11 @@ const PostingForm = ({
           {},
         )
         .then((response) => {
-          return response.data;
+          if (user?.role === "staff" && postDetails.postingType === 'individual') {
+            return assignedCustomers;
+          } else {
+            return response.data;
+          }
         })
         .catch((error) => {
           throw error;
@@ -659,7 +663,7 @@ const PostingForm = ({
             ? singleDay
             : datesInRange;
 
-      console.log(dateValue)
+      console.log(dateValue);
       const endpoint =
         postDetails.postingType === "individual"
           ? `/api/saving/post-savings?userId=${postDetails.customerId}&savingId=${postDetails.savingId}`
@@ -678,7 +682,7 @@ const PostingForm = ({
     },
     onSuccess(response: AxiosResponse<postSavingsResponse, any>) {
       setPostingResponse(response.data);
-      console.log(response)
+      console.log(response);
       setPostingResponse(
         (prev) =>
           ({
@@ -769,6 +773,10 @@ const PostingForm = ({
                     ...prev,
                     ["postingType"]: "individual",
                   }));
+                  setFormValues({
+                    ...formValues,
+                    ["groupId"]: "",
+                  });
                 }}
                 checked={postDetails.postingType === "individual"}
                 required
@@ -791,6 +799,10 @@ const PostingForm = ({
                     ...prev,
                     ["postingType"]: "group",
                   }));
+                  setFormValues({
+                    ...formValues,
+                    ["customerId"]: "",
+                  });
                 }}
                 required
                 checked={postDetails.postingType === "group"}
@@ -825,17 +837,17 @@ const PostingForm = ({
               <option defaultValue={"Select a user"} className="hidden">
                 Select a user
               </option>
-              {groups &&
-                groups.length > 0 &&
-                groups?.map((group: customer) => {
+              {users &&
+                users.length > 0 &&
+                users?.map((user: customer) => {
                   return (
                     <>
                       <option
-                        key={group._id}
-                        value={group._id}
+                        key={user._id}
+                        value={user._id}
                         className="capitalize"
                       >
-                        {group.firstName} {group.lastName}
+                        {user.firstName} {user.lastName}
                       </option>
                     </>
                   );
@@ -869,9 +881,9 @@ const PostingForm = ({
               <option defaultValue={"Select a user"} className="hidden">
                 Select a group
               </option>
-              {groups?.map((option: any) => (
-                <option key={option._id} value={option._id}>
-                  {option.groupName} {option.lastName}
+              {users?.map((group: any) => (
+                <option key={group._id} value={group._id}>
+                  {group.groupName} {group.lastName}
                 </option>
               ))}
             </select>

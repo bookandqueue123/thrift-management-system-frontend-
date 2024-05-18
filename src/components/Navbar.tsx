@@ -1,9 +1,12 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
+import { usePermissions } from "@/api/hooks/usePermissions";
+import { selectUser } from "@/slices/OrganizationIdSlice";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Dispatch, ReactElement, SetStateAction, useState } from "react";
+import { useSelector } from "react-redux";
 import AvatarDropdown from "./Dropdowns";
 
 const CustomerNavbar = () => {
@@ -135,7 +138,8 @@ export const Sidebar = ({
   setShow: Dispatch<SetStateAction<boolean>>;
 }) => {
   const { SignOut } = useAuth();
-  const router = useRouter();
+  const { userPermissions, permissionsMap } = usePermissions();
+  const user = useSelector(selectUser);
 
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
   const [setupdropdownOpen, setSetupDropdownOpen] = useState(false);
@@ -154,11 +158,36 @@ export const Sidebar = ({
     "posting",
     "location",
     "history",
-    "analytics",
-    "withdrawals",
-    // "users",
-    // "roles",
-  ];
+    user?.role === "organisation"
+      ? "analytics"
+      : user?.role === "staff" &&
+          userPermissions.includes(permissionsMap["view-savings"])
+        ? "analytics"
+        : "",
+    user?.role === "organisation"
+      ? "withdrawals"
+      : user?.role === "staff" &&
+          (userPermissions.includes(permissionsMap["export-withdrawal"]) ||
+            userPermissions.includes(permissionsMap["view-withdrawals"]))
+        ? "withdrawals"
+        : "",
+    user?.role === "organisation"
+      ? "users"
+      : (user?.role === "staff" &&
+            (userPermissions.includes(permissionsMap["create-staff"]) ||
+              userPermissions.includes(permissionsMap["edit-user"]))) ||
+          userPermissions.includes(permissionsMap["view-users"])
+        ? "users"
+        : "",
+    user?.role === "organisation"
+      ? "roles"
+      : (user?.role === "staff" &&
+            (userPermissions.includes(permissionsMap["create-role"]) ||
+              userPermissions.includes(permissionsMap["edit-role"]))) ||
+          userPermissions.includes(permissionsMap["view-role"])
+        ? "roles"
+        : "",
+  ].filter(Boolean) as string[];
 
   const MenuBtn = ({
     icon,

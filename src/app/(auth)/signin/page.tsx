@@ -1,6 +1,5 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
-import { parseCookies, setCookie, destroyCookie } from "nookies";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { signInProps } from "@/types";
 import { useMutation } from "@tanstack/react-query";
@@ -8,14 +7,16 @@ import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { destroyCookie, parseCookies, setCookie } from "nookies";
 import { useEffect, useState } from "react";
 import * as Yup from "yup";
 
 import { setAuthData } from "@/slices/OrganizationIdSlice";
 import { useDispatch, useSelector } from "react-redux";
 
-import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { selectUser } from "@/slices/OrganizationIdSlice";
 import { decryptPassword, encryptPassword } from "@/utils/Encryptpassword";
+import Image from "next/image";
 
 const SignInForm = () => {
   const { client } = useAuth();
@@ -57,7 +58,6 @@ const SignInForm = () => {
     }
   }, []);
 
-
   const {
     mutate: UserSignIn,
     isPending,
@@ -65,7 +65,6 @@ const SignInForm = () => {
   } = useMutation({
     mutationKey: ["UserLogin"],
     mutationFn: async (values: signInProps) => {
-      
       return client.post(`/api/auth/login`, {
         emailOrPhoneNumber: values.email,
         password: values.password,
@@ -74,15 +73,16 @@ const SignInForm = () => {
 
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
-      console.log(response)
+      console.log(response);
       if (response.data.role === "customer") {
         if (user) {
           router.replace(`/customer`);
         }
-      } else if(response.data.role === "superadmin"){
-        router.replace("/superadmin")
-      } 
-      else if (response.data.role === "organisation") {
+      } else if (response.data.role === "superadmin") {
+        router.replace("/superadmin");
+      } else if (response.data.role === "staff") {
+        router.replace("/merchant");
+      } else if (response.data.role === "organisation") {
         if (response.data.kycVerified) {
           router.replace("/merchant");
         } else {
@@ -90,7 +90,7 @@ const SignInForm = () => {
         }
       }
 
-      if (response.data.role === "customer") {
+      if (response.data.role === "customer" || response.data.role === "staff") {
         dispatch(
           setAuthData({
             organizationId: response.data.organisation,
@@ -99,17 +99,7 @@ const SignInForm = () => {
             userId: response.data._id,
           }),
         );
-      }else if(response.data.role === "superadmin"){
-        dispatch(
-          setAuthData({
-            organizationId: response.data._id,
-            token: response.data.token,
-            user: response.data,
-            userId: response.data._id,
-          }),
-        );
-      }
-       else if (response.data.role === "organisation") {
+      } else {
         dispatch(
           setAuthData({
             organizationId: response.data._id,
@@ -145,26 +135,26 @@ const SignInForm = () => {
         password: Yup.string().required("Password is required"),
       })}
       onSubmit={(values, { setSubmitting }) => {
-        
-        const encryptedPassword = encryptPassword(values.password, secretKey);
-        if (rememberPassword) {
-          setCookie(null, "rememberedPassword", encryptedPassword, {
-            maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
-            path: "/signin",
-          });
-          setCookie(null, "rememberedEmail", values.email, {
-            maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
-            path: "/signin",
-          });
-        } else {
-          destroyCookie(null, "rememberedPassword", { path: "/signin" });
-          destroyCookie(null, "rememberedEmail", { path: "/signin" });
+        // const encryptedPassword = encryptPassword(values.password, secretKey);
+        // if (rememberPassword) {
+        //   setCookie(null, "rememberedPassword", encryptedPassword, {
+        //     maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
+        //     path: "/signin",
+        //   });
+        //   setCookie(null, "rememberedEmail", values.email, {
+        //     maxAge: 3 * 24 * 60 * 60, // Expires in 3 days
+        //     path: "/signin",
+        //   });
+        // } else {
+        //   destroyCookie(null, "rememberedPassword", { path: "/signin" });
+        //   destroyCookie(null, "rememberedEmail", { path: "/signin" });
 
-          // const cookies = parseCookies();
+        //   // const cookies = parseCookies();
 
-          // console.log("rememberedPassword: ", cookies.rememberedPassword);
-          // console.log("rememberedEmail: ", cookies.rememberedEmail);
-        }
+        //   // console.log("rememberedPassword: ", cookies.rememberedPassword);
+        //   // console.log("rememberedEmail: ", cookies.rememberedEmail);
+          //}
+
         UserSignIn(values);
         setTimeout(() => {
           setSubmitting(false);
@@ -252,7 +242,17 @@ const SignInForm = () => {
             className="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500 "
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Logging in..." : "Log in"}
+            {isSubmitting ? (
+              <Image
+                src="/loadingSpinner.svg"
+                alt="loading spinner"
+                className="relative left-1/2"
+                width={25}
+                height={25}
+              />
+            ) : (
+              "Log in"
+            )}
           </button>
 
           {/* Conditionally render SuccessToaster component */}

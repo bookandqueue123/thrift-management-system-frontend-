@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { StatusIndicator } from "./StatusIndicator";
-import Modal, { NoBackgroundModal } from "./Modal";
-import { EditCustomer, SavingsSettings, ViewCustomer } from "@/modules/merchant/customer/CustomerPage";
+import { StatusIndicator } from "@/components/StatusIndicator";
+import { NoBackgroundModal } from "@/components/Modal";
+import { ViewOrganisation } from "./ViewOrganisation";
+import { EditOrganisation } from "./EditOrganisation";
+//import { EditCustomer, SavingsSettings, ViewCustomer } from "@/modules/merchant/customer/CustomerPage";
 
 
 
-export interface CustomerActionProps{
+export interface OrganisationActionProps{
     index: number,
-    customerId: string
+    organisationId: string
 }
-export default function CustomerAction({index, customerId}: CustomerActionProps){
+export default function OrganisationAction({index, organisationId}: OrganisationActionProps){
     const [modalState, setModalState] = useState(false);
     const [modalContent, setModalContent] = useState<"form" | "confirmation">(
       "form",
@@ -42,8 +44,8 @@ export default function CustomerAction({index, customerId}: CustomerActionProps)
                 dropdownEnabled
                 dropdownContents={{
                     labels: [
-                    "View Customer",
-                    "Edit Customer",
+                    "View Organisations",
+                    "Edit Organisations",
                     "Savings Settings",
                     "Disable/Enable",
                     ],
@@ -52,20 +54,21 @@ export default function CustomerAction({index, customerId}: CustomerActionProps)
                         setModalState(true);
                         setModalContent("form");
                         setModalToShow("view");
-                        setCustomerToBeEdited(customerId);
+                        setCustomerToBeEdited(organisationId);
                         console.log("View Customer");
                     },
                     () => {
                         setModalToShow("edit");
                         setModalState(true);
                         setModalContent("form");
-                        setCustomerToBeEdited(customerId);
+
+                        setCustomerToBeEdited(organisationId);
                     },
                     () => {
                         setModalState(true);
                         setModalToShow("savings");
                         setModalContent("form");
-                        setCustomerToBeEdited(customerId);
+                        setCustomerToBeEdited(organisationId);
                     },
                     () => {
                         console.log("Disable/Enable");
@@ -93,30 +96,30 @@ export default function CustomerAction({index, customerId}: CustomerActionProps)
               }
             >
               {modalToShow === "view" ? (
-                <ViewCustomer
-                  customerId={customerToBeEdited}
-                  setContent={setModalContent}
-                  content={
-                    modalContent === "confirmation" ? "confirmation" : "form"
-                  }
-                  closeModal={setModalState}
+                <ViewOrganisation
+                  organisationId={customerToBeEdited}
+                //   setContent={setModalContent}
+                //   content={
+                //     modalContent === "confirmation" ? "confirmation" : "form"
+                //   }
+                //   closeModal={setModalState}
                 />
               ) : modalToShow === "savings" ? (
-                <SavingsSettings
-                  customerId={customerToBeEdited}
-                  setContent={setModalContent}
-                  content={
-                    modalContent === "confirmation" ? "confirmation" : "form"
-                  }
-                  closeModal={setModalState}
+                <ViewOrganisation
+                  organisationId={customerToBeEdited}
+                //   setContent={setModalContent}
+                //   content={
+                //     modalContent === "confirmation" ? "confirmation" : "form"
+                //   }
+                //   closeModal={setModalState}
                 />
               ) : modalToShow === "edit" ? (
-                <EditCustomer
-                  customerId={customerToBeEdited}
-                  setContent={setModalContent}
-                  content={
-                    modalContent === "confirmation" ? "confirmation" : "form"
-                  }
+                <EditOrganisation
+                  organisationId={customerToBeEdited}
+                //   setContent={setModalContent}
+                //   content={
+                //     modalContent === "confirmation" ? "confirmation" : "form"
+                //   }
                   closeModal={setModalState}
                 />
               ) : (

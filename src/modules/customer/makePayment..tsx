@@ -43,8 +43,8 @@ export default function MakePayment(){
                     <div className="flex  border">
                         
                         
-                            <input type="number" id="search-dropdown" className="bg-ajo_darkBlue block p-2.5  w-full z-20 text-sm  border border-gray-300" placeholder="Total" required />
-                            <button type="submit" className="w-full bg-green-400 text-white">
+                            <input type="number" id="search-dropdown" className="bg-ajo_darkBlue text-white block p-2.5  w-full z-20 text-sm  border border-gray-300" placeholder="Total" required />
+                            <button type="submit" className="w-full font-sm text-sm bg-green-400 text-white">
                                 Make Payment
                             </button>
                         
@@ -94,9 +94,12 @@ export default function MakePayment(){
                         "Balance",
                         "Duration"
                     ]}
-                    content={data.map((payment, index) => (
+                    content={<>
+                        
+                        {data.map((payment, index) => (
                         <tr className="" key={index}>
                             <td className="whitespace-nowrap px-6 py-4 text-sm">
+                                
                                 <input
                                     type="checkbox"
                                     className="form-checkbox h-5 w-5 text-indigo-600 transition duration-150 ease-in-out"
@@ -117,6 +120,8 @@ export default function MakePayment(){
                              <td className="whitespace-nowrap px-6 py-4 text-sm">
                                 {payment["Payment End"]}
                              </td>
+
+                             
                              <td className="whitespace-nowrap px-6 py-4 text-sm">
                                 
                                 <form className="max-w-sm mx-auto">
@@ -124,7 +129,7 @@ export default function MakePayment(){
                                     <input type="number" id="number-input" aria-describedby="helper-text-explanation" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="90210" required />
                                 </form>
 
-                             </td>
+                            </td>
                              <td className="whitespace-nowrap px-6 py-4 text-sm">
                                 {payment.Balance}
                              </td>
@@ -133,8 +138,54 @@ export default function MakePayment(){
                              </td>
 
                         </tr>
-                    ))}
-                    belowText={textBelow} 
+                        
+                        
+                    ))
+                    
+               
+                } 
+
+                <tr>
+                    <td>
+
+                    </td>
+                    <td>
+                        
+                    </td>
+                    <td>
+                        
+                    </td>
+                    <td>
+                        
+                    </td>
+                    <td>
+                        
+                    </td>
+                    <td>
+                    <p className="font-bold text-white pt-2">Selected Amount to be Paid</p>
+                    </td>
+                    <td>
+                    <form className="ml-[10%]">
+                    <div className="flex  border">
+                        
+                        
+                            <input type="number" id="search-dropdown" className="bg-ajo_darkBlue text-white block p-2.5  w-full z-20 text-sm  border border-gray-300" placeholder="Total" required />
+                            <button type="submit" className="w-full bg-green-400 text-white">
+                                Make Payment
+                            </button>
+                        
+                    </div>
+                </form>
+                    </td>
+
+
+                </tr>
+               
+                </>
+                    
+                }
+                
+                    // belowText={textBelow} 
                 />
             </div>
 

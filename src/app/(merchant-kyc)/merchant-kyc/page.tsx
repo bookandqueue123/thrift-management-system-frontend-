@@ -14,15 +14,15 @@ import { Suspense, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
 
-type kycSections = "profile" | "contact" | "address" | "verify";
+type kycSections =
+  | "profile"
+  | "contact"
+  | "address"
+  | "identification"
+  | "verify";
 
 const Kyc = () => {
   const userId = useSelector(selectUserId);
-  // async function getLoader() {
-  //   const { tailspin } = await import("ldrs");
-  //   tailspin.register();
-  // }
-  // getLoader();
 
   const { client } = useAuth();
   const router = useRouter();
@@ -101,18 +101,24 @@ const Kyc = () => {
       formData.append("email", values.email);
       formData.append("phoneNumber", values.phoneNumber);
 
-      // if (values.organisationLogo) {
-      //   formData.append("organisationLogo", values.organisationLogo[0]);
-      // }
-      //  if (values.BankRecommendation) {
-      //   formData.append("BankRecommendation", values.BankRecommendation[0]);
-      // }
-      //  if (values.CommunityRecommendation) {
-      //   formData.append("CommunityRecommendation", values.CommunityRecommendation[0]);
-      // }
-      //  if (values.CourtAffidavit) {
-      //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
-      //  }
+      if (values.organisationLogo) {
+        formData.append("businessLogo", values.organisationLogo[0]);
+      }
+      if (values.BankRecommendation) {
+        formData.append(
+          "bankLetterOfRecommendation",
+          values.BankRecommendation[0],
+        );
+      }
+      if (values.CommunityRecommendation) {
+        formData.append(
+          "letterOfRecommendation",
+          values.CommunityRecommendation[0],
+        );
+      }
+      if (values.CourtAffidavit) {
+        formData.append("courtAffidavit", values.CourtAffidavit[0]);
+      }
       return client.put(`/api/user/${userId}`, formData);
     },
 
@@ -138,8 +144,6 @@ const Kyc = () => {
       return client
         .get(`/api/user/${userId}`, {})
         .then((response) => {
-          // initialValues = {...initialValues, prefferedUrl: userData?.prefferedUrl }
-
           return response.data;
         })
         .catch((error) => {
@@ -170,12 +174,28 @@ const Kyc = () => {
     BankRecommendation: null,
     CourtAffidavit: null,
     CommunityRecommendation: null,
+    FormCacBn: null,
+    CertOfBusinessName: null,
+    contactPhoto: null,
+    percentOwnership: "",
+    cacNumber: "",
+    contactBvn: "",
+    contactNIN: "",
+    contactNationality: "",
+    OrgRole: "",
+    contactDOB: "",
+    contactEmail: "",
+    contactPhoneNumber: "",
+    contactFullName: "",
+    bankName: "",
+    acctNo: "",
   };
 
   const [allSections, setAllSections] = useState({
     profile: true,
     contact: false,
     address: false,
+    identification: false,
     verify: false,
   });
 
@@ -199,10 +219,17 @@ const Kyc = () => {
     organisationName: "Required",
   };
 
+  useEffect(() => {
+    if (activeSection) {
+      // Scroll to the top of the page
+      window.scrollTo(0, 0);
+    }
+  }, [activeSection]);
+
   return (
     <div className="px-6 pb-10 md:px-[5%]">
       {/* Heading Starts */}
-      <div className=" mx-auto mb-12 mt-4 flex items-center gap-x-2 md:w-[60%]">
+      <div className=" mx-auto mb-12 mt-4 flex items-center gap-x-2 md:w-[80%]">
         <ProgressIndicator
           index="1"
           label="Profile"
@@ -228,10 +255,19 @@ const Kyc = () => {
           bgColor={getBgColor("address")}
         />
         <span
-          className={`flex-grow border-t-[1px] border-dashed ${getBorderColor("verify")} relative -top-[12px]`}
+          className={`flex-grow border-t-[1px] border-dashed ${getBorderColor("identification")} relative -top-[12px]`}
         ></span>
         <ProgressIndicator
           index="4"
+          label="Identification"
+          textColor={getTextColor("identification")}
+          bgColor={getBgColor("identification")}
+        />
+        <span
+          className={`flex-grow border-t-[1px] border-dashed ${getBorderColor("verify")} relative -top-[12px]`}
+        ></span>
+        <ProgressIndicator
+          index="5"
           label="Verify"
           textColor={getTextColor("verify")}
           bgColor={getBgColor("verify")}
@@ -245,9 +281,46 @@ const Kyc = () => {
         initialValues={initialValues}
         initialErrors={initialErrors}
         validationSchema={Yup.object({
-          email: Yup.string().required("Required"),
+          email: Yup.string()
+            .email("Invalid email format")
+            .required("Required"),
           country: Yup.string().required("Required"),
           state: Yup.string().required("Required"),
+          contactFullName: Yup.string().required("Required"),
+          contactPhoneNumber: Yup.string()
+            .matches(
+              /^(?:\+234\d{10}|\d{11})$/,
+              "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
+            )
+            .required("Phone number is required"),
+          contactEmail: Yup.string()
+            .email("Invalid email format")
+            .required("Required"),
+          contactDOB: Yup.date().required("Required"),
+          OrgRole: Yup.string().required("Required"),
+          contactNationality: Yup.string().required("Required"),
+          contactNIN: Yup.string()
+            .matches(/^\d{11}$/, "NIN must be exactly 11 digits")
+            .required("Required"),
+          contactBvn: Yup.string()
+            .matches(/^\d{11}$/, "BVN must be exactly 11 digits")
+            .required("Required"),
+          percentOwnership: Yup.number()
+            .typeError("Must be a number")
+            .required("Required"),
+          cacNumber: Yup.number().typeError("Must be a number").required("Required"),
+          bankName: Yup.string()
+            .required("Required")
+            .min(2, "Account name must be at least 2 characters")
+            .max(100, "Account name must be less than 100 characters")
+            .matches(
+              /^[a-zA-Z\s]*$/,
+              "Account name should only contain alphabets and spaces",
+            ),
+          acctNo: Yup.string()
+            .required("Required")
+            .length(10, "Account number must be exactly 10 digits")
+            .matches(/^\d{10}$/, "Account number should only contain digits"),
           lga: Yup.string().required("Required"),
           officeAddress: Yup.string().required("Required"),
           organisationLogo: Yup.mixed()
@@ -275,11 +348,100 @@ const Kyc = () => {
               },
             ),
           description: Yup.string().required("Required"),
-          phoneNumber: Yup.string().required("Required"),
+          phoneNumber: Yup.string()
+            .matches(
+              /^(?:\+234\d{10}|\d{11})$/,
+              "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
+            )
+            .required("Phone number is required"),
           organisationName: Yup.string().required("Required"),
           tradingName: Yup.string().optional(),
           websiteUrl: Yup.string().optional(),
           BankRecommendation: Yup.mixed()
+            .required("Required")
+            .test(
+              "fileSize",
+              "File size must be less than 2MB",
+              (value: MyFileList) => {
+                if (value) {
+                  return value[0].size <= 2097152;
+                }
+                return true;
+              },
+            )
+            .test(
+              "fileType",
+              "Only .pdf, .jpg, .png files are allowed",
+              (value: MyFileList) => {
+                if (value) {
+                  const file = value[0];
+                  const fileType = file.type;
+                  return (
+                    fileType === "application/pdf" ||
+                    fileType === "image/jpeg" ||
+                    fileType === "image/png"
+                  );
+                }
+                return true;
+              },
+            ),
+          contactPhoto: Yup.mixed()
+            .required("Required")
+            .test(
+              "fileSize",
+              "File size must be less than 2MB",
+              (value: MyFileList) => {
+                if (value) {
+                  return value[0].size <= 2097152;
+                }
+                return true;
+              },
+            )
+            .test(
+              "fileType",
+              "Only .pdf, .jpg, .png files are allowed",
+              (value: MyFileList) => {
+                if (value) {
+                  const file = value[0];
+                  const fileType = file.type;
+                  return (
+                    fileType === "application/pdf" ||
+                    fileType === "image/jpeg" ||
+                    fileType === "image/png"
+                  );
+                }
+                return true;
+              },
+            ),
+          CertOfBusinessName: Yup.mixed()
+            .required("Required")
+            .test(
+              "fileSize",
+              "File size must be less than 2MB",
+              (value: MyFileList) => {
+                if (value) {
+                  return value[0].size <= 2097152;
+                }
+                return true;
+              },
+            )
+            .test(
+              "fileType",
+              "Only .pdf, .jpg, .png files are allowed",
+              (value: MyFileList) => {
+                if (value) {
+                  const file = value[0];
+                  const fileType = file.type;
+                  return (
+                    fileType === "application/pdf" ||
+                    fileType === "image/jpeg" ||
+                    fileType === "image/png"
+                  );
+                }
+                return true;
+              },
+            ),
+          FormCacBn: Yup.mixed()
             .required("Required")
             .test(
               "fileSize",
@@ -400,6 +562,7 @@ const Kyc = () => {
                       onChange={handleChange}
                       name="organisationName"
                       type="text"
+                      disabled={true}
                       className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                       isInvalid={!!errors.organisationName}
                     />
@@ -462,7 +625,7 @@ const Kyc = () => {
                     className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                   />
                   <ErrorMessage
-                    name="prefferedUrl"
+                    name="websiteUrl"
                     component="div"
                     className="text-xs text-red-500"
                   />
@@ -724,88 +887,135 @@ const Kyc = () => {
                     />
                   </div>
                 </div>
+
+                <p className="mb-4  mt-8 text-white last:text-[16px] md:text-[18px]">
+                  BUSINESS ACCOUNT DETAILS
+                </p>
+                <div className="my-3 flex flex-col gap-4 md:flex-row">
+                  <div className="flex-1">
+                    <label
+                      htmlFor="bankName"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Bank Name
+                    </label>
+                    <Field
+                      name="bankName"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="bankName"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label
+                      htmlFor="acctNo"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Account Number
+                    </label>
+                    <Field
+                      name="acctNo"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="acctNo"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                </div>
+
                 <p className="my-6 text-[16px] text-white md:text-[18px]">
                   SOCIALS
                 </p>
                 <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-5">
-                    <label
-                      htmlFor="facebook"
-                      className="m-0 w-[20%] text-[14px] font-medium text-white"
-                    >
-                      Facebook:
-                    </label>
-                    <Field
-                      name="facebook"
-                      type="text"
-                      className="mt-1 w-full flex-1 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]"
-                    />
-                    <ErrorMessage
-                      name="facebook"
-                      component="div"
-                      className="text-xs text-red-500"
-                    />
-                  </div>
-                  <div className="flex items-center gap-5">
-                    <label
-                      htmlFor="twitter"
-                      className="m-0 w-[20%] text-[14px] font-medium text-white"
-                    >
-                      Twitter:
-                    </label>
-                    <Field
-                      name="twitter"
-                      type="text"
-                      className="mt-1 w-full flex-1 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]"
-                    />
-                    <ErrorMessage
-                      name="twitter"
-                      component="div"
-                      className="text-xs text-red-500"
-                    />
-                  </div>{" "}
-                  <div className="flex items-center gap-5">
-                    <label
-                      htmlFor="instagram"
-                      className="m-0 w-[20%] text-[14px] font-medium text-white"
-                    >
-                      Instagram:
-                    </label>
-                    <Field
-                      name="instagram"
-                      type="text"
-                      className="mt-1 w-full flex-1 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]"
-                    />
-                    <ErrorMessage
-                      name="instagram"
-                      component="div"
-                      className="text-xs text-red-500"
-                    />
-                  </div>{" "}
-                  <div className="flex items-center gap-5">
-                    <label
-                      htmlFor="linkedIn"
-                      className="m-0 w-[20%] text-[14px] font-medium text-white"
-                    >
-                      LinkedIn:
-                    </label>
-                    <Field
-                      name="linkedIn"
-                      type="text"
-                      className="mt-1 w-full flex-1 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]"
-                    />
-                    <ErrorMessage
-                      name="linkedIn"
-                      component="div"
-                      className="text-xs text-red-500"
-                    />
-                  </div>{" "}
-                  <div className="flex items-center gap-5">
+                  <span className="flex justify-between gap-5">
+                    <div className="flex w-full items-center">
+                      <label
+                        htmlFor="facebook"
+                        className="m-0 w-[20%] text-[14px] font-medium text-white"
+                      >
+                        Facebook:
+                      </label>
+                      <Field
+                        name="facebook"
+                        type="text"
+                        className="mt-1 w-full flex-1 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]"
+                      />
+                      <ErrorMessage
+                        name="facebook"
+                        component="div"
+                        className="text-xs text-red-500"
+                      />
+                    </div>
+                    <div className="flex w-full items-center">
+                      <label
+                        htmlFor="twitter"
+                        className="m-0 w-[20%] text-[14px] font-medium text-white"
+                      >
+                        Twitter:
+                      </label>
+                      <Field
+                        name="twitter"
+                        type="text"
+                        className="mt-1 w-full flex-1 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]"
+                      />
+                      <ErrorMessage
+                        name="twitter"
+                        component="div"
+                        className="text-xs text-red-500"
+                      />
+                    </div>
+                  </span>
+                  <span className="flex justify-between gap-5">
+                    <div className="flex w-full items-center">
+                      <label
+                        htmlFor="instagram"
+                        className="m-0 w-[20%] text-[14px] font-medium text-white"
+                      >
+                        Instagram:
+                      </label>
+                      <Field
+                        name="instagram"
+                        type="text"
+                        className="mt-1 w-full flex-1 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]"
+                      />
+                      <ErrorMessage
+                        name="instagram"
+                        component="div"
+                        className="text-xs text-red-500"
+                      />
+                    </div>
+                    <div className="flex w-full items-center">
+                      <label
+                        htmlFor="linkedIn"
+                        className="m-0 w-[20%] text-[14px] font-medium text-white"
+                      >
+                        LinkedIn:
+                      </label>
+                      <Field
+                        name="linkedIn"
+                        type="text"
+                        className="mt-1 w-full flex-1 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]"
+                      />
+                      <ErrorMessage
+                        name="linkedIn"
+                        component="div"
+                        className="text-xs text-red-500"
+                      />
+                    </div>
+                  </span>
+                  <div className="flex items-center">
                     <label
                       htmlFor="pintrest"
-                      className="m-0 w-[20%] text-[14px] font-medium text-white"
+                      className="m-0 w-[10%] text-[14px] font-medium text-white"
                     >
-                      Pintrest:
+                      Pinterest:
                     </label>
                     <Field
                       name="pintrest"
@@ -818,6 +1028,254 @@ const Kyc = () => {
                       className="text-xs text-red-500"
                     />
                   </div>
+                </div>
+
+                <p className="mt-10 text-[18px] font-semibold text-white sm:text-[25px] md:text-[32px]">
+                  Who can we reach?{" "}
+                  <span className="text-[13px] text-[gray]">
+                    Update this section with your Organisation contact person’s/
+                    business representative details
+                  </span>
+                </p>
+                <div className="my-3 flex flex-col gap-4 md:flex-row">
+                  <div className="flex-1">
+                    <label
+                      htmlFor="contactFullName"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Contact’s Person Full Name
+                    </label>
+                    <Field
+                      name="contactFullName"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="contactFullName"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label
+                      htmlFor="contactPhoneNumber"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Contact’s Person Telephone Number
+                    </label>
+                    <Field
+                      name="contactPhoneNumber"
+                      type="tel"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="contactPhoneNumber"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                </div>
+                <div className="my-3 flex flex-col gap-4 md:flex-row">
+                  <div className="flex-1">
+                    <label
+                      htmlFor="contactEmail"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Contact’s Person Email address
+                    </label>
+                    <Field
+                      name="contactEmail"
+                      type="email"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="contactEmail"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label
+                      htmlFor="contactDOB"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Contact’s Person Date of Birth
+                    </label>
+                    <Field
+                      name="contactDOB"
+                      type="date"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="contactDOB"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <label
+                    htmlFor="contactPhoto"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Contact’s Person Document of Identification
+                  </label>
+                  <div className="mt-1 flex h-[100px] items-center justify-center  rounded-md border-2 border-gray-300 bg-white px-6 pb-6 pt-5">
+                    <input
+                      type="file"
+                      name="contactPhoto"
+                      id="contactPhoto"
+                      className="hidden"
+                      onChange={(e) =>
+                        setFieldValue("contactPhoto", e.target.files)
+                      }
+                      accept="application/pdf, .jpg, .png"
+                    />
+                    <label htmlFor="contactPhoto" className="cursor-pointer">
+                      <p className="text-center text-[gray]">
+                        Drag n drop a{" "}
+                        <span className="font-semibold">.pdf, .jpg, .png</span>{" "}
+                        here, or click to select one
+                      </p>
+                    </label>
+                  </div>
+                  {values.contactPhoto &&
+                    values.contactPhoto[0] &&
+                    ((values.contactPhoto[0] as File).type.includes("image") ? (
+                      <Image
+                        src={URL.createObjectURL(values.contactPhoto[0])}
+                        alt="Contact Photo"
+                        className="mt-4 max-w-full rounded-md"
+                        style={{ maxWidth: "100%" }}
+                        width={100}
+                        height={100}
+                      />
+                    ) : (
+                      <iframe
+                        src={URL.createObjectURL(values.contactPhoto[0])}
+                        className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
+                        title="Contact Photo Document"
+                      ></iframe>
+                    ))}
+
+                  <div className="text-xs text-red-600">
+                    <ErrorMessage name="contactPhoto" />
+                  </div>
+                </div>
+                <div className="my-3 flex flex-col gap-4 md:flex-row">
+                  <div className="mb-4 flex-1">
+                    <label
+                      htmlFor="OrgRole"
+                      className="m-0 text-xs font-medium text-white "
+                    >
+                      Contact’s Person Role in the Organisation
+                    </label>
+                    <Field
+                      as="select"
+                      id="OrgRole"
+                      name="OrgRole"
+                      className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-dropdown-icon bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D]"
+                    >
+                      <option value={"ceo"}>CEO</option>
+                      <option value={"analyst"}>Analyst</option>
+                      <option value={"manager"}>Manager</option>
+                      <option value={"finance officer"}>Finance Officer</option>
+                      <option className="invisible"></option>
+                    </Field>
+                    <ErrorMessage
+                      name="OrgRole"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                  <div className="mb-4 flex-1">
+                    <label
+                      htmlFor="contactNationality"
+                      className="m-0 text-xs font-medium text-white "
+                    >
+                      Contact’s Person Nationality
+                    </label>
+                    <Field
+                      as="select"
+                      id="contactNationality"
+                      name="contactNationality"
+                      className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-dropdown-icon bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D]"
+                    >
+                      {StatesAndLGAs &&
+                        StatesAndLGAs.map((countries) => (
+                          <option
+                            key={countries.country}
+                            value={countries.country}
+                          >
+                            {countries.country}
+                          </option>
+                        ))}
+                      <option className="invisible"></option>
+                    </Field>
+                    <ErrorMessage
+                      name="OrgRole"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                </div>
+                <div className="my-3 flex flex-col gap-4 md:flex-row">
+                  <div className="flex-1">
+                    <label
+                      htmlFor="contactNIN"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Contact’s Person NIN Number
+                    </label>
+                    <Field
+                      name="contactNIN"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="contactNIN"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label
+                      htmlFor="contactBvn"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Contact’s Person BVN Number
+                    </label>
+                    <Field
+                      name="contactBvn"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="contactBvn"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label
+                    htmlFor="percentOwnership"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    What percentage of “YOUR ORGANISATION NAME” does this person
+                    have?
+                  </label>
+                  <Field
+                    name="percentOwnership"
+                    type="text"
+                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                  <ErrorMessage
+                    name="percentOwnership"
+                    component="div"
+                    className="text-xs text-red-500"
+                  />
                 </div>
               </div>
             )}
@@ -967,6 +1425,153 @@ const Kyc = () => {
               </div>
             )}
 
+            {activeSection === "identification" && (
+              <div className="mb-8">
+                <p className=" text-[18px] font-semibold text-white sm:text-[25px] md:text-[32px]">
+                  Business Identification{" "}
+                  <span className="text-[13px] text-[gray]">
+                    Enter your business registration information
+                  </span>
+                </p>
+
+                <div className="mb-4">
+                  <label
+                    htmlFor="cacNumber"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Business number i.e CAC number
+                  </label>
+                  <Field
+                    name="cacNumber"
+                    type="text"
+                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                  <ErrorMessage
+                    name="cacNumber"
+                    component="div"
+                    className="text-xs text-red-500"
+                  />
+                </div>
+                <p className="mt-4 text-base font-semibold text-ajo_offWhite">
+                  Kindly upload documents that are:
+                </p>
+                <ul>
+                  <li className="list-disc text-sm text-ajo_offWhite">
+                    Government Issued
+                  </li>
+                  <li className="list-disc text-sm text-ajo_offWhite">
+                    Full sized, original and unedited
+                  </li>
+                  <li className="list-disc text-sm text-ajo_offWhite">
+                    In JPG, PNG or PDF File Format
+                  </li>
+                </ul>
+
+                <div className="mt-4">
+                  <label
+                    htmlFor="CertOfBusinessName"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Certificate of business Name
+                  </label>
+                  <div className="mt-1 flex h-[100px] items-center justify-center  rounded-md border-2 border-gray-300 bg-white px-6 pb-6 pt-5">
+                    <input
+                      type="file"
+                      name="CertOfBusinessName"
+                      id="CertOfBusinessName"
+                      className="hidden"
+                      onChange={(e) =>
+                        setFieldValue("CertOfBusinessName", e.target.files)
+                      }
+                      accept="application/pdf, .jpg, .png"
+                    />
+                    <label
+                      htmlFor="CertOfBusinessName"
+                      className="cursor-pointer"
+                    >
+                      <p className="text-center text-[gray]">
+                        Drag n drop a{" "}
+                        <span className="font-semibold">.pdf, .jpg, .png</span>{" "}
+                        here, or click to select one
+                      </p>
+                    </label>
+                  </div>
+                  {values.CertOfBusinessName &&
+                    values.CertOfBusinessName[0] &&
+                    ((values.CertOfBusinessName[0] as File).type.includes(
+                      "image",
+                    ) ? (
+                      <Image
+                        src={URL.createObjectURL(values.CertOfBusinessName[0])}
+                        alt="CertOfBusinessName"
+                        className="mt-4 max-w-full rounded-md"
+                        style={{ maxWidth: "100%" }}
+                        width={100}
+                        height={100}
+                      />
+                    ) : (
+                      <iframe
+                        src={URL.createObjectURL(values.CertOfBusinessName[0])}
+                        className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
+                        title="CertOfBusinessName Letter"
+                      ></iframe>
+                    ))}
+                  <div className="text-xs text-red-600">
+                    <ErrorMessage name="CertOfBusinessName" />
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <label
+                    htmlFor="FormCacBn"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Form CAC BN 1
+                  </label>
+                  <div className="mt-1 flex h-[100px] items-center justify-center  rounded-md border-2 border-gray-300 bg-white px-6 pb-6 pt-5">
+                    <input
+                      type="file"
+                      name="FormCacBn"
+                      id="FormCacBn"
+                      className="hidden"
+                      onChange={(e) =>
+                        setFieldValue("FormCacBn", e.target.files)
+                      }
+                      accept="application/pdf, .jpg, .png"
+                    />
+                    <label htmlFor="FormCacBn" className="cursor-pointer">
+                      <p className="text-center text-[gray]">
+                        Drag n drop a{" "}
+                        <span className="font-semibold">.pdf, .jpg, .png</span>{" "}
+                        here, or click to select one
+                      </p>
+                    </label>
+                  </div>
+                  {values.FormCacBn &&
+                    values.FormCacBn[0] &&
+                    ((values.FormCacBn[0] as File).type.includes("image") ? (
+                      <Image
+                        src={URL.createObjectURL(values.FormCacBn[0])}
+                        alt="CFormCacBn"
+                        className="mt-4 max-w-full rounded-md"
+                        style={{ maxWidth: "100%" }}
+                        width={100}
+                        height={100}
+                      />
+                    ) : (
+                      <iframe
+                        src={URL.createObjectURL(values.FormCacBn[0])}
+                        className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
+                        title="Court Affidavit Letter"
+                      ></iframe>
+                    ))}
+                  <div className="text-xs text-red-600">
+                    <ErrorMessage name="FormCacBn" />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {activeSection === "verify" && (
               <div className="mb-8">
                 <p className=" text-[18px] font-semibold text-white sm:text-[25px] md:text-[32px]">
@@ -978,16 +1583,24 @@ const Kyc = () => {
 
                 <section className="mt-8 rounded-lg bg-[rgba(255,255,255,0.1)] p-4">
                   <span className="mb-4 block">
-                    <p className="mb-1 text-sm text-ajo_offWhite">
+                    <p className="mb-1 whitespace-nowrap text-sm text-ajo_offWhite">
                       Business Name:
                     </p>
                     <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                       {values.organisationName}
                     </div>
                   </span>
+                  <span className="mb-4 block">
+                    <p className="mb-1 whitespace-nowrap text-sm text-ajo_offWhite">
+                      Trading Name:
+                    </p>
+                    <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
+                      {values.tradingName}
+                    </div>
+                  </span>
 
                   <span className="block">
-                    <p className="mb-1 text-sm text-ajo_offWhite">
+                    <p className="mb-1 whitespace-nowrap text-sm text-ajo_offWhite">
                       Business Description:
                     </p>
                     <div className="break-words rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
@@ -997,13 +1610,15 @@ const Kyc = () => {
 
                   <div className="my-12">
                     <span className="mb-2 block">
-                      <p className="mb-1 text-sm text-ajo_offWhite">Website:</p>
+                      <p className="mb-1 whitespace-nowrap text-sm text-ajo_offWhite">
+                        Website:
+                      </p>
                       <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                         {values.websiteUrl}
                       </div>
                     </span>
                     <span className="mb-2 block">
-                      <p className="mb-1 text-sm text-ajo_offWhite">
+                      <p className="mb-1 whitespace-nowrap text-sm text-ajo_offWhite">
                         Email Address:
                       </p>
                       <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
@@ -1011,11 +1626,27 @@ const Kyc = () => {
                       </div>
                     </span>
                     <span className="mb-2 block">
-                      <p className="mb-1 text-sm text-ajo_offWhite">
+                      <p className="mb-1 whitespace-nowrap text-sm text-ajo_offWhite">
                         Telephone number:
                       </p>
                       <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                         {values.phoneNumber}
+                      </div>
+                    </span>
+                    <span className="mb-2 block">
+                      <p className="mb-1 whitespace-nowrap text-sm text-ajo_offWhite">
+                        Bank Name:
+                      </p>
+                      <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
+                        {values.bankName}
+                      </div>
+                    </span>
+                    <span className="mb-2 block">
+                      <p className="mb-1 whitespace-nowrap text-sm text-ajo_offWhite">
+                        Bank Account Number:
+                      </p>
+                      <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
+                        {values.acctNo}
                       </div>
                     </span>
                   </div>
@@ -1063,11 +1694,9 @@ const Kyc = () => {
 
                   <div>
                     <span className="mb-2 block">
-                      <p className="mb-1 text-sm text-ajo_offWhite">
-                        Office Address:
-                      </p>
+                      <p className="mb-1 text-sm text-ajo_offWhite">Address:</p>
                       <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
-                        {values.officeAddress}
+                        {values.officeAddress + " " + values.address2}
                       </div>
                     </span>
                     <div className="flex flex-wrap gap-x-4">
@@ -1101,6 +1730,94 @@ const Kyc = () => {
                       </span>
                     </div>
                   </div>
+
+                  <div>
+                    <span className="mb-2 block">
+                      <p className="mb-1 text-sm text-ajo_offWhite">
+                        Contact Full Name:
+                      </p>
+                      <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
+                        {values.contactFullName}
+                      </div>
+                    </span>
+                    <div className="flex flex-wrap gap-x-4">
+                      <span className="mb-2 flex-1">
+                        <p className="mb-1 text-sm text-ajo_offWhite">
+                          Contact Email:
+                        </p>
+                        <div className="rounded-md bg-ajo_offWhite  px-4 py-2 capitalize text-ajo_darkBlue">
+                          {values.contactEmail}
+                        </div>
+                      </span>
+                      <span className="mb-2 flex-1">
+                        <p className="mb-1 text-sm text-ajo_offWhite">
+                          Contact Role:
+                        </p>
+                        <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
+                          {values.OrgRole}
+                        </div>
+                      </span>
+                      <span className="mb-2 flex-1">
+                        <p className="mb-1 text-sm text-ajo_offWhite">
+                          Ownership Percentage (%):
+                        </p>
+                        <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
+                          {values.percentOwnership + "%"}
+                        </div>
+                      </span>
+                      <span className="mb-2 flex-1">
+                        <p className="mb-1 text-sm text-ajo_offWhite">
+                          Contact BVN:
+                        </p>
+                        <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
+                          {values.contactBvn}
+                        </div>
+                      </span>
+                      <span className="mb-2 flex-1">
+                        <p className="mb-1 text-sm text-ajo_offWhite">
+                          Contact NIN:
+                        </p>
+                        <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
+                          {values.contactNIN}
+                        </div>
+                      </span>
+                      <span className="mb-2 flex-1">
+                        <p className="mb-1 text-sm text-ajo_offWhite">
+                          Contact Nationality:
+                        </p>
+                        <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
+                          {values.contactNationality}
+                        </div>
+                      </span>
+                      <span className="mb-2 flex-1">
+                        <p className="mb-1 text-sm text-ajo_offWhite">
+                          Contact Date of Birth:
+                        </p>
+                        <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
+                          {values.contactDOB}
+                        </div>
+                      </span>
+                      <span className="mb-2 flex-1">
+                        <p className="mb-1 text-sm text-ajo_offWhite">
+                          Contact Phone Number:
+                        </p>
+                        <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
+                          {values.contactPhoneNumber}
+                        </div>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-x-4">
+                    <span className="mb-2 flex-1">
+                      <p className="mb-1 text-sm text-ajo_offWhite">
+                        Business CAC Number:
+                      </p>
+                      <div className="rounded-md bg-ajo_offWhite  px-4 py-2 capitalize text-ajo_darkBlue">
+                        {values.cacNumber}
+                      </div>
+                    </span>
+                  </div>
                 </section>
               </div>
             )}
@@ -1112,11 +1829,23 @@ const Kyc = () => {
                   type="button"
                   className=" text-ajo_offWhite hover:text-ajo_orange"
                   onClick={() => {
+                    console.log("values", values);
+                    console.log("errors", errors);
+
                     if (activeSection === "verify" && allSections.verify) {
-                      SetActiveSection("address");
+                      SetActiveSection("identification");
                       setAllSections((prev) => ({
                         ...prev,
                         ["verify"]: false,
+                      }));
+                    } else if (
+                      activeSection === "identification" &&
+                      allSections.identification
+                    ) {
+                      SetActiveSection("address");
+                      setAllSections((prev) => ({
+                        ...prev,
+                        ["identification"]: false,
                       }));
                     } else if (
                       activeSection === "address" &&
@@ -1169,7 +1898,17 @@ const Kyc = () => {
                       allSections.contact &&
                       activeSection === "contact" &&
                       !errors.phoneNumber &&
-                      !errors.email
+                      !errors.email &&
+                      !errors.bankName &&
+                      !errors.acctNo &&
+                      !errors.contactFullName &&
+                      !errors.contactBvn &&
+                      !errors.contactDOB &&
+                      !errors.contactEmail &&
+                      !errors.contactNIN &&
+                      !errors.contactNationality &&
+                      !errors.contactPhoneNumber &&
+                      !errors.contactPhoto
                     ) {
                       handleSectionComplete("address");
                       SetActiveSection("address");
@@ -1180,6 +1919,15 @@ const Kyc = () => {
                       !errors.country &&
                       !errors.state &&
                       !errors.lga
+                    ) {
+                      handleSectionComplete("identification");
+                      SetActiveSection("identification");
+                    } else if (
+                      allSections.identification &&
+                      activeSection === "identification" &&
+                      !errors.cacNumber &&
+                      !errors.FormCacBn &&
+                      !errors.CertOfBusinessName
                     ) {
                       handleSectionComplete("verify");
                       SetActiveSection("verify");

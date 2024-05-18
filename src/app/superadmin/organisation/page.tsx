@@ -3,6 +3,7 @@ import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import CustomerAction from "@/components/CustomerAction";
 import TransactionsTable from "@/components/Tables";
+import OrganisationAction from "@/modules/merchant/OrganisationAction";
 import { getOrganizationProps } from "@/types";
 import { extractDate, extractTime, formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
@@ -191,13 +192,13 @@ export default function SuperAdminOrganisation(){
         </div>
 
         <div className="md:flex justify-between my-8">
-          <div className="flex items-center">
+          <div className="md:flex items-center">
             <p className="mr-2 font-lg text-white">Select range from:</p>
             <input
               type="date"
               value={fromDate}
               onChange={handleFromDateChange}
-              className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+              className="px-4 mt-2 md:mt-0 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
             />
 
 
@@ -229,7 +230,7 @@ export default function SuperAdminOrganisation(){
         "Account Number",
         "email",
         
-        "Total Number of Customers",
+        // "Total Number of Customers",
         "Registration Date",
         "Action"
         ]}
@@ -249,16 +250,16 @@ export default function SuperAdminOrganisation(){
                     {organisation.email}
                 </td>
                 
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     --- customers
-                </td>
+                </td> */}
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {extractDate(organisation.createdAt)} 
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                <CustomerAction
+                <OrganisationAction
                   index={index}
-                  customerId={organisation._id}
+                  organisationId={organisation._id}
                   />
                 </td>
             </tr>

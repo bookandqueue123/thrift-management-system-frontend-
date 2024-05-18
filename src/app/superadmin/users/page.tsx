@@ -6,7 +6,12 @@ import PaginationBar from "@/components/Pagination";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import { MyFileList, customer, mutateUserProps } from "@/types";
+import {
+  Organisation,
+  OrganisationGroupsProps,
+  customer,
+  mutateUserProps,
+} from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
@@ -18,6 +23,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { CiExport } from "react-icons/ci";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
 
@@ -164,19 +170,25 @@ const Users = () => {
           />
         </div>
 
-        <p className="mb-2 text-base font-medium text-white">
-          Existing Users List
-        </p>
+        <div className="mb-5 flex items-center justify-between">
+          <p className="mb-2 text-base font-medium text-white">Super Users</p>
+
+          <button className="flex rounded border border-white bg-transparent px-4 py-2 text-sm font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
+            Export as CSV{" "}
+            <span className="ml-2 mt-1">
+              <CiExport />
+            </span>
+          </button>
+        </div>
 
         <div>
           <TransactionsTable
             headers={[
-              "Username",
-              "Account  Created On",
+              "Name",
               "Email Address",
               "Phone Number",
-              "State",
-              "LGA ",
+              "Address",
+              "No of Assigned Org",
               "Action",
             ]}
             content={
@@ -190,11 +202,7 @@ const Users = () => {
                 paginatedRoles?.map((user, index) => (
                   <tr className="" key={index + 1}>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {user.firstName + " " + user.lastName || "----"}
-                    </td>
-
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {user.createdAt || "----"}
+                      {user.name || "----"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {user.email || "----"}
@@ -203,10 +211,13 @@ const Users = () => {
                       {user.phone || "----"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {user.state || "----"}
+                      {user.address || "----"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {user.LGA || "----"}
+                      {user.assignedOrg || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {user.assignedOrgName || "----"}
                     </td>
 
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
@@ -253,9 +264,9 @@ const Users = () => {
                 modalToShow === "edit-user"
                   ? "Edit User"
                   : modalToShow === "create-user"
-                    ? "Create a User"
+                    ? "Create Super User"
                     : modalToShow === "view-user"
-                      ? "View User"
+                      ? "View Super User"
                       : ""
               }
             >
@@ -301,6 +312,8 @@ const MutateUser = ({
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   setUserMutated: Dispatch<SetStateAction<boolean>>;
 }) => {
+  const { client } = useAuth();
+
   const initialValues: mutateUserProps = {
     firstName: "",
     lastName: "",
@@ -320,8 +333,13 @@ const MutateUser = ({
     guarantor2Email: "",
     guarantor2Phone: "",
     guarantor2Address: "",
+
     allCustomers: [],
+    assignedCustomers: [],
+    roles: [],
   };
+
+  const [assignType, setAssignType] = useState<"single" | "group">("single");
 
   const { mutate: createUser, isPending: isCreatingRole } = useMutation({
     mutationKey: ["create role"],
@@ -441,13 +459,41 @@ const MutateUser = ({
     },
   });
 
+  const { data: organisationGroups } = useQuery({
+    queryKey: ["allOrganisationGroups"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user?userType=organisation`, {})
+        .then((response) => {
+          return response.data;
+        })
+        .catch((error) => {
+          throw error;
+        });
+    },
+  });
+
+  const { data: organisation } = useQuery({
+    queryKey: ["allOrganisation"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user?role=organisation`, {})
+        .then((response) => {
+          return response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+          throw error;
+        });
+    },
+  });
+
   return (
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={Yup.object({
-        firstName: Yup.string().required("Required"),
-        lastName: Yup.string().required("Required"),
+        name: Yup.string().required("Required"),
         email: Yup.string().required("Required").email("Invalid email address"),
         phone: Yup.string()
           .matches(
@@ -455,115 +501,7 @@ const MutateUser = ({
             "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
           )
           .required("Required"),
-        homeAddress: Yup.string().required("Required"),
-        dept_unit: Yup.string().required("Required"),
-        lga: Yup.string().required("Required"),
-        userPicture: Yup.mixed()
-          .required("Required")
-          .test(
-            "fileSize",
-            "File size must be less than 2MB",
-            (value: MyFileList) => {
-              if (value) {
-                return value[0].size <= 2097152;
-              }
-              return true;
-            },
-          )
-          .test(
-            "fileType",
-            "Only .jpg, .png files are allowed",
-            (value: MyFileList) => {
-              if (value) {
-                const file = value[0];
-                const fileType = file.type;
-                return fileType === "image/jpeg" || fileType === "image/png";
-              }
-              return true;
-            },
-          ),
-        guarantor2ID: Yup.mixed()
-          .required("Required")
-          .test(
-            "fileSize",
-            "File size must be less than 2MB",
-            (value: MyFileList) => {
-              if (value) {
-                return value[0].size <= 2097152;
-              }
-              return true;
-            },
-          )
-          .test(
-            "fileType",
-            "Only .jpg, .png files are allowed",
-            (value: MyFileList) => {
-              if (value) {
-                const file = value[0];
-                const fileType = file.type;
-                return fileType === "image/jpeg" || fileType === "image/png";
-              }
-              return true;
-            },
-          ),
-        idType: Yup.string().required("Required"),
-        guarantor1Name: Yup.string().required("Required"),
-        guarantor1Email: Yup.string()
-          .required("Required")
-          .email("Invalid email address"),
-        guarantor1Phone: Yup.string()
-          .matches(
-            /^(?:\+234\d{10}|\d{11})$/,
-            "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
-          )
-          .required("Required"),
-        guarantor1Address: Yup.string().required("Required"),
-        guarantor2Name: Yup.string().required("Required"),
-        guarantor2Email: Yup.string()
-          .matches(
-            /^(?:\+234\d{10}|\d{11})$/,
-            "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
-          )
-          .required("Required"),
-        guarantor2Phone: Yup.string()
-          .matches(
-            /^(?:\+234\d{10}|\d{11})$/,
-            "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
-          )
-          .required("Required"),
-        guarantor2Address: Yup.string().required("Required"),
-        allCustomers: Yup.object({
-          allCustomers: Yup.array().of(Yup.string()).required("Required"),
-        }),
-        role: Yup.string().required("Required"),
-        guarantorForm: Yup.mixed()
-          .required("Required")
-          .test(
-            "fileSize",
-            "File size must be less than 2MB",
-            (value: MyFileList) => {
-              if (value) {
-                return value[0].size <= 2097152;
-              }
-              return true;
-            },
-          )
-          .test(
-            "fileType",
-            "Only .pdf, .jpg, .png files are allowed",
-            (value: MyFileList) => {
-              if (value) {
-                const file = value[0];
-                const fileType = file.type;
-                return (
-                  fileType === "application/pdf" ||
-                  fileType === "image/jpeg" ||
-                  fileType === "image/png"
-                );
-              }
-              return true;
-            },
-          ),
+        address: Yup.string().required("Required"),
       })}
       onSubmit={(values, { setSubmitting }) => {
         setTimeout(() => {
@@ -590,47 +528,27 @@ const MutateUser = ({
       }) => (
         <form className="flex flex-col items-center" onSubmit={handleSubmit}>
           <div className="mb-10 w-full space-y-10 rounded-md bg-white px-[5%] py-[3%]">
-            {/* Personal Details */}
             <section>
-              <div className="my-3 flex flex-col gap-4 md:flex-row">
-                <div className="flex-1">
-                  <label
-                    htmlFor="firstName"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    First Name
-                  </label>
-                  <Field
-                    onChange={handleChange}
-                    name="firstName"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  />
-                  <ErrorMessage
-                    name="firstName"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label
-                    htmlFor="lastName"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    Last Name
-                  </label>
-                  <Field
-                    name="lastName"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  />
-                  <ErrorMessage
-                    name="lastName"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
+              <div className="my-3">
+                <label
+                  htmlFor="name"
+                  className="m-0 text-xs font-medium text-ajo_darkBlue"
+                >
+                  Name
+                </label>
+                <Field
+                  onChange={handleChange}
+                  name="name"
+                  type="text"
+                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                />
+                <ErrorMessage
+                  name="name"
+                  component="div"
+                  className="text-xs text-red-500"
+                />
               </div>
+
               <div className="my-3 flex flex-col gap-4 md:flex-row">
                 <div className="flex-1">
                   <label
@@ -670,513 +588,131 @@ const MutateUser = ({
                   />
                 </div>
               </div>
-              <div className="my-3 flex flex-col gap-4 md:flex-row">
-                <div className="flex-1">
-                  <label
-                    htmlFor="homeAddress"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    Home Address
-                  </label>
-                  <Field
-                    onChange={handleChange}
-                    name="homeAddress"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  />
-                  <ErrorMessage
-                    name="homeAddress"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
-                <div className="mb-4 flex-1">
-                  <label
-                    htmlFor="dept_unit"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    Department/Unit
-                  </label>
-                  <Field
-                    as="select"
-                    id="dept_unit"
-                    name="dept_unit"
-                    className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
-                  >
-                    {/* {StatesAndLGAs.map((country) => (
-                    <option key={country.country} value={country.country}>
-                      {country.country}
-                    </option>
-                  ))} */}
-                    <option className="invisible"></option>
-                  </Field>
-                  <ErrorMessage
-                    name="dept_unit"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
-              </div>
-              <div className="mt-4">
+              <div className="my-3">
                 <label
-                  htmlFor="userPicture"
+                  htmlFor="address"
                   className="m-0 text-xs font-medium text-ajo_darkBlue"
                 >
-                  Picture
+                  Address
                 </label>
-                <label
-                  htmlFor="userPicture"
-                  className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
-                >
-                  <input
-                    type="file"
-                    name="userPicture"
-                    id="userPicture"
-                    className="hidden w-full"
-                    onChange={(e) => {
-                      setFieldValue("userPicture", e.target.files);
-                    }}
-                    accept="application/pdf, .jpg, .png"
-                  />
-                  <div className="flex flex-col items-center justify-center">
-                    <Image
-                      src="/upload.svg"
-                      alt="document upload icon"
-                      width={48}
-                      height={48}
-                    />
-                    <p className="text-center text-[gray]">
-                      Drag n drop a{" "}
-                      <span className="font-semibold">.jpg, .png</span> here, or
-                      click to select one
-                    </p>
-                  </div>
-                </label>
-                {values.userPicture &&
-                  values.userPicture[0] &&
-                  ((values.userPicture[0] as File).type.includes("image") ? (
-                    <Image
-                      src={URL.createObjectURL(values.userPicture[0])}
-                      alt="userPicture"
-                      className="mt-4 max-w-full rounded-md"
-                      style={{ maxWidth: "100%" }}
-                      width={100}
-                      height={100}
-                    />
-                  ) : (
-                    <iframe
-                      src={URL.createObjectURL(values.userPicture[0])}
-                      className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
-                      title="Bank Recommendation Letter"
-                    ></iframe>
-                  ))}
-                <div className="text-xs text-red-600">
-                  <ErrorMessage name="userPicture" />
-                </div>
+                <Field
+                  onChange={handleChange}
+                  name="address"
+                  type="text"
+                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                />
+                <ErrorMessage
+                  name="address"
+                  component="div"
+                  className="text-xs text-red-500"
+                />
               </div>
-            </section>
 
-            <section>
-              <p className="pb-3 text-lg font-semibold text-ajo_darkBlue">
-                Guarantor&apos;s Details
+              <p className="mb-3  mt-6 text-base font-semibold text-ajo_darkBlue">
+                Assign Organisation(s)
               </p>
-
-              {/* Guarantor 1 Details */}
-              <div id="guarantor1">
-                <label
-                  htmlFor="guarantor1"
-                  className="text-sm font-semibold text-ajo_darkBlue"
-                >
-                  Guarantor 1
-                </label>
-                <div className="mt-1">
-                  <label
-                    htmlFor="guarantor1Name"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    First Name
-                  </label>
+              <div className="flex flex-row items-center">
+                <div className="flex w-1/2 flex-row items-center gap-x-1">
                   <Field
-                    onChange={handleChange}
-                    name="guarantor1Name"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                    id="groupOfOrganisation"
+                    name="groupOfOrganisation"
+                    type="radio"
+                    className="border-text- h-4 w-4 rounded text-indigo-600 focus:ring-indigo-600"
+                    onChange={(e: any) => {
+                      handleChange(e);
+                      setAssignType("group");
+                    }}
+                    checked={assignType === "group" ? true : false}
                   />
-                  <ErrorMessage
-                    name="guarantor1Name"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
+                  <label
+                    htmlFor="groupOfOrganisation"
+                    className="text-sm font-semibold capitalize text-[#131313]"
+                  >
+                    Group Of Organisation
+                  </label>
                 </div>
+                <div className="flex w-1/2 flex-row items-center gap-x-1">
+                  <Field
+                    id="singleOrganisation"
+                    name="singleOrganisation"
+                    type="radio"
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                    onChange={(e: any) => {
+                      handleChange(e);
+                      setAssignType("single");
+                    }}
+                    checked={assignType === "single" ? true : false}
+                  />
+                  <label
+                    htmlFor="singleOrganisation"
+                    className="text-sm font-semibold capitalize text-[#131313]"
+                  >
+                    An Organisation
+                  </label>
+                </div>
+              </div>
+              {assignType === "single" && (
                 <div className="my-3 flex flex-col gap-4 md:flex-row">
-                  <div className="flex-1">
+                  <div className="mb-4 flex-1">
                     <label
-                      htmlFor="guarantor1Phone"
+                      htmlFor="selectOrganisation"
                       className="m-0 text-xs font-medium text-ajo_darkBlue"
                     >
-                      Phone Number
+                      Select Organisation
                     </label>
                     <Field
-                      onChange={handleChange}
-                      name="guarantor1Phone"
-                      type="text"
-                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                    />
-                    <ErrorMessage
-                      name="guarantor1Phone"
-                      component="div"
-                      className="text-xs text-red-500"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label
-                      htmlFor="guarantor1Email"
-                      className="m-0 text-xs font-medium text-ajo_darkBlue"
+                      as="select"
+                      id="selectOrganisation"
+                      name="selectOrganisation"
+                      className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
                     >
-                      Email
-                    </label>
-                    <Field
-                      name="guarantor1Email"
-                      type="text"
-                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                    />
+                      {organisation?.map((organisation: Organisation) => (
+                        <option key={organisation._id} value={organisation._id}>
+                          {organisation.organisationName}
+                        </option>
+                      ))}
+                      <option className="invisible"></option>
+                    </Field>
                     <ErrorMessage
-                      name="guarantor1Email"
+                      name="selectOrganisation"
                       component="div"
                       className="text-xs text-red-500"
                     />
                   </div>
                 </div>
-                <div className="">
-                  <label
-                    htmlFor="guarantor1Address"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    Home Address
-                  </label>
-                  <Field
-                    onChange={handleChange}
-                    name="guarantor1Address"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  />
-                  <ErrorMessage
-                    name="guarantor1Address"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
-                <div className="mt-4">
-                  <label
-                    htmlFor="guarantorForm"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    Upload Filled Guarantor’s Form
-                  </label>
-                  <label
-                    htmlFor="guarantorForm"
-                    className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
-                  >
-                    <input
-                      type="file"
-                      name="guarantorForm"
-                      id="guarantorForm"
-                      className="hidden w-full"
-                      onChange={(e) => {
-                        setFieldValue("userPicture", e.target.files);
-                      }}
-                      accept="application/pdf, .jpg, .png"
-                    />
-                    <div className="flex flex-col items-center justify-center">
-                      <Image
-                        src="/upload.svg"
-                        alt="guarantor form upload icon"
-                        width={48}
-                        height={48}
-                      />
-                      <p className="text-center text-[gray]">
-                        Drag n drop a{" "}
-                        <span className="font-semibold">.pdf, .jpg, .png</span>{" "}
-                        here, or click to select one
-                      </p>
-                    </div>
-                  </label>
-                  {values.userPicture &&
-                    values.userPicture[0] &&
-                    ((values.userPicture[0] as File).type.includes("image") ? (
-                      <Image
-                        src={URL.createObjectURL(values.userPicture[0])}
-                        alt="guarantorForm"
-                        className="mt-4 max-w-full rounded-md"
-                        style={{ maxWidth: "100%" }}
-                        width={100}
-                        height={100}
-                      />
-                    ) : (
-                      <iframe
-                        src={URL.createObjectURL(values.userPicture[0])}
-                        className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
-                        title="Guarantor Form"
-                      ></iframe>
-                    ))}
-                  <div className="text-xs text-red-600">
-                    <ErrorMessage name="guarantorForm" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Guarantor 2 Details */}
-              <div id="guarantor2" className="mt-12">
-                <label
-                  htmlFor="guarantor2"
-                  className="text-sm font-semibold text-ajo_darkBlue"
-                >
-                  Guarantor 2
-                </label>
-                <div className="mt-1">
-                  <label
-                    htmlFor="guarantor2Name"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    First Name
-                  </label>
-                  <Field
-                    onChange={handleChange}
-                    name="guarantor2Name"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  />
-                  <ErrorMessage
-                    name="guarantor2Name"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
-                <div className="my-4 flex flex-col gap-4 md:flex-row">
-                  <div className="flex-1">
+              )}
+              {assignType === "group" && (
+                <div className="my-3 flex flex-col gap-4 md:flex-row">
+                  <div className="mb-4 flex-1">
                     <label
-                      htmlFor="guarantor2Phone"
+                      htmlFor="selectOrganisationGroup"
                       className="m-0 text-xs font-medium text-ajo_darkBlue"
                     >
-                      Phone Number
+                      Select Group
                     </label>
                     <Field
-                      onChange={handleChange}
-                      name="guarantor2Phone"
-                      type="text"
-                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                    />
-                    <ErrorMessage
-                      name="guarantor2Phone"
-                      component="div"
-                      className="text-xs text-red-500"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label
-                      htmlFor="guarantor2Email"
-                      className="m-0 text-xs font-medium text-ajo_darkBlue"
+                      as="select"
+                      id="selectOrganisationGroup"
+                      name="selectOrganisationGroup"
+                      className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
                     >
-                      Email
-                    </label>
-                    <Field
-                      name="guarantor2Email"
-                      type="text"
-                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                    />
+                      {organisationGroups?.map(
+                        (group: OrganisationGroupsProps) => (
+                          <option key={group._id} value={group._id}>
+                            {group.groupName}
+                          </option>
+                        ),
+                      )}
+                      <option className="invisible"></option>
+                    </Field>
                     <ErrorMessage
-                      name="guarantor2Email"
+                      name="selectOrganisationGroup"
                       component="div"
                       className="text-xs text-red-500"
                     />
                   </div>
                 </div>
-                <div className="mb-8">
-                  <label
-                    htmlFor="guarantor2Address"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    Home Address
-                  </label>
-                  <Field
-                    onChange={handleChange}
-                    name="guarantor2Address"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  />
-                  <ErrorMessage
-                    name="guarantor2Address"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
-                <div className="mb-4 w-1/2">
-                  <label
-                    htmlFor="idType"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    Select Identification Type
-                  </label>
-                  <Field
-                    as="select"
-                    id="idType"
-                    name="idType"
-                    className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
-                  >
-                    {/* {StatesAndLGAs.map((country) => (
-                    <option key={country.country} value={country.country}>
-                      {country.country}
-                    </option>
-                  ))} */}
-                    <option className="invisible"></option>
-                  </Field>
-                  <ErrorMessage
-                    name="idType"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
-                <div className="mt-4">
-                  <label
-                    htmlFor="guarantor2ID"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    Upload Filled Guarantor’s Form
-                  </label>
-                  <label
-                    htmlFor="guarantor2ID"
-                    className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
-                  >
-                    <input
-                      type="file"
-                      name="guarantor2ID"
-                      id="guarantor2ID"
-                      className="hidden w-full"
-                      onChange={(e) => {
-                        setFieldValue("userPicture", e.target.files);
-                      }}
-                      accept="application/pdf, .jpg, .png"
-                    />
-                    <div className="flex flex-col items-center justify-center">
-                      <Image
-                        src="/upload.svg"
-                        alt="guarantor form upload icon"
-                        width={48}
-                        height={48}
-                      />
-                      <p className="text-center text-[gray]">
-                        Drag n drop a{" "}
-                        <span className="font-semibold">.pdf, .jpg, .png</span>{" "}
-                        here, or click to select one
-                      </p>
-                    </div>
-                  </label>
-                  {values.userPicture &&
-                    values.userPicture[0] &&
-                    ((values.userPicture[0] as File).type.includes("image") ? (
-                      <Image
-                        src={URL.createObjectURL(values.userPicture[0])}
-                        alt="guarantor2ID"
-                        className="mt-4 max-w-full rounded-md"
-                        style={{ maxWidth: "100%" }}
-                        width={100}
-                        height={100}
-                      />
-                    ) : (
-                      <iframe
-                        src={URL.createObjectURL(values.userPicture[0])}
-                        className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
-                        title="Guarantor ID"
-                      ></iframe>
-                    ))}
-                  <div className="text-xs text-red-600">
-                    <ErrorMessage name="guarantor2ID" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mb-4 w-3/4">
-                <label
-                  htmlFor="role"
-                  className="m-0 text-xs font-medium text-ajo_darkBlue"
-                >
-                  Assign Role
-                </label>
-                <Field
-                  as="select"
-                  placeholder="make a selection"
-                  id="role"
-                  name="role"
-                  className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
-                >
-                  {/* {StatesAndLGAs.map((country) => (
-                    <option key={country.country} value={country.country}>
-                      {country.country}
-                    </option>
-                  ))} */}
-                  <option className="invisible"></option>
-                </Field>
-                <ErrorMessage
-                  name="role"
-                  component="div"
-                  className="text-xs text-red-500"
-                />
-              </div>
-              <div className="mb-4 w-3/4">
-                <label
-                  htmlFor="allCustomers"
-                  className="m-0 text-xs font-medium text-ajo_darkBlue"
-                >
-                  Assign Customers
-                </label>
-                <Field
-                  as="select"
-                  multiple
-                  placeholder="make a selection"
-                  id="allCustomers"
-                  name="allCustomers"
-                  className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
-                >
-                  {/* {StatesAndLGAs.map((country) => (
-                    <option key={country.country} value={country.country}>
-                      {country.country}
-                    </option>
-                  ))} */}
-                  <option className="invisible"></option>
-                </Field>
-                <ErrorMessage
-                  name="allCustomers"
-                  component="div"
-                  className="text-xs text-red-500"
-                />
-              </div>
-              <div className="flex gap-x-3">
-                <Field
-                  name="selectAllCustomers"
-                  type="checkbox"
-                  className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                  onChange={(e: { target: { checked: any } }) => {
-                    if (e.target.checked) {
-                      // Select all options
-                      setFieldValue(
-                        "allCustomers",
-                        // StatesAndLGAs.map((country) => country.country),
-                        () => {},
-                      );
-                    } else {
-                      // Deselect all
-                      setFieldValue("allCustomers", []);
-                    }
-                  }}
-                />
-
-                <label
-                  htmlFor="allCustomers"
-                  className="m-0 text-sm capitalize text-ajo_darkBlue"
-                >
-                  Select all Customers
-                </label>
-              </div>
+              )}
             </section>
           </div>
           <button

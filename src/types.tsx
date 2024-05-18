@@ -1,4 +1,7 @@
+import { ReactNode } from "react";
+
 export type customer = {
+  officeAddress1: string;
   organisationName?: string;
   _id: string;
   firstName: string;
@@ -51,35 +54,6 @@ export type setSavingsResponse = {
   id: string;
 };
 
-// export type postSavingsResponse = {
-//   paymentMode: "cash" | "online";
-//   message: string;
-//   narrative: string;
-//   purposeName: string;
-//   amount: 50000;
-//   startDate: string;
-//   endDate: string;
-//   frequency: "daily";
-//   paidDays: [
-//     {
-//       datesPaid: string[];
-//       amount: 50000;
-//       dayOfpayment: string;
-//       _id: string;
-//     },
-//   ];
-//   user: string;
-//   isPaid: "unpaid" | "paid";
-//   _id: string;
-//   createdAt: string;
-//   updatedAt: string;
-//   __v: 0;
-//   savedDates: [];
-//   specificDates: string[];
-//   id: string;
-//   status: "failed" | "success" | undefined;
-// };
-
 export interface postSavingsResponse {
   status: "failed" | "success" | undefined;
   message: string;
@@ -125,53 +99,30 @@ export interface PaidDay {
 }
 
 export type savings = {
+  [x: string]: any;
   _id: string;
   purposeName: string;
   amount: number;
   startDate: string;
   endDate: string;
+  totalAmountSaved: number;
   frequency: string;
-  user: {
-    groupMember: any[];
-    isArchieve: boolean;
-    savingIdentities: any[];
-    _id: string;
-    firstName: string;
-    lastName: string;
-    otherName: string;
-    email: string;
-    homeAddress: string;
-    phoneNumber: string;
-    country: string;
-    state: string;
-    lga: string;
-    city: string;
-    popularMarket: string;
-    nok: string;
-    nokRelationship: string;
-    nokPhone: string;
-    nin: number;
-    bvn: number;
-    meansOfIDPhoto: File;
-    meansOfID: string;
-    photo: File;
-    accountNumber: number;
-    userType: string;
-    role: "customer" | "merchant" | "organization";
-    kycVerified: boolean;
-    organisation: string;
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
-  };
-  organisation: string;
+  user: User;
+  organisation: Organisation;
   isPaid: string;
-  paidDays: any[];
+  paidDays: PaidDay[];
   createdAt: string;
   updatedAt: string;
   __v: number;
-  savedDates: any[];
-  specificDates: any[];
+  savedDates: string[];
+  specificDates: string[];
+  adminFee: number;
+  appliedServiceCharge: number;
+  serviceCharge: number;
+  appliedPercentage: number;
+  amountPayable: number;
+  calculatedPaidDays: { datePaid: string; amountPerDay: number }[];
+  adminMargin: number;
   id: string;
 };
 export type allSavingsResponse = {
@@ -374,48 +325,159 @@ export interface WithdrawalProps {
 }
 
 export interface Organisation {
-  isVerified: boolean;
-  _id: string;
+  accountNumber: string;
+  assignedCustomer?: any[];
+  businessEmailAdress: string;
+  city: string;
+  country: string;
+  createdAt?: string; // Consider using Date type if you parse this string into a Date object
+  description: string;
   email: string;
-  phoneNumber: string;
+  groupMember?: any[]; // You may want to replace 'any[]' with the appropriate type
+  isArchive?: boolean;
+  isVerified?: boolean;
+  kycEmailSent?: boolean;
+  kycVerified?: boolean;
+  officeAddress1: string;
+  officeAddress2: string;
   organisationName: string;
-  password: string;
-  userType: string;
-  groupMember: any[];
-  role: string;
-  prefferedUrl: string;
-  kycVerified: boolean;
-  isArchieve: boolean;
-  savingIdentities: any[];
-  createdAt: Date;
-  updatedAt: Date;
+  organisations?: any[]; // You may want to replace 'any[]' with the appropriate type
+  phoneNumber: string;
+  preferredUrl?: string;
+  region: string;
+  role?: string;
+  roles?: any[]; // You may want to replace 'any[]' with the appropriate type
+  savingIdentities?: any[]; // You may want to replace 'any[]' with the appropriate type
+  socialMedia?: {
+    facebook: string;
+    twitter: string;
+    instagram: string;
+    linkedIn: string;
+    pintrest: string;
+  };
+  state: string;
+  tradingName: string;
+  updatedAt?: string; // Consider using Date type if you parse this string into a Date object
+  userType?: string;
+  website: string;
+  __v?: number;
+  _id?: string;
+  photo?: string;
+}
+
+export interface Guarantor {
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  homeAddress: string;
+}
+
+export interface Role {
+  createdAt: string;
+  description: string;
+  name: string;
+  organisation: string;
+  permissions: Permission[];
+  updatedAt: string;
+  __v: number;
+  _id: string;
+}
+
+export interface Permission {
+  _id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
   __v: number;
 }
 
-export interface User {
+export interface AssignedUser {
+  accountNumber: string;
+  assignedUser: AssignedUser[];
+  bvn: number;
+  city: string;
+  country: string;
+  createdAt: string;
+  email: string;
+  firstName: string;
+  groupMember: any[];
+  officeAddress1: string;
+  organisationName?: string;
+  homeAddress: string;
+  isArchieve: boolean;
   isVerified: boolean;
+  kycEmailSent: boolean;
+  kycVerified: boolean;
+  lastName: string;
+  lga: string;
+  meansOfID: string;
+  meansOfIDPhoto: string;
+  nin: number;
+  nok: string;
+  nokPhone: string;
+  nokRelationship: string;
+  organisation: string;
+  organisations: any[];
+  otherName: string;
+  phoneNumber: string;
+  photo: string;
+  popularMarket: string;
+  role: string;
+  roles: any[];
+  savingIdentities: any[];
+  state: string;
+  updatedAt: string;
+  userType: string;
+  groupName: string;
+  __v: number;
+  _id: string;
+}
+export interface User {
   _id: string;
   firstName: string;
   lastName: string;
-  otherName: string;
+  otherName?: string;
   email: string;
   phoneNumber: string;
-  password: string;
-  accountNumber: string;
+  password?: string;
+  accountNumber?: string;
   userType: string;
   groupMember: any[];
   role: string;
+  organisations: any[];
   kycVerified: boolean;
+  kycEmailSent: boolean;
   isArchieve: boolean;
-  savingIdentities: string[];
+  isVerified: boolean;
+  savingIdentities: any[];
   organisation: string;
-  organisationName: string;
-  createdAt: Date;
-  updatedAt: Date;
-  totalCustomer: number;
-  pendingPayout: number;
+  organisationName?: string;
+  assignedUser: AssignedUser[];
+  totalCustomer?: number;
+  pendingPayout?: number;
+  roles: Role[];
+  createdAt: string;
+  updatedAt: string;
   __v: number;
+  bvn?: number;
+  city?: string;
+  country?: string;
+  homeAddress: string;
+  lga?: string;
+  meansOfID?: string;
+  meansOfIDPhoto?: string;
+  nin?: number;
+  nok?: string;
+  nokPhone?: string;
+  nokRelationship?: string;
+  photo?: string;
+  popularMarket?: string;
+  state?: string;
+  groupName?: string;
+  guarantor1?: Guarantor;
+  guarantor2?: Guarantor;
 }
+
 
 export interface CountryAndStateProps {
   country: string;
@@ -457,6 +519,21 @@ export interface UpdateMerchantKycProps {
   BankRecommendation: null;
   CourtAffidavit: null;
   CommunityRecommendation: null;
+  FormCacBn: null;
+  CertOfBusinessName: null;
+  percentOwnership: string;
+  contactPhoto: null;
+  cacNumber: string;
+  contactBvn: string;
+  contactNIN: string;
+  contactNationality: string;
+  OrgRole: string;
+  contactDOB: string;
+  contactEmail: string;
+  contactPhoneNumber: string;
+  contactFullName: string;
+  bankName: string;
+  acctNo: string;
 }
 
 type MyFile = {
@@ -506,22 +583,36 @@ export interface setUpSavingsProps {
 export interface createRoleProps {
   roleName: string;
   description: string;
-  postPermissions: {
-    viewMyPostReports: boolean;
-    viewAllPostReports: boolean;
-    postPayment: boolean;
-    debit: boolean;
-    export: boolean;
+  permissions: {
+    "edit-user": boolean;
+    "view-assigned-users": boolean;
+    "export-withdrawal": boolean;
+    "view-withdrawals": boolean;
+    "view-savings": boolean;
+    "export-saving": boolean;
+    "post-saving": boolean;
+    "set-saving": boolean;
+    "view-user": boolean;
   };
-  withdrawalPermissions: {
-    viewWithdrawals: boolean;
-    export: boolean;
+}
+
+export interface createSuperRoleProps {
+  roleName: string;
+  description: string;
+  viewPermissions: {
+    viewOrgDetails: boolean;
+    viewOrgCustomerDetails: boolean;
+    viewOrg: boolean;
+    generalPostingReport: boolean;
+    withdrawalReport: boolean;
   };
-  customerPermissions: {
-    viewCustomerDetails: boolean;
-    viewAssignedCustomers: boolean;
-    editAssignedCustomers: boolean;
-    viewAllCustomers: boolean;
+  editPermissions: {
+    editOrgCustomerDetails: boolean;
+    editOrgDetails: boolean;
+  };
+  actionPermissions: {
+    enableOrg: boolean;
+    disableOrg: boolean;
   };
 }
 
@@ -544,5 +635,86 @@ export interface mutateUserProps {
   guarantor2Email: string;
   guarantor2Phone: string;
   guarantor2Address: string;
-  allCustomers: string[];
+  assignedCustomers: any;
+
+  roles: any;
+  allCustomers?: string[];
+}
+
+export interface permissionObject {
+  _id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface roleResponse {
+  _id: string;
+  name: string;
+  description: string;
+  permissions: Permission[];
+  organisation: string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface staffResponse {
+  guarantor1: {
+    fullName: string;
+    phoneNumber: string;
+    email: string;
+    homeAddress: string;
+  };
+  guarantor2: {
+    fullName: string;
+    phoneNumber: string;
+    email: string;
+    homeAddress: string;
+  };
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  homeAddress: string;
+  phoneNumber: string;
+  userType: string;
+  groupMember: string[];
+  role: "staff";
+  organisations: string[];
+  kycVerified: boolean;
+  kycEmailSent: boolean;
+  isArchieve: boolean;
+  isVerified: boolean;
+  savingIdentities: string[];
+  organisation: string;
+  assignedUser: string[];
+  roles: string[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface permissionsState {
+  permissionsMap: { [key: string]: string };
+  userPermissions: string[];
+  permissionsLoading: boolean;
+  assignedCustomers: AssignedUser[]
+}
+
+export interface PermissionsProviderProps {
+  children: ReactNode;
+}
+
+export interface PermissionsMap {
+  [key: string]: string;
+}
+
+
+export interface SavingsInterface {
+  savings: savings[];
+  currentSavingsBalance: number;
+  totalAmountCollected: number;
+  nextWithdrawalDate: string;
 }

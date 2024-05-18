@@ -1,10 +1,14 @@
 "use client";
-import { CustomButton, FilterDropdown } from "@/components/Buttons";
-import { SearchInput } from "@/components/Forms";
-import TransactionsTable from "@/components/Tables";
 import { useAuth } from "@/api/hooks/useAuth";
+import { usePermissions } from "@/api/hooks/usePermissions";
+import StatesAndLGAs from "@/api/statesAndLGAs.json";
+import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import Modal, { ModalConfirmation } from "@/components/Modal";
+import PaginationBar from "@/components/Pagination";
 import { StatusIndicator } from "@/components/StatusIndicator";
+import TransactionsTable from "@/components/Tables";
+import SuccessToaster, { ErrorToaster } from "@/components/toast";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 import {
   CustomerSignUpProps,
   FormErrors,
@@ -16,9 +20,12 @@ import {
   getOrganizationProps,
   setSavingsResponse,
 } from "@/types";
-import { extractDate, formatToDateAndTime } from "@/utils/TimeStampFormatter";
+import { extractDate } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
+import { ErrorMessage, Field, Form, Formik } from "formik";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ChangeEvent,
   Dispatch,
@@ -26,20 +33,10 @@ import {
   useEffect,
   useState,
 } from "react";
-import Image from "next/image";
-import { useSelector } from "react-redux";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import DatePicker from "react-datepicker";
 import { CiExport } from "react-icons/ci";
-import { MdKeyboardArrowLeft } from "react-icons/md";
-import { MdKeyboardArrowRight } from "react-icons/md";
-import passport from "../../../../public/passport.svg";
-import ninslip from "../../../../public/NIN.svg";
-import SuccessToaster, { ErrorToaster } from "@/components/toast";
-import { ErrorMessage, Field, Form, Formik } from "formik";
+import { useSelector } from "react-redux";
 import * as Yup from "yup";
-import StatesAndLGAs from "@/api/statesAndLGAs.json";
-import { usePathname, useRouter } from "next/navigation";
+import ninslip from "../../../../public/NIN.svg";
 
 const initialValues: CustomerSignUpProps = {
   firstName: "",
@@ -85,6 +82,8 @@ const validationSchema = Yup.object().shape({
 
 const Customers = () => {
   const PAGE_SIZE = 5;
+  const { userPermissions, permissionsMap } = usePermissions();
+  const [permissionError, setPermissionError] = useState("");
 
   const [isCustomerCreated, setIsCustomerCreated] = useState(false);
   const [searchResult, setSearchResult] = useState("");
@@ -92,10 +91,12 @@ const Customers = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [error, setError] = useState("");
 
   const { client } = useAuth();
-  const router = useRouter();
-  const pathname = usePathname();
+  // const router = useRouter();
+  // const pathname = usePathname();
+  const user = useSelector(selectUser);
 
   const [modalState, setModalState] = useState(false);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
@@ -147,6 +148,9 @@ const Customers = () => {
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
+          if (error.response?.data.message.includes("unauthorized")) {
+            setPermissionError(error.response?.data.message);
+          }
           console.log(error);
           throw error;
         });
@@ -190,18 +194,6 @@ const Customers = () => {
     totalPages = Math.ceil(allCustomers.length / PAGE_SIZE);
   }
 
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
   useEffect(() => {
     // Calling refetch to rerun the allCustomers query
     refetch();
@@ -210,7 +202,7 @@ const Customers = () => {
   return (
     <>
       <div className="mb-4 space-y-2">
-        <p className="text-2xl text-base font-bold text-ajo_offWhite text-opacity-60">
+        <p className="text-base font-bold text-ajo_offWhite text-opacity-60">
           Customers
         </p>
       </div>
@@ -220,9 +212,8 @@ const Customers = () => {
             <FilterDropdown
               options={[
                 "Account Number",
-                // "Timestamp",
-                // "Name",
-                // "Email",
+                "Customer Name",
+                "Email Address",
                 // "Phone",
                 // "Channel",
                 // "Amount",
@@ -257,51 +248,69 @@ const Customers = () => {
               </svg>
             </form>
           </span>
-          <CustomButton
-            type="button"
-            label="Create New Customer"
-            style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-            onButtonClick={() => {
-              setModalState(true);
-              setModalToShow("create-customer");
-            }}
-          />
+          {(user?.role === "organisation" ||
+            (user?.role === "staff" &&
+              userPermissions.includes(permissionsMap["create-customer"]))) && (
+            <CustomButton
+              type="button"
+              label="Create New Customer"
+              style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+              onButtonClick={() => {
+                setModalState(true);
+                setModalToShow("create-customer");
+                setModalContent("form");
+              }}
+            />
+          )}
         </div>
 
-        <div className="">
-          <div className="my-8 justify-between md:flex">
+        <div className="my-8">
+          <label
+            htmlFor="fromDate"
+            className="mb-2 text-sm font-semibold text-white"
+          >
+            Select range from:
+          </label>
+          <div className="justify-between space-y-2 md:flex">
             <div className="flex items-center">
-              <p className="font-lg mr-2 text-white">Select range from:</p>
               <input
+                id="fromDate"
                 type="date"
                 value={fromDate}
                 onChange={handleFromDateChange}
-                className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                className="rounded-lg bg-[rgba(255,255,255,0.1)] p-3 text-ajo_offWhite caret-ajo_offWhite dark:[color-scheme:dark]"
               />
 
-              <p className="mx-2 text-white">to</p>
+              <label htmlFor="toDate" className="mx-2 text-white">
+                to
+              </label>
               <input
+                id="toDate"
                 type="date"
                 value={toDate}
                 onChange={handleToDateChange}
-                className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+                className="rounded-lg bg-[rgba(255,255,255,0.1)] p-3 text-ajo_offWhite caret-ajo_offWhite dark:[color-scheme:dark]"
               />
             </div>
-            <div className="mt-4 flex">
-              <button className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
-                Export as CSV{" "}
-                <span className="ml-2 mt-1">
-                  <CiExport />
-                </span>
-              </button>
-              <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
-                <u>Export as Excel</u>
-              </button>
-            </div>
+            {(user?.role === "organisation" ||
+              (user?.role === "staff" &&
+                userPermissions.includes(permissionsMap["export-saving"]))) && (
+              <div className="mt-4 flex">
+                <button className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite">
+                  Export as CSV{" "}
+                  <span className="ml-2 mt-1">
+                    <CiExport />
+                  </span>
+                </button>
+                <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
+                  <u>Export as Excel</u>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        <p className="mb-2 text-xl text-white">Customer List</p>
+        {/* <p className="mb-2 text-xl text-white">Customer List</p> */}
 
         <div>
           <TransactionsTable
@@ -318,91 +327,104 @@ const Customers = () => {
               "Organisation",
               "Action",
             ]}
-            content={paginatedCustomers?.map((customer, index) => (
-              <tr className="" key={index + 1}>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.firstName + " " + customer.lastName || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.accountNumber}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {extractDate(customer.createdAt) || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.email || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.phoneNumber || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.country || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.state || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.lga || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.city || "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.organisation || "----"}
-                </td>
+            content={
+              paginatedCustomers?.length === 0 ? (
+                <tr>
+                  <p className="relative left-[80%] text-center text-sm font-semibold text-ajo_offWhite md:left-[250%] ">
+                    {!permissionError
+                      ? "No Customers yet"
+                      : permissionError +
+                        ", contact your admin for permissions"}
+                  </p>
+                </tr>
+              ) : (
+                paginatedCustomers?.map((customer, index) => (
+                  <tr className="" key={index + 1}>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.firstName + " " + customer.lastName || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.accountNumber}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {extractDate(customer.createdAt) || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.email || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.phoneNumber || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.country || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.state || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.lga || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.city || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.organisation || "----"}
+                    </td>
 
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  <StatusIndicator
-                    label={`Actions`}
-                    clickHandler={() => {
-                      setOpenDropdown(index + 1);
-                      if (index + 1 === openDropdown) {
-                        toggleDropdown(openDropdown);
-                      } else {
-                        toggleDropdown(index + 1);
-                      }
-                    }}
-                    dropdownEnabled
-                    dropdownContents={{
-                      labels: [
-                        "View Customer",
-                        "Edit Customer",
-                        "Savings Settings",
-                        "Disable/Enable",
-                      ],
-                      actions: [
-                        () => {
-                          setModalState(true);
-                          setModalContent("form");
-                          setModalToShow("view");
-                          setCustomerToBeEdited(customer._id);
-                          console.log("View Customer");
-                        },
-                        () => {
-                          setModalToShow("edit");
-                          setModalState(true);
-                          setModalContent("form");
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      <StatusIndicator
+                        label={`Actions`}
+                        clickHandler={() => {
+                          setOpenDropdown(index + 1);
+                          if (index + 1 === openDropdown) {
+                            toggleDropdown(openDropdown);
+                          } else {
+                            toggleDropdown(index + 1);
+                          }
+                        }}
+                        dropdownEnabled
+                        dropdownContents={{
+                          labels: [
+                            "View Customer",
+                            "Edit Customer",
+                            "Savings Settings",
+                            "Disable/Enable",
+                          ],
+                          actions: [
+                            () => {
+                              setModalState(true);
+                              setModalContent("form");
+                              setModalToShow("view");
+                              setCustomerToBeEdited(customer._id);
+                              console.log("View Customer");
+                            },
+                            () => {
+                              setModalToShow("edit");
+                              setModalState(true);
+                              setModalContent("form");
 
-                          setCustomerToBeEdited(customer._id);
-                        },
-                        () => {
-                          setModalState(true);
-                          setModalToShow("savings");
-                          setModalContent("form");
-                          setCustomerToBeEdited(customer._id);
-                        },
-                        () => {
-                          console.log("Disable/Enable");
-                        },
-                      ],
-                    }}
-                    openDropdown={openDropdown}
-                    toggleDropdown={toggleDropdown}
-                    currentIndex={index + 1}
-                  />
-                </td>
-              </tr>
-            ))}
+                              setCustomerToBeEdited(customer._id);
+                            },
+                            () => {
+                              setModalState(true);
+                              setModalToShow("savings");
+                              setModalContent("form");
+                              setCustomerToBeEdited(customer._id);
+                            },
+                            () => {
+                              console.log("Disable/Enable");
+                            },
+                          ],
+                        }}
+                        openDropdown={openDropdown}
+                        toggleDropdown={toggleDropdown}
+                        currentIndex={index + 1}
+                      />
+                    </td>
+                  </tr>
+                ))
+              )
+            }
           />
           {modalState && (
             <Modal
@@ -450,11 +472,13 @@ const Customers = () => {
                 />
               ) : modalToShow === "create-customer" ? (
                 <>
-                  {!isCustomerCreated ? (
+                  {modalContent === "form" ? (
                     <div className="px-[10%]">
                       <CreateCustomer
                         setCloseModal={setModalState}
                         setCustomerCreated={setIsCustomerCreated}
+                        setModalContent={setModalContent}
+                        setError={setError}
                       />
                     </div>
                   ) : (
@@ -462,7 +486,7 @@ const Customers = () => {
                       successTitle="Customer creation successful"
                       errorTitle="Customer Creation Failed"
                       status={isCustomerCreated ? "success" : "failed"}
-                      responseMessage=""
+                      responseMessage={error}
                     />
                   )}
                 </>
@@ -472,41 +496,11 @@ const Customers = () => {
             </Modal>
           )}
           <div className="flex justify-center">
-            <div className="flex items-center justify-center  space-x-2">
-              <button
-                className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={goToPreviousPage}
-              >
-                <MdKeyboardArrowLeft />
-              </button>
-
-              <button
-                className="cursor-pointer  rounded-md p-2 text-blue-500 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={() => setCurrentPage(currentPage)}
-              >
-                {currentPage}
-              </button>
-
-              <button
-                className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={() => setCurrentPage(currentPage + 1)}
-              >
-                {currentPage + 1}
-              </button>
-              <button
-                className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={() => setCurrentPage(currentPage + 2)}
-              >
-                {currentPage + 2}
-              </button>
-
-              <button
-                className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={goToNextPage}
-              >
-                <MdKeyboardArrowRight />
-              </button>
-            </div>
+            <PaginationBar
+              setCurrentPage={setCurrentPage}
+              currentPage={currentPage}
+              totalPages={totalPages}
+            />
             {/* <PaginationBar apiResponse={DummyCustomers} /> */}
           </div>
         </div>
@@ -714,7 +708,7 @@ export const SavingsSettings = ({
                 </p>
                 <p className="overflow-hidden text-nowrap text-sm font-semibold text-ajo_offWhite md:text-base">
                   Phone number:{" "}
-                  <span className="font-normal">
+                  <span className="font-normal ">
                     {customerInfo?.phoneNumber}
                   </span>
                 </p>
@@ -953,7 +947,9 @@ export const ViewCustomer = ({
     <div>
       <div className="mx-auto mt-8 w-[100%] overflow-hidden rounded-md bg-white p-4 shadow-md">
         {/* Image and First Batch of Details Section */}
-        <p className="mb-8 mt-2 text-xl font-bold">Customer Details</p>
+        <p className="mb-8 mt-2 text-xl font-bold text-gray-600">
+          Customer Details
+        </p>
         <div className="rounded-lg md:border">
           <div className="p-6 md:flex ">
             <div className="mr-6 md:w-1/6 ">
@@ -1016,7 +1012,7 @@ export const ViewCustomer = ({
           </div>
 
           {/* Second Batch of Details Section */}
-          <div className="p-6">
+          <div className="p-6 ">
             <div className="mb-4 flex flex-wrap">
               <div className="w-full sm:w-1/3">
                 <p className="font-semibold text-gray-600">
@@ -1069,7 +1065,7 @@ export const ViewCustomer = ({
           </div>
         </div>
 
-        <div className=" mt-8 rounded-lg">
+        <div className=" mt-8 rounded-lg text-gray-600">
           <div className="md:flex ">
             <div className="w-[60%] rounded-lg p-6 md:border">
               <p className="mb-8 mt-2 text-xl font-bold">Next of Kin Details</p>
@@ -1115,7 +1111,7 @@ export const ViewCustomer = ({
               </div>
             </div>
 
-            <div className="ml-8 w-[40%] border p-6">
+            <div className="border p-6 md:ml-8 md:w-[40%]">
               <p className="mb-8 mt-2 text-xl font-bold">
                 Means Of ID: {customerInfo?.meansOfID ?? ""}
               </p>
@@ -1238,10 +1234,15 @@ export const EditCustomer = ({
     },
     onSuccess(response) {
       // router.push("/customer");
-      console.log(response);
+
       setShowSuccessToast(true);
-      // setSuccessMessage((response as any).response.data.message);
+
+      // Delay the execution of closeModal(false) by 5 seconds
+      setTimeout(() => {
+        closeModal(false);
+      }, 5000); // 5000 milliseconds = 5 seconds
     },
+
     onError(error: AxiosError<any, any>) {
       console.log(error);
       setShowErrorToast(true);
@@ -1347,6 +1348,10 @@ export const EditCustomer = ({
                 name="IdImage"
                 className="mt-8 w-full"
               >
+                {" "}
+                <p className="mb-8 mt-2 text-xl font-bold text-gray-600">
+                  Edit Customer Details
+                </p>
                 <div className="p-6 md:flex ">
                   <div className="mr-6 md:w-1/6 ">
                     <div className="">
@@ -1396,47 +1401,52 @@ export const EditCustomer = ({
                       </div>
                     </div>
                   </div>
-                  <div className="mt-8 flex w-5/6 flex-wrap md:mx-16">
+                  <div className="mt-8 w-5/6 flex-wrap md:mx-16">
                     <div className="mb-8">
-                      <div className="w-full justify-between gap-4 md:flex md:items-center">
+                      <div className="fl w-full justify-between gap-4 md:items-center">
                         <div className="mb-3 w-full">
                           <label
                             htmlFor="firstName"
-                            className="text-normal m-0 font-bold "
+                            className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                           >
                             First Name{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
-                          <Field
-                            id="firstName"
-                            name="firstName"
-                            type="text"
-                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                          />
-                          <ErrorMessage
-                            name="firstName"
-                            component="div"
-                            className="text-red-500"
-                          />
+                          <div>
+                            <Field
+                              id="firstName"
+                              name="firstName"
+                              type="text"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            />
+                            <ErrorMessage
+                              name="firstName"
+                              component="div"
+                              className="text-red-500"
+                            />
+                          </div>
                         </div>
                         <div className="mb-3 w-full">
                           <label
                             htmlFor="lastName"
-                            className="text-normal m-0 font-bold "
+                            className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                           >
                             Last Name{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
-                          <Field
-                            id="lastName"
-                            name="lastName"
-                            type="text"
-                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                          />
+                          <div>
+                            <Field
+                              id="lastName"
+                              name="lastName"
+                              type="text"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            />
+                          </div>
+
                           <ErrorMessage
                             name="lastName"
                             component="div"
@@ -1448,22 +1458,24 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="otherName"
-                          className="text-normal m-0 font-bold "
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           Other Names
                         </label>
-                        <Field
-                          id="otherName"
-                          name="otherName"
-                          type="text"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        />
+                        <div>
+                          <Field
+                            id="otherName"
+                            name="otherName"
+                            type="text"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          />
+                        </div>
                       </div>
 
                       <div className="mb-3">
                         <label
                           htmlFor="phoneNumber"
-                          className="text-normal m-0 font-bold "
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           Phone Number{" "}
                           <span className="font-base font-semibold text-[#FF0000]">
@@ -1488,18 +1500,19 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="email"
-                          className="text-normal m-0 font-bold "
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           Email address{" "}
                           <span className="font-base font-semibold text-[#FF0000]">
                             *
                           </span>
                         </label>
+                        <div></div>
                         <Field
                           id="email"
                           name="email"
                           type="email"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                         />
                         <ErrorMessage
                           name="email"
@@ -1511,7 +1524,7 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="homeAddress"
-                          className="text-normal m-0 font-bold "
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           Home Address{" "}
                           <span className="font-base font-semibold text-[#FF0000]">
@@ -1533,34 +1546,36 @@ export const EditCustomer = ({
                         />
                       </div>
 
-                      <div className="mb-3">
+                      <div className="mb-3 w-full">
                         <label
                           htmlFor="country"
-                          className="text-normal m-0 font-bold "
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           Country of Residence
                         </label>
-                        <Field
-                          onChange={handleChange}
-                          as="select"
-                          isInvalid={!!errors.country}
-                          name="country"
-                          id="country"
-                          // type="text"
-                          placeholder="country"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        >
-                          <option>Select Country</option>
-                          {StatesAndLGAs &&
-                            StatesAndLGAs.map((countries) => (
-                              <option
-                                key={countries.country}
-                                value={countries.country}
-                              >
-                                {countries.country}
-                              </option>
-                            ))}
-                        </Field>
+                        <div>
+                          <Field
+                            onChange={handleChange}
+                            as="select"
+                            isInvalid={!!errors.country}
+                            name="country"
+                            id="country"
+                            // type="text"
+                            placeholder="country"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          >
+                            <option>Select Country</option>
+                            {StatesAndLGAs &&
+                              StatesAndLGAs.map((countries) => (
+                                <option
+                                  key={countries.country}
+                                  value={countries.country}
+                                >
+                                  {countries.country}
+                                </option>
+                              ))}
+                          </Field>
+                        </div>
                         <ErrorMessage
                           name="country"
                           component="div"
@@ -1571,26 +1586,28 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="state"
-                          className="text-normal m-0 font-bold "
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           State
                         </label>
-                        <Field
-                          as="select"
-                          id="state"
-                          name="state"
-                          // type="text"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        >
-                          <option>Select State</option>
+                        <div>
+                          <Field
+                            as="select"
+                            id="state"
+                            name="state"
+                            // type="text"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          >
+                            <option>Select State</option>
 
-                          {selectedStateArray &&
-                            selectedStateArray.map((state) => (
-                              <option key={state.name} value={state.name}>
-                                {state.name}
-                              </option>
-                            ))}
-                        </Field>
+                            {selectedStateArray &&
+                              selectedStateArray.map((state) => (
+                                <option key={state.name} value={state.name}>
+                                  {state.name}
+                                </option>
+                              ))}
+                          </Field>{" "}
+                        </div>
                         <ErrorMessage
                           name="state"
                           component="div"
@@ -1600,26 +1617,28 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="lga"
-                          className="text-normal m-0 font-bold"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           Local Government Area (lga)
                         </label>
-                        <Field
-                          as="select"
-                          id="lga"
-                          name="lga"
-                          // type="text"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        >
-                          <option>Select LGA</option>
+                        <div>
+                          <Field
+                            as="select"
+                            id="lga"
+                            name="lga"
+                            // type="text"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          >
+                            <option>Select LGA</option>
 
-                          {selectedLGAArray &&
-                            selectedLGAArray.map((lga) => (
-                              <option key={lga} value={lga}>
-                                {lga}
-                              </option>
-                            ))}
-                        </Field>
+                            {selectedLGAArray &&
+                              selectedLGAArray.map((lga) => (
+                                <option key={lga} value={lga}>
+                                  {lga}
+                                </option>
+                              ))}
+                          </Field>
+                        </div>
                         <ErrorMessage
                           name="lga"
                           component="div"
@@ -1630,7 +1649,7 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="city"
-                          className="text-normal m-0 font-bold "
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                         >
                           City{" "}
                           <span className="font-base font-semibold text-[#FF0000]">
@@ -1656,27 +1675,31 @@ export const EditCustomer = ({
                         <div className="mb-3">
                           <label
                             htmlFor="organisation"
-                            className="m-0 text-xs font-medium"
+                            className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
                           >
                             Select Organisation i.e Thrift Collector
                             <span className="font-base font-semibold text-[#FF0000]">
                               *
                             </span>
                           </label>
-                          <Field
-                            disabled
-                            as="select"
-                            id="organisation"
-                            name="organisation"
-                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                          >
-                            <option value="">Select Organization</option>
-                            {organizations?.map((org: getOrganizationProps) => (
-                              <option key={org._id} value={org._id}>
-                                {org.organisationName}
-                              </option>
-                            ))}
-                          </Field>
+                          <div>
+                            <Field
+                              disabled
+                              as="select"
+                              id="organisation"
+                              name="organisation"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            >
+                              <option value="">Select Organization</option>
+                              {organizations?.map(
+                                (org: getOrganizationProps) => (
+                                  <option key={org._id} value={org._id}>
+                                    {org.organisationName}
+                                  </option>
+                                ),
+                              )}
+                            </Field>
+                          </div>
                           <ErrorMessage
                             name="organisation"
                             component="div"
@@ -1685,14 +1708,19 @@ export const EditCustomer = ({
                         </div>
                       }
                       <div className="mb-3">
-                        <label htmlFor="nin" className="m-0 text-xs font-bold ">
+                        <label
+                          htmlFor="nin"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%] "
+                        >
                           NIN number
                         </label>
-                        <Field
-                          name="nin"
-                          type="text"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        />
+                        <div>
+                          <Field
+                            name="nin"
+                            type="text"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          />
+                        </div>
                         <ErrorMessage
                           name="nin"
                           component="div"
@@ -1700,14 +1728,19 @@ export const EditCustomer = ({
                         />
                       </div>
                       <div className="mb-3">
-                        <label htmlFor="bvn" className="m-0 text-xs font-bold ">
+                        <label
+                          htmlFor="bvn"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%] "
+                        >
                           BVN number
                         </label>
-                        <Field
-                          name="bvn"
-                          type="text"
-                          className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                        />
+                        <div>
+                          <Field
+                            name="bvn"
+                            type="text"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          />
+                        </div>
                         <ErrorMessage
                           name="bvn"
                           component="div"
@@ -1803,9 +1836,13 @@ export const EditCustomer = ({
 const CreateCustomer = ({
   setCustomerCreated,
   setCloseModal,
+  setModalContent,
+  setError,
 }: {
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   setCustomerCreated: Dispatch<SetStateAction<boolean>>;
+  setModalContent: Dispatch<SetStateAction<"form" | "confirmation">>;
+  setError: Dispatch<SetStateAction<string>>;
 }) => {
   const { client } = useAuth();
   const [selectedCountry, setSelectedCountry] = useState("");
@@ -1814,7 +1851,7 @@ const CreateCustomer = ({
   );
   const [selectedState, setSelectedState] = useState("");
   const organizationId = useSelector(selectOrganizationId);
-  console.log("ID:  " + organizationId);
+  // console.log("ID:  " + organizationId);
   const [selectedLGAArray, setSelectesLGAArray] = useState<string[]>([]);
 
   const initialValues: UpdateKycProps = {
@@ -1928,6 +1965,7 @@ const CreateCustomer = ({
       console.log(response);
       console.log("customer created successfully");
       setCustomerCreated(true);
+      setModalContent("confirmation");
       setTimeout(() => {
         setCloseModal(false);
       }, 5000);
@@ -1935,6 +1973,8 @@ const CreateCustomer = ({
 
     onError(error: AxiosError<any, any>) {
       setCustomerCreated(false);
+      setModalContent("confirmation");
+      setError(error.response?.data.message ?? error.message);
       if (error.response?.status === 413) {
         console.log("Request Entity Too Large (413 Error)");
         console.log(
@@ -1959,9 +1999,7 @@ const CreateCustomer = ({
             "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
           )
           .required("Phone number is required"),
-        email: Yup.string()
-          .email("Invalid email address")
-          .required("Email is required"),
+        email: Yup.string().email("Invalid email address").optional(),
         country: Yup.string().required("Required"),
         state: Yup.string().required("Required"),
         lga: Yup.string().required("Required"),
@@ -1970,7 +2008,7 @@ const CreateCustomer = ({
         nok: Yup.string().required("Required"),
         nokRelationship: Yup.string().required("Required"),
         nokPhone: Yup.string().required("Required"),
-        homeAddress: Yup.string().required("Required"),
+        homeAddress: Yup.string().optional(),
         photo: Yup.mixed()
           .required("Required")
           .test(
@@ -2011,7 +2049,7 @@ const CreateCustomer = ({
         //     "Account name should only contain alphabets and spaces",
         //   ),
         bankAcctNo: Yup.string()
-          .required("Required")
+          .optional()
           .length(10, "Account number must be exactly 10 digits")
           .matches(/^\d{10}$/, "Account number should only contain digits"),
       })}
@@ -2053,7 +2091,7 @@ const CreateCustomer = ({
                 id="firstName"
                 name="firstName"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="firstName"
@@ -2075,7 +2113,7 @@ const CreateCustomer = ({
                 id="lastName"
                 name="lastName"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="lastName"
@@ -2096,7 +2134,7 @@ const CreateCustomer = ({
               id="otherName"
               name="otherName"
               type="text"
-              className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
             />
           </div>
 
@@ -2113,7 +2151,7 @@ const CreateCustomer = ({
                 id="phoneNumber"
                 name="phoneNumber"
                 type="tel"
-                className="bg-transparent outline-none"
+                className="w-full bg-transparent outline-none"
               />
             </div>
             <ErrorMessage
@@ -2135,7 +2173,7 @@ const CreateCustomer = ({
               id="email"
               name="email"
               type="email"
-              className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
             />
             <ErrorMessage
               name="email"
@@ -2160,7 +2198,7 @@ const CreateCustomer = ({
                 id="country"
                 // type="text"
                 placeholder="country"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               >
                 <option>Select Country</option>
                 {StatesAndLGAs &&
@@ -2190,7 +2228,7 @@ const CreateCustomer = ({
                 id="state"
                 name="state"
                 // type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               >
                 <option>Select State</option>
 
@@ -2219,7 +2257,7 @@ const CreateCustomer = ({
                 id="lga"
                 name="lga"
                 // type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               >
                 <option>Select LGA</option>
 
@@ -2251,7 +2289,7 @@ const CreateCustomer = ({
               <Field
                 name="city"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="city"
@@ -2270,7 +2308,7 @@ const CreateCustomer = ({
               <Field
                 name="popularMarket"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="popularMarket"
@@ -2291,7 +2329,7 @@ const CreateCustomer = ({
               <Field
                 name="nok"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="nok"
@@ -2310,7 +2348,7 @@ const CreateCustomer = ({
               <Field
                 name="nokRelationship"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="nokRelationship"
@@ -2349,7 +2387,7 @@ const CreateCustomer = ({
               <Field
                 name="homeAddress"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="homeAddress"
@@ -2362,7 +2400,7 @@ const CreateCustomer = ({
           <div className="mb-8">
             <div className="">
               <label
-                htmlFor="photo"
+                htmlFor="photoUpload"
                 className="text-md block font-medium text-white"
               >
                 Photo
@@ -2371,12 +2409,12 @@ const CreateCustomer = ({
                 <input
                   type="file"
                   name="photo"
-                  id="photo"
+                  id="photoUpload"
                   className="hidden"
                   onChange={(e) => setFieldValue("photo", e.target.files)}
                   accept="image/*"
                 />
-                <label htmlFor="photo" className="cursor-pointer">
+                <label htmlFor="photoUpload" className="cursor-pointer">
                   <p className="text-center text-white">
                     Drag n drop an image here, or click to select one
                   </p>
@@ -2478,7 +2516,7 @@ const CreateCustomer = ({
               <Field
                 name="nin"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="nin"
@@ -2496,7 +2534,7 @@ const CreateCustomer = ({
               <Field
                 name="bvn"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="bvn"
@@ -2514,7 +2552,7 @@ const CreateCustomer = ({
                     <Field
                       name="bankName"
                       type="text"
-                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                      className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                     />
                     <ErrorMessage
                       name="bankName"
@@ -2532,7 +2570,7 @@ const CreateCustomer = ({
                     <Field
                       name="bankAcctName"
                       type="text"
-                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                      className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                     />
                     <ErrorMessage
                       name="bankAcctName"
@@ -2551,7 +2589,7 @@ const CreateCustomer = ({
               <Field
                 name="bankAcctNo"
                 type="text"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
               />
               <ErrorMessage
                 name="bankAcctNo"
@@ -2567,7 +2605,17 @@ const CreateCustomer = ({
             className="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
             disabled={isSubmitting}
           >
-            {isSubmitting || isPending ? "Creating Customer......" : "Submit"}
+            {isSubmitting || isPending ? (
+              <Image
+                src="/loadingSpinner.svg"
+                alt="loading spinner"
+                className="relative left-1/2"
+                width={25}
+                height={25}
+              />
+            ) : (
+              "Submit"
+            )}
           </button>
           <MyEffectComponent formikValues={values} />
         </Form>
