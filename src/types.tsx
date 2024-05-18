@@ -635,9 +635,9 @@ export interface mutateUserProps {
   guarantor2Email: string;
   guarantor2Phone: string;
   guarantor2Address: string;
-  assignedCustomers: string[];
+  assignedCustomers: any;
 
-  roles: string[];
+  roles: any;
   allCustomers?: string[];
 }
 

@@ -25,6 +25,7 @@ import Image from "next/image";
 import {
   ChangeEvent,
   Dispatch,
+  Key,
   SetStateAction,
   useEffect,
   useState,
@@ -499,34 +500,66 @@ const MutateUser = ({
     },
   });
 
-  console.log(allRoles);
+  
+ 
   const { mutate: createUser, isPending: isCreatingRole } = useMutation({
     mutationFn: async (values: mutateUserProps) => {
       console.log("role created");
-      return client.post(`/api/user/create-staff`, {
-        firstName: values.firstName,
-        lastName: values.lastName,
-        phoneNumber: values.phone,
-        organisation: organizationId,
-        homeAddress: values.homeAddress,
-        email: values.email,
-        // photo: values.userPicture,
-        // guarantorForm: values.guarantorForm,
-        guarantor1: {
-          fullName: values.guarantor1Name,
-          homeAddress: values.guarantor1Address,
-          email: values.guarantor1Email,
-          phoneNumber: values.guarantor1Phone,
-        },
-        guarantor2: {
-          fullName: values.guarantor2Name,
-          homeAddress: values.guarantor2Address,
-          email: values.guarantor2Email,
-          phoneNumber: values.guarantor2Phone,
-        },
-        roles: [values.roles],
-        assignedUser: values.assignedCustomers,
-      });
+
+      const formData = new FormData()
+      formData.append("firstName", values.firstName)
+      formData.append("lastName", values.lastName)
+      formData.append("phoneNumber", values.phone)
+      formData.append("organisation", organizationId)
+      formData.append("homeAddress", values.homeAddress)
+      formData.append("email", values.email)
+      
+      formData.append('guarantor1.fullName', values.guarantor1Name);
+      formData.append('guarantor1.homeAddress', values.guarantor1Address);
+      formData.append('guarantor1.email', values.guarantor1Email);
+      formData.append('guarantor1.phoneNumber', values.guarantor1Phone);
+
+
+      formData.append('guarantor2.fullName', values.guarantor2Name);
+      formData.append('guarantor2.homeAddress', values.guarantor2Address);
+      formData.append('guarantor2.email', values.guarantor2Email);
+      formData.append('guarantor2.phoneNumber', values.guarantor2Phone);
+
+      formData.append("roles", values.roles)
+      formData.append("assignedUser", values.assignedCustomers)
+
+      if(values.userPicture){
+        formData.append("photo", values.userPicture[0]);
+      }
+      if(values.guarantorForm){
+        formData.append("guarantorForm", values.guarantorForm[0]);
+      }
+      return client.post(`/api/user/create-staff`, formData
+      //  {
+      //   firstName: values.firstName,
+      //   lastName: values.lastName,
+      //   phoneNumber: values.phone,
+      //   organisation: organizationId,
+      //   homeAddress: values.homeAddress,
+      //   email: values.email,
+      //   photo: values.userPicture,
+      //    guarantorForm: values.guarantorForm,
+      //   guarantor1: {
+      //     fullName: values.guarantor1Name,
+      //     homeAddress: values.guarantor1Address,
+      //     email: values.guarantor1Email,
+      //     phoneNumber: values.guarantor1Phone,
+      //   },
+      //   guarantor2: {
+      //     fullName: values.guarantor2Name,
+      //     homeAddress: values.guarantor2Address,
+      //     email: values.guarantor2Email,
+      //     phoneNumber: values.guarantor2Phone,
+      //   },
+      //   roles: [values.roles],
+      //   assignedUser: values.assignedCustomers,
+      // }
+    );
     },
 
     onSuccess(response) {
@@ -763,10 +796,13 @@ const MutateUser = ({
           ),
       })}
       onSubmit={(values, { setSubmitting }) => {
+        
         setTimeout(() => {
           if (actionToTake === "create-user") {
             console.log("creating user.....................");
-            createUser(values);
+             console.log(values, 234567)
+             createUser(values);
+            
           } else {
             console.log("editing user.....................");
             editUser(values);
@@ -1332,7 +1368,7 @@ const MutateUser = ({
                   </Field>
 
                   <div className="space-x-1 space-y-2">
-                    {values.assignedCustomers.map((customerId, index) => {
+                    {values.assignedCustomers.map((customerId: string, index: number ) => {
                       const option = allCustomers?.find(
                         (user) => user._id === customerId,
                       );
@@ -1344,7 +1380,7 @@ const MutateUser = ({
                               handleRemoveOption(index);
                               const updatedCustomers =
                                 values.assignedCustomers.filter(
-                                  (id) => id !== customerId,
+                                  (id: any) => id !== customerId,
                                 );
                               setFieldValue(
                                 "assignedCustomers",
