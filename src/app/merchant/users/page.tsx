@@ -175,6 +175,17 @@ const Users = () => {
     refetchAllRoles();
   }, [isUserCreated, isUserEdited, modalContent, refetch, refetchAllRoles]);
 
+  const viewUser = user?.role === "organisation" ||   (user?.role === "staff" &&
+                                userPermissions.includes(
+                                  permissionsMap["view-users"],
+                                ))
+
+  const editUser = (user?.role === "organisation" ||
+  (user?.role === "staff" &&
+    userPermissions.includes(
+      permissionsMap["edit-user"],
+    )))
+
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -230,6 +241,17 @@ const Users = () => {
             />
           )}
         </div>
+        <CustomButton
+              type="button"
+              label="Create User"
+              style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+              onButtonClick={() => {
+                setModalState(true);
+                setModalToShow("create-user");
+                setModalContent("form");
+                setIsUserCreated(false);
+              }}
+            />
 
         <p className="mb-2 text-base font-medium text-white">
           Existing Users List
@@ -316,28 +338,32 @@ const Users = () => {
                         dropdownEnabled
                         dropdownContents={{
                           labels: [
-                            (user?.role === "organisation" ||
-                              (user?.role === "staff" &&
-                                userPermissions.includes(
-                                  permissionsMap["view-users"],
-                                ))) &&
-                              "View User",
-                            (user?.role === "organisation" ||
-                              (user?.role === "staff" &&
-                                userPermissions.includes(
-                                  permissionsMap["edit-user"],
-                                ))) &&
-                              "Edit User",
+                            viewUser ? "View User": '',
+                            // (user?.role === "organisation" ||
+                            //   (user?.role === "staff" &&
+                            //     userPermissions.includes(
+                            //       permissionsMap["view-users"],
+                            //     ))) &&
+                            //   "View User",
+
+                            editUser ? "Edit User": '',
+                            // (user?.role === "organisation" ||
+                            //   (user?.role === "staff" &&
+                            //     userPermissions.includes(
+                            //       permissionsMap["edit-user"],
+                            //     ))) &&
+                            //   "Edit User",
                           ].filter(Boolean) as string[],
                           actions: [
                             () => {
-                              if (
-                                user?.role === "organisation" ||
-                                (user?.role === "staff" &&
-                                  userPermissions.includes(
-                                    permissionsMap["view-users"],
-                                  ))
-                              ) {
+                              // if (
+                              //   user?.role === "organisation" ||
+                              //   (user?.role === "staff" &&
+                              //     userPermissions.includes(
+                              //       permissionsMap["view-users"],
+                              //     ))
+                              // )
+                               {
                                 setModalState(true);
                                 setModalToShow("view-user");
                                 setUserToBeEdited(user._id);
@@ -347,13 +373,14 @@ const Users = () => {
                               }
                             },
                             () => {
-                              if (
-                                user?.role === "organisation" ||
-                                (user?.role === "staff" &&
-                                  userPermissions.includes(
-                                    permissionsMap["edit-user"],
-                                  ))
-                              ) {
+                              // if (
+                              //   user?.role === "organisation" ||
+                              //   (user?.role === "staff" &&
+                              //     userPermissions.includes(
+                              //       permissionsMap["edit-user"],
+                              //     ))
+                              // )
+                               {
                                 setModalToShow("edit-user");
                                 setModalState(true);
                                 setUserToBeEdited(user._id);
