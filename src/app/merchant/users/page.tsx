@@ -240,18 +240,9 @@ const Users = () => {
               }}
             />
           )}
+          
         </div>
-        <CustomButton
-              type="button"
-              label="Create User"
-              style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-              onButtonClick={() => {
-                setModalState(true);
-                setModalToShow("create-user");
-                setModalContent("form");
-                setIsUserCreated(false);
-              }}
-            />
+      
 
         <p className="mb-2 text-base font-medium text-white">
           Existing Users List
@@ -1507,6 +1498,7 @@ const ViewUser = ({ userId }: { userId: string }) => {
     },
   });
 
+
   const Detail = ({
     title,
     value,
@@ -1536,14 +1528,20 @@ const ViewUser = ({ userId }: { userId: string }) => {
       <p className="m-0 text-base font-bold text-ajo_darkBlue">USER DETAILS</p>
       <div className="m-0 rounded-md border border-gray-300 px-6 py-4">
         <div className="flex gap-4">
+
+          
           <Image
             // src={userInfo?.image ?? "/user"}
-            src="/man-woman.png"
+            src={userInfo ? userInfo?.photo: ''}
             alt={`${userInfo?.firstName}'s image`}
             className="h-full rounded-md"
             width={120}
             height={120}
           />
+
+          
+        
+          
           <div className="w-full space-y-4">
             <Detail title="First name" value={userInfo?.firstName} />
             <Detail title="Last name" value={userInfo?.lastName} />

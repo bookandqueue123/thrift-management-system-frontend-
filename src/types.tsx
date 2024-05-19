@@ -1,3 +1,4 @@
+import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { ReactNode } from "react";
 
 export type customer = {
@@ -661,6 +662,7 @@ export interface roleResponse {
 }
 
 export interface staffResponse {
+  photo: string | StaticImport,
   guarantor1: {
     fullName: string;
     phoneNumber: string;
