@@ -473,7 +473,9 @@ const MutateUser = ({
     userPicture: null,
     guarantor2ID: null,
     guarantorForm: null,
+    guarantorForm2: null,
     idType: "",
+    meansOfIDPhoto: null,
     guarantor1Name: "",
     guarantor1Email: "",
     guarantor1Phone: "",
@@ -545,13 +547,21 @@ const MutateUser = ({
 
       formData.append("roles", values.roles)
       formData.append("assignedUser", values.assignedCustomers)
-
+      formData.append('meansOfID', values.idType)
+      formData.append
       if(values.userPicture){
         formData.append("photo", values.userPicture[0]);
       }
       if(values.guarantorForm){
         formData.append("guarantorForm", values.guarantorForm[0]);
       }
+      if(values.guarantorForm2){
+        formData.append("guarantorForm2", values.guarantorForm2[0]);
+      }
+      if(values.meansOfIDPhoto){
+        formData.append("meansOfIDPhoto", values.meansOfIDPhoto[0]);
+      }
+
       return client.post(`/api/user/create-staff`, formData
       //  {
       //   firstName: values.firstName,
@@ -819,7 +829,7 @@ const MutateUser = ({
           if (actionToTake === "create-user") {
             console.log("creating user.....................");
              console.log(values, 234567)
-             createUser(values);
+              createUser(values);
             
           } else {
             console.log("editing user.....................");
@@ -1025,6 +1035,98 @@ const MutateUser = ({
                   <ErrorMessage name="userPicture" />
                 </div>
               </div>
+
+              <div className="mb-4 w-1/2">
+                  <label
+                    htmlFor="idType"
+                    className="m-0 text-xs font-medium text-ajo_darkBlue"
+                  >
+                    Select Identification Type
+                  </label>
+                  <Field
+                    as="select"
+                    id="idType"
+                    name="idType"
+                    className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
+                  >
+                    <option value="International Passport">
+                      International Passport
+                    </option>
+                    <option value="Utility Bill">Utility Bill</option>
+                    <option value="NIN">NIN</option>
+                    <option value="Drivers License">Drivers License</option>
+                    <option value="Voters Card">Voters Card</option>
+                    <option value="Association Membership ID">
+                      Association Membership ID
+                    </option>
+                    <option value="School ID">School ID</option>
+                    <option className="hidden"></option>
+                  </Field>
+                  <ErrorMessage
+                    name="idType"
+                    component="div"
+                    className="text-xs text-red-500"
+                  />
+                </div>
+
+                <div className="mt-4">
+                <label
+                  htmlFor="meansOfIDPhoto"
+                  className="m-0 text-xs font-medium text-ajo_darkBlue"
+                >
+                  {values.idType ? values.idType : "Id Photo"}
+                </label>
+                <label
+                  htmlFor="meansOfIDPhoto"
+                  className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
+                >
+                  <input
+                    type="file"
+                    name="meansOfIDPhoto"
+                    id="meansOfIDPhoto"
+                    className="hidden w-full"
+                    onChange={(e) => {
+                      setFieldValue("meansOfIDPhoto", e.target.files);
+                    }}
+                    accept="application/pdf, .jpg, .png"
+                  />
+                  <div className="flex flex-col items-center justify-center">
+                    <Image
+                      src="/upload.svg"
+                      alt="document upload icon"
+                      width={48}
+                      height={48}
+                    />
+                    <p className="text-center text-[gray]">
+                      Drag n drop a{" "}
+                      <span className="font-semibold">.jpg, .png</span> here, or
+                      click to select one
+                    </p>
+                  </div>
+                </label>
+                {values.meansOfIDPhoto &&
+                  values.meansOfIDPhoto[0] &&
+                  ((values.meansOfIDPhoto[0] as File).type.includes("image") ? (
+                    <Image
+                      src={URL.createObjectURL(values.meansOfIDPhoto[0])}
+                      alt="meansOfIDPhoto"
+                      className="mt-4 max-w-full rounded-md"
+                      style={{ maxWidth: "100%" }}
+                      width={100}
+                      height={100}
+                    />
+                  ) : (
+                    <iframe
+                      src={URL.createObjectURL(values.meansOfIDPhoto[0])}
+                      className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
+                      title="Bank Recommendation Letter"
+                    ></iframe>
+                  ))}
+                <div className="text-xs text-red-600">
+                  <ErrorMessage name="meansOfIDPhoto" />
+                </div>
+              </div>
+
             </section>
 
             <section>
@@ -1117,6 +1219,67 @@ const MutateUser = ({
                     className="text-xs text-red-500"
                   />
                 </div>
+
+                <div className="mt-4">
+                  <label
+                    htmlFor="guarantorForm"
+                    className="m-0 text-xs font-medium text-ajo_darkBlue"
+                  >
+                    Upload Filled Guarantor 1 Form
+                  </label>
+                  <label
+                    htmlFor="guarantorForm"
+                    className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
+                  >
+                    <input
+                      type="file"
+                      name="guarantorForm"
+                      id="guarantorForm"
+                      className="hidden w-full"
+                      onChange={(e) => {
+                        setFieldValue("guarantorForm", e.target.files);
+                      }}
+                      accept="application/pdf, .jpg, .png"
+                    />
+                    <div className="flex flex-col items-center justify-center">
+                      <Image
+                        src="/upload.svg"
+                        alt="guarantor form upload icon"
+                        width={48}
+                        height={48}
+                      />
+                      <p className="text-center text-[gray]">
+                        Drag n drop a{" "}
+                        <span className="font-semibold">.pdf, .jpg, .png</span>{" "}
+                        here, or click to select one
+                      </p>
+                    </div>
+                  </label>
+                  {values.guarantorForm &&
+                    values.guarantorForm[0] &&
+                    ((values.guarantorForm[0] as File).type.includes(
+                      "image",
+                    ) ? (
+                      <Image
+                        src={URL.createObjectURL(values.guarantorForm[0])}
+                        alt="guarantor2ID"
+                        className="mt-4 max-w-full rounded-md"
+                        style={{ maxWidth: "100%" }}
+                        width={100}
+                        height={100}
+                      />
+                    ) : (
+                      <iframe
+                        src={URL.createObjectURL(values.guarantorForm[0])}
+                        className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
+                        title="Guarantor Form"
+                      ></iframe>
+                    ))}
+                  <div className="text-xs text-red-600">
+                    <ErrorMessage name="guarantorForm" />
+                  </div>
+                </div>
+             
               </div>
 
               {/* Guarantor 2 Details */}
@@ -1204,7 +1367,7 @@ const MutateUser = ({
                     className="text-xs text-red-500"
                   />
                 </div>
-                <div className="mb-4 w-1/2">
+                {/* <div className="mb-4 w-1/2">
                   <label
                     htmlFor="idType"
                     className="m-0 text-xs font-medium text-ajo_darkBlue"
@@ -1235,25 +1398,25 @@ const MutateUser = ({
                     component="div"
                     className="text-xs text-red-500"
                   />
-                </div>
+                </div> */}
                 <div className="mt-4">
                   <label
-                    htmlFor="guarantorForm"
+                    htmlFor="guarantorForm2"
                     className="m-0 text-xs font-medium text-ajo_darkBlue"
                   >
-                    Upload Filled Guarantor’s Form
+                    Upload Filled Guarantor 2 Form
                   </label>
                   <label
-                    htmlFor="guarantorForm"
+                    htmlFor="guarantorForm2"
                     className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
                   >
                     <input
                       type="file"
-                      name="guarantorForm"
-                      id="guarantorForm"
+                      name="guarantorForm2"
+                      id="guarantorForm2"
                       className="hidden w-full"
                       onChange={(e) => {
-                        setFieldValue("guarantorForm", e.target.files);
+                        setFieldValue("guarantorForm2", e.target.files);
                       }}
                       accept="application/pdf, .jpg, .png"
                     />
@@ -1271,13 +1434,13 @@ const MutateUser = ({
                       </p>
                     </div>
                   </label>
-                  {values.guarantorForm &&
-                    values.guarantorForm[0] &&
-                    ((values.guarantorForm[0] as File).type.includes(
+                  {values.guarantorForm2 &&
+                    values.guarantorForm2[0] &&
+                    ((values.guarantorForm2[0] as File).type.includes(
                       "image",
                     ) ? (
                       <Image
-                        src={URL.createObjectURL(values.guarantorForm[0])}
+                        src={URL.createObjectURL(values.guarantorForm2[0])}
                         alt="guarantor2ID"
                         className="mt-4 max-w-full rounded-md"
                         style={{ maxWidth: "100%" }}
@@ -1286,13 +1449,13 @@ const MutateUser = ({
                       />
                     ) : (
                       <iframe
-                        src={URL.createObjectURL(values.guarantorForm[0])}
+                        src={URL.createObjectURL(values.guarantorForm2[0])}
                         className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
                         title="Guarantor Form"
                       ></iframe>
                     ))}
                   <div className="text-xs text-red-600">
-                    <ErrorMessage name="guarantorForm" />
+                    <ErrorMessage name="guarantorForm2" />
                   </div>
                 </div>
               </div>
