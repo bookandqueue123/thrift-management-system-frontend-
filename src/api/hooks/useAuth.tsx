@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 const apiUrl = process.env.BACKEND_API;
 // console.log(apiUrl);
 
-const BASE_URL = apiUrl;
+ const BASE_URL = apiUrl;
 
 export const useAuth = () => {
   const token = useSelector(selectToken);

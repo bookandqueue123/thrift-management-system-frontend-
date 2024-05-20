@@ -625,8 +625,10 @@ export interface mutateUserProps {
   homeAddress: string;
   dept_unit: string;
   userPicture: null;
+  meansOfIDPhoto: null;
   guarantor2ID: null;
   guarantorForm: null;
+  guarantorForm2: null;
   idType: string;
   guarantor1Name: string;
   guarantor1Email: string;
