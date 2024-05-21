@@ -22,7 +22,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
 import Image from "next/image";
-import {
+import Link from "next/link";
+import React, {
   ChangeEvent,
   Dispatch,
   Key,
@@ -1692,15 +1693,17 @@ const ViewUser = ({ userId }: { userId: string }) => {
       <div className="m-0 rounded-md border border-gray-300 px-6 py-4">
         <div className="flex gap-4">
 
+          <Link target="_blank" href={userInfo?.photo ? String(userInfo?.photo): ''}>
+            <Image
+              // src={userInfo?.image ?? "/user"}
+              src={userInfo ? userInfo?.photo: ''}
+              alt={`${userInfo?.firstName}'s image`}
+              className="h-full rounded-md"
+              width={120}
+              height={120}
+            />
+          </Link>
           
-          <Image
-            // src={userInfo?.image ?? "/user"}
-            src={userInfo ? userInfo?.photo: ''}
-            alt={`${userInfo?.firstName}'s image`}
-            className="h-full rounded-md"
-            width={120}
-            height={120}
-          />
 
           
         
@@ -1711,6 +1714,42 @@ const ViewUser = ({ userId }: { userId: string }) => {
             <Detail title="Email address" value={userInfo?.email} />
             <Detail title="Phone number" value={userInfo?.phoneNumber} />
             <Detail title="Home Address" value={userInfo?.homeAddress} />
+            <Detail title="Assigned Role" value={userInfo?.roles[0].name} />
+            <div className="flex">
+              <p className="font-semibold ">
+                Assigned User: 
+              </p>
+              
+              {userInfo?.assignedUser.map((user, index) => (
+                <React.Fragment key={user._id}>
+                {user.firstName} {user.lastName}
+                {index < userInfo.assignedUser.length - 1 && ', '}
+              </React.Fragment>
+                
+              ))}
+            </div>
+            <div className="flex ">
+              <p className="font-semibold ">
+                {userInfo?.meansOfID}:
+              </p>
+              
+              <div className="ml-4">
+                <Link target="_blank" href={userInfo?.meansOfIDPhoto ? String(userInfo?.photo): ""}>
+                
+                <Image
+                
+                src={userInfo ? userInfo?.photo: ''}
+                alt={`${userInfo?.firstName}'s image`}
+                className="h-full rounded-md"
+                width={120}
+                height={120}
+              />
+              
+                </Link>
+                
+              </div>
+                
+            </div>
           </div>
         </div>
       </div>
@@ -1728,16 +1767,20 @@ const ViewUser = ({ userId }: { userId: string }) => {
             title="Home address"
             value={userInfo?.guarantor1.homeAddress}
           />
-          <button className="flex rounded-md border border-gray-300 p-2">
-            <Image
-              src="/pdfLogo.svg"
-              alt="pdf"
-              width={16}
-              height={16}
-              className="rounded-sm"
-            />
-            {userInfo?.guarantor2.fullName}
-          </button>
+
+          <Link target="_blank" href={userInfo?.guarantorForm ? userInfo?.guarantorForm: ''}>
+            <button className="flex rounded-md border border-gray-300 p-2">
+              <Image
+                src="/pdfLogo.svg"
+                alt="pdf"
+                width={16}
+                height={16}
+                className="rounded-sm"
+              />
+              {userInfo?.guarantor1.fullName}
+            </button>
+          </Link>
+          
         </div>
         <div key={userInfo?.guarantor2.phoneNumber} className="mt-8 space-y-2">
           <p className="font-semibold text-ajo_darkBlue">Guarantor 2:</p>
@@ -1751,6 +1794,19 @@ const ViewUser = ({ userId }: { userId: string }) => {
             title="Home address"
             value={userInfo?.guarantor2.homeAddress}
           />
+
+          <Link target="_blank" href={userInfo?.guarantorForm2 ? userInfo?.guarantorForm2 : ''}>
+            <button className="flex rounded-md border border-gray-300 p-2">
+              <Image
+                src="/pdfLogo.svg"
+                alt="pdf"
+                width={16}
+                height={16}
+                className="rounded-sm"
+              />
+              {userInfo?.guarantor2.fullName}
+            </button>
+          </Link>
           {/* <button className="flex rounded-md border border-gray-300 p-2">
             <Image
               src="/pdfLogo.svg"
