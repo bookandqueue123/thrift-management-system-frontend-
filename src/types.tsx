@@ -665,7 +665,7 @@ export interface roleResponse {
 }
  
 export interface staffResponse {
-  photo: string | StaticImport ,
+  photo: string | StaticImport ;
   guarantor1: {
     fullName: string;
     phoneNumber: string;
@@ -702,7 +702,7 @@ export interface staffResponse {
   guarantorForm2:string;
   guarantorForm: string;
   meansOfID: string;
-  meansOfIDPhoto: string | Url
+  meansOfIDPhoto: any
   
 }
 interface assignedUserdata{

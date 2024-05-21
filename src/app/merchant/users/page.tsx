@@ -23,6 +23,7 @@ import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, {
   ChangeEvent,
   Dispatch,
@@ -458,6 +459,7 @@ const MutateUser = ({
   setMutationResponse: Dispatch<SetStateAction<string>>;
   userToBeEdited: string;
 }) => {
+  const router = useRouter()
   const { client } = useAuth();
   const organizationId = useSelector(selectOrganizationId);
   const userId = useSelector(selectUserId);
@@ -564,30 +566,7 @@ const MutateUser = ({
       }
 
       return client.post(`/api/user/create-staff`, formData
-      //  {
-      //   firstName: values.firstName,
-      //   lastName: values.lastName,
-      //   phoneNumber: values.phone,
-      //   organisation: organizationId,
-      //   homeAddress: values.homeAddress,
-      //   email: values.email,
-      //   photo: values.userPicture,
-      //    guarantorForm: values.guarantorForm,
-      //   guarantor1: {
-      //     fullName: values.guarantor1Name,
-      //     homeAddress: values.guarantor1Address,
-      //     email: values.guarantor1Email,
-      //     phoneNumber: values.guarantor1Phone,
-      //   },
-      //   guarantor2: {
-      //     fullName: values.guarantor2Name,
-      //     homeAddress: values.guarantor2Address,
-      //     email: values.guarantor2Email,
-      //     phoneNumber: values.guarantor2Phone,
-      //   },
-      //   roles: [values.roles],
-      //   assignedUser: values.assignedCustomers,
-      // }
+   
     );
     },
 
@@ -597,6 +576,7 @@ const MutateUser = ({
       setMutationResponse(response?.data.message);
       setTimeout(() => {
         setCloseModal(false);
+        router.push("/merchant/users")
       }, 5000);
     },
 
@@ -1734,12 +1714,12 @@ const ViewUser = ({ userId }: { userId: string }) => {
               </p>
               
               <div className="ml-4">
-                <Link target="_blank" href={userInfo?.meansOfIDPhoto ? String(userInfo?.photo): ""}>
+                <Link target="_blank" href={userInfo?.meansOfIDPhoto ? String(userInfo?.meansOfIDPhoto): ""}>
                 
                 <Image
                 
-                src={userInfo ? userInfo?.photo: ''}
-                alt={`${userInfo?.firstName}'s image`}
+                src={userInfo ? userInfo?.meansOfIDPhoto: ''}
+                alt={`${userInfo?.firstName}'s ID`}
                 className="h-full rounded-md"
                 width={120}
                 height={120}
