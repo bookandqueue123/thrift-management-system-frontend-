@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/api/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { redirect, usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 // import preferredUrls from "@/api/dummyPreferredUrls.json";
 import { useUrl } from "@/api/hooks/useUrl";
@@ -15,18 +15,6 @@ const VerifyOrgSubdomain = () => {
 
   const [currentUrl, setCurrentUrl] = useState("");
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      const hostname = url.hostname;
-      console.log("hostname", hostname);
-      const subdomain = hostname.split(".")[0];
-      setCurrentUrl(subdomain);
-    }
-  }, [setPreferredUrl]);
-
-  console.log("currentUrl", currentUrl);
-
   const { data: allOrganizations, isLoading: isLoadingAllOrganizations } =
     useQuery({
       queryKey: ["allOrganizations"],
@@ -37,30 +25,50 @@ const VerifyOrgSubdomain = () => {
             return response.data;
           })
           .catch((error) => {
-         
             throw error;
           });
       },
     });
 
   useEffect(() => {
-    if (allOrganizations) {
-      const foundOrganization = allOrganizations.find(
-        (org: { prefferedUrl: string }) => org.prefferedUrl?.toLowerCase() === currentUrl.toLowerCase(),
-      );
+    const excludedDomains = [
+      "staging.finkia.com.ng",
+      "www.finkia.com.ng",
+      "localhost",
+    ];
 
-      if (foundOrganization) {
-        console.log("Matched URL:", foundOrganization.prefferedUrl);
-        setPreferredUrl(foundOrganization.prefferedUrl);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      const hostname = url.hostname;
+      console.log("hostname", hostname);
+
+      // Checking if the current hostname is in the list of excluded domains
+      if (!excludedDomains.includes(hostname)) {
+        const subdomain = hostname.split(".")[0];
+        setCurrentUrl(subdomain);
+
+        if (allOrganizations) {
+          const foundOrganization = allOrganizations.find(
+            (org: { prefferedUrl: string }) =>
+              org.prefferedUrl?.toLowerCase() === currentUrl.toLowerCase(),
+          );
+
+          if (foundOrganization) {
+            console.log("Matched URL:", foundOrganization.prefferedUrl);
+            setPreferredUrl(foundOrganization.prefferedUrl);
+          } else {
+            console.log("No matching URL found.");
+            setPreferredUrl("");
+            router.push("/not-found");
+          }
+        }
       } else {
-        console.log("No matching URL found.");
-        setPreferredUrl("");
-        router.push("/not-found");
+        console.log("Excluded domain. Skipping verification.");
       }
     }
+    console.log("currentUrl", currentUrl);
   }, [preferredUrl, router, setPreferredUrl, currentUrl, allOrganizations]);
 
- 
   return null;
 };
 

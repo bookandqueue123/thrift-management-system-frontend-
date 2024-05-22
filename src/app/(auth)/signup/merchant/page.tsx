@@ -22,7 +22,17 @@ const validationSchema = Yup.object().shape({
       "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
     )
     .required("Phone number is required"),
-  prefferedUrl: Yup.string().required(),
+  prefferedUrl: Yup.string()
+    .required("Preferred URL is required")
+    .matches(
+      /^[a-zA-Z0-9-]+$/,
+      "Subdomain must not contain any special characters only hyphen (-) and numbers and text",
+    )
+    .test(
+      "is-subdomain",
+      'Subdomain should not include "@finkia.com.ng"',
+      (value) => !value.includes("@finkia.com.ng"),
+    ),
 
   password: Yup.string()
     .min(6, "Password must be at least 6 characters")
@@ -118,7 +128,7 @@ const MerchantForm = () => {
               <ErrorMessage
                 name="organisationName"
                 component="div"
-                className="text-red-500"
+                className="text-xs text-red-500"
               />
             </div>
 
@@ -141,7 +151,7 @@ const MerchantForm = () => {
               <ErrorMessage
                 name="email"
                 component="div"
-                className="text-red-500"
+                className="text-xs text-red-500"
               />
             </div>
 
@@ -192,7 +202,7 @@ const MerchantForm = () => {
               <ErrorMessage
                 name="phoneNumber"
                 component="div"
-                className="text-red-500"
+                className="text-xs text-red-500"
               />
             </div>
 
@@ -204,18 +214,22 @@ const MerchantForm = () => {
                 Preferred Url{" "}
                 <span className="font-base font-semibold text-[#FF0000]">
                   *
-                </span>
+                </span>{" "}
+                (e.g: example@finkia.com.ng)
               </label>
-              <Field
-                type="string"
-                name="prefferedUrl"
-                id="prefferedUrl"
-                className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
+              <div className="mt-1 flex w-full rounded-lg border-0 bg-[#F3F4F6]  p-3">
+                <Field
+                  type="string"
+                  name="prefferedUrl"
+                  id="prefferedUrl"
+                  className="w-full bg-transparent text-[#7D7D7D] outline-none"
+                />
+                <span className="text-ajo_darkBlue">@finkia.com.ng</span>
+              </div>
               <ErrorMessage
                 name="prefferedUrl"
                 component="div"
-                className="text-red-500"
+                className="text-xs text-red-500"
               />
             </div>
 
@@ -238,7 +252,7 @@ const MerchantForm = () => {
               <ErrorMessage
                 name="password"
                 component="div"
-                className="text-red-500"
+                className="text-xs text-red-500"
               />
             </div>
 
@@ -261,7 +275,7 @@ const MerchantForm = () => {
               <ErrorMessage
                 name="confirmPassword"
                 component="div"
-                className="text-red-500"
+                className="text-xs text-red-500"
               />
             </div>
           </div>

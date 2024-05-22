@@ -1,4 +1,6 @@
+import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { ReactNode } from "react";
+import { Url } from "url";
 
 export type customer = {
   officeAddress1: string;
@@ -624,8 +626,10 @@ export interface mutateUserProps {
   homeAddress: string;
   dept_unit: string;
   userPicture: null;
+  meansOfIDPhoto: null;
   guarantor2ID: null;
   guarantorForm: null;
+  guarantorForm2: null;
   idType: string;
   guarantor1Name: string;
   guarantor1Email: string;
@@ -659,8 +663,9 @@ export interface roleResponse {
   updatedAt: string;
   __v: number;
 }
-
+ 
 export interface staffResponse {
+  photo: string | StaticImport ;
   guarantor1: {
     fullName: string;
     phoneNumber: string;
@@ -689,11 +694,24 @@ export interface staffResponse {
   isVerified: boolean;
   savingIdentities: string[];
   organisation: string;
-  assignedUser: string[];
-  roles: string[];
+  assignedUser: assignedUserdata[];
+  roles: RolesData[];
   createdAt: string;
   updatedAt: string;
   __v: number;
+  guarantorForm2:string;
+  guarantorForm: string;
+  meansOfID: string;
+  meansOfIDPhoto: any
+  
+}
+interface assignedUserdata{
+  _id: string; // or _id if that's what it should be
+  firstName: string;
+  lastName: string;
+}
+interface RolesData{
+  name: string
 }
 
 export interface permissionsState {
