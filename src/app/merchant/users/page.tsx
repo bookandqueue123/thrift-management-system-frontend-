@@ -574,12 +574,13 @@ const MutateUser = ({
       setUserCreated(true);
       setModalContent("status");
       setMutationResponse(response?.data.message);
-      setModalContent("form")
+      
       setTimeout(() => {
         setCloseModal(false);
+        setModalContent("form")
         router.push("/merchant/users")
-      }, 8000);
-      setModalContent("form")
+      }, 9000);
+      
     },
 
     onError(error: AxiosError<any, any>) {
@@ -587,6 +588,10 @@ const MutateUser = ({
       setModalContent("status");
       console.log(error.response?.data.message);
       setMutationResponse(error.response?.data.message);
+      setTimeout(() => {
+        setModalContent("form")
+      }, 8000);
+      
     },
   });
 
