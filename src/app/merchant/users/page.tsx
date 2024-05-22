@@ -423,7 +423,7 @@ const Users = () => {
                 </div>
               ) : (
                 <ModalConfirmation
-                  successTitle={`User ${modalToShow === "create-user" ? "Creation" : "Editing"} Successful`}
+                  successTitle={`User ${modalToShow === "create-user" ? "Creation" : modalToShow === "edit-user" ? "Editing": ""} Successful`}
                   errorTitle={`User ${modalToShow === "create-user" ? "Creation" : "Editing"} Failed`}
                   status={isUserCreated || isUserEdited ? "success" : "failed"}
                   responseMessage={mutationResponse}
@@ -574,10 +574,12 @@ const MutateUser = ({
       setUserCreated(true);
       setModalContent("status");
       setMutationResponse(response?.data.message);
+      setModalContent("form")
       setTimeout(() => {
         setCloseModal(false);
         router.push("/merchant/users")
-      }, 5000);
+      }, 8000);
+      setModalContent("form")
     },
 
     onError(error: AxiosError<any, any>) {
