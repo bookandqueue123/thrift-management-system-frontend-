@@ -659,6 +659,15 @@ const MutateUser = ({
     mutationKey: ["edit user"],
     mutationFn: async (values: mutateUserProps) => {
       
+      if (Array.isArray(values.roles)) {
+        if (values.roles.length > 0 && values.roles[0]._id) {
+          values.roles = values.roles[0]._id;
+        } 
+      } 
+      
+    
+      console.log(values);
+
       // const socials = {
       //   facebook: values.facebook,
       //   twitter: values.instagram,
@@ -668,6 +677,7 @@ const MutateUser = ({
       // };
 
       console.log(values)
+      
       const formData = new FormData()
       
       formData.append("firstName", values.firstName)
