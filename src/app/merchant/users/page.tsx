@@ -482,6 +482,8 @@ const MutateUser = ({
     },
   });
 
+  console.log(userInfo)
+
   
   const initialValues: mutateUserProps = actionToTake === 'edit-user' ? {
     firstName: userInfo?.firstName ?? "", 
@@ -657,6 +659,15 @@ const MutateUser = ({
     mutationKey: ["edit user"],
     mutationFn: async (values: mutateUserProps) => {
       
+      if (Array.isArray(values.roles)) {
+        if (values.roles.length > 0 && values.roles[0]._id) {
+          values.roles = values.roles[0]._id;
+        } 
+      } 
+      
+    
+      console.log(values);
+
       // const socials = {
       //   facebook: values.facebook,
       //   twitter: values.instagram,
@@ -666,6 +677,7 @@ const MutateUser = ({
       // };
 
       console.log(values)
+      
       const formData = new FormData()
       
       formData.append("firstName", values.firstName)
@@ -686,7 +698,7 @@ const MutateUser = ({
       formData.append('guarantor2.email', values.guarantor2Email);
       formData.append('guarantor2.phoneNumber', values.guarantor2Phone);
 
-      formData.append("roles", values.roles[0]._id)
+      formData.append("roles", values.roles)
       // formData.append("assignedUser", JSON.stringify(assignedCustomerIds))
       formData.append('meansOfID', values.idType)
       formData.append
