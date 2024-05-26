@@ -666,7 +666,7 @@ const MutateUser = ({
       } 
       
     
-      console.log(values);
+
 
       // const socials = {
       //   facebook: values.facebook,
