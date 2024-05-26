@@ -121,8 +121,15 @@ const SignInForm = () => {
       setShowErrorToast(true);
       setErrorMessage(error.response?.data.message);
       // setErrorMessage(error.data)
+
+      setTimeout(() => {
+        setShowErrorToast(false)
+      }, 5000)
     },
   });
+
+  console.log(showErrorToast)
+
 
   return (
     <Formik
@@ -257,7 +264,7 @@ const SignInForm = () => {
 
           {/* Conditionally render SuccessToaster component */}
           {showSuccessToast && (
-            <SuccessToaster message={"Sign in successfull!"} />
+            <SuccessToaster message={"Sign in successful!"} />
           )}
           {showErrorToast && errorMessage && errorMessage && (
             <ErrorToaster
