@@ -63,7 +63,7 @@ export default function WithdrawalReport() {
       // router.push('/merchant/settings/withdrawals')
     },
     onError(error: AxiosError<any, any>) {
-      console.log("error");
+
     },
   });
 

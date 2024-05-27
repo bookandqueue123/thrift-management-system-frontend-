@@ -44,7 +44,7 @@ export const EditOrganisation = ({
             return response.data;
           })
           .catch((error: AxiosError<any, any>) => {
-            console.log(error.response ?? error.message);
+           
             throw error;
           });
       },
@@ -63,7 +63,7 @@ export const EditOrganisation = ({
             return response.data;
           })
           .catch((error) => {
-            console.log(error);
+         
             throw error;
           });
       },
@@ -76,7 +76,7 @@ export const EditOrganisation = ({
     } = useMutation({
       mutationKey: ["user update"],
       mutationFn: async (values: Organisation) => {
-        console.log(values)
+       
         const formData = new FormData();
         formData.append("description", values.description)
         formData.append("organisationName", values.organisationName);
@@ -111,7 +111,7 @@ export const EditOrganisation = ({
       },
       onSuccess(response) {
         // router.push("/customer");
-        console.log(response);
+      
         setShowSuccessToast(true);
     
         // Delay the execution of closeModal(false) by 5 seconds
@@ -121,7 +121,7 @@ export const EditOrganisation = ({
     },
     
       onError(error: AxiosError<any, any>) {
-        console.log(error);
+     
         setShowErrorToast(true);
         setErrorMessage(error.response?.data.message);
       },
@@ -162,7 +162,7 @@ export const EditOrganisation = ({
       }
     }, [selectedCountry, selectedState]);
    
-    console.log(customerInfo)
+  
     return (
       <div className="mx-auto mt-8 w-[100%] overflow-hidden rounded-md bg-white p-4 shadow-md">
         <div>

@@ -151,7 +151,7 @@ const Customers = () => {
           if (error.response?.data.message.includes("unauthorized")) {
             setPermissionError(error.response?.data.message);
           }
-          console.log(error);
+         
           throw error;
         });
     },
@@ -159,7 +159,7 @@ const Customers = () => {
   });
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchResult(e.target.value);
-    console.log(e.target.value);
+    
 
     if (allCustomers) {
       const filtered = allCustomers.filter((item) =>
@@ -534,7 +534,7 @@ export const SavingsSettings = ({
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error.response ?? error.message);
+          
           throw error;
         });
     },
@@ -624,12 +624,12 @@ export const SavingsSettings = ({
       });
     },
     onSuccess(response: AxiosResponse<setSavingsResponse, any>) {
-      console.log(response.data);
+  
       setContent("confirmation");
       return response.data;
     },
     onError(error: AxiosError<any, any>) {
-      console.log(error.response);
+      
       throw error;
     },
   });
@@ -937,7 +937,7 @@ export const ViewCustomer = ({
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error.response ?? error.message);
+          
           throw error;
         });
     },
@@ -1161,7 +1161,7 @@ export const EditCustomer = ({
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error.response ?? error.message);
+          
           throw error;
         });
     },
@@ -1180,7 +1180,7 @@ export const EditCustomer = ({
           return response.data;
         })
         .catch((error) => {
-          console.log(error);
+       
           throw error;
         });
     },
@@ -1244,7 +1244,7 @@ export const EditCustomer = ({
     },
 
     onError(error: AxiosError<any, any>) {
-      console.log(error);
+    
       setShowErrorToast(true);
       setErrorMessage(error.response?.data.message);
     },
@@ -1277,7 +1277,7 @@ export const EditCustomer = ({
       );
       // If state is found, return its LGAs
       if (stateObject) {
-        console.log(stateObject.lgas);
+       
         setSelectesLGAArray(stateObject.lgas);
       } else {
         // If state is not found, return an empty array
@@ -1327,7 +1327,7 @@ export const EditCustomer = ({
               organisation: Yup.string().required("Required"),
             })}
             onSubmit={(values, { setSubmitting }) => {
-              console.log(values);
+             
               updateUserInfo(values);
               setTimeout(() => {
                 setShowSuccessToast(false);
@@ -1910,7 +1910,7 @@ const CreateCustomer = ({
       );
       // If state is found, return its LGAs
       if (stateObject) {
-        console.log(stateObject.lgas);
+        
         setSelectesLGAArray(stateObject.lgas);
       } else {
         // If state is not found, return an empty array
@@ -1962,8 +1962,7 @@ const CreateCustomer = ({
     },
 
     onSuccess(response) {
-      console.log(response);
-      console.log("customer created successfully");
+      
       setCustomerCreated(true);
       setModalContent("confirmation");
       setTimeout(() => {
@@ -1981,9 +1980,9 @@ const CreateCustomer = ({
           "Custom error message: The file you're trying to upload is too large.",
         );
       } else {
-        console.log("Other error occurred:", error);
+       
       }
-      console.log(error.response?.data.message);
+     
     },
   });
 

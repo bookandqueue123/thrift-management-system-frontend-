@@ -87,7 +87,7 @@ const Users = () => {
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error);
+     
           throw error;
         });
     },
@@ -108,7 +108,7 @@ const Users = () => {
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error);
+
           throw error;
         });
     },
@@ -362,7 +362,7 @@ const Users = () => {
                                 setUserToBeEdited(user._id);
                                 setIsUserEdited(false);
 
-                                console.log(user._id);
+                          
                               }
                             },
                             () => {
@@ -476,13 +476,13 @@ const MutateUser = ({
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error.response ?? error.message);
+         
           throw error;
         });
     },
   });
 
-  console.log(userInfo)
+
 
   
   const initialValues: mutateUserProps = actionToTake === 'edit-user' ? {
@@ -548,7 +548,7 @@ const MutateUser = ({
     
   }, [userInfo, actionToTake]);
 
-  console.log(assignedCustomerIds);
+
 
   const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
     queryKey: ["allCustomers"],
@@ -586,7 +586,7 @@ const MutateUser = ({
  
   const { mutate: createUser, isPending: isCreatingRole } = useMutation({
     mutationFn: async (values: mutateUserProps) => {
-      console.log(values)
+   
 
       const formData = new FormData()
       formData.append("firstName", values.firstName)
@@ -646,7 +646,7 @@ const MutateUser = ({
     onError(error: AxiosError<any, any>) {
       setUserCreated(false);
       setModalContent("status");
-      console.log(error.response?.data.message);
+      
       setMutationResponse(error.response?.data.message);
       setTimeout(() => {
         setModalContent("form")
@@ -676,7 +676,6 @@ const MutateUser = ({
       //   pintrest: values.pinterest,
       // };
 
-      console.log(values)
       
       const formData = new FormData()
       
@@ -735,7 +734,7 @@ const MutateUser = ({
     onError(error: AxiosError<any, any>) {
       setUserEdited(false);
       setModalContent("status");
-      console.log(error.response?.data.message);
+      
       setMutationResponse(error.response?.data.message);
       setTimeout(() => {
         setCloseModal(false);
@@ -1881,7 +1880,7 @@ const MutateUser = ({
                       //   console.log(values.assignedCustomers)
                       //   assignedCustomers = values.assignedCustomers.map((customer: { _id: any; }) => customer._id);
                       // }
-                      console.log(assignedCustomers)
+                      
 
                       if (!assignedCustomers.includes(e.target.value)) {
                         const updatedAssignedCustomers = [
@@ -1889,7 +1888,7 @@ const MutateUser = ({
                           e.target.value,
                         ];
                         setAssignedCustomerIds(updatedAssignedCustomers)
-                        console.log(updatedAssignedCustomers)
+                        
                       }
                     }}
                   >
@@ -1959,7 +1958,7 @@ const MutateUser = ({
                                       "assignedCustomers",
                                       allCustomers?.map((customer) => customer._id),
                                     );
-                                    console.log("checked: ", values.assignedCustomers);
+                                    
                                   } else {
                                     setFieldValue("assignedCustomers", []);
                                   }
@@ -1995,7 +1994,7 @@ const MutateUser = ({
                           setAssignedCustomerIds(allCustomers.map((customer) => customer._id));
                         }
                         
-                        console.log("checked: ", assignedCustomerIds);
+                       
                       } else {
                         // setFieldValue("assignedCustomers", []);
                         setAssignedCustomerIds([])
@@ -2017,7 +2016,7 @@ const MutateUser = ({
             type="submit"
             className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
             onClick={() => {
-              console.log(errors);
+             
               submitForm();
             }}
             disabled={isSubmitting || isCreatingRole}
@@ -2051,7 +2050,7 @@ const ViewUser = ({ userId }: { userId: string }) => {
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error.response ?? error.message);
+          
           throw error;
         });
     },

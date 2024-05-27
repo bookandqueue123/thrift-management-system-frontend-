@@ -88,7 +88,7 @@ export default function SuperAdminDashboard(){
           
         })
         .catch((error) => {
-          console.log(error);
+      
           throw error;
         });
     },
@@ -114,7 +114,7 @@ export default function SuperAdminDashboard(){
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error);
+          
           throw error;
         });
     },
