@@ -189,7 +189,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
   } = useQuery({
     queryKey: ["allOrganizations"],
     queryFn: async () => {
-      console.log(organisationId)
+    
       return client
         .get(`/api/user/${organisationId}`, {})
         .then((response) => {

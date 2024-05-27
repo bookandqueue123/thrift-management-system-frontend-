@@ -169,7 +169,7 @@ export default function Analytics() {
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
-  console.log(paginatedTransactions);
+  
 
   // useEffect(() => {
   //   // Filter dates for April (target month: 4)

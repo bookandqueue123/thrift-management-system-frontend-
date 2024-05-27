@@ -69,7 +69,7 @@ const GroupSettings = () => {
           return response.data;
         })
         .catch((error) => {
-          console.log(error);
+      
           throw error;
         });
     },
@@ -79,7 +79,7 @@ const GroupSettings = () => {
   const { mutate: deleteGroup, isPending: isDeletingGroup } = useMutation({
     mutationKey: ["deleteGroup"],
     mutationFn: async (groupId: string) => {
-      console.log("ID: ", groupId);
+   
       return client.delete(`/api/user/${groupId}`);
     },
     onSuccess(response: AxiosResponse<any, any>) {
@@ -318,7 +318,7 @@ const CreateGroupForm = ({
           }) as postSavingsResponse,
       );
       setGroupsChanged(true);
-      console.log(response.data);
+
       return response.data;
     },
     onError(error: any) {
@@ -450,7 +450,7 @@ const CreateGroupForm = ({
             ),
           })}
           onSubmit={(values: { groupName: string }, { setSubmitting }) => {
-            console.log(values);
+        ;
             setTimeout(() => {
               setSubmitting(false);
 

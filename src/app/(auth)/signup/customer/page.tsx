@@ -76,7 +76,7 @@ const Page = () => {
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
       setSuccessMessage(response.data.message);
-      console.log(response);
+      
       router.replace(`/signin`);
     },
     onError(error: AxiosError<any, any>) {
@@ -119,7 +119,7 @@ const Page = () => {
     },
   });
 
- console.log(organizations)
+
   return (
     <Formik
       initialValues={initialValues}

@@ -37,7 +37,7 @@ export default function HomePage() {
         if (typeof window !== "undefined") {
           const url = new URL(window.location.href);
           setHost(url.host);
-          console.log("host", host);
+
         }
       }, [host]);
     return (

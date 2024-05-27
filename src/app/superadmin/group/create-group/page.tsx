@@ -14,7 +14,7 @@ import { useQuery } from '@tanstack/react-query';
     
   }) => {
     const organizationId = useSelector(selectOrganizationId)
-    console.log(organizationId)
+   
     const { client } = useAuth();
     const [selectedOptions, setSelectedOptions] = useState<customer[]>([]);
   
@@ -25,7 +25,7 @@ import { useQuery } from '@tanstack/react-query';
     //     setSelectedOptions([...selectedOptions, selectedOption!]);
     //   }
     // };
-    console.log(selectedOptions)
+    (selectedOptions)
   
     const handleRemoveOption = (index: number) => {
       const updatedOptions = [...selectedOptions];
@@ -119,7 +119,7 @@ import { useQuery } from '@tanstack/react-query';
           selectedCustomers: Yup.array().min(1, 'At least one customer must be selected')
         })}
         onSubmit={(values:{groupName: string}, { setSubmitting }) => {
-          console.log(values)
+        
           setTimeout(() => {
             setSubmitting(false);
             

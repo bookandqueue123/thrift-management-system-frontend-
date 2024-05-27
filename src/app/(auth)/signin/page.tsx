@@ -73,7 +73,7 @@ const SignInForm = () => {
 
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
-      console.log(response);
+      
       if (response.data.role === "customer") {
         if (user) {
           router.replace(`/customer`);
@@ -128,7 +128,7 @@ const SignInForm = () => {
     },
   });
 
-  console.log(showErrorToast)
+  
 
 
   return (

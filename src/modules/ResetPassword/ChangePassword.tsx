@@ -45,7 +45,7 @@ export default function ChangePassword() {
 
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
-      console.log(response);
+   
       router.push('signin')
       setSuccessMessage((response as any).response.data.message);
 
@@ -76,7 +76,7 @@ export default function ChangePassword() {
           }}
           validationSchema={PasswordChangeSchema}
           onSubmit={(values) => {
-            console.log(values);
+            
             ResetPassword(values)
           }}
         >

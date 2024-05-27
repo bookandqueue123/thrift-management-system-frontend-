@@ -53,7 +53,7 @@ export default function CustomerAction({index, customerId}: CustomerActionProps)
                         setModalContent("form");
                         setModalToShow("view");
                         setCustomerToBeEdited(customerId);
-                        console.log("View Customer");
+                       
                     },
                     () => {
                         setModalToShow("edit");

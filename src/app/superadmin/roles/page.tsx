@@ -124,7 +124,7 @@ const Roles = () => {
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error);
+         
           throw error;
         });
     },
@@ -132,7 +132,7 @@ const Roles = () => {
   });
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
-    console.log(e.target.value);
+
 
     if (allRoles) {
       const filtered = allRoles.filter((item) =>
@@ -400,8 +400,7 @@ const MutateRole = ({
       //  if (values.CourtAffidavit) {
       //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
       //  }
-      console.log(values);
-      console.log("role created");
+     
       return;
       //  client.put(`/api/user/${userId}`, formData);
     },
@@ -415,7 +414,7 @@ const MutateRole = ({
 
     onError(error: AxiosError<any, any>) {
       setRoleMutated(false);
-      console.log(error.response?.data.message);
+    
     },
   });
 
@@ -459,8 +458,7 @@ const MutateRole = ({
       //  if (values.CourtAffidavit) {
       //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
       //  }
-      console.log(values);
-      console.log("role edited");
+      
       return;
       //  client.put(`/api/user/${userId}`, formData);
     },
@@ -474,7 +472,7 @@ const MutateRole = ({
 
     onError(error: AxiosError<any, any>) {
       setRoleMutated(false);
-      console.log(error.response?.data.message);
+      
     },
   });
 

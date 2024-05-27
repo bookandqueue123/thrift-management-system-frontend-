@@ -56,7 +56,7 @@ export default function SuperAdminOrganisation(){
           
         })
         .catch((error) => {
-          console.log(error);
+         
           throw error;
         });
     },
@@ -94,7 +94,7 @@ export default function SuperAdminOrganisation(){
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchResult(e.target.value);
-    console.log(e.target.value);
+
 
     if (organizations) {
       const filtered = organizations.filter((item: { accountNumber: any; }) =>

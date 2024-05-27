@@ -58,7 +58,7 @@ export default function ContactUs({
             message: Yup.string().required("You have to agree to the policies"),
           })}
           onSubmit={(values, { setSubmitting }) => {
-            console.log(values);
+           
             setTimeout(() => {
               setSubmitting(false);
             }, 400);

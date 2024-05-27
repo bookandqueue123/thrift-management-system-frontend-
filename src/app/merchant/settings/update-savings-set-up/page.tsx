@@ -135,7 +135,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
         });
       },
       onSuccess(response: AxiosResponse<any, any>) {
-        console.log(response)
+      
         setShowSuccessToast(true);
         setSuccessMessage(response.data.message);
      
@@ -251,7 +251,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
           });
       },
     });
-    console.log(allCustomers)
+  
   
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
@@ -310,7 +310,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
     
       const selectedSaving = allSavings.savings.filter((saving: { _id: string; }) => saving._id === id )
 
-      console.log(selectedSaving)
+      
       
       if(selectedSaving && selectedSaving.length > 0){
         

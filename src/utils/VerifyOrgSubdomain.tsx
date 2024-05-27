@@ -40,7 +40,7 @@ const VerifyOrgSubdomain = () => {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
       const hostname = url.hostname;
-      console.log("hostname", hostname);
+      
 
       // Checking if the current hostname is in the list of excluded domains
       if (!excludedDomains.includes(hostname)) {
@@ -54,7 +54,7 @@ const VerifyOrgSubdomain = () => {
           );
 
           if (foundOrganization) {
-            console.log("Matched URL:", foundOrganization.prefferedUrl);
+           
             setPreferredUrl(foundOrganization.prefferedUrl);
           } else {
             console.log("No matching URL found.");
@@ -66,7 +66,7 @@ const VerifyOrgSubdomain = () => {
         console.log("Excluded domain. Skipping verification.");
       }
     }
-    console.log("currentUrl", currentUrl);
+    
   }, [preferredUrl, router, setPreferredUrl, currentUrl, allOrganizations]);
 
   return null;
