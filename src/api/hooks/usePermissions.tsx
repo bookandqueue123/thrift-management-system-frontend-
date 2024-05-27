@@ -53,6 +53,7 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
         try {
           const response: AxiosResponse<permissionObject[], any> =
             await client.get("api/permission");
+            console.log(response)
           const permissionsMapUpdate = response.data.reduce(
             (acc, permission) => {
               acc[permission.title] = permission._id;
@@ -60,6 +61,7 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
             },
             {} as PermissionsMap,
           );
+          console.log(permissionsMapUpdate)
           setPermissionsMap(permissionsMapUpdate);
         } catch (error) {
           console.error(error);
