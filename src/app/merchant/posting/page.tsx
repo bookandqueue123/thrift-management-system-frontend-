@@ -663,7 +663,7 @@ const PostingForm = ({
             ? singleDay
             : datesInRange;
 
-      console.log(dateValue);
+      
       const endpoint =
         postDetails.postingType === "individual"
           ? `/api/saving/post-savings?userId=${postDetails.customerId}&savingId=${postDetails.savingId}`
@@ -682,7 +682,7 @@ const PostingForm = ({
     },
     onSuccess(response: AxiosResponse<postSavingsResponse, any>) {
       setPostingResponse(response.data);
-      console.log(response);
+      
       setPostingResponse(
         (prev) =>
           ({

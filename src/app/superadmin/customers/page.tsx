@@ -66,7 +66,7 @@ export default function SuperAdminCustomer(){
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error);
+         
           throw error;
         });
     },
@@ -74,7 +74,7 @@ export default function SuperAdminCustomer(){
   
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchResult(e.target.value);
-    console.log(e.target.value);
+
 
     if (allCustomers) {
       const filtered = allCustomers.filter((item) =>

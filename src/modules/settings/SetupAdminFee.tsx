@@ -132,7 +132,7 @@ const SetUpSavingsAndAdminFee = ({setContent, setShowErrorModal, setShowSuccessM
     e.preventDefault();
     const validationErrors = validateForm(formData);
     if (Object.keys(validationErrors).length === 0) {
-      console.log(formData);
+    
        SetupSavings()
     
 
@@ -203,7 +203,7 @@ const SetUpSavingsAndAdminFee = ({setContent, setShowErrorModal, setShowSuccessM
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error);
+        
           throw error;
         });
     },

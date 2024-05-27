@@ -25,7 +25,7 @@ const InputEmail: React.FC = () => {
 
   const handleSubmit = (values: any) => {
     // Handle form submission here
-    console.log(values);
+    
   };
 
   const {
@@ -43,7 +43,7 @@ const InputEmail: React.FC = () => {
 
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
-      console.log(response);
+     
     //  router.push('/change-password')
       setSuccessMessage((response as any).response.data.message);
 

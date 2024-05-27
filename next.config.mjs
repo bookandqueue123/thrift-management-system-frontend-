@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 
 const isProd = process.env.NEXT_PUBLIC_APP_ENV === "production";
-console.log(process.env.NEXT_PUBLIC_APP_ENV);
+
 
 const nextConfig = {
   images: {

@@ -37,7 +37,7 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
           const response: AxiosResponse<User, any> = await client.get(
             `api/user/${userId}`,
           );
-          console.log("activeUser", response.data);
+        
           const userPermissionsUpdate = response.data.roles.flatMap((role) =>
             role.permissions.map((permission) => permission._id),
           );
@@ -75,9 +75,9 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
       fetchData();
     }
   }, [user]);
-  console.log("assignedCustomers", assignedCustomers);
-  console.log("permissionMap", permissionsMap);
-  console.log("userPermissions", userPermissions);
+  // console.log("assignedCustomers", assignedCustomers);
+  // console.log("permissionMap", permissionsMap);
+  // console.log("userPermissions", userPermissions);
 
   return (
     <PermissionsContext.Provider

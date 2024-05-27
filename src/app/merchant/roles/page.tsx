@@ -55,12 +55,12 @@ const Roles = () => {
       return client
         .get(`/api/role?organisation=${organisationId}`, {})
         .then((response: AxiosResponse<roleResponse[], any>) => {
-          console.log(response.data);
+    
           setFilteredRoles(response.data);
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error);
+
           throw error;
         });
     },
@@ -81,7 +81,7 @@ const Roles = () => {
     },
   });
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
+  
 
     if (allRoles) {
       const filtered = allRoles.filter((item) =>
@@ -364,7 +364,6 @@ const MutateRole = ({
       setRoleCreated(false);
       setModalContent("status");
 
-      console.log(error.response?.data);
     },
   });
 
@@ -392,7 +391,7 @@ const MutateRole = ({
       setRoleEdited(false);
       setModalContent("status");
 
-      console.log(error.response?.data.message);
+
     },
   });
 

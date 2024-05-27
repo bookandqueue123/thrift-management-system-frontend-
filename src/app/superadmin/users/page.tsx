@@ -71,7 +71,7 @@ const Users = () => {
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error);
+        
           throw error;
         });
     },
@@ -79,7 +79,7 @@ const Users = () => {
   });
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
-    console.log(e.target.value);
+  
 
     if (allUsers) {
       const filtered = allUsers.filter((item) =>
@@ -383,8 +383,8 @@ const MutateUser = ({
       //  if (values.CourtAffidavit) {
       //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
       //  }
-      console.log(values);
-      console.log("role created");
+      
+      
       return;
       //  client.put(`/api/user/${userId}`, formData);
     },
@@ -398,7 +398,7 @@ const MutateUser = ({
 
     onError(error: AxiosError<any, any>) {
       setUserMutated(false);
-      console.log(error.response?.data.message);
+     
     },
   });
 
@@ -442,8 +442,7 @@ const MutateUser = ({
       //  if (values.CourtAffidavit) {
       //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
       //  }
-      console.log(values);
-      console.log("role edited");
+      
       return;
       //  client.put(`/api/user/${userId}`, formData);
     },
@@ -457,7 +456,7 @@ const MutateUser = ({
 
     onError(error: AxiosError<any, any>) {
       setUserMutated(false);
-      console.log(error.response?.data.message);
+     
     },
   });
 
@@ -484,7 +483,7 @@ const MutateUser = ({
           return response.data;
         })
         .catch((error) => {
-          console.log(error);
+        
           throw error;
         });
     },

@@ -65,7 +65,7 @@ const WithdrawalForm = () => {
           return response.data;
         })
         .catch((error) => {
-          console.log(error);
+        
           throw error;
         });
     },
@@ -81,7 +81,7 @@ const WithdrawalForm = () => {
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error.response);
+         
           throw error;
         });
     },

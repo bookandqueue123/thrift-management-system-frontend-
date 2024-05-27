@@ -1829,8 +1829,7 @@ const Kyc = () => {
                   type="button"
                   className=" text-ajo_offWhite hover:text-ajo_orange"
                   onClick={() => {
-                    console.log("values", values);
-                    console.log("errors", errors);
+                    
 
                     if (activeSection === "verify" && allSections.verify) {
                       SetActiveSection("identification");

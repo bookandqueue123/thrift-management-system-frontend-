@@ -83,11 +83,11 @@ const Users = () => {
         )
         .then((response: AxiosResponse<customer[], any>) => {
           setFilteredUsers(response.data);
-          console.log(response.data);
+          
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error);
+     
           throw error;
         });
     },
@@ -104,11 +104,11 @@ const Users = () => {
       return client
         .get(`/api/role?organisation=${organisationId}`, {})
         .then((response: AxiosResponse<roleResponse[], any>) => {
-          console.log(response.data);
+         
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error);
+
           throw error;
         });
     },
@@ -124,7 +124,7 @@ const Users = () => {
           {},
         )
         .then((response: AxiosResponse<customer[], any>) => {
-          console.log("allCustomers", response.data);
+          
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -135,7 +135,7 @@ const Users = () => {
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
-    console.log(e.target.value);
+
 
     if (allUsers) {
       const filtered = allUsers.filter((item) =>
@@ -362,7 +362,7 @@ const Users = () => {
                                 setUserToBeEdited(user._id);
                                 setIsUserEdited(false);
 
-                                console.log(user._id);
+                          
                               }
                             },
                             () => {
@@ -423,7 +423,7 @@ const Users = () => {
                 </div>
               ) : (
                 <ModalConfirmation
-                  successTitle={`User ${modalToShow === "create-user" ? "Creation" : "Editing"} Successful`}
+                  successTitle={`User ${modalToShow === "create-user" ? "Creation" : modalToShow === "edit-user" ? "Editing": ""} Successful`}
                   errorTitle={`User ${modalToShow === "create-user" ? "Creation" : "Editing"} Failed`}
                   status={isUserCreated || isUserEdited ? "success" : "failed"}
                   responseMessage={mutationResponse}
@@ -459,6 +459,7 @@ const MutateUser = ({
   setMutationResponse: Dispatch<SetStateAction<string>>;
   userToBeEdited: string;
 }) => {
+
   const router = useRouter()
   const { client } = useAuth();
   const organizationId = useSelector(selectOrganizationId);
@@ -466,7 +467,49 @@ const MutateUser = ({
   const [selectedOptions, setSelectedOptions] = useState<
     (customer | undefined)[]
   >([]);
-  const initialValues: mutateUserProps = {
+  const { data: userInfo, isLoading: isLoadingUserInfo } = useQuery({
+    queryKey: ["userInfo"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user/${userToBeEdited}`)
+        .then((response: AxiosResponse<staffResponse, any>) => {
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+         
+          throw error;
+        });
+    },
+  });
+
+
+
+  
+  const initialValues: mutateUserProps = actionToTake === 'edit-user' ? {
+    firstName: userInfo?.firstName ?? "", 
+    lastName: userInfo?.lastName ?? "",
+    email: userInfo?.email ?? "",
+    phone: userInfo?.phoneNumber ?? "",
+    homeAddress: userInfo?.homeAddress ?? "",
+    dept_unit: "",
+    userPicture: null,
+    guarantor2ID: null,
+    guarantorForm: null,
+    guarantorForm2: null,
+    idType: userInfo?.meansOfID ?? "",
+    meansOfIDPhoto: null,
+    guarantor1Name: userInfo?.guarantor1?.fullName ?? "",
+    guarantor1Email: userInfo?.guarantor1?.email ?? "",
+    guarantor1Phone: userInfo?.guarantor1?.phoneNumber ?? "",
+    guarantor1Address:userInfo?.guarantor1?.homeAddress ?? "",
+    guarantor2Name: userInfo?.guarantor2?.fullName ?? "",
+    guarantor2Email: userInfo?.guarantor2?.email ?? "",
+    guarantor2Phone: userInfo?.guarantor2?.phoneNumber ?? "",
+    guarantor2Address: userInfo?.guarantor2?.homeAddress ?? "",
+    assignedCustomers: userInfo?.assignedUser ?? [] ,
+    roles: userInfo?.roles ?? [],
+  }: 
+  {
     firstName: "",
     lastName: "",
     email: "",
@@ -489,7 +532,23 @@ const MutateUser = ({
     guarantor2Address: "",
     assignedCustomers: [],
     roles: [],
-  };
+  }
+  const [assignedCustomerIds, setAssignedCustomerIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if(actionToTake === 'edit-user'){
+      if (userInfo?.assignedUser) {
+      const customerIds = userInfo?.assignedUser?.map((customer: { _id: any }) => customer._id);
+      setAssignedCustomerIds(customerIds || []);
+    }
+    }
+    else{
+      setAssignedCustomerIds([])
+    }
+    
+  }, [userInfo, actionToTake]);
+
+
 
   const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
     queryKey: ["allCustomers"],
@@ -500,7 +559,7 @@ const MutateUser = ({
           {},
         )
         .then((response: AxiosResponse<customer[], any>) => {
-          console.log("allCustomers", response.data);
+          
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -527,7 +586,7 @@ const MutateUser = ({
  
   const { mutate: createUser, isPending: isCreatingRole } = useMutation({
     mutationFn: async (values: mutateUserProps) => {
-      console.log("role created");
+   
 
       const formData = new FormData()
       formData.append("firstName", values.firstName)
@@ -549,7 +608,7 @@ const MutateUser = ({
       formData.append('guarantor2.phoneNumber', values.guarantor2Phone);
 
       formData.append("roles", values.roles)
-      formData.append("assignedUser", values.assignedCustomers)
+      // formData.append("assignedUser", values.assignedCustomers)
       formData.append('meansOfID', values.idType)
       formData.append
       if(values.userPicture){
@@ -564,6 +623,7 @@ const MutateUser = ({
       if(values.meansOfIDPhoto){
         formData.append("meansOfIDPhoto", values.meansOfIDPhoto[0]);
       }
+      values.assignedCustomers.forEach((item: string | Blob) => formData.append("assignedUser[]", item))
 
       return client.post(`/api/user/create-staff`, formData
    
@@ -574,23 +634,40 @@ const MutateUser = ({
       setUserCreated(true);
       setModalContent("status");
       setMutationResponse(response?.data.message);
+      
       setTimeout(() => {
         setCloseModal(false);
+        setModalContent("form")
         router.push("/merchant/users")
-      }, 5000);
+      }, 1000);
+      
     },
 
     onError(error: AxiosError<any, any>) {
       setUserCreated(false);
       setModalContent("status");
-      console.log(error.response?.data.message);
+      
       setMutationResponse(error.response?.data.message);
+      setTimeout(() => {
+        setModalContent("form")
+      }, 1000);
+      
     },
   });
 
   const { mutate: editUser, isPending: isEditingRole } = useMutation({
     mutationKey: ["edit user"],
     mutationFn: async (values: mutateUserProps) => {
+      
+      if (Array.isArray(values.roles)) {
+        if (values.roles.length > 0 && values.roles[0]._id) {
+          values.roles = values.roles[0]._id;
+        } 
+      } 
+      
+    
+
+
       // const socials = {
       //   facebook: values.facebook,
       //   twitter: values.instagram,
@@ -599,75 +676,70 @@ const MutateUser = ({
       //   pintrest: values.pinterest,
       // };
 
-      // const formData = new FormData();
+      
+      const formData = new FormData()
+      
+      formData.append("firstName", values.firstName)
+      formData.append("lastName", values.lastName)
+      formData.append("phoneNumber", values.phone)
+      formData.append("organisation", organizationId)
+      formData.append("homeAddress", values.homeAddress)
+      formData.append("email", values.email)
+      
+      formData.append('guarantor1.fullName', values.guarantor1Name);
+      formData.append('guarantor1.homeAddress', values.guarantor1Address);
+      formData.append('guarantor1.email', values.guarantor1Email);
+      formData.append('guarantor1.phoneNumber', values.guarantor1Phone);
 
-      // formData.append("description", values.description);
-      // formData.append("region", values.city);
-      // formData.append("country", values.country);
-      // formData.append("state", values.state);
-      // formData.append("city", values.lga);
-      // formData.append("socialMedia", JSON.stringify(socials));
-      // formData.append("tradingName", values.tradingName);
-      // formData.append("website", values.websiteUrl);
-      // formData.append("businessEmailAdress", values.email);
-      // formData.append("officeAddress1", values.officeAddress);
-      // formData.append("officeAddress2", values.address2);
-      // formData.append("organisationName", values.organisationName);
-      // formData.append("email", values.email);
-      // formData.append("phoneNumber", values.phoneNumber);
 
-      // if (values.organisationLogo) {
-      //   formData.append("organisationLogo", values.organisationLogo[0]);
-      // }
-      //  if (values.BankRecommendation) {
-      //   formData.append("BankRecommendation", values.BankRecommendation[0]);
-      // }
-      //  if (values.CommunityRecommendation) {
-      //   formData.append("CommunityRecommendation", values.CommunityRecommendation[0]);
-      // }
-      //  if (values.CourtAffidavit) {
-      //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
-      //  }
-      console.log(values);
-      console.log("role edited");
+      formData.append('guarantor2.fullName', values.guarantor2Name);
+      formData.append('guarantor2.homeAddress', values.guarantor2Address);
+      formData.append('guarantor2.email', values.guarantor2Email);
+      formData.append('guarantor2.phoneNumber', values.guarantor2Phone);
+
+      formData.append("roles", values.roles)
+      // formData.append("assignedUser", JSON.stringify(assignedCustomerIds))
+      formData.append('meansOfID', values.idType)
+      formData.append
+      if(values.userPicture){
+        formData.append("photo", values.userPicture[0]);
+      }
+      if(values.guarantorForm){
+        formData.append("guarantorForm", values.guarantorForm[0]);
+      }
+      if(values.guarantorForm2){
+        formData.append("guarantorForm2", values.guarantorForm2[0]);
+      }
+      if(values.meansOfIDPhoto){
+        formData.append("meansOfIDPhoto", values.meansOfIDPhoto[0]);
+      }
+      assignedCustomerIds.forEach((item) => formData.append("assignedUser[]", item))
+
+      // const assignedUser = assignedCustomerIds
+      // const combinedData = { ...formData, assignedUser };
+      // console.log(combinedData)
       // return client.put(`/api/user/${userId}`, formData);
-      return client.put(`/api/user/${userToBeEdited}`, {
-        firstName: values.firstName,
-        lastName: values.lastName,
-        phoneNumber: values.phone,
-        organisation: organizationId,
-        homeAddress: values.homeAddress,
-        email: values.email,
-        guarantor1: {
-          fullName: values.guarantor1Name,
-          homeAddress: values.guarantor1Address,
-          email: values.guarantor1Email,
-          phoneNumber: values.guarantor1Phone,
-        },
-        guarantor2: {
-          fullName: values.guarantor2Name,
-          homeAddress: values.guarantor2Address,
-          email: values.guarantor2Email,
-          phoneNumber: values.guarantor2Phone,
-        },
-        roles: [values.roles],
-        assignedUser: values.assignedCustomers,
-      });
+      return client.put(`/api/user/${userToBeEdited}`, formData )
     },
 
     onSuccess(response) {
       setUserEdited(true);
       setModalContent("status");
       setTimeout(() => {
-        setCloseModal(false);
-      }, 5000);
+       setCloseModal(false);
+        setModalContent('form')
+      }, 1000);
     },
 
     onError(error: AxiosError<any, any>) {
       setUserEdited(false);
       setModalContent("status");
-      console.log(error.response?.data.message);
+      
       setMutationResponse(error.response?.data.message);
+      setTimeout(() => {
+        setCloseModal(false);
+        setModalContent('form')
+      }, 1000);
     },
   });
 
@@ -693,123 +765,123 @@ const MutateUser = ({
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={Yup.object({
-        firstName: Yup.string().required("Required"),
-        lastName: Yup.string().required("Required"),
-        email: Yup.string().required("Required").email("Invalid email address"),
-        phone: Yup.string()
-          .matches(
-            /^(?:\+234\d{10}|\d{11})$/,
-            "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
-          )
-          .required("Required"),
-        homeAddress: Yup.string().required("Required"),
-        dept_unit: Yup.string().optional(),
-        userPicture: Yup.mixed()
-          .required("Required")
-          .test(
-            "fileSize",
-            "File size must be less than 2MB",
-            (value: MyFileList) => {
-              if (value) {
-                return value[0].size <= 2097152;
-              }
-              return true;
-            },
-          )
-          .test(
-            "fileType",
-            "Only .jpg, .png files are allowed",
-            (value: MyFileList) => {
-              if (value) {
-                const file = value[0];
-                const fileType = file.type;
-                return fileType === "image/jpeg" || fileType === "image/png";
-              }
-              return true;
-            },
-          ),
-        // guarantor2ID: Yup.mixed()
-        //   .required("required")
-        //   .test(
-        //     "fileSize",
-        //     "File size must be less than 2MB",
-        //     (value: MyFileList) => {
-        //       if (value) {
-        //         return value[0].size <= 2097152;
-        //       }
-        //       return true;
-        //     },
-        //   )
-        //   .test(
-        //     "fileType",
-        //     "Only .jpg, .png files are allowed",
-        //     (value: MyFileList) => {
-        //       if (value) {
-        //         const file = value[0];
-        //         const fileType = file.type;
-        //         return fileType === "image/jpeg" || fileType === "image/png";
-        //       }
-        //       return true;
-        //     },
-        //   ),
-        idType: Yup.string().optional(),
-        guarantor1Name: Yup.string().required("Required"),
-        guarantor1Email: Yup.string()
-          .required("Required")
-          .email("Invalid email address"),
-        guarantor1Phone: Yup.string()
-          .matches(
-            /^(?:\+234\d{10}|\d{11})$/,
-            "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
-          )
-          .required("Required"),
-        guarantor1Address: Yup.string().required("Required"),
-        guarantor2Name: Yup.string().required("Required"),
-        guarantor2Email: Yup.string()
-          .required("Required")
-          .email("Invalid email address"),
-        guarantor2Address: Yup.string().required("Required"),
-        assignedCustomers: Yup.array()
-          .of(Yup.string())
-          .min(1, "At least one customer must be selected")
-          .required("required"),
-        roles: Yup.string().required("Required"),
-        guarantorForm: Yup.mixed()
-          .optional()
-          .test(
-            "fileSize",
-            "File size must be less than 2MB",
-            (value?: MyFileList) => {
-              if (value) {
-                return value[0].size <= 2097152;
-              }
-              return true;
-            },
-          )
-          .test(
-            "fileType",
-            "Only .pdf, .jpg, .png files are allowed",
-            (value?: MyFileList) => {
-              if (value) {
-                const file = value[0];
-                const fileType = file.type;
-                return (
-                  fileType === "application/pdf" ||
-                  fileType === "image/jpeg" ||
-                  fileType === "image/png"
-                );
-              }
-              return true;
-            },
-          ),
-      })}
+      // validationSchema={Yup.object({
+      //   firstName: Yup.string().required("Required"),
+      //   lastName: Yup.string().required("Required"),
+      //   email: Yup.string().required("Required").email("Invalid email address"),
+      //   phone: Yup.string()
+      //     .matches(
+      //       /^(?:\+234\d{10}|\d{11})$/,
+      //       "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
+      //     )
+      //     .required("Required"),
+      //   homeAddress: Yup.string().required("Required"),
+      //   dept_unit: Yup.string().optional(),
+      //   userPicture: Yup.mixed()
+      //     .required("Required")
+      //     .test(
+      //       "fileSize",
+      //       "File size must be less than 2MB",
+      //       (value: MyFileList) => {
+      //         if (value) {
+      //           return value[0].size <= 2097152;
+      //         }
+      //         return true;
+      //       },
+      //     )
+      //     .test(
+      //       "fileType",
+      //       "Only .jpg, .png files are allowed",
+      //       (value: MyFileList) => {
+      //         if (value) {
+      //           const file = value[0];
+      //           const fileType = file.type;
+      //           return fileType === "image/jpeg" || fileType === "image/png";
+      //         }
+      //         return true;
+      //       },
+      //     ),
+      //   // guarantor2ID: Yup.mixed()
+      //   //   .required("required")
+      //   //   .test(
+      //   //     "fileSize",
+      //   //     "File size must be less than 2MB",
+      //   //     (value: MyFileList) => {
+      //   //       if (value) {
+      //   //         return value[0].size <= 2097152;
+      //   //       }
+      //   //       return true;
+      //   //     },
+      //   //   )
+      //   //   .test(
+      //   //     "fileType",
+      //   //     "Only .jpg, .png files are allowed",
+      //   //     (value: MyFileList) => {
+      //   //       if (value) {
+      //   //         const file = value[0];
+      //   //         const fileType = file.type;
+      //   //         return fileType === "image/jpeg" || fileType === "image/png";
+      //   //       }
+      //   //       return true;
+      //   //     },
+      //   //   ),
+      //   idType: Yup.string().optional(),
+      //   guarantor1Name: Yup.string().required("Required"),
+      //   guarantor1Email: Yup.string()
+      //     .required("Required")
+      //     .email("Invalid email address"),
+      //   guarantor1Phone: Yup.string()
+      //     .matches(
+      //       /^(?:\+234\d{10}|\d{11})$/,
+      //       "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
+      //     )
+      //     .required("Required"),
+      //   guarantor1Address: Yup.string().required("Required"),
+      //   guarantor2Name: Yup.string().required("Required"),
+      //   guarantor2Email: Yup.string()
+      //     .required("Required")
+      //     .email("Invalid email address"),
+      //   guarantor2Address: Yup.string().required("Required"),
+      //   assignedCustomers: Yup.array()
+      //     .of(Yup.string())
+      //     .min(1, "At least one customer must be selected")
+      //     .required("required"),
+      //   roles: Yup.string().required("Required"),
+      //   guarantorForm: Yup.mixed()
+      //     .optional()
+      //     .test(
+      //       "fileSize",
+      //       "File size must be less than 2MB",
+      //       (value?: MyFileList) => {
+      //         if (value) {
+      //           return value[0].size <= 2097152;
+      //         }
+      //         return true;
+      //       },
+      //     )
+      //     .test(
+      //       "fileType",
+      //       "Only .pdf, .jpg, .png files are allowed",
+      //       (value?: MyFileList) => {
+      //         if (value) {
+      //           const file = value[0];
+      //           const fileType = file.type;
+      //           return (
+      //             fileType === "application/pdf" ||
+      //             fileType === "image/jpeg" ||
+      //             fileType === "image/png"
+      //           );
+      //         }
+      //         return true;
+      //       },
+      //     ),
+      // })}
       onSubmit={(values, { setSubmitting }) => {
         
         setTimeout(() => {
           if (actionToTake === "create-user") {
             console.log("creating user.....................");
-             console.log(values, 234567)
+            
               createUser(values);
             
           } else {
@@ -959,7 +1031,10 @@ const MutateUser = ({
                   />
                 </div>
               </div>
-              <div className="mt-4">
+              
+              {
+                actionToTake === 'create-user' ? (
+                   <div className="mt-4">
                 <label
                   htmlFor="userPicture"
                   className="m-0 text-xs font-medium text-ajo_darkBlue"
@@ -1015,7 +1090,67 @@ const MutateUser = ({
                 <div className="text-xs text-red-600">
                   <ErrorMessage name="userPicture" />
                 </div>
-              </div>
+              </div> )
+              : ""
+                
+              }
+
+              {
+                actionToTake === 'edit-user' ? (
+                  <div className="mb-8">
+                  <div className="mb-4 ">
+                  <label
+                  htmlFor="userPicture"
+                  className="mb-8  text-xs font-medium text-ajo_darkBlue"
+                >
+                  Picture
+                </label>
+                  {values.userPicture && (values.userPicture as string[]).length > 0 && values.userPicture[0]  ? (
+                      <Image
+                        src={URL.createObjectURL(values.userPicture[0])} // Display placeholder image or actual image URL
+                        alt="photo"
+                        className="h-auto w-full"
+                        style={{ maxWidth: "100%" }}
+                        width={500}
+                        height={300}
+                      />
+                    ) : (
+                      <Image
+                        src={userInfo ? userInfo?.photo: ""} // Display placeholder image or actual image URL
+                        alt="photo"
+                        className="h-auto w-full"
+                        style={{ maxWidth: "100%" }}
+                        width={500}
+                        height={300}
+                      />
+                    )}
+                  </div>
+
+                  <div className="mt-8">
+                    <label
+                      htmlFor="userPicture"
+                      className=" cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
+                    >
+                      Change
+                      <input
+                        id="userPicture"
+                        name="userPicture"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(event) => {
+                          const file = event.target.files;
+                          setFieldValue("userPicture", file); // Store the selected file in state
+                        }}
+                      />
+                    </label>
+                    {isSubmitting && (
+                      <span className="ml-2">Uploading...</span>
+                    )}
+                  </div>
+             </div>
+                ): ""
+              }
 
               <div className="mb-4 w-1/2">
                   <label
@@ -1050,63 +1185,123 @@ const MutateUser = ({
                   />
                 </div>
 
-                <div className="mt-4">
-                <label
-                  htmlFor="meansOfIDPhoto"
-                  className="m-0 text-xs font-medium text-ajo_darkBlue"
-                >
-                  {values.idType ? values.idType : "Id Photo"}
-                </label>
-                <label
-                  htmlFor="meansOfIDPhoto"
-                  className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
-                >
-                  <input
-                    type="file"
-                    name="meansOfIDPhoto"
-                    id="meansOfIDPhoto"
-                    className="hidden w-full"
-                    onChange={(e) => {
-                      setFieldValue("meansOfIDPhoto", e.target.files);
-                    }}
-                    accept="application/pdf, .jpg, .png"
-                  />
-                  <div className="flex flex-col items-center justify-center">
-                    <Image
-                      src="/upload.svg"
-                      alt="document upload icon"
-                      width={48}
-                      height={48}
+                {actionToTake === 'create-user'? (
+                  <div className="mt-4">
+                  <label
+                    htmlFor="meansOfIDPhoto"
+                    className="m-0 text-xs font-medium text-ajo_darkBlue"
+                  >
+                    {values.idType ? values.idType : "Id Photo"}
+                  </label>
+                  <label
+                    htmlFor="meansOfIDPhoto"
+                    className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
+                  >
+                    <input
+                      type="file"
+                      name="meansOfIDPhoto"
+                      id="meansOfIDPhoto"
+                      className="hidden w-full"
+                      onChange={(e) => {
+                        setFieldValue("meansOfIDPhoto", e.target.files);
+                      }}
+                      accept="application/pdf, .jpg, .png"
                     />
-                    <p className="text-center text-[gray]">
-                      Drag n drop a{" "}
-                      <span className="font-semibold">.jpg, .png</span> here, or
-                      click to select one
-                    </p>
+                    <div className="flex flex-col items-center justify-center">
+                      <Image
+                        src="/upload.svg"
+                        alt="document upload icon"
+                        width={48}
+                        height={48}
+                      />
+                      <p className="text-center text-[gray]">
+                        Drag n drop a{" "}
+                        <span className="font-semibold">.jpg, .png</span> here, or
+                        click to select one
+                      </p>
+                    </div>
+                  </label>
+                  {values.meansOfIDPhoto &&
+                    values.meansOfIDPhoto[0] &&
+                    ((values.meansOfIDPhoto[0] as File).type.includes("image") ? (
+                      <Image
+                        src={URL.createObjectURL(values.meansOfIDPhoto[0])}
+                        alt="meansOfIDPhoto"
+                        className="mt-4 max-w-full rounded-md"
+                        style={{ maxWidth: "100%" }}
+                        width={100}
+                        height={100}
+                      />
+                    ) : (
+                      <iframe
+                        src={URL.createObjectURL(values.meansOfIDPhoto[0])}
+                        className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
+                        title="Bank Recommendation Letter"
+                      ></iframe>
+                    ))}
+                  <div className="text-xs text-red-600">
+                    <ErrorMessage name="meansOfIDPhoto" />
                   </div>
-                </label>
-                {values.meansOfIDPhoto &&
-                  values.meansOfIDPhoto[0] &&
-                  ((values.meansOfIDPhoto[0] as File).type.includes("image") ? (
-                    <Image
-                      src={URL.createObjectURL(values.meansOfIDPhoto[0])}
-                      alt="meansOfIDPhoto"
-                      className="mt-4 max-w-full rounded-md"
-                      style={{ maxWidth: "100%" }}
-                      width={100}
-                      height={100}
-                    />
-                  ) : (
-                    <iframe
-                      src={URL.createObjectURL(values.meansOfIDPhoto[0])}
-                      className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
-                      title="Bank Recommendation Letter"
-                    ></iframe>
-                  ))}
-                <div className="text-xs text-red-600">
-                  <ErrorMessage name="meansOfIDPhoto" />
                 </div>
-              </div>
+                ): ''}
+                
+
+              {
+                actionToTake === 'edit-user' ? (
+                  <div className="">
+                  <div className="mb-4 ">
+                  <label
+                  htmlFor="meansOfIDPhoto"
+                  className="mb-8  text-xs font-medium text-ajo_darkBlue"
+                >
+                  {values.idType}
+                </label>
+                  {values.meansOfIDPhoto && (values.meansOfIDPhoto as string[]).length > 0 && values.meansOfIDPhoto[0]  ? (
+                      <Image
+                        src={URL.createObjectURL(values.meansOfIDPhoto[0])} // Display placeholder image or actual image URL
+                        alt="photo"
+                        className="h-auto w-full"
+                        style={{ maxWidth: "100%" }}
+                        width={500}
+                        height={300}
+                      />
+                    ) : (
+                      <Image
+                        src={userInfo?.meansOfIDPhoto} // Display placeholder image or actual image URL
+                        alt="photo"
+                        className="h-auto w-full"
+                        style={{ maxWidth: "100%" }}
+                        width={500}
+                        height={300}
+                      />
+                    )}
+                  </div>
+
+                  <div className="mt-8">
+                    <label
+                      htmlFor="meansOfIDPhoto"
+                      className="mt-4 cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
+                    >
+                      Change
+                      <input
+                        id="meansOfIDPhoto"
+                        name="meansOfIDPhoto"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(event) => {
+                          const file = event.target.files;
+                          setFieldValue("meansOfIDPhoto", file); // Store the selected file in state
+                        }}
+                      />
+                    </label>
+                    {isSubmitting && (
+                      <span className="ml-2">Uploading...</span>
+                    )}
+                  </div>
+             </div>
+                ): ""
+              }
 
             </section>
 
@@ -1201,7 +1396,8 @@ const MutateUser = ({
                   />
                 </div>
 
-                <div className="mt-4">
+                {actionToTake === 'create-user' ? (
+                  <div className="mt-4">
                   <label
                     htmlFor="guarantorForm"
                     className="m-0 text-xs font-medium text-ajo_darkBlue"
@@ -1260,8 +1456,66 @@ const MutateUser = ({
                     <ErrorMessage name="guarantorForm" />
                   </div>
                 </div>
+                ): ""}
              
               </div>
+
+              {
+                actionToTake === 'edit-user' ? (
+                  <div className="mt-8">
+                  <div className="mb-4 ">
+                  <label
+                  htmlFor="guarantorForm"
+                  className="mb-8 mt-4  text-xs font-medium text-ajo_darkBlue"
+                >
+                  Guarantor Form 1
+                </label>
+                  {values.guarantorForm && (values.guarantorForm as string[]).length > 0 && values.guarantorForm[0] ? (
+                      <Image
+                        src={URL.createObjectURL(values.guarantorForm[0])} // Display placeholder image or actual image URL
+                        alt="photo"
+                        className="h-auto w-full"
+                        style={{ maxWidth: "100%" }}
+                        width={500}
+                        height={300}
+                      />
+                    ) : (
+                      <Image
+                        src={userInfo ? userInfo?.guarantorForm : ""} // Display placeholder image or actual image URL
+                        alt="photo"
+                        className="h-auto w-full"
+                        style={{ maxWidth: "100%" }}
+                        width={500}
+                        height={300}
+                      />
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="guarantorForm"
+                      className=" cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
+                    >
+                      Change
+                      <input
+                        id="guarantorForm"
+                        name="guarantorForm"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(event) => {
+                          const file = event.target.files;
+                          setFieldValue("guarantorForm", file); // Store the selected file in state
+                        }}
+                      />
+                    </label>
+                    {isSubmitting && (
+                      <span className="ml-2">Uploading...</span>
+                    )}
+                  </div>
+             </div>
+                ): ""
+              }
 
               {/* Guarantor 2 Details */}
               <div id="guarantor2" className="mt-12">
@@ -1380,7 +1634,8 @@ const MutateUser = ({
                     className="text-xs text-red-500"
                   />
                 </div> */}
-                <div className="mt-4">
+                {actionToTake === 'create-user' ? (
+                  <div className="mt-4">
                   <label
                     htmlFor="guarantorForm2"
                     className="m-0 text-xs font-medium text-ajo_darkBlue"
@@ -1439,7 +1694,66 @@ const MutateUser = ({
                     <ErrorMessage name="guarantorForm2" />
                   </div>
                 </div>
+                ): ""}
               </div>
+
+              {
+                actionToTake === 'edit-user' ? (
+                  <div className="mt-8 mb-8">
+                  <div className="mb-4 ">
+                  <label
+                  htmlFor="guarantorForm2"
+                  className="mb-8  text-xs font-medium text-ajo_darkBlue"
+                >
+                  Guarantor Form 2
+                </label>
+                  {values.guarantorForm2 && (values.guarantorForm2 as string[]).length > 0 && values.guarantorForm2[0]  ? (
+                      <Image
+                        src={URL.createObjectURL(values.guarantorForm2[0])} // Display placeholder image or actual image URL
+                        alt="photo"
+                        className="h-auto w-full"
+                        style={{ maxWidth: "100%" }}
+                        width={500}
+                        height={300}
+                      />
+                    ) : (
+                      <Image
+                        src={userInfo ? userInfo?.guarantorForm2: ''} // Display placeholder image or actual image URL
+                        alt="photo"
+                        className="h-auto w-full"
+                        style={{ maxWidth: "100%" }}
+                        width={500}
+                        height={300}
+                      />
+                    )}
+                  </div>
+
+                  <div className="mt-8">
+                    <label
+                      htmlFor="guarantorForm2"
+                      className=" cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
+                    >
+                      Change
+                      <input
+                        id="guarantorForm2"
+                        name="guarantorForm2"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(event) => {
+                          const file = event.target.files;
+                          setFieldValue("guarantorForm2", file); // Store the selected file in state
+                        }}
+                      />
+                    </label>
+                    {isSubmitting && (
+                      <span className="ml-2">Uploading...</span>
+                    )}
+                  </div>
+             </div>
+                ): ""
+              }
+
 
               <div className="mb-4 w-3/4">
                 <label
@@ -1475,31 +1789,10 @@ const MutateUser = ({
                 >
                   Assign Customers
                 </label>
-                {/* <Field
-                  as="select"
-                  placeholder="make a selection"
-                  id="assignedCustomers"
-                  name="assignedCustomers"
-                  className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
-                  onChange={(e: { target: { options: any } }) => {
-                    const options = e.target.options;
-                    const value = [];
-                    for (let i = 0, l = options.length; i < l; i++) {
-                      if (options[i].selected) {
-                        value.push(options[i].value);
-                      }
-                    }
-                    setFieldValue("assignedCustomers", value);
-                  }}
-                >
-                  {allCustomers?.map((customer) => (
-                    <option key={customer?._id} value={customer?._id}>
-                      {customer?.firstName + " " + customer?.lastName}
-                    </option>
-                  ))}
-                  <option className="hidden"></option>
-                </Field> */}
-                <div className="w-full">
+               
+               {actionToTake === 'create-user' ?
+               (
+                  <div className="w-full">
                   <Field
                     as="select"
                     title="Select an option"
@@ -1507,8 +1800,12 @@ const MutateUser = ({
                     className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
                     onChange={(e: ChangeEvent<HTMLSelectElement>) => {
                       handleOptionChange(e);
-                      const assignedCustomers = values.assignedCustomers;
-
+                      let assignedCustomers = values.assignedCustomers;
+                      // if(actionToTake === 'edit-user'){
+                      //   console.log(values.assignedCustomers)
+                      //   assignedCustomers = values.assignedCustomers.map((customer: { _id: any; }) => customer._id);
+                      // }
+                     
                       if (!assignedCustomers.includes(e.target.value)) {
                         const updatedAssignedCustomers = [
                           ...assignedCustomers,
@@ -1518,15 +1815,20 @@ const MutateUser = ({
                           "assignedCustomers",
                           updatedAssignedCustomers,
                         );
+                       
                       }
                     }}
                   >
                     <option value="hidden"></option>
+                    {/* { actionToTake === 'create-user' ? */}
                     {allCustomers?.map((option) => (
                       <option key={option._id} value={option._id}>
                         {option.firstName} {option.lastName}
                       </option>
-                    ))}
+                    )) }
+                     
+
+                
                   </Field>
 
                   <div className="space-x-1 space-y-2">
@@ -1561,48 +1863,160 @@ const MutateUser = ({
                     })}
                   </div>
                 </div>
+               )
+                : ""}
+
+                {actionToTake === 'edit-user' ? (
+                  <div className="w-full">
+                  <Field
+                    as="select"
+                    title="Select an option"
+                    name="assignedCustomers"
+                    className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                      handleOptionChange(e);
+                    let assignedCustomers = assignedCustomerIds
+                      // if(actionToTake === 'edit-user'){
+                      //   console.log(values.assignedCustomers)
+                      //   assignedCustomers = values.assignedCustomers.map((customer: { _id: any; }) => customer._id);
+                      // }
+                      
+
+                      if (!assignedCustomers.includes(e.target.value)) {
+                        const updatedAssignedCustomers = [
+                          ...assignedCustomers,
+                          e.target.value,
+                        ];
+                        setAssignedCustomerIds(updatedAssignedCustomers)
+                        
+                      }
+                    }}
+                  >
+                    <option value="hidden"></option>
+                    {/* { actionToTake === 'create-user' ? */}
+                    {allCustomers?.map((option) => (
+                      <option key={option._id} value={option._id}>
+                        {option.firstName} {option.lastName}
+                      </option>
+                    )) }
+                     
+
+                
+                  </Field>
+
+                  <div className="space-x-1 space-y-2">
+                    {assignedCustomerIds.map((customerId: string, index: number ) => {
+                      const option = allCustomers?.find(
+                        (user) => user._id === customerId,
+                      );
+                      return (
+                        <div key={index} className="mb-2 mr-2 inline-block">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleRemoveOption(index);
+                              const updatedCustomers =
+                                assignedCustomerIds.filter(
+                                  (id: any) => id !== customerId,
+                                );
+                              setAssignedCustomerIds(updatedCustomers)
+                            }}
+                            className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
+                          >
+                            {option?.firstName} {option?.lastName}
+                            <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
+                              ×
+                            </span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                ) : ""}
+             
                 <ErrorMessage
                   name="assignedCustomers"
                   component="div"
                   className="text-xs text-red-500"
                 />
               </div>
-              <div className="flex gap-x-3">
-                <Field
-                  id="selectAllCustomers"
-                  name="selectAllCustomers"
-                  type="checkbox"
-                  className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                  checked={
-                    values.assignedCustomers.length === allCustomers?.length
-                  }
-                  onChange={(e: { target: { checked: any } }) => {
-                    if (e.target.checked) {
-                      setFieldValue(
-                        "assignedCustomers",
-                        allCustomers?.map((customer) => customer._id),
-                      );
-                      console.log("checked: ", values.assignedCustomers);
-                    } else {
-                      setFieldValue("assignedCustomers", []);
-                    }
-                  }}
-                />
 
-                <label
-                  htmlFor="selectAllCustomers"
-                  className="m-0 text-sm capitalize text-ajo_darkBlue"
-                >
-                  Select all Customers
-                </label>
-              </div>
+              {actionToTake === 'create-user' ? (
+                              <div className="flex gap-x-3">
+                              <Field
+                                id="selectAllCustomers"
+                                name="selectAllCustomers"
+                                type="checkbox"
+                                className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                checked={
+                                  values.assignedCustomers.length === allCustomers?.length
+                                }
+                                onChange={(e: { target: { checked: any } }) => {
+                                  if (e.target.checked) {
+                                    setFieldValue(
+                                      "assignedCustomers",
+                                      allCustomers?.map((customer) => customer._id),
+                                    );
+                                    
+                                  } else {
+                                    setFieldValue("assignedCustomers", []);
+                                  }
+                                }}
+                              />
+              
+                              <label
+                                htmlFor="selectAllCustomers"
+                                className="m-0 text-sm capitalize text-ajo_darkBlue"
+                              >
+                                Select all Customers
+                              </label>
+                            </div>
+                              ): ''}
+
+                  {actionToTake === 'edit-user' ? (
+                  <div className="flex gap-x-3">
+                  <Field
+                    id="selectAllCustomers"
+                    name="selectAllCustomers"
+                    type="checkbox"
+                    className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                    checked={
+                      assignedCustomerIds.length === allCustomers?.length
+                    }
+                    onChange={(e: { target: { checked: any } }) => {
+                      if (e.target.checked) {
+                        // setFieldValue(
+                        //   "assignedCustomers",
+                        //   allCustomers?.map((customer) => customer._id),
+                        // );
+                        if (allCustomers) {
+                          setAssignedCustomerIds(allCustomers.map((customer) => customer._id));
+                        }
+                        
+                       
+                      } else {
+                        // setFieldValue("assignedCustomers", []);
+                        setAssignedCustomerIds([])
+                      }
+                    }}
+                  />
+  
+                  <label
+                    htmlFor="selectAllCustomers"
+                    className="m-0 text-sm capitalize text-ajo_darkBlue"
+                  >
+                    Select all Customers
+                  </label>
+                </div>
+                ): ""}
             </section>
           </div>
           <button
             type="submit"
             className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
             onClick={() => {
-              console.log(errors);
+             
               submitForm();
             }}
             disabled={isSubmitting || isCreatingRole}
@@ -1636,7 +2050,7 @@ const ViewUser = ({ userId }: { userId: string }) => {
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          console.log(error.response ?? error.message);
+          
           throw error;
         });
     },
