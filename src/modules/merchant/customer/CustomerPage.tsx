@@ -1,5 +1,5 @@
 "use client";
-import { useAuth } from "@/api/hooks/useAuth";
+import { apiUrl, useAuth } from "@/api/hooks/useAuth";
 import { usePermissions } from "@/api/hooks/usePermissions";
 import StatesAndLGAs from "@/api/statesAndLGAs.json";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
@@ -8,7 +8,7 @@ import PaginationBar from "@/components/Pagination";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
-import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectToken, selectUser } from "@/slices/OrganizationIdSlice";
 import {
   CustomerSignUpProps,
   FormErrors,
@@ -94,6 +94,7 @@ const Customers = () => {
   const [error, setError] = useState("");
 
   const { client } = useAuth();
+  const token = useSelector(selectToken);
   // const router = useRouter();
   // const pathname = usePathname();
   const user = useSelector(selectUser);
@@ -199,6 +200,64 @@ const Customers = () => {
     refetch();
   }, [isCustomerCreated, refetch]);
 
+  
+  const handleExport = async () => {
+  
+    try {
+      const organisation = organisationId; 
+      const response = await fetch(`${apiUrl}api/user/export-users/${organisation}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'users.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        console.error('Failed to export users:', response.statusText);
+      }
+    } catch (error) {
+      console.error('An error occurred while exporting users:', error);
+    }
+  };
+
+  const handleExcelExport = async () => {
+    try {
+      const organisation = organisationId; // Replace with actual organisation ID or obtain it dynamically
+      const response = await fetch(`${apiUrl}api/user/export-users-excel/${organisation}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'users.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        console.error('Failed to export users:', response.statusText);
+      }
+    } catch (error) {
+      console.error('An error occurred while exporting users:', error);
+    }
+  };
+
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -296,13 +355,13 @@ const Customers = () => {
               (user?.role === "staff" &&
                 userPermissions.includes(permissionsMap["export-saving"]))) && (
               <div className="mt-4 flex">
-                <button className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite">
+                <button onClick={handleExport} className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite">
                   Export as CSV{" "}
                   <span className="ml-2 mt-1">
                     <CiExport />
                   </span>
                 </button>
-                <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
+                <button onClick={handleExcelExport} className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
                   <u>Export as Excel</u>
                 </button>
               </div>
