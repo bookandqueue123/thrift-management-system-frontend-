@@ -32,6 +32,7 @@ const Roles = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  
 
   const { client } = useAuth();
   const user = useSelector(selectUser);
@@ -81,11 +82,11 @@ const Roles = () => {
     },
   });
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-  
-
     if (allRoles) {
+      console.log(allRoles);
+      const searchQuery = e.target.value.trim().toLowerCase();
       const filtered = allRoles.filter((item) =>
-        String(item).includes(String(e.target.value)),
+        item.name.toLowerCase().includes(searchQuery)
       );
       setFilteredRoles(filtered);
     }
@@ -115,7 +116,7 @@ const Roles = () => {
       <section>
         <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <span className="flex items-center gap-3">
-            <FilterDropdown options={["Account Number"]} />
+            <FilterDropdown options={["Role Name"]} />
 
             <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
               <input
@@ -265,6 +266,7 @@ const Roles = () => {
               {modalContent === "form" ? (
                 <div className="px-[10%]">
                   <MutateRole
+                    roleToBeEdited={roleToBeEdited}
                     setCloseModal={setModalState}
                     setRoleCreated={setIsRoleCreated}
                     setRoleEdited={setIsRoleEdited}
@@ -299,7 +301,9 @@ const MutateRole = ({
   setCloseModal,
   actionToTake,
   setModalContent,
+  roleToBeEdited,
 }: {
+  roleToBeEdited: string
   actionToTake: "create-role" | "edit-role" | "";
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   setRoleCreated: Dispatch<SetStateAction<boolean>>;
@@ -309,7 +313,56 @@ const MutateRole = ({
   const { client } = useAuth();
   const organisationId = useSelector(selectOrganizationId);
   const [assignedPermissions, setAssignedPermissions] = useState<string[]>([]);
-  const initialValues: createRoleProps = {
+  
+  
+  const { data: role, isLoading: isLoadingRole } = useQuery(
+    {
+      queryKey: ["role"],
+      queryFn: async () => {
+        return client
+          .get(`api/role/${roleToBeEdited}`)
+          .then((response) => {
+            return response.data;
+          })
+          .catch((error) => {
+            throw error;
+          });
+      },
+    },
+  );
+
+  console.log(role)
+
+  useEffect(() => {
+    if(actionToTake === "edit-role"){
+      if (role?.permissions) {
+      const permissionsIds = role?.permissions?.map((permissions: { _id: any }) => permissions._id);
+      setAssignedPermissions(permissionsIds || []);
+    }
+    }
+    else{
+      setAssignedPermissions([])
+    }
+    
+  }, [role, actionToTake]);
+
+  console.log(assignedPermissions)
+  const initialValues: createRoleProps = actionToTake === 'edit-role' ? {
+    roleName: role?.name ?? "",
+    description: role?.description ?? "",
+    permissions: {
+      "edit-user": false,
+      "view-assigned-users": false,
+      "export-withdrawal": false,
+      "view-withdrawals": false,
+      "view-savings": false,
+      "export-saving": false,
+      "post-saving": false,
+      "set-saving": false,
+      "view-user": false,
+    },
+  } : 
+  {
     roleName: "",
     description: "",
     permissions: {
@@ -323,7 +376,7 @@ const MutateRole = ({
       "set-saving": false,
       "view-user": false,
     },
-  };
+  }
   const { data: allPermissions, isLoading: isLoadingAllPermissions } = useQuery(
     {
       queryKey: ["allPermissions"],
@@ -339,6 +392,8 @@ const MutateRole = ({
       },
     },
   );
+
+  
 
   const { mutate: createRole, isPending: isCreatingRole } = useMutation({
     mutationKey: ["create role"],
@@ -370,7 +425,7 @@ const MutateRole = ({
   const { mutate: editRole, isPending: isEditingRole } = useMutation({
     mutationKey: ["edit role"],
     mutationFn: async (values: createRoleProps) => {
-      return client.put(`/api/role`, {
+      return client.put(`/api/role/${roleToBeEdited}`, {
         name: values.roleName,
         description: values.description,
         organisation: organisationId,
@@ -394,6 +449,8 @@ const MutateRole = ({
 
     },
   });
+
+  
 
   return (
     <Formik
@@ -484,6 +541,8 @@ const MutateRole = ({
                 />
               ) : (
                 allPermissions?.map((permission: permissionObject) => {
+                  console.log(permission._id)
+                  console.log(assignedPermissions.includes(permission._id))
                   return (
                     <div className="flex gap-x-3" key={permission._id}>
                       <Field
