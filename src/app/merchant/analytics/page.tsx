@@ -1,14 +1,14 @@
 "use client";
-import { useAuth } from "@/api/hooks/useAuth";
+import { apiUrl, useAuth } from "@/api/hooks/useAuth";
 import { usePermissions } from "@/api/hooks/usePermissions";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
-import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectToken, selectUser } from "@/slices/OrganizationIdSlice";
 import { SavingsInterface, allSavingsResponse, savings } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { useQuery } from "@tanstack/react-query";
-import { AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";
 import React, { ChangeEvent, SetStateAction, useEffect, useState } from "react";
 import { CiExport } from "react-icons/ci";
@@ -71,6 +71,7 @@ export default function Analytics() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const token = useSelector(selectToken);
 
   const days = Array(31)
     .fill(null)
@@ -103,6 +104,7 @@ export default function Analytics() {
       return client
         .get(`/api/saving/get-savings?organisation=${organizationId}`)
         .then((response: AxiosResponse<SavingsInterface, any>) => {
+          console.log(response.data)
           if (user?.role === "staff") {
             let assignedUsersSavings = response.data.savings.filter((saving) =>
               assignedCustomers.find(
@@ -220,6 +222,59 @@ export default function Analytics() {
   //   });
   // }
 
+  const handleExport = async () => {
+    const user = organizationId
+    const organisation = organizationId
+    try {
+      const response = await axios.get(`${apiUrl}api/saving/export-savings-general-report?organisation=${organizationId}`, {
+        
+        headers: {
+          Authorization: `Bearer ${token}`, // Include the token in the headers
+        },
+        responseType: 'blob', // Important for handling binary data
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'general-report.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error exporting savings:', error);
+      alert('Failed to export savings. Please try again.');
+    }
+  };
+
+  const handleExcelExport = async () => {
+    try {
+      const organisation = organizationId; 
+      const response = await fetch(`${apiUrl}api/saving/export-savings-excel-general-report?organisation=${organizationId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'report.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        console.error('Failed to export users:', response.statusText);
+      }
+    } catch (error) {
+      console.error('An error occurred while exporting users:', error);
+    }
+  };
+
   return (
     <div>
       <div className="mb-4 space-y-2">
@@ -311,13 +366,13 @@ export default function Analytics() {
             (user?.role === "staff" &&
               userPermissions.includes(permissionsMap["export-saving"]))) && (
             <div className="mt-4 flex">
-              <button className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite">
+              <button onClick={handleExport} className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite">
                 Export as CSV{" "}
                 <span className="ml-2 mt-1">
                   <CiExport />
                 </span>
               </button>
-              <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
+              <button onClick={handleExcelExport} className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
                 <u>Export as Excel</u>
               </button>
             </div>
