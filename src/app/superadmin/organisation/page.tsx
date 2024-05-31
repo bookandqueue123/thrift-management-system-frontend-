@@ -2,36 +2,19 @@
 import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import CustomerAction from "@/components/CustomerAction";
+import Modal from "@/components/Modal";
 import TransactionsTable from "@/components/Tables";
 import OrganisationAction from "@/modules/merchant/OrganisationAction";
 import { getOrganizationProps } from "@/types";
 import { extractDate, extractTime, formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
-import { ChangeEvent, SetStateAction, useState } from "react";
+import { ErrorMessage, Field, Formik } from "formik";
+import { ChangeEvent, Dispatch, SetStateAction, useState } from "react";
 import { CiExport } from "react-icons/ci";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import * as Yup from "yup";
 
 
-const mockData = [
-    {
-      "organisation_name": "ABC Corporation",
-      "organization_id": "123456",
-      "total_customers": 500,
-      "registration_day": "2024-03-28"
-    },
-    {
-      "organisation_name": "XYZ Corp",
-      "organization_id": "789012",
-      "total_customers": 1000,
-      "registration_day": "2023-10-15"
-    },
-    {
-      "organisation_name": "Example Corp",
-      "organization_id": "345678",
-      "total_customers": 300,
-      "registration_day": "2024-01-10"
-    }
-  ];
   
 export default function SuperAdminOrganisation(){
   const PAGE_SIZE = 5;
@@ -41,6 +24,11 @@ export default function SuperAdminOrganisation(){
   const [toDate, setToDate] = useState("");
   const [searchResult, setSearchResult] = useState("");
   const [filteredOrganisations, setFilteredOrganisations] = useState<getOrganizationProps[]>([])
+  const [modalState, setModalState] = useState(false);
+  const [modalToShow, setModalToShow] = useState<
+    "edit-organisation" | "create-organisation" | "view-organisation" | ""
+  >("");
+
   const {
     data: organizations,
     isLoading: isUserLoading,
@@ -179,13 +167,16 @@ export default function SuperAdminOrganisation(){
               ]}
             />
           </span>
+
+         
           <CustomButton
             type="button"
             label="Create an Organisation"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
             onButtonClick={() => {
-            //   setModalState(true);
-            //   setModalContent("form");
+              
+              setModalState(true);
+              setModalToShow("create-organisation");
             }}
           />
          
@@ -266,6 +257,28 @@ export default function SuperAdminOrganisation(){
         ))}
       />
 
+      {modalState && (
+        <Modal
+          setModalState={setModalState}
+          title={
+            modalToShow === "create-organisation"
+              ? "Create Organisation"
+                  : ""
+          }
+        >
+             (
+                <div className="px-[10%]">
+                  <CreateOrganisation
+                   setCloseModal={setModalState}
+                      // setUserMutated={setIsUserMutated}
+                      actionToTake={modalToShow}
+                  />
+                  
+                </div>
+              ) 
+            </Modal>
+          )}
+
       <div className="flex justify-center">
             <div className="flex items-center justify-center  space-x-2">
               <button
@@ -314,3 +327,172 @@ export default function SuperAdminOrganisation(){
         </div>
     )
 }
+
+const CreateOrganisation = ({
+  // setUserMutated,
+  setCloseModal,
+  actionToTake,
+}: {
+  actionToTake: "create-organisation" | "edit-organisation" | "view-organisation" | "";
+  setCloseModal: Dispatch<SetStateAction<boolean>>;
+  // setUserMutated: Dispatch<SetStateAction<boolean>>;
+}) => {
+  const { client } = useAuth();
+
+  const initialValues= {
+    organisationName: "",
+    email: "",
+    contactNumber: "",
+    prefferedUrl: "",
+    
+  };
+
+ 
+
+  
+
+  return (
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={Yup.object({
+        organisationName: Yup.string().required("Required"),
+        email: Yup.string().required("Required").email("Invalid email address"),
+        contactNumber: Yup.string()
+          .matches(
+            /^(?:\+234\d{10}|\d{11})$/,
+            "contactNumber number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
+          )
+          .required("Required"),
+        prefferedUrl: Yup.string().required("Required"),
+      })}
+      onSubmit={(values, { setSubmitting }) => {
+       
+      }}
+    >
+      {({
+        isSubmitting,
+        handleChange,
+        handleSubmit,
+        values,
+        errors,
+        setFieldValue,
+        submitForm,
+      }) => (
+        <form className="flex flex-col items-center" onSubmit={handleSubmit}>
+          <div className="mb-10 w-full space-y-10 rounded-md bg-white px-[5%] py-[3%]">
+            <section>
+              <div className="my-3">
+                <label
+                  htmlFor="organisationName"
+                  className="m-0 text-xs font-medium text-ajo_darkBlue"
+                >
+                  Organisation Name
+                </label>
+                <Field
+                  onChange={handleChange}
+                  name="organisationName"
+                  type="text"
+                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                />
+                <ErrorMessage
+                  name="organisationName"
+                  component="div"
+                  className="text-xs text-red-500"
+                />
+              </div>
+
+              <div className="my-3 flex flex-col gap-4 md:flex-row">
+                <div className="flex-1">
+                  <label
+                    htmlFor="email"
+                    className="m-0 text-xs font-medium text-ajo_darkBlue"
+                  >
+                    Email
+                  </label>
+                  <Field
+                    onChange={handleChange}
+                    name="email"
+                    type="text"
+                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                  />
+                  <ErrorMessage
+                    name="email"
+                    component="div"
+                    className="text-xs text-red-500"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label
+                    htmlFor="contactNumber"
+                    className="text-ajo_darkBluee m-0 text-xs font-medium"
+                  >
+                    Contact Number
+                  </label>
+                  <Field
+                    name="contactNumber"
+                    type="text"
+                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                  />
+                  <ErrorMessage
+                    name="contactNumber"
+                    component="div"
+                    className="text-xs text-red-500"
+                  />
+                </div>
+              </div>
+              
+              <div className="mb-3">
+              <label
+                htmlFor="prefferedUrl"
+                className="m-0 text-xs font-medium text-ajo_darkBlue"
+              >
+                Preferred Url{" "}
+                <span className="font-base font-semibold text-[#FF0000]">
+                  *
+                </span>{" "}
+                (e.g: example@finkia.com.ng)
+              </label>
+              <div className="mt-1 flex w-full rounded-lg border-0 bg-[#F3F4F6]  p-3">
+                <Field
+                  type="string"
+                  name="prefferedUrl"
+                  id="prefferedUrl"
+                  className="w-full bg-transparent text-[#7D7D7D] outline-none"
+                />
+                <span className="text-ajo_darkBlue">@finkia.com.ng</span>
+              </div>
+              <ErrorMessage
+                name="prefferedUrl"
+                component="div"
+                className="text-xs text-red-500"
+              />
+            </div>
+
+              
+              
+            </section>
+          </div>
+          <button
+            type="submit"
+            className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
+            onClick={() => submitForm()}
+            // disabled={isSubmitting || isCreatingRole}
+          >
+            {/* {isSubmitting || isCreatingRole || isEditingRole ? (
+              <Image
+                src="/loadingSpinner.svg"
+                alt="loading spinner"
+                className="relative left-1/2"
+                width={25}
+                height={25}
+              />
+            ) : ( */}
+              Submit
+            {/* )} */}
+          </button>
+        </form>
+      )}
+    </Formik>
+  );
+};
