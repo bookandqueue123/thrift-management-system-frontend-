@@ -3,11 +3,11 @@ import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 // import DummyCustomers from "@/api/dummyCustomers.json";
-import { useAuth } from "@/api/hooks/useAuth";
+import { apiUrl, useAuth } from "@/api/hooks/useAuth";
 import { usePermissions } from "@/api/hooks/usePermissions";
 import DateRangeComponent from "@/components/DateArrayFile";
 import Modal from "@/components/Modal";
-import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectToken, selectUser } from "@/slices/OrganizationIdSlice";
 import {
   FormErrors,
   FormValues,
@@ -23,7 +23,7 @@ import {
   formatToDateAndTime,
 } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";
 import {
   ChangeEvent,
@@ -44,7 +44,7 @@ const Posting = () => {
   const [toDate, setToDate] = useState("");
   const organizationId = useSelector(selectOrganizationId);
   const user = useSelector(selectUser);
-
+  const token = useSelector(selectToken);
   const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
   const [filteredSavings, setFilteredSavings] = useState<allSavingsResponse[]>(
@@ -156,6 +156,62 @@ const Posting = () => {
   if (user && user.role === "customer") {
     router.push("/signin");
   }
+
+  const handleExport = async () => {
+    const user = organizationId
+    const organisation = organizationId
+    try {
+      const response = await axios.get(`${apiUrl}api/saving/export-savings-postings`, {
+        params: {
+          organisation,
+          user,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`, // Include the token in the headers
+        },
+        responseType: 'blob', // Important for handling binary data
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'postings.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error exporting savings:', error);
+      alert('Failed to export savings. Please try again.');
+    }
+  };
+
+  const handleExcelExport = async () => {
+    const user = organizationId
+    const organisation = organizationId
+    try {
+      const response = await axios.get(`${apiUrl}api/saving/export-savings-excel-postings`, {
+        params: {
+          organisation,
+          
+        },
+        headers: {
+          Authorization: `Bearer ${token}`, // Include the token in the headers
+        },
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'postings.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error exporting savings:', error);
+      alert('Failed to export savings. Please try again.');
+    }
+  };
 
   return (
     <>
@@ -274,13 +330,13 @@ const Posting = () => {
             (user?.role === "staff" &&
               userPermissions.includes(permissionsMap["export-saving"]))) && (
             <div className="mt-4 flex">
-              <button className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
+              <button onClick={handleExport} className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
                 Export as CSV{" "}
                 <span className="ml-2 mt-1">
                   <CiExport />
                 </span>
               </button>
-              <button className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
+              <button onClick={handleExcelExport} className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
                 <u>Export as Excel</u>
               </button>
             </div>
