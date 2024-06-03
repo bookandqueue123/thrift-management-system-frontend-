@@ -6,7 +6,7 @@ const SuccessToaster = ({ message }: { message: string }) => {
     
     toast.success(message, {
       position: "top-right",
-      autoClose: 5000, // Close the toaster after 7 seconds
+      autoClose: 3000, // Close the toaster after 7 seconds
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,

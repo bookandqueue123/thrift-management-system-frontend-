@@ -80,7 +80,9 @@ const SignInForm = () => {
         }
       } else if (response.data.role === "superadmin") {
         router.replace("/superadmin");
-      } else if (response.data.role === "staff") {
+      } else if (response.data.role === "superuser") {
+        router.replace("/superadmin");
+      }else if (response.data.role === "staff") {
         router.replace("/merchant");
       } else if (response.data.role === "organisation") {
         if (response.data.kycVerified) {
