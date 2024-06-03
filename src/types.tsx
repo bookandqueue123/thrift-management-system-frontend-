@@ -436,6 +436,7 @@ export interface AssignedUser {
 }
 export interface User {
   _id: string;
+  name:string;
   firstName: string;
   lastName: string;
   otherName?: string;
@@ -599,23 +600,24 @@ export interface createRoleProps {
 }
 
 export interface createSuperRoleProps {
+  superuser: string[];
   roleName: string;
   description: string;
-  viewPermissions: {
-    viewOrgDetails: boolean;
-    viewOrgCustomerDetails: boolean;
-    viewOrg: boolean;
-    generalPostingReport: boolean;
-    withdrawalReport: boolean;
-  };
-  editPermissions: {
-    editOrgCustomerDetails: boolean;
-    editOrgDetails: boolean;
-  };
-  actionPermissions: {
-    enableOrg: boolean;
-    disableOrg: boolean;
-  };
+  // viewPermissions: {
+  //   viewOrgDetails: boolean;
+  //   viewOrgCustomerDetails: boolean;
+  //   viewOrg: boolean;
+  //   generalPostingReport: boolean;
+  //   withdrawalReport: boolean;
+  // };
+  // editPermissions: {
+  //   editOrgCustomerDetails: boolean;
+  //   editOrgDetails: boolean;
+  // };
+  // actionPermissions: {
+  //   enableOrg: boolean;
+  //   disableOrg: boolean;
+  // };
 }
 
 export interface mutateUserProps {

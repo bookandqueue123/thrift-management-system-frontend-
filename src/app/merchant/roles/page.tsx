@@ -68,6 +68,8 @@ const Roles = () => {
     staleTime: 5000,
   });
 
+  console.log(allRoles)
+
   const { data: allPermissions } = useQuery({
     queryKey: ["allPermissions"],
     queryFn: async () => {

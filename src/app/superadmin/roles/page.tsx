@@ -5,7 +5,7 @@ import Modal, { ModalConfirmation } from "@/components/Modal";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import { createSuperRoleProps, customer } from "@/types";
+import { User, createSuperRoleProps, customer, permissionObject } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
@@ -52,75 +52,79 @@ const Roles = () => {
     queryFn: async () => {
       return client
         .get(
-          `/api/user?role=customer&organisation=${organisationId}&userType=individual`,
+          `/api/superuser-role`,
           {},
         )
         .then((response: AxiosResponse<customer[], any>) => {
           // setFilteredRoles(response.data);
-          setFilteredRoles([
-            {
-              id: "234555",
-              roleTitle: "Organisation Manager 1",
-              affiliatedOrganisation: "Raoatech Technologies",
-              organisationManagerDetails: {
-                name: "Olanrewaju Sokumnbi",
-                email: "sokunmbi@gmail.com",
-                phone: "+234 9085798782",
-              },
-            },
-            {
-              id: "234555",
-              roleTitle: "Organisation Manager 2",
-              affiliatedOrganisation: "Cooperative Union",
-              organisationManagerDetails: {
-                name: "Olanrewaju Sokumnbi",
-                email: "sokunmbi@gmail.com",
-                phone: "+234 9085798782",
-              },
-            },
-            {
-              id: "234555",
-              roleTitle: "Organisation Manager 3",
-              affiliatedOrganisation: "AlajoShomolu Cooperative Society",
-              organisationManagerDetails: {
-                name: "Olanrewaju Sokumnbi",
-                email: "sokunmbi@gmail.com",
-                phone: "+234 9085798782",
-              },
-            },
-            {
-              id: "234555",
-              roleTitle: "Organisation Manager 4",
-              affiliatedOrganisation: "Teachers Union Savings Group",
-              organisationManagerDetails: {
-                name: "Olanrewaju Sokumnbi",
-                email: "sokunmbi@gmail.com",
-                phone: "+234 9085798782",
-              },
-            },
-            {
-              id: "234555",
-              roleTitle: "Customer",
-              affiliatedOrganisation: null,
-              organisationManagerDetails: null,
-            },
-            {
-              id: "234555",
-              roleTitle: "Organisation",
-              affiliatedOrganisation: "Teachers Union Savings Group",
-              organisationManagerDetails: null,
-            },
-            {
-              id: "234555",
-              roleTitle: "Super Admin",
-              affiliatedOrganisation: null,
-              organisationManagerDetails: {
-                name: "Olanrewaju Sokumnbi",
-                email: "sokunmbi@gmail.com",
-                phone: "+234 9085798782",
-              },
-            },
-          ]);
+          console.log(response.data)
+          setFilteredRoles(response.data)
+          // setFilteredRoles(
+        //     [
+        //     {
+        //       id: "234555",
+        //       roleTitle: "Organisation Manager 1",
+        //       affiliatedOrganisation: "Raoatech Technologies",
+        //       organisationManagerDetails: {
+        //         name: "Olanrewaju Sokumnbi",
+        //         email: "sokunmbi@gmail.com",
+        //         phone: "+234 9085798782",
+        //       },
+        //     },
+        //     {
+        //       id: "234555",
+        //       roleTitle: "Organisation Manager 2",
+        //       affiliatedOrganisation: "Cooperative Union",
+        //       organisationManagerDetails: {
+        //         name: "Olanrewaju Sokumnbi",
+        //         email: "sokunmbi@gmail.com",
+        //         phone: "+234 9085798782",
+        //       },
+        //     },
+        //     {
+        //       id: "234555",
+        //       roleTitle: "Organisation Manager 3",
+        //       affiliatedOrganisation: "AlajoShomolu Cooperative Society",
+        //       organisationManagerDetails: {
+        //         name: "Olanrewaju Sokumnbi",
+        //         email: "sokunmbi@gmail.com",
+        //         phone: "+234 9085798782",
+        //       },
+        //     },
+        //     {
+        //       id: "234555",
+        //       roleTitle: "Organisation Manager 4",
+        //       affiliatedOrganisation: "Teachers Union Savings Group",
+        //       organisationManagerDetails: {
+        //         name: "Olanrewaju Sokumnbi",
+        //         email: "sokunmbi@gmail.com",
+        //         phone: "+234 9085798782",
+        //       },
+        //     },
+        //     {
+        //       id: "234555",
+        //       roleTitle: "Customer",
+        //       affiliatedOrganisation: null,
+        //       organisationManagerDetails: null,
+        //     },
+        //     {
+        //       id: "234555",
+        //       roleTitle: "Organisation",
+        //       affiliatedOrganisation: "Teachers Union Savings Group",
+        //       organisationManagerDetails: null,
+        //     },
+        //     {
+        //       id: "234555",
+        //       roleTitle: "Super Admin",
+        //       affiliatedOrganisation: null,
+        //       organisationManagerDetails: {
+        //         name: "Olanrewaju Sokumnbi",
+        //         email: "sokunmbi@gmail.com",
+        //         phone: "+234 9085798782",
+        //       },
+        //     },
+        //   ]
+        // );
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -130,6 +134,8 @@ const Roles = () => {
     },
     staleTime: 5000,
   });
+
+console.log(allRoles)
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
 
@@ -245,7 +251,7 @@ const Roles = () => {
                 paginatedRoles?.map((role, index) => (
                   <tr className="" key={index + 1}>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {role.roleTitle || "----"}
+                      {role.name || "----"}
                     </td>
 
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
@@ -339,71 +345,84 @@ const MutateRole = ({
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   setRoleMutated: Dispatch<SetStateAction<boolean>>;
 }) => {
+  const { client } = useAuth();
+  const [allSuperUsers, setAllSuperUsers] = useState([])
   const [assignType, setAssignType] = useState<"single" | "all">("single");
+  const [assignedPermissions, setAssignedPermissions] = useState<string[]>([]);
   const initialValues: createSuperRoleProps = {
     roleName: "",
     description: "",
-    viewPermissions: {
-      viewOrgDetails: false,
-      viewOrgCustomerDetails: false,
-      viewOrg: false,
-      generalPostingReport: false,
-      withdrawalReport: false,
-    },
-    editPermissions: {
-      editOrgCustomerDetails: false,
-      editOrgDetails: false,
-    },
-    actionPermissions: {
-      enableOrg: false,
-      disableOrg: false,
-    },
+    superuser: []
+
+    // viewPermissions: {
+    //   viewOrgDetails: false,
+    //   viewOrgCustomerDetails: false,
+    //   viewOrg: false,
+    //   generalPostingReport: false,
+    //   withdrawalReport: false,
+    // },
+    // editPermissions: {
+    //   editOrgCustomerDetails: false,
+    //   editOrgDetails: false,
+    // },
+    // actionPermissions: {
+    //   enableOrg: false,
+    //   disableOrg: false,
+    // },
   };
 
+  const { data: allPermissions, isLoading: isLoadingAllPermissions } = useQuery(
+    {
+      queryKey: ["allPermissions"],
+      queryFn: async () => {
+        return client
+          .get("api/superuser-permission")
+          .then((response) => {
+            return response.data;
+          })
+          .catch((error) => {
+            throw error;
+          });
+      },
+    },
+  );
+
+  const {
+    data: getSuperUsers,
+    isLoading: isLoadingAllSUperallSuperUsers,
+    refetch,
+  } = useQuery({
+    queryKey: ["allSuperUsers"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user?role=superuser`, {})
+        .then((response) => {
+    
+          setAllSuperUsers(response.data);
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+
+          throw error;
+        });
+    },
+    staleTime: 5000,
+  });
+
+ console.log(getSuperUsers)
   const { mutate: createRole, isPending: isCreatingRole } = useMutation({
     mutationKey: ["create role"],
     mutationFn: async (values: createSuperRoleProps) => {
-      // const socials = {
-      //   facebook: values.facebook,
-      //   twitter: values.instagram,
-      //   instagram: values.linkedIn,
-      //   linkedIn: values.twitter,
-      //   pintrest: values.pinterest,
-      // };
+    
+      return client.post(`/api/superuser-role`, {
+        name: values.roleName,
+      description: values.description,
+      permissions: assignedPermissions,
+      superuser: values.superuser
+      })
 
-      // const formData = new FormData();
-
-      // formData.append("description", values.description);
-      // formData.append("region", values.city);
-      // formData.append("country", values.country);
-      // formData.append("state", values.state);
-      // formData.append("city", values.lga);
-      // formData.append("socialMedia", JSON.stringify(socials));
-      // formData.append("tradingName", values.tradingName);
-      // formData.append("website", values.websiteUrl);
-      // formData.append("businessEmailAdress", values.email);
-      // formData.append("officeAddress1", values.officeAddress);
-      // formData.append("officeAddress2", values.address2);
-      // formData.append("organisationName", values.organisationName);
-      // formData.append("email", values.email);
-      // formData.append("phoneNumber", values.phoneNumber);
-
-      // if (values.organisationLogo) {
-      //   formData.append("organisationLogo", values.organisationLogo[0]);
-      // }
-      //  if (values.BankRecommendation) {
-      //   formData.append("BankRecommendation", values.BankRecommendation[0]);
-      // }
-      //  if (values.CommunityRecommendation) {
-      //   formData.append("CommunityRecommendation", values.CommunityRecommendation[0]);
-      // }
-      //  if (values.CourtAffidavit) {
-      //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
-      //  }
-     
-      return;
-      //  client.put(`/api/user/${userId}`, formData);
     },
+   
 
     onSuccess(response) {
       setRoleMutated(true);
@@ -418,46 +437,12 @@ const MutateRole = ({
     },
   });
 
+  console.log(assignedPermissions)
+
   const { mutate: editRole, isPending: isEditingRole } = useMutation({
     mutationKey: ["edit role"],
     mutationFn: async (values: createSuperRoleProps) => {
-      // const socials = {
-      //   facebook: values.facebook,
-      //   twitter: values.instagram,
-      //   instagram: values.linkedIn,
-      //   linkedIn: values.twitter,
-      //   pintrest: values.pinterest,
-      // };
-
-      // const formData = new FormData();
-
-      // formData.append("description", values.description);
-      // formData.append("region", values.city);
-      // formData.append("country", values.country);
-      // formData.append("state", values.state);
-      // formData.append("city", values.lga);
-      // formData.append("socialMedia", JSON.stringify(socials));
-      // formData.append("tradingName", values.tradingName);
-      // formData.append("website", values.websiteUrl);
-      // formData.append("businessEmailAdress", values.email);
-      // formData.append("officeAddress1", values.officeAddress);
-      // formData.append("officeAddress2", values.address2);
-      // formData.append("organisationName", values.organisationName);
-      // formData.append("email", values.email);
-      // formData.append("phoneNumber", values.phoneNumber);
-
-      // if (values.organisationLogo) {
-      //   formData.append("organisationLogo", values.organisationLogo[0]);
-      // }
-      //  if (values.BankRecommendation) {
-      //   formData.append("BankRecommendation", values.BankRecommendation[0]);
-      // }
-      //  if (values.CommunityRecommendation) {
-      //   formData.append("CommunityRecommendation", values.CommunityRecommendation[0]);
-      // }
-      //  if (values.CourtAffidavit) {
-      //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
-      //  }
+      
       
       return;
       //  client.put(`/api/user/${userId}`, formData);
@@ -476,20 +461,20 @@ const MutateRole = ({
     },
   });
 
-  type viewPermissionKeys = keyof createSuperRoleProps["viewPermissions"];
-  const viewPermissionArr = [
-    "viewOrgDetails",
-    "viewOrgCustomerDetails",
-    "viewOrg",
-    "generalPostingReport",
-    "withdrawalReport",
-  ];
+  // type viewPermissionKeys = keyof createSuperRoleProps["viewPermissions"];
+  // const viewPermissionArr = [
+  //   "viewOrgDetails",
+  //   "viewOrgCustomerDetails",
+  //   "viewOrg",
+  //   "generalPostingReport",
+  //   "withdrawalReport",
+  // ];
 
-  type editPermissionKeys = keyof createSuperRoleProps["editPermissions"];
-  const editPermissionArr = ["editOrgCustomerDetails", "editOrgDetails"];
+  // type editPermissionKeys = keyof createSuperRoleProps["editPermissions"];
+  // const editPermissionArr = ["editOrgCustomerDetails", "editOrgDetails"];
 
-  type actionPermissionKeys = keyof createSuperRoleProps["actionPermissions"];
-  const actionPermissionArr = ["enableOrg", "disableOrg"];
+  // type actionPermissionKeys = keyof createSuperRoleProps["actionPermissions"];
+  // const actionPermissionArr = ["enableOrg", "disableOrg"];
 
   return (
     <Formik
@@ -499,10 +484,11 @@ const MutateRole = ({
         roleName: Yup.string().required("Required"),
       })}
       onSubmit={(values, { setSubmitting }) => {
+        console.log(values)
         setTimeout(() => {
           if (actionToTake === "create-role") {
             console.log("creating role.....................");
-            createRole(values);
+             createRole(values);
           } else {
             console.log("editing role.....................");
             editRole(values);
@@ -570,28 +556,28 @@ const MutateRole = ({
               <div className="my-3 flex flex-col gap-4 md:flex-row">
                 <div className="mb-4 flex-1">
                   <label
-                    htmlFor="singleAssign"
+                    htmlFor="superuser"
                     className="m-0 text-xs font-medium text-ajo_darkBlue"
                   >
                     Assign to Super User
                   </label>
                   <Field
                     as="select"
-                    id="singleAssign"
-                    name="singleAssign"
+                    id="superuser"
+                    name="superuser"
                     className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
                   >
-                    {/* {organisationGroups?.map(
-                      (group: OrganisationGroupsProps) => (
-                        <option key={group._id} value={group._id}>
-                          {group.groupName}
+                    {getSuperUsers?.map(
+                      (superuser: User) => (
+                        <option key={superuser._id} value={superuser._id}>
+                          {superuser.name}
                         </option>
                       ),
-                    )} */}
+                    )} 
                     <option className="invisible"></option>
                   </Field>
                   <ErrorMessage
-                    name="singleAssign"
+                    name="superuser"
                     component="div"
                     className="text-xs text-red-500"
                   />
@@ -604,6 +590,12 @@ const MutateRole = ({
                     className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                     onChange={(e: any) => {
                       handleChange(e);
+                      if(getSuperUsers){
+                        setFieldValue(
+                          "superuser",
+                          getSuperUsers.map((superuser: { _id: any; }) => superuser._id)
+                        )
+                      }
                       setAssignType("all");
                     }}
                     checked={assignType === "all" ? true : false}
@@ -622,7 +614,7 @@ const MutateRole = ({
               Permissions
             </p>
 
-            <span className="mb-1 block  text-sm text-ajo_darkBlue">
+            {/* <span className="mb-1 block  text-sm text-ajo_darkBlue">
               View Permissions
             </span>
             {viewPermissionArr.map((permission) => {
@@ -711,7 +703,56 @@ const MutateRole = ({
                   </label>
                 </div>
               );
-            })}
+            })} */}
+
+<div className="space-y-3">
+              {isLoadingAllPermissions ? (
+                <Image
+                  src="/loadingSpinner.svg"
+                  alt="loading spinner"
+                  className="relative left-1/2"
+                  width={40}
+                  height={40}
+                />
+              ) : (
+                allPermissions?.map((permission: permissionObject) => {
+                  // console.log(permission._id)
+                  // console.log(assignedPermissions.includes(permission._id))
+                  return (
+                    <div className="flex gap-x-3" key={permission._id}>
+                      <Field
+                        id={permission._id}
+                        name={`${permission.title}`}
+                        type="checkbox"
+                        className="block h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                        onChange={(e: any) => {
+                          handleChange(e);
+                          setAssignedPermissions((prev) => {
+                            const isIdPresent = prev.includes(permission._id);
+                            if (isIdPresent) {
+                              return prev.filter((id) => id !== permission._id);
+                            } else {
+                              return [...prev, permission._id];
+                            }
+                          });
+                        }}
+                        checked={assignedPermissions.includes(permission._id)}
+                      />
+                      <label
+                        htmlFor={permission._id}
+                        className="m-0 text-sm capitalize text-ajo_darkBlue"
+                      >
+                        {permission.title === "create-staff"
+                          ? "Create User"
+                          : permission.title === "view-assigned-users"
+                            ? "View Assigned Customers"
+                            : permission.title.replaceAll("-", " ")}
+                      </label>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
           <button
             type="submit"
