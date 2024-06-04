@@ -545,7 +545,7 @@ const Customers = () => {
                       successTitle="Customer creation successful"
                       errorTitle="Customer Creation Failed"
                       status={isCustomerCreated ? "success" : "failed"}
-                      responseMessage={error}
+                      responseMessage=""
                     />
                   )}
                 </>
@@ -2024,6 +2024,7 @@ const CreateCustomer = ({
       
       setCustomerCreated(true);
       setModalContent("confirmation");
+      setError("Customer created successfully. ")
       setTimeout(() => {
         setCloseModal(false);
       }, 5000);
