@@ -4,8 +4,8 @@ import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import Modal, { ModalConfirmation } from "@/components/Modal";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
-import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import { User, createSuperRoleProps, customer, permissionObject } from "@/types";
+import { selectOrganizationId, selectUserId } from "@/slices/OrganizationIdSlice";
+import { Role, User, createSuperRoleProps, customer, permissionObject } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
@@ -39,9 +39,13 @@ const Roles = () => {
     "form",
   );
   const [modalToShow, setModalToShow] = useState<
-    "edit-role" | "create-role" | ""
+    "edit-role" | "create-role" | "view-role" | ""
   >("");
   const [roleToBeEdited, setRoleToBeEdited] = useState("");
+
+  const [isRoleCreated, setIsRoleCreated] = useState(false);
+  const [isRoleEdited, setIsRoleEdited] = useState(false);
+  const [mutationResponse, setMutationResponse] = useState("");
 
   const {
     data: allRoles,
@@ -57,7 +61,7 @@ const Roles = () => {
         )
         .then((response: AxiosResponse<customer[], any>) => {
           // setFilteredRoles(response.data);
-          console.log(response.data)
+        
           setFilteredRoles(response.data)
           // setFilteredRoles(
         //     [
@@ -135,7 +139,7 @@ const Roles = () => {
     staleTime: 5000,
   });
 
-console.log(allRoles)
+
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
 
@@ -176,8 +180,9 @@ console.log(allRoles)
   useEffect(() => {
     // Calling refetch to rerun the allRoles query
     refetch();
-  }, [isRoleMutated, refetch]);
+  }, [isRoleCreated, isRoleEdited, modalContent, refetch]);
 
+  
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -224,6 +229,8 @@ console.log(allRoles)
             onButtonClick={() => {
               setModalState(true);
               setModalToShow("create-role");
+              setIsRoleCreated(false)
+              setModalContent('form')
             }}
           />
         </div>
@@ -307,20 +314,32 @@ console.log(allRoles)
                     : ""
               }
             >
-              {!isRoleMutated ? (
+              {modalContent === "form" ? (
                 <div className="px-[10%]">
-                  <MutateRole
+                  {modalToShow === "view-role" ? (
+                    ""
+                  ): (
+                    <MutateRole
                     setCloseModal={setModalState}
                     setRoleMutated={setIsRoleMutated}
                     actionToTake={modalToShow}
+                    roleToBeEdited={roleToBeEdited}
+
+                      setRoleCreated={setIsRoleCreated}
+                      setRoleEdited={setIsRoleEdited}
+                      setModalContent={setModalContent}
+                      setMutationResponse={setMutationResponse}
+                    
+                     
                   />
+                  )}
                 </div>
               ) : (
                 <ModalConfirmation
                   successTitle={`Role ${modalToShow === "create-role" ? "Creation" : "Editing"} Successful`}
                   errorTitle={`Role ${modalToShow === "create-role" ? "Creation" : "Editing"} Failed`}
-                  status={isRoleMutated ? "success" : "failed"}
-                  responseMessage=""
+                  status={isRoleCreated || isRoleEdited ? "success" : "failed"}
+                  responseMessage={mutationResponse}
                 />
               )}
             </Modal>
@@ -340,37 +359,88 @@ const MutateRole = ({
   setRoleMutated,
   setCloseModal,
   actionToTake,
+  roleToBeEdited,
+  setRoleCreated,
+  setRoleEdited,
+  setModalContent,
+  setMutationResponse,
+  
 }: {
+  setMutationResponse: Dispatch<SetStateAction<string>>;
+  setRoleEdited: Dispatch<SetStateAction<boolean>>;
+  setRoleCreated: Dispatch<SetStateAction<boolean>>;
+  roleToBeEdited: string;
   actionToTake: "create-role" | "edit-role" | "";
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   setRoleMutated: Dispatch<SetStateAction<boolean>>;
+  setModalContent: Dispatch<SetStateAction< "confirmation" | "form">>;
 }) => {
   const { client } = useAuth();
   const [allSuperUsers, setAllSuperUsers] = useState([])
   const [assignType, setAssignType] = useState<"single" | "all">("single");
   const [assignedPermissions, setAssignedPermissions] = useState<string[]>([]);
-  const initialValues: createSuperRoleProps = {
+ 
+  const [selectedOptions, setSelectedOptions] = useState<
+    (Role | undefined)[]
+  >([]);
+
+  const [assignedUsersIds, setAssignedUsersIds] = useState<string[]>([])
+
+
+
+  const { data: role, isLoading: isLoadingRole } = useQuery(
+    {
+      queryKey: ["role"],
+      queryFn: async () => {
+        return client
+          .get(`api/superuser-role/${roleToBeEdited}`)
+          .then((response) => {
+            return response.data;
+          })
+          .catch((error) => {
+            throw error;
+          });
+      },
+    },
+  );
+  console.log(role)
+
+  useEffect(() => {
+    if(actionToTake === "edit-role"){
+      if (role?.permissions) {
+      const permissionsIds = role?.permissions?.map((permissions: { _id: any }) => permissions._id);
+      setAssignedPermissions(permissionsIds || []);
+    }
+    }
+    else{
+      setAssignedPermissions([])
+    }
+    
+  }, [role, actionToTake]);
+  
+  const initialValues: createSuperRoleProps = actionToTake === 'edit-role' ? {
+    roleName: role?.name ?? "",
+    description: role?.description ?? "",
+    superuser: role?.superuser ?? ""
+  } :
+  {
     roleName: "",
     description: "",
     superuser: []
-
-    // viewPermissions: {
-    //   viewOrgDetails: false,
-    //   viewOrgCustomerDetails: false,
-    //   viewOrg: false,
-    //   generalPostingReport: false,
-    //   withdrawalReport: false,
-    // },
-    // editPermissions: {
-    //   editOrgCustomerDetails: false,
-    //   editOrgDetails: false,
-    // },
-    // actionPermissions: {
-    //   enableOrg: false,
-    //   disableOrg: false,
-    // },
   };
 
+  useEffect(() => {
+    if(actionToTake === 'edit-role'){
+      if (role?.superuser) {
+      const superUsersIds = role?.superuser?.map((superuser: { _id: any }) => superuser._id);
+      setAssignedUsersIds(superUsersIds || []);
+    }
+    }
+    else{
+      setAssignedUsersIds([])
+    }
+    
+  }, [role, actionToTake]);
   const { data: allPermissions, isLoading: isLoadingAllPermissions } = useQuery(
     {
       queryKey: ["allPermissions"],
@@ -409,7 +479,7 @@ const MutateRole = ({
     staleTime: 5000,
   });
 
- console.log(getSuperUsers)
+
   const { mutate: createRole, isPending: isCreatingRole } = useMutation({
     mutationKey: ["create role"],
     mutationFn: async (values: createSuperRoleProps) => {
@@ -425,38 +495,57 @@ const MutateRole = ({
    
 
     onSuccess(response) {
-      setRoleMutated(true);
+      setRoleEdited(true);
+      setModalContent("confirmation");
       setTimeout(() => {
-        setCloseModal(false);
-      }, 5000);
+       setCloseModal(false);
+        setModalContent('form')
+      }, 1000);
+    
     },
 
     onError(error: AxiosError<any, any>) {
-      setRoleMutated(false);
+      setRoleEdited(false);
+      setModalContent("confirmation");
+      setTimeout(() => {
+       setCloseModal(false);
+        setModalContent('form')
+      }, 1000);
     
     },
   });
 
-  console.log(assignedPermissions)
+
 
   const { mutate: editRole, isPending: isEditingRole } = useMutation({
     mutationKey: ["edit role"],
     mutationFn: async (values: createSuperRoleProps) => {
       
       
-      return;
-      //  client.put(`/api/user/${userId}`, formData);
+      return client.put(`/api/superuser-role/${roleToBeEdited}`, {
+        name: values.roleName,
+      description: values.description,
+      permissions: assignedPermissions,
+      superuser: assignedUsersIds
+      })
     },
 
     onSuccess(response) {
-      setRoleMutated(true);
+      setRoleEdited(true);
+      setModalContent("confirmation");
       setTimeout(() => {
-        setCloseModal(false);
-      }, 5000);
+       setCloseModal(false);
+        setModalContent('form')
+      }, 1000);
     },
 
     onError(error: AxiosError<any, any>) {
-      setRoleMutated(false);
+      setRoleEdited(false);
+      setModalContent("confirmation");
+      setTimeout(() => {
+       setCloseModal(false);
+        setModalContent('form')
+      }, 1000);
       
     },
   });
@@ -476,6 +565,25 @@ const MutateRole = ({
   // type actionPermissionKeys = keyof createSuperRoleProps["actionPermissions"];
   // const actionPermissionArr = ["enableOrg", "disableOrg"];
 
+  const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    const selectedOption = getSuperUsers?.find(
+      (option: { _id: string; }) => option._id === selectedId,
+    );
+    if (
+      !selectedOptions.some((option) => option?._id === selectedOption?._id)
+    ) {
+      setSelectedOptions([...selectedOptions, selectedOption!]);
+    }
+  };
+
+  const handleRemoveOption = (index: number) => {
+    const updatedOptions = [...selectedOptions];
+    updatedOptions.splice(index, 1);
+    setSelectedOptions(updatedOptions);
+  };
+
+
   return (
     <Formik
       enableReinitialize={true}
@@ -484,13 +592,14 @@ const MutateRole = ({
         roleName: Yup.string().required("Required"),
       })}
       onSubmit={(values, { setSubmitting }) => {
-        console.log(values)
+    
         setTimeout(() => {
           if (actionToTake === "create-role") {
             console.log("creating role.....................");
              createRole(values);
           } else {
             console.log("editing role.....................");
+         
             editRole(values);
           }
 
@@ -553,7 +662,7 @@ const MutateRole = ({
                   className="text-xs text-red-500"
                 />
               </div>
-              <div className="my-3 flex flex-col gap-4 md:flex-row">
+               <div className="my-3 flex flex-col gap-4 md:flex-row">
                 <div className="mb-4 flex-1">
                   <label
                     htmlFor="superuser"
@@ -607,8 +716,118 @@ const MutateRole = ({
                     All Super Users
                   </label>
                 </div>
-              </div>
+              </div> 
             </div>
+
+
+            {actionToTake === 'edit-role' ? (
+                  <div className="w-full">
+                  <Field
+                    as="select"
+                    title="Select an option"
+                    name="assignedUsers"
+                    className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                      handleOptionChange(e);
+                    let assignedUsers = assignedUsersIds
+                      // if(actionToTake === 'edit-user'){
+                      //   console.log(values.assignedUsers)
+                      //   assignedUsers = values.assignedUsers.map((customer: { _id: any; }) => customer._id);
+                      // }
+                      
+
+                      if (!assignedUsers.includes(e.target.value)) {
+                        const updatedassignedUsers = [
+                          ...assignedUsers,
+                          e.target.value,
+                        ];
+                        setAssignedUsersIds(updatedassignedUsers)
+                        
+                      }
+                    }}
+                  >
+                    <option value="hidden"></option>
+                    {/* { actionToTake === 'create-user' ? */}
+                    {getSuperUsers?.map((option: User) => (
+                      <option key={option._id} value={option._id}>
+                        {option.name}
+                      </option>
+                    )) }
+                     
+
+                
+                  </Field>
+
+                  <div className="space-x-1 space-y-2">
+                    {assignedUsersIds.map((userId: string, index: number ) => {
+                    
+                   
+                      const option = getSuperUsers?.find(
+                        (user: { _id: string; }) => user._id === userId,
+                      );
+                      return (
+                        <div key={index} className="mb-2 mr-2 inline-block">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              
+                              handleRemoveOption(index);
+                              const updatedCustomers =
+                                assignedUsersIds.filter(
+                                  (id: any) => id !== userId,
+                                );
+                              setAssignedUsersIds(updatedCustomers)
+                            }}
+                            className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
+                          >
+                            {option?.name}
+                            <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
+                              ×
+                            </span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                ) : ""}
+
+              {actionToTake === 'edit-role' ? (
+                  <div className="flex gap-x-3">
+                  <Field
+                    id="selectAllUsers"
+                    name="selectAllUsers"
+                    type="checkbox"
+                    className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                    checked={
+                      assignedUsersIds.length === getSuperUsers?.length
+                    }
+                    onChange={(e: { target: { checked: any } }) => {
+                      if (e.target.checked) {
+                        // setFieldValue(
+                        //   "assignedCustomers",
+                        //   allCustomers?.map((customer) => customer._id),
+                        // );
+                        if (getSuperUsers) {
+                          setAssignedUsersIds(getSuperUsers.map((superuser: { _id: any; }) => superuser._id));
+                        }
+                        
+                       
+                      } else {
+                        // setFieldValue("assignedCustomers", []);
+                        setAssignedUsersIds([])
+                      }
+                    }}
+                  />
+  
+                  <label
+                    htmlFor="selectAllUsers"
+                    className="m-0 text-sm capitalize text-ajo_darkBlue"
+                  >
+                    Select all super users
+                  </label>
+                </div>
+                ): ""}
 
             <p className="mb-2 py-4 text-lg font-medium text-ajo_darkBlue underline">
               Permissions
@@ -716,8 +935,7 @@ const MutateRole = ({
                 />
               ) : (
                 allPermissions?.map((permission: permissionObject) => {
-                  // console.log(permission._id)
-                  // console.log(assignedPermissions.includes(permission._id))
+                 
                   return (
                     <div className="flex gap-x-3" key={permission._id}>
                       <Field
