@@ -2,14 +2,15 @@
 import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import CustomerAction from "@/components/CustomerAction";
-import Modal from "@/components/Modal";
+import Modal, { ModalConfirmation } from "@/components/Modal";
 import TransactionsTable from "@/components/Tables";
 import OrganisationAction from "@/modules/merchant/OrganisationAction";
-import { getOrganizationProps } from "@/types";
+import { MerchantSignUpProps, getOrganizationProps } from "@/types";
 import { extractDate, extractTime, formatToDateAndTime } from "@/utils/TimeStampFormatter";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { ErrorMessage, Field, Formik } from "formik";
-import { ChangeEvent, Dispatch, SetStateAction, useState } from "react";
+import Image from "next/image";
+import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from "react";
 import { CiExport } from "react-icons/ci";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import * as Yup from "yup";
@@ -28,11 +29,16 @@ export default function SuperAdminOrganisation(){
   const [modalToShow, setModalToShow] = useState<
     "edit-organisation" | "create-organisation" | "view-organisation" | ""
   >("");
-
+  const [modalContent, setModalContent] = useState<"status" | "form" | "">(
+    "form",
+  );
+  const [isOrganisationCreated, setIsOrganisationCreated] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("")
   const {
     data: organizations,
     isLoading: isUserLoading,
     isError: getGroupError,
+    refetch,
   } = useQuery({
     queryKey: ["allOrganizations"],
     queryFn: async () => {
@@ -49,6 +55,12 @@ export default function SuperAdminOrganisation(){
         });
     },
   });
+
+  useEffect(() => {
+    // Calling refetch to rerun the allRoles query
+    refetch();
+  }, [isOrganisationCreated, refetch]);
+
 
   const handleFromDateChange = (event: {
     target: { value: SetStateAction<string> };
@@ -174,9 +186,10 @@ export default function SuperAdminOrganisation(){
             label="Create an Organisation"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
             onButtonClick={() => {
-              
+              setIsOrganisationCreated(false)
               setModalState(true);
               setModalToShow("create-organisation");
+              setModalContent("form");
             }}
           />
          
@@ -266,18 +279,34 @@ export default function SuperAdminOrganisation(){
                   : ""
           }
         >
+          {modalContent === "form" ? (
              (
-                <div className="px-[10%]">
-                  <CreateOrganisation
-                   setCloseModal={setModalState}
-                      // setUserMutated={setIsUserMutated}
-                      actionToTake={modalToShow}
-                  />
-                  
-                </div>
-              ) 
-            </Modal>
-          )}
+              <div className="px-[10%]">
+                <CreateOrganisation
+                setIsOrganisationCreated={setIsOrganisationCreated}
+                 setCloseModal={setModalState}
+                    // setUserMutated={setIsUserMutated}
+                    actionToTake={modalToShow}
+                    setModalContent={setModalContent}    
+                    
+                   errorMessage={setErrorMessage} 
+                />
+                
+              </div>
+            ) 
+          ) : 
+          (
+            <ModalConfirmation
+            successTitle={`Role ${modalToShow === "create-organisation" ? "Creation" : "Editing"} Successful`}
+            errorTitle={`Role ${modalToShow === "create-organisation" ? "Creation" : "Editing"} Failed`}
+            status={isOrganisationCreated ? "success" : "failed"}
+            responseMessage={errorMessage}
+            />
+          )
+          }  
+            
+          </Modal>
+        )}
 
       <div className="flex justify-center">
             <div className="flex items-center justify-center  space-x-2">
@@ -332,13 +361,26 @@ const CreateOrganisation = ({
   // setUserMutated,
   setCloseModal,
   actionToTake,
+  setIsOrganisationCreated,
+  setModalContent,
+  errorMessage,
 }: {
+  errorMessage: Dispatch<SetStateAction<string>>;
+  setModalContent: Dispatch<SetStateAction<"" | "status" | "form">>;
+  setIsOrganisationCreated: Dispatch<SetStateAction<boolean>>;
   actionToTake: "create-organisation" | "edit-organisation" | "view-organisation" | "";
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   // setUserMutated: Dispatch<SetStateAction<boolean>>;
 }) => {
   const { client } = useAuth();
 
+
+  interface valuesProps{
+    organisationName: string,
+    email: string,
+    contactNumber: string,
+    prefferedUrl: string,
+  }
   const initialValues= {
     organisationName: "",
     email: "",
@@ -346,6 +388,39 @@ const CreateOrganisation = ({
     prefferedUrl: "",
     
   };
+
+  const {
+    mutate: MerchantSignUp,
+    isPending,
+    isError,
+  } = useMutation({
+    mutationKey: ["Merchant sign up"],
+    mutationFn: async (values: valuesProps) => {
+      return client.post(`/api/user/create-merchant`, {
+        organisationName: values.organisationName,
+        phoneNumber: values.contactNumber,
+        email: values.email,
+        prefferedUrl: values.prefferedUrl,
+        
+      });
+    },
+
+    onSuccess(response) {
+      console.log(response)
+      setIsOrganisationCreated(true)
+      setModalContent("status");
+      setTimeout(() => {
+        setCloseModal(false);
+      }, 5000);
+    },
+    onError(error: any) {
+      errorMessage(error.response.data.message)
+      setModalContent("status");
+      setIsOrganisationCreated(false)
+      
+    },
+  });
+
 
  
 
@@ -367,7 +442,7 @@ const CreateOrganisation = ({
         prefferedUrl: Yup.string().required("Required"),
       })}
       onSubmit={(values, { setSubmitting }) => {
-       
+       MerchantSignUp(values)
       }}
     >
       {({
@@ -479,7 +554,7 @@ const CreateOrganisation = ({
             onClick={() => submitForm()}
             // disabled={isSubmitting || isCreatingRole}
           >
-            {/* {isSubmitting || isCreatingRole || isEditingRole ? (
+            {isSubmitting || isPending ? (
               <Image
                 src="/loadingSpinner.svg"
                 alt="loading spinner"
@@ -487,9 +562,9 @@ const CreateOrganisation = ({
                 width={25}
                 height={25}
               />
-            ) : ( */}
-              Submit
-            {/* )} */}
+            ) : (
+              'Submit'
+           )}
           </button>
         </form>
       )}
