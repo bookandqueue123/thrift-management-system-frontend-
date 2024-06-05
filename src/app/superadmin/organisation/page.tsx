@@ -297,8 +297,8 @@ export default function SuperAdminOrganisation(){
           ) : 
           (
             <ModalConfirmation
-            successTitle={`Role ${modalToShow === "create-organisation" ? "Creation" : "Editing"} Successful`}
-            errorTitle={`Role ${modalToShow === "create-organisation" ? "Creation" : "Editing"} Failed`}
+            successTitle={`Organisation ${modalToShow === "create-organisation" ? "Creation" : "Editing"} Successful`}
+            errorTitle={`Organisation ${modalToShow === "create-organisation" ? "Creation" : "Editing"} Failed`}
             status={isOrganisationCreated ? "success" : "failed"}
             responseMessage={errorMessage}
             />
@@ -409,6 +409,7 @@ const CreateOrganisation = ({
       console.log(response)
       setIsOrganisationCreated(true)
       setModalContent("status");
+      errorMessage("")
       setTimeout(() => {
         setCloseModal(false);
       }, 5000);
@@ -441,7 +442,7 @@ const CreateOrganisation = ({
           .required("Required"),
         prefferedUrl: Yup.string().required("Required"),
       })}
-      onSubmit={(values, { setSubmitting }) => {
+      onSubmit={async(values, { setSubmitting }) => {
        MerchantSignUp(values)
       }}
     >
@@ -551,7 +552,7 @@ const CreateOrganisation = ({
           <button
             type="submit"
             className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
-            onClick={() => submitForm()}
+            // onClick={() => submitForm()}
             // disabled={isSubmitting || isCreatingRole}
           >
             {isSubmitting || isPending ? (
@@ -564,7 +565,7 @@ const CreateOrganisation = ({
               />
             ) : (
               'Submit'
-           )}
+         )} 
           </button>
         </form>
       )}

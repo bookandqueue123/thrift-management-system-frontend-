@@ -348,7 +348,7 @@ const MutateRole = ({
     
   }, [role, actionToTake]);
 
-  console.log(assignedPermissions)
+ 
   const initialValues: createRoleProps = actionToTake === 'edit-role' ? {
     roleName: role?.name ?? "",
     description: role?.description ?? "",
