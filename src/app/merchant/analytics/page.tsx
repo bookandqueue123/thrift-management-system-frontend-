@@ -104,7 +104,7 @@ export default function Analytics() {
       return client
         .get(`/api/saving/get-savings?organisation=${organizationId}`)
         .then((response: AxiosResponse<SavingsInterface, any>) => {
-          console.log(response.data)
+        
           if (user?.role === "staff") {
             let assignedUsersSavings = response.data.savings.filter((saving) =>
               assignedCustomers.find(

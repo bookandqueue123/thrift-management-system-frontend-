@@ -42,7 +42,7 @@ const MerchantDashboard = () => {
   const [staffTotalAssignedCustomer, setStaffTotalAssignedCustomer] = useState(0)
   // const token = useSelector(selectToken)
   const user = useSelector(selectUser);
-   console.log(user);
+
 
   //   console.log(organizationId)
 

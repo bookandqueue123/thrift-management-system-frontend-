@@ -73,32 +73,79 @@ export default function SuperAdminOrganisation(){
   }) => {
     setToDate(event.target.value);
 
-    handleDateFilter();
+   
+      //  handleDateFilter();
+    
+    
   };
 
-  const handleDateFilter = () => {
-    // Filter the data based on the date range
-    if (organizations) {
-      const filtered = organizations.filter((item: { createdAt: string | number | Date; }) => {
-        const itemDate = new Date(item.createdAt); // Convert item date to Date object
-        const startDateObj = new Date(fromDate);
-        const endDateObj = new Date(toDate);
 
-        return itemDate >= startDateObj && itemDate <= endDateObj;
-      });
 
-      // Update the filtered data state
-      setFilteredOrganisations(filtered);
+
+const handleDateFilter = () => {
+  if (organizations) {
+    const startDateObj = new Date(fromDate);
+    let endDateObj = new Date(toDate);
+    
+    // Adjust the endDateObj to the end of the day
+    endDateObj.setHours(23, 59, 59, 999);
+
+   
+
+    if (isNaN(startDateObj.getTime())) {
+      console.error('Invalid fromDate:', fromDate);
+      return;
     }
-  };
+
+    if (isNaN(endDateObj.getTime())) {
+      console.error('Invalid toDate:', toDate);
+      return;
+    }
+
+    const filtered = organizations.filter((item: { createdAt: string | number | Date; }) => {
+      const itemDate = new Date(item.createdAt); // Convert item date to Date object
+      return itemDate >= startDateObj && itemDate <= endDateObj;
+    });
+
+    setFilteredOrganisations(filtered);
+  }
+};
+
+useEffect(() => {
+  if (fromDate && toDate) {
+    handleDateFilter();
+  }
+}, [fromDate, toDate]);
+
+
+  // console.log(toDate)
+  // console.log(fromDate)
+  // const handleDateFilter = () => {
+  //   // Filter the data based on the date range
+  //   if (organizations) {
+  //     const filtered = organizations.filter((item: { createdAt: string | number | Date; }) => {
+  //       const itemDate = new Date(item.createdAt); // Convert item date to Date object
+  //       const startDateObj = new Date(fromDate);
+  //       const endDateObj = new Date(toDate);
+
+  //       console.log(startDateObj)
+  //       console.log(endDateObj)
+  //       return itemDate >= startDateObj && itemDate <= endDateObj;
+  //     });
+
+  //     // Update the filtered data state
+  //     setFilteredOrganisations(filtered);
+  //   }
+  // };
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchResult(e.target.value);
 
 
     if (organizations) {
-      const filtered = organizations.filter((item: { accountNumber: any; }) =>
-        String(item.accountNumber).includes(String(e.target.value)),
+      const searchQuery = e.target.value.trim().toLowerCase();
+      const filtered = organizations.filter((item: { organisationName: any; }) =>
+        (item.organisationName.toLowerCase()).includes(searchQuery),
       );
       // Update the filtered data state
       setFilteredOrganisations(filtered);
@@ -213,6 +260,14 @@ export default function SuperAdminOrganisation(){
                onChange={handleToDateChange}
               className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
             />
+
+            {/* <button 
+            
+            onClick={handleDateFilter} 
+            className="ml-2 px-4 py-2 text-white border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+            >
+              Go
+              </button> */}
             </div>
               <div className="flex mt-4">
                 <button className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
