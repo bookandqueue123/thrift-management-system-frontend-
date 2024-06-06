@@ -84,7 +84,7 @@ const Users = () => {
     staleTime: 5000,
   });
 
-  console.log(allUsers)
+  
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
   
@@ -475,7 +475,7 @@ const MutateUser = ({
         setTimeout(() => {
           if (actionToTake === "create-user") {
             console.log("creating user.....................");
-            console.log(values)
+           
              createUser(values);
           } else {
             console.log("editing user.....................");
