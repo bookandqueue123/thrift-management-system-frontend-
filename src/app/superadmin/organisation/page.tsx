@@ -1,10 +1,11 @@
 'use client'
-import { useAuth } from "@/api/hooks/useAuth";
+import { apiUrl, useAuth } from "@/api/hooks/useAuth";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import CustomerAction from "@/components/CustomerAction";
 import Modal, { ModalConfirmation } from "@/components/Modal";
 import TransactionsTable from "@/components/Tables";
 import OrganisationAction from "@/modules/merchant/OrganisationAction";
+import { selectToken } from "@/slices/OrganizationIdSlice";
 import { MerchantSignUpProps, getOrganizationProps } from "@/types";
 import { extractDate, extractTime, formatToDateAndTime } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -13,11 +14,13 @@ import Image from "next/image";
 import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from "react";
 import { CiExport } from "react-icons/ci";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import { useSelector } from "react-redux";
 import * as Yup from "yup";
 
 
   
 export default function SuperAdminOrganisation(){
+  const token = useSelector(selectToken);
   const PAGE_SIZE = 5;
   const { client } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
@@ -175,6 +178,63 @@ useEffect(() => {
     }
   };
 
+  const handleExport = async () => {
+  
+    try {
+     
+      const response = await fetch(`${apiUrl}api/user/export-organisation`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'organisation.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        console.error('Failed to export users:', response);
+      }
+    } catch (error) {
+      console.error('An error occurred while exporting users:', error);
+    }
+  };
+
+  const handleExcelExport = async () => {
+    try {
+      
+      const response = await fetch(`${apiUrl}api/user/export-excel-organisation`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'organisation.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        console.error('Failed to export users:', response.statusText);
+      }
+    } catch (error) {
+      console.error('An error occurred while exporting users:', error);
+    }
+  };
+
 
     return(
         <div>
@@ -270,8 +330,8 @@ useEffect(() => {
               </button> */}
             </div>
               <div className="flex mt-4">
-                <button className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
-                <button className="px-4 py-2 text-white rounded-md border-none bg-transparent relative">
+                <button onClick={handleExport} className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
+                <button onClick={handleExcelExport} className="px-4 py-2 text-white rounded-md border-none bg-transparent relative">
                   
                   <u>Export as Excel</u>
                 </button>
