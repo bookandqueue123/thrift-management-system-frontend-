@@ -63,6 +63,7 @@ export default function SuperAdminCustomer(){
   >("");
   const [isCustomerCreated, setIsCustomerCreated] = useState(false);
   const [error, setError] = useState("");
+  const [mutationResponse, setMutationResponse] = useState("");
   const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
     queryKey: ["allCustomers"],
     queryFn: async () => {
@@ -352,6 +353,7 @@ export default function SuperAdminCustomer(){
                         setCustomerCreated={setIsCustomerCreated}
                         setModalContent={setModalContent}
                         setError={setError}
+                        setMutationResponse={setMutationResponse}
                       />
                     </div>
                   ) : (
@@ -359,7 +361,7 @@ export default function SuperAdminCustomer(){
                       successTitle="Customer creation successful"
                       errorTitle="Customer Creation Failed"
                       status={isCustomerCreated ? "success" : "failed"}
-                      responseMessage=""
+                      responseMessage={mutationResponse}
                     />
                   )}
                 </>
