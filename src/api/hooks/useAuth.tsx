@@ -3,7 +3,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 
-export const apiUrl = process.env.BACKEND_API;
+ export const apiUrl = process.env.BACKEND_API;
 //export const apiUrl = 'http://localhost:4000/'
 // console.log(apiUrl);
 
