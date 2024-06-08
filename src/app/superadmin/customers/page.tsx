@@ -2,7 +2,9 @@
 import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import CustomerAction from "@/components/CustomerAction";
+import Modal, { ModalConfirmation } from "@/components/Modal";
 import TransactionsTable from "@/components/Tables";
+import { CreateCustomer } from "@/modules/merchant/customer/CustomerPage";
 import { customer } from "@/types";
 import { extractDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
@@ -52,6 +54,16 @@ export default function SuperAdminCustomer(){
    const [toDate, setToDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredCustomers, setFilteredCustomer] = useState<customer[]>([]);
+  const [modalState, setModalState] = useState(false);
+  const [modalContent, setModalContent] = useState<"form" | "confirmation">(
+    "form",
+  );
+  const [modalToShow, setModalToShow] = useState<
+    "view" | "savings" | "edit" | "create-customer" | ""
+  >("");
+  const [isCustomerCreated, setIsCustomerCreated] = useState(false);
+  const [error, setError] = useState("");
+  const [mutationResponse, setMutationResponse] = useState("");
   const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
     queryKey: ["allCustomers"],
     queryFn: async () => {
@@ -191,8 +203,9 @@ export default function SuperAdminCustomer(){
             label="Create new customers"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
             onButtonClick={() => {
-            //   setModalState(true);
-            //   setModalContent("form");
+              setModalState(true);
+              setModalToShow("create-customer");
+              setModalContent("form");
             }}
           />
          
@@ -285,6 +298,78 @@ export default function SuperAdminCustomer(){
           </tr>
       ))}
       />
+
+{modalState && (
+            <Modal
+              setModalState={setModalState}
+              title={
+                modalContent === "confirmation"
+                  ? ""
+                  : modalToShow === "view"
+                    ? "View Customer"
+                    : modalToShow === "edit"
+                      ? "Edit Customer"
+                      : modalToShow === "savings"
+                        ? "Savings Set Up"
+                        : modalToShow === "create-customer"
+                          ? "Create Customer"
+                          : ""
+              }
+            >
+              {modalToShow === "view" ? (
+                ""
+                // <ViewCustomer
+                //   customerId={customerToBeEdited}
+                //   setContent={setModalContent}
+                //   content={
+                //     modalContent === "confirmation" ? "confirmation" : "form"
+                //   }
+                //   closeModal={setModalState}
+                // />
+              ) : modalToShow === "savings" ? (""
+                // <SavingsSettings
+                //   customerId={customerToBeEdited}
+                //   setContent={setModalContent}
+                //   content={
+                //     modalContent === "confirmation" ? "confirmation" : "form"
+                //   }
+                //   closeModal={setModalState}
+                // />
+              ) : modalToShow === "edit" ? (""
+                // <EditCustomer
+                //   customerId={customerToBeEdited}
+                //   setContent={setModalContent}
+                //   content={
+                //     modalContent === "confirmation" ? "confirmation" : "form"
+                //   }
+                //   closeModal={setModalState}
+                // />
+              ) : modalToShow === "create-customer" ? (
+                <>
+                  {modalContent === "form" ? (
+                    <div className="px-[10%]">
+                      <CreateCustomer
+                        setCloseModal={setModalState}
+                        setCustomerCreated={setIsCustomerCreated}
+                        setModalContent={setModalContent}
+                        setError={setError}
+                        setMutationResponse={setMutationResponse}
+                      />
+                    </div>
+                  ) : (
+                    <ModalConfirmation
+                      successTitle="Customer creation successful"
+                      errorTitle="Customer Creation Failed"
+                      status={isCustomerCreated ? "success" : "failed"}
+                      responseMessage={mutationResponse}
+                    />
+                  )}
+                </>
+              ) : (
+                ""
+              )}
+            </Modal>
+          )}
 
         <div className="flex justify-center">
             <div className="flex items-center justify-center  space-x-2">
