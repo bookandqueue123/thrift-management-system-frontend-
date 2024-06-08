@@ -259,6 +259,10 @@ const Customers = () => {
     }
   };
 
+  useEffect(() => {
+    // Calling refetch to rerun the allRoles query
+    refetch();
+  }, [isCustomerCreated, refetch]);
   return (
     <>
       <div className="mb-4 space-y-2">

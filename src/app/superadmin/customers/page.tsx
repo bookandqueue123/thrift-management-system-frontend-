@@ -9,7 +9,7 @@ import { customer } from "@/types";
 import { extractDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
-import { ChangeEvent, SetStateAction, useState } from "react";
+import { ChangeEvent, SetStateAction, useEffect, useState } from "react";
 import { CiExport } from "react-icons/ci";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 
@@ -64,7 +64,7 @@ export default function SuperAdminCustomer(){
   const [isCustomerCreated, setIsCustomerCreated] = useState(false);
   const [error, setError] = useState("");
   const [mutationResponse, setMutationResponse] = useState("");
-  const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
+  const { data: allCustomers, isLoading: isLoadingAllCustomers, refetch } = useQuery({
     queryKey: ["allCustomers"],
     queryFn: async () => {
       return client
@@ -148,6 +148,11 @@ export default function SuperAdminCustomer(){
       setCurrentPage(currentPage + 1);
     }
   };
+
+  useEffect(() => {
+    // Calling refetch to rerun the allRoles query
+    refetch();
+  }, [isCustomerCreated, refetch]);
     return(
         <div>
            <div className="mb-4 space-y-2">
