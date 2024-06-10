@@ -13,8 +13,9 @@ interface SetUpSavingsProps {
   // setContent: Dispatch<SetStateAction<"form" | "confirmation">>;
   // content: "form" | "confirmation";
   closeModal: Dispatch<SetStateAction<boolean>>;
+  setIsGroupCreated: Dispatch<SetStateAction<boolean>>;
 } 
-const CreateOranisationGroupForm = ({closeModal}: SetUpSavingsProps) => {
+const CreateOranisationGroupForm = ({closeModal, setIsGroupCreated}: SetUpSavingsProps) => {
   const organizationId = useSelector(selectOrganizationId);
 
   const { client } = useAuth();
@@ -23,6 +24,7 @@ const CreateOranisationGroupForm = ({closeModal}: SetUpSavingsProps) => {
   const [displayConfirmationModal, setDisplayConfirmationMedal] =
     useState(false);
   const [errorMessage, setErrorMessage] = useState("")  
+ 
   const [saveDetails, setSaveDetails] = useState({
     
     groupName: "",
@@ -96,8 +98,13 @@ const CreateOranisationGroupForm = ({closeModal}: SetUpSavingsProps) => {
     onSuccess: (response) => {
       // console.log(response);
       setSelectedOptions([])
+     
       // setContent("confirmation");
       setDisplayConfirmationMedal(true);
+      setIsGroupCreated(true)
+      setTimeout(() => {
+        closeModal(false)
+      }, 5000)
      
     },
     onError: (error:any) => {
@@ -148,6 +155,8 @@ const CreateOranisationGroupForm = ({closeModal}: SetUpSavingsProps) => {
     
     return "";
   };
+
+  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLElement>) => {
     // setShowSelectError(true)
@@ -200,7 +209,7 @@ const CreateOranisationGroupForm = ({closeModal}: SetUpSavingsProps) => {
 
   const onSubmitHandler = (e: React.FormEvent) => {
     setShowSelectError(true)
-   
+    
     if (selectedIds.length === 0) {
       setFormErrors((prevErrors) => ({
         ...prevErrors,
