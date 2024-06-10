@@ -6,7 +6,7 @@ import { MdModeEditOutline } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import { FaFileDownload } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "@/components/Modal";
 
 import CreateOranisationGroupForm from "@/modules/superAdmin/CreateOrganisationGroupForm";
@@ -49,11 +49,12 @@ export default function SuperAdminCustomer(){
     data: organizationsGroups,
     isLoading: isUserLoading,
     isError: getGroupError,
+    refetch,
   } = useQuery({
     queryKey: ["allOrganizationsGroup"],
     queryFn: async () => {
       return client
-        .get(`/api/user?userType=organisation`, {})
+        .get(`/api/user?userType=group`, {})
         .then((response) => {
           return response.data;
         })
@@ -63,12 +64,19 @@ export default function SuperAdminCustomer(){
         });
     },
   });
+  console.log(organizationsGroups)
  
 
   const router = useRouter()
   const [showModal, setShowModal] = useState(false)
   const [removeParentModal, setRemoveParentModal] = useState(false)
   const [showErrorModal, setShowErrorModal] = useState(false) 
+  const [isGroupCreated, setIsGroupCreated] = useState(false)
+
+  useEffect(() => {
+    // Calling refetch to rerun the allRoles query
+    refetch();
+  }, [isGroupCreated, refetch]);
   return(
 
         <div>
@@ -80,7 +88,9 @@ export default function SuperAdminCustomer(){
               title="Create Organisation Group">
            
              
-              <CreateOranisationGroupForm closeModal={setShowModal}/>
+              <CreateOranisationGroupForm
+              setIsGroupCreated={setIsGroupCreated}
+               closeModal={setShowModal}/>
             </Modal>
           ) : ""}
            <div className="mb-4 space-y-2">
