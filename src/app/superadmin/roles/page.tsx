@@ -63,72 +63,7 @@ const Roles = () => {
           // setFilteredRoles(response.data);
         
           setFilteredRoles(response.data)
-          // setFilteredRoles(
-        //     [
-        //     {
-        //       id: "234555",
-        //       roleTitle: "Organisation Manager 1",
-        //       affiliatedOrganisation: "Raoatech Technologies",
-        //       organisationManagerDetails: {
-        //         name: "Olanrewaju Sokumnbi",
-        //         email: "sokunmbi@gmail.com",
-        //         phone: "+234 9085798782",
-        //       },
-        //     },
-        //     {
-        //       id: "234555",
-        //       roleTitle: "Organisation Manager 2",
-        //       affiliatedOrganisation: "Cooperative Union",
-        //       organisationManagerDetails: {
-        //         name: "Olanrewaju Sokumnbi",
-        //         email: "sokunmbi@gmail.com",
-        //         phone: "+234 9085798782",
-        //       },
-        //     },
-        //     {
-        //       id: "234555",
-        //       roleTitle: "Organisation Manager 3",
-        //       affiliatedOrganisation: "AlajoShomolu Cooperative Society",
-        //       organisationManagerDetails: {
-        //         name: "Olanrewaju Sokumnbi",
-        //         email: "sokunmbi@gmail.com",
-        //         phone: "+234 9085798782",
-        //       },
-        //     },
-        //     {
-        //       id: "234555",
-        //       roleTitle: "Organisation Manager 4",
-        //       affiliatedOrganisation: "Teachers Union Savings Group",
-        //       organisationManagerDetails: {
-        //         name: "Olanrewaju Sokumnbi",
-        //         email: "sokunmbi@gmail.com",
-        //         phone: "+234 9085798782",
-        //       },
-        //     },
-        //     {
-        //       id: "234555",
-        //       roleTitle: "Customer",
-        //       affiliatedOrganisation: null,
-        //       organisationManagerDetails: null,
-        //     },
-        //     {
-        //       id: "234555",
-        //       roleTitle: "Organisation",
-        //       affiliatedOrganisation: "Teachers Union Savings Group",
-        //       organisationManagerDetails: null,
-        //     },
-        //     {
-        //       id: "234555",
-        //       roleTitle: "Super Admin",
-        //       affiliatedOrganisation: null,
-        //       organisationManagerDetails: {
-        //         name: "Olanrewaju Sokumnbi",
-        //         email: "sokunmbi@gmail.com",
-        //         phone: "+234 9085798782",
-        //       },
-        //     },
-        //   ]
-        // );
+          
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -761,10 +696,12 @@ const MutateRole = ({
                   <div className="space-x-1 space-y-2">
                     {assignedUsersIds.map((userId: string, index: number ) => {
                     
-                   
+                      console.log(userId)
                       const option = getSuperUsers?.find(
                         (user: { _id: string; }) => user._id === userId,
                       );
+
+                      console.log(option)
                       return (
                         <div key={index} className="mb-2 mr-2 inline-block">
                           <button
