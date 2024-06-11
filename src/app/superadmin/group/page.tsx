@@ -6,45 +6,48 @@ import { MdModeEditOutline } from "react-icons/md";
 import { MdDelete } from "react-icons/md";
 import { FaFileDownload } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import Modal from "@/components/Modal";
+import { ChangeEvent, SetStateAction, useEffect, useState } from "react";
+import Modal, { ModalConfirmation } from "@/components/Modal";
 
 import CreateOranisationGroupForm from "@/modules/superAdmin/CreateOrganisationGroupForm";
 import SuccessModal from "@/components/SuccessModal";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/api/hooks/useAuth";
+import { apiUrl, useAuth } from "@/api/hooks/useAuth";
 import { OrganisationGroupsProps } from "@/types";
 import { AxiosResponse } from "axios";
+import PaginationBar from "@/components/Pagination";
+import EditOrganisationGroup from "@/modules/superAdmin/EditGroup";
+import { useSelector } from "react-redux";
+import { selectToken } from "@/slices/OrganizationIdSlice";
 
 
-const mockData = [
-    {
-      "group_name": "Group A",
-      "account_name": "John Doe",
-      "account_number": "1234567890",
-      "bank_name": "ABC Bank",
-      "group_type": "Type X",
-      "total_group_number": 10
-    },
-    {
-      "group_name": "Group B",
-      "account_name": "Jane Smith",
-      "account_number": "0987654321",
-      "bank_name": "XYZ Bank",
-      "group_type": "Type Y",
-      "total_group_number": 5
-    },
-    {
-      "group_name": "Group C",
-      "account_name": "Alice Johnson",
-      "account_number": "1122334455",
-      "bank_name": "Example Bank",
-      "group_type": "Type Z",
-      "total_group_number": 15
-    }
-  ];
+
 export default function SuperAdminCustomer(){
+  const [filteredRoles, setFilteredRoles] = useState<any[]>([]);
   const {client} = useAuth()
+  const router = useRouter()
+  const token = useSelector(selectToken);
+  const PAGE_SIZE = 5;
+  const [showModal, setShowModal] = useState(false)
+  const [removeParentModal, setRemoveParentModal] = useState(false)
+  const [showErrorModal, setShowErrorModal] = useState(false) 
+  const [isGroupCreated, setIsGroupCreated] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [modalState, setModalState] = useState(false);
+  const [modalContent, setModalContent] = useState<"form" | "confirmation">(
+    "form",
+  );
+  const [modalToShow, setModalToShow] = useState<
+    "edit-group" | "create-group" | "view-group" | ""
+  >("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [groupToBeEdited, setGroupToBeEdited] = useState("");
+
+  
+  const [isGroupEdited, setIsGroupEdited] = useState(false);
+  const [mutationResponse, setMutationResponse] = useState("");
+  const [filteredGroups, setFilteredGroups] = useState<any[]>([])
   const {
     data: organizationsGroups,
     isLoading: isUserLoading,
@@ -56,7 +59,10 @@ export default function SuperAdminCustomer(){
       return client
         .get(`/api/user?userType=group`, {})
         .then((response) => {
+          setFilteredGroups(response.data)
           return response.data;
+
+          
         })
         .catch((error) => {
       
@@ -64,19 +70,146 @@ export default function SuperAdminCustomer(){
         });
     },
   });
-  console.log(organizationsGroups)
+
+  const paginatedGroups = filteredGroups?.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+  let totalPages = 0;
+  if (organizationsGroups) {
+    totalPages = Math.ceil(organizationsGroups.length / PAGE_SIZE);
+  }
+
+  const handleFromDateChange = (event: {
+    target: { value: SetStateAction<string> };
+  }) => {
+    setFromDate(event.target.value);
+  };
+
+  const handleToDateChange = (event: {
+    target: { value: SetStateAction<string> };
+  }) => {
+    setToDate(event.target.value);
+
+   
+      //  handleDateFilter();
+    
+    
+  };
  
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    
 
-  const router = useRouter()
-  const [showModal, setShowModal] = useState(false)
-  const [removeParentModal, setRemoveParentModal] = useState(false)
-  const [showErrorModal, setShowErrorModal] = useState(false) 
-  const [isGroupCreated, setIsGroupCreated] = useState(false)
 
+    if (organizationsGroups) {
+      const searchQuery = e.target.value.trim().toLowerCase();
+      const filtered = organizationsGroups.filter((item: { groupName: any; }) =>
+        (item.groupName.toLowerCase()).includes(searchQuery),
+      );
+      // Update the filtered data state
+      setFilteredGroups(filtered);
+    }
+  };
+
+  const handleDateFilter = () => {
+    if (organizationsGroups) {
+      const startDateObj = new Date(fromDate);
+      let endDateObj = new Date(toDate);
+      
+      // Adjust the endDateObj to the end of the day
+      endDateObj.setHours(23, 59, 59, 999);
+  
+     
+  
+      if (isNaN(startDateObj.getTime())) {
+        console.error('Invalid fromDate:', fromDate);
+        return;
+      }
+  
+      if (isNaN(endDateObj.getTime())) {
+        console.error('Invalid toDate:', toDate);
+        return;
+      }
+  
+      const filtered = organizationsGroups.filter((item: { createdAt: string | number | Date; }) => {
+        const itemDate = new Date(item.createdAt); // Convert item date to Date object
+        return itemDate >= startDateObj && itemDate <= endDateObj;
+      });
+  
+      setFilteredGroups(filtered);
+    }
+  };
+  
+  useEffect(() => {
+    if (fromDate && toDate) {
+      handleDateFilter();
+    }
+  }, [fromDate, toDate]);
+  
+  
   useEffect(() => {
     // Calling refetch to rerun the allRoles query
     refetch();
   }, [isGroupCreated, refetch]);
+
+  const handleExport = async () => {
+  
+    try {
+     
+      const response = await fetch(`${apiUrl}api/user/export-superadmin-group`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'group.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        console.error('Failed to export users:', response);
+      }
+    } catch (error) {
+      console.error('An error occurred while exporting users:', error);
+    }
+  };
+
+  const handleExcelExport = async () => {
+    try {
+      
+      const response = await fetch(`${apiUrl}api/user/export-excelsuperadmin-group`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'group.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        console.error('Failed to export users:', response.statusText);
+      }
+    } catch (error) {
+      console.error('An error occurred while exporting users:', error);
+    }
+  };
+
+  
   return(
 
         <div>
@@ -105,7 +238,7 @@ export default function SuperAdminCustomer(){
             {/* <SearchInput onSearch={() => ("")}/> */}
             <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
             <input
-            // onChange={handleSearch}
+            onChange={handleSearch}
               type="search"
               placeholder="Search"
               className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
@@ -160,8 +293,8 @@ export default function SuperAdminCustomer(){
             <p className="mr-2 font-lg text-white">Select range from:</p>
             <input
               type="date"
-            //   value={fromDate}
-            //     onChange={handleFromDateChange}
+              value={fromDate}
+                onChange={handleFromDateChange}
               className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
             />
 
@@ -169,14 +302,18 @@ export default function SuperAdminCustomer(){
             <p className="mx-2 text-white">to</p>
             <input
               type="date"
-            //   value={toDate}
-            //   onChange={handleToDateChange}
+              value={toDate}
+              onChange={handleToDateChange}
               className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
             />
             </div>
               <div className="flex mt-4">
-                <button className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
-                <button className="px-4 py-2 text-white rounded-md border-none bg-transparent relative">
+                <button 
+                onClick={handleExport}
+                className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
+                <button
+                onClick={handleExcelExport}
+                 className="px-4 py-2 text-white rounded-md border-none bg-transparent relative">
                   
                   <u>Export as Excel</u>
                 </button>
@@ -198,41 +335,103 @@ export default function SuperAdminCustomer(){
         "Action"
         ]}
 
-        content={organizationsGroups?.map((group: OrganisationGroupsProps, index: number) => (
-            <tr className="" key={index}>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {group.groupName}
-                </td>
-                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {group.account_name}
-                </td> */}
-                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {group.account_number}
-                </td> */}
-                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {group.bank_name} customers
-                </td> */}
-                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {group.group_type}
-                </td> */}
-                <td className="whitespace-nowrap px-6 py-4 text-sm ">
-                    {group.organisations.length}  Members
-                </td>
-               
-                <td className="whitespace-nowrap flex px-6 py-4 text-sm">
-                    <div className="">
-                        <MdModeEditOutline />
-                    </div>
-                    <div className="mx-6">
-                        <MdDelete />
-                    </div>
-                    <div className="">
-                        <FaFileDownload />
-                    </div>
-                </td>
+        content={
+          filteredGroups.length === 0 ? (
+            <tr className="h-[3rem]">
+              <p className="relative left-[80%] mt-3 text-center text-sm font-semibold text-ajo_offWhite md:left-[180%]">
+                No Roles yet
+              </p>
             </tr>
-        ))}
+          ) : (
+            paginatedGroups?.map((group: OrganisationGroupsProps, index: number) => (
+              <tr className="" key={index}>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {group.groupName}
+                  </td>
+                  {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {group.account_name}
+                  </td> */}
+                  {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {group.account_number}
+                  </td> */}
+                  {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {group.bank_name} customers
+                  </td> */}
+                  {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {group.group_type}
+                  </td> */}
+                  <td className="whitespace-nowrap px-6 py-4 text-sm ">
+                      {group.organisations.length}  Members
+                  </td>
+                 
+                  <td className="whitespace-nowrap flex px-6 py-4 text-sm">
+                      <div className="">
+                          <MdModeEditOutline
+                          onClick={() => {
+                            setModalToShow("edit-group");
+                            setModalState(true);
+                            setGroupToBeEdited(group._id);
+                          }}
+                          />
+                      </div>
+                      <div className="mx-6">
+                          <MdDelete />
+                      </div>
+                      <div className="">
+                          <FaFileDownload />
+                      </div>
+                  </td>
+              </tr>
+          ))
+          )
+         }
       />
+
+      {modalState && (
+            <Modal
+              setModalState={setModalState}
+              title={
+                modalToShow === "edit-group"
+                  ? "Edit Group"
+                  
+                    : ""
+              }
+            >
+              {modalContent === "form" ? (
+                <div className="px-[10%]">
+                  {modalToShow === "view-group" ? (
+                    ""
+                  ): (
+                    <EditOrganisationGroup
+                    organisationGroups= {organizationsGroups}
+                    setCloseModal={setModalState}
+                    setGroupMutated={setIsGroupEdited}
+                    actionToTake={modalToShow}
+                    groupToBeEdited={groupToBeEdited}
+                      setGroupEdited={setIsGroupEdited}
+                      setModalContent={setModalContent}
+                      setMutationResponse={setMutationResponse}
+                    
+                     
+                  />
+                  )}
+                </div>
+              ) : (
+                <ModalConfirmation
+                  successTitle={`Role ${modalToShow === "create-group" ? "Creation" : "Editing"} Successful`}
+                  errorTitle={`Role ${modalToShow === "create-group" ? "Creation" : "Editing"} Failed`}
+                  status={isGroupCreated || isGroupEdited ? "success" : "failed"}
+                  responseMessage={mutationResponse}
+                />
+              )}
+            </Modal>
+          )}
+      
+      <PaginationBar
+            setCurrentPage={setCurrentPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+          />
       </section>
         </div>
     )
