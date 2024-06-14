@@ -156,7 +156,7 @@ export default function SuperAdminCustomer(){
   
     try {
      
-      const response = await fetch(`${apiUrl}api/user/export-superadmin-group`, {
+      const response = await fetch(`${apiUrl}api/user/export-group`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
