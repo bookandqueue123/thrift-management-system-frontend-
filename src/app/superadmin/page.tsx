@@ -14,59 +14,7 @@ import { useState } from "react";
 import { CiExport } from "react-icons/ci";
 
 
-const mockData = [
-    {
-      "organisation_name": "ABC Corporation",
-      "organization_id": "123456",
-      "total_customers": 500,
-      "registration_day": "2024-03-28"
-    },
-    {
-      "organisation_name": "XYZ Corp",
-      "organization_id": "789012",
-      "total_customers": 1000,
-      "registration_day": "2023-10-15"
-    },
-    {
-      "organisation_name": "Example Corp",
-      "organization_id": "345678",
-      "total_customers": 300,
-      "registration_day": "2024-01-10"
-    }
-  ];
 
-  const customerMockData = [
-    {
-      "Customer_Name": "John Doe",
-      "Account_Created_on": "2023-08-15",
-      "Email_Address": "john@example.com",
-      "Phone_Number": "+1234567890",
-      "State": "California",
-      "LGA": "Los Angeles",
-      "Organisation": "ABC Corporation",
-      "Action": "View Details"
-    },
-    {
-      "Customer_Name": "Jane Smith",
-      "Account_Created_on": "2023-12-10",
-      "Email_Address": "jane@example.com",
-      "Phone_Number": "+1987654321",
-      "State": "Texas",
-      "LGA": "Houston",
-      "Organisation": "XYZ Corp",
-      "Action": "View Details"
-    },
-    {
-      "Customer_Name": "Alice Johnson",
-      "Account_Created_on": "2024-02-25",
-      "Email_Address": "alice@example.com",
-      "Phone_Number": "+1122334455",
-      "State": "New York",
-      "LGA": "New York City",
-      "Organisation": "Example Corp",
-      "Action": "View Details"
-    }
-  ];
 export default function SuperAdminDashboard(){
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 3;
@@ -130,7 +78,7 @@ export default function SuperAdminDashboard(){
   }
 
 
-  
+
 
     return(
         <div>
@@ -150,7 +98,7 @@ export default function SuperAdminDashboard(){
               Total Organisations
             </p>
           }
-           bottomValueBottomText={"24"}
+           bottomValueBottomText={organizations ? organizations.length: 0}
         />
         <DashboardCard
           illustrationName="user"
@@ -159,7 +107,7 @@ export default function SuperAdminDashboard(){
               Total Customers
             </p>
           }
-           bottomValueBottomText={"2"}
+           bottomValueBottomText={allCustomers ? String(allCustomers.length) : String(0)}
         />
       </section>
 
