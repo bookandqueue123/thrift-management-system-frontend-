@@ -184,7 +184,7 @@ export default function SuperAdminCustomer(){
   const handleExcelExport = async () => {
     try {
       
-      const response = await fetch(`${apiUrl}api/user/export-excelsuperadmin-group`, {
+      const response = await fetch(`${apiUrl}api/user/export-superadmin-customer`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
