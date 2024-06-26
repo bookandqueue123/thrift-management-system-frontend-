@@ -1,5 +1,5 @@
 'use client'
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import axios from 'axios';
 import { useSearchParams } from 'next/navigation';
 import { apiUrl } from '@/api/hooks/useAuth';
@@ -32,4 +32,11 @@ const PaymentCallback = () => {
     return <div>Processing payment...</div>;
 };
 
-export default PaymentCallback;
+
+export default function CallbackPayment(){
+    return(
+        <Suspense>
+            <PaymentCallback/>
+        </Suspense>
+    )
+}
