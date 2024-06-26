@@ -234,8 +234,8 @@ export type savingsFilteredById = {
   savedDates: any[];
   specificDates: any[];
   id: string;
-  totalexpectedSavings: number;
-  totalAmountSaved: number
+  totalexpectedSavings?: number;
+  totalAmountSaved?: number
 };
 
 export interface MerchantSignUpProps {

@@ -116,7 +116,7 @@ export default function MakePayment(){
     //    }
         try {
             const amount = getTotal()
-            const email = "ajibadeemmanuel58@gmail.com"
+            const email = user.email
             const phoneNumber = user.phoneNumber
             const customerName = user.firstName + user.lastName
 
@@ -216,7 +216,7 @@ export default function MakePayment(){
 
                             </td>
                              <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                {payment.totalexpectedSavings-payment.totalAmountSaved }
+                                {(payment.totalexpectedSavings === undefined ? 0 : payment.totalexpectedSavings)-(payment.totalAmountSaved === undefined ? 0 : payment.totalAmountSaved) }
                              </td>
                              <td className="whitespace-nowrap px-6 py-4 text-sm">
                                 {payment.specificDates.length} days
