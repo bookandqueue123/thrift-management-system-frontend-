@@ -184,6 +184,7 @@ export type allSavingsResponse = {
 };
 
 export type savingsFilteredById = {
+ 
   _id: string;
   purposeName: string;
   amount: number;
@@ -221,6 +222,7 @@ export type savingsFilteredById = {
     organisation: string;
     createdAt: string;
     updatedAt: string;
+    
     __v: number;
   };
   organisation: string;
@@ -232,6 +234,8 @@ export type savingsFilteredById = {
   savedDates: any[];
   specificDates: any[];
   id: string;
+  totalexpectedSavings?: number;
+  totalAmountSaved?: number
 };
 
 export interface MerchantSignUpProps {

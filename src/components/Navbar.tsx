@@ -18,6 +18,7 @@ const CustomerNavbar = () => {
     "make-payment",
     "withdrawals",
     "transactions",
+    "savings-setup"
   ];
   const { SignOut } = useAuth();
 
