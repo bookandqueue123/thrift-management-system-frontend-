@@ -1,3 +1,4 @@
+'use client'
 import MakePayment from "@/modules/customer/makePayment.";
 
 export default function Page(){

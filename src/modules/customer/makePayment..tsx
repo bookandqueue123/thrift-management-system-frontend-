@@ -1,4 +1,12 @@
+import { apiUrl, useAuth } from "@/api/hooks/useAuth";
 import TransactionsTable from "@/components/Tables";
+import { selectOrganizationId, selectUser, selectUserId } from "@/slices/OrganizationIdSlice";
+import { savingsFilteredById } from "@/types";
+import { extractDate, extractTime, formatToDateAndTime } from "@/utils/TimeStampFormatter";
+import { useQuery } from "@tanstack/react-query";
+import axios, { AxiosResponse } from "axios";
+import { ChangeEvent, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 const data = [
     {
@@ -35,23 +43,92 @@ const data = [
   ];
   
 export default function MakePayment(){
-   const textBelow = 
-            <div className="flex justify-center">
-                <p className="font-bold text-white pt-2">Selected Amount to be Paid</p>
-    
-                <form className="ml-4">
-                    <div className="flex  border">
-                        
-                        
-                            <input type="number" id="search-dropdown" className="bg-ajo_darkBlue text-white block p-2.5  w-full z-20 text-sm  border border-gray-300" placeholder="Total" required />
-                            <button type="submit" className="w-full font-sm text-sm bg-green-400 text-white">
-                                Make Payment
-                            </button>
-                        
-                    </div>
-                </form>
+    const organisationId = useSelector(selectOrganizationId);
+    const { client } = useAuth();
+    const user = useSelector(selectUser)
+    console.log(user)
+    const userId = useSelector(selectUserId);
 
-            </div>
+    
+   
+   
+    const [filteredArray, setFilteredArray] = useState<savingsFilteredById[]>([]);
+    const [inputValues, setInputValues] = useState({});
+
+    const [paymentAmounts, setPaymentAmounts] = useState({});
+
+  const handleInputChange = (id: string, index: number, event: ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(event.target.value) || 0;
+    setInputValues((prevValues) => ({
+      ...prevValues,
+      [index]: value
+    }));
+    setPaymentAmounts((prevAmounts) => ({
+      ...prevAmounts,
+      [id]: value
+    }));
+  };
+    
+      const getTotal = () => {
+        
+        return Object.values(inputValues).reduce((acc:any, val) => acc + val, 0);
+      };
+
+      
+      
+    const { data: allSavings, isLoading: isLoadingAllSavings } = useQuery({
+        queryKey: ["allSavings"],
+        staleTime: 5000,
+        queryFn: async () => {
+          return client
+            .get(`/api/saving/get-savings?organisation=${organisationId}`)
+            .then((response) => {
+              return response.data;
+            })
+            .catch((error) => {
+             
+              throw error;
+            });
+        },
+      });
+
+      useEffect(() => {
+        if (allSavings?.savings) {
+          const filtered = allSavings.savings.filter(
+            (item: { user: { _id: any; }; }) => item.user?._id === userId,
+          );
+    
+          setFilteredArray(filtered);
+        }
+      }, [allSavings?.savings, userId]);
+      console.log(filteredArray)
+    
+   
+    const GoToPayment = async(e: { preventDefault: () => void; }) => {
+
+       e.preventDefault();
+    //    try{
+    //     const response = await axios.get('http://localhost:4000/api/pay/flw/verify-payment?transaction_id=5850598')
+    //     console.log(response)
+    //    }
+    //    catch(error){
+    //     console.log(error)
+    //    }
+        try {
+            const amount = getTotal()
+            const email = "ajibadeemmanuel58@gmail.com"
+            const phoneNumber = user.phoneNumber
+            const customerName = user.firstName + user.lastName
+
+            const response = await axios.post(`${apiUrl}api/pay/flw`, 
+            { amount, email, paymentAmounts, userId, organisationId, phoneNumber, customerName});
+            if (response.data.status === 'success') {
+                window.location.href = response.data.data.link;
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
        
     return(
         <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
@@ -96,7 +173,7 @@ export default function MakePayment(){
                     ]}
                     content={<>
                         
-                        {data.map((payment, index) => (
+                        {filteredArray.map((payment, index) => (
                         <tr className="" key={index}>
                             <td className="whitespace-nowrap px-6 py-4 text-sm">
                                 
@@ -106,19 +183,19 @@ export default function MakePayment(){
                                 />
                              </td>
                              <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                {payment["S/N"]}
+                                {index}
                              </td>
                              <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                {payment["Item/Purpose"]}
+                                {payment.purposeName}
                              </td>
                              <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                {payment["Debit Amount"]}
+                                {payment.amount}
                              </td>
                              <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                {payment["Payment Start"]}
+                                {extractDate(payment.startDate)}
                              </td>
                              <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                {payment["Payment End"]}
+                                {extractDate(payment.endDate)}
                              </td>
 
                              
@@ -126,15 +203,23 @@ export default function MakePayment(){
                                 
                                 <form className="max-w-sm mx-auto">
                                     
-                                    <input type="number" id="number-input" aria-describedby="helper-text-explanation" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="90210" required />
+                                <input
+                                    type="number"
+                                    id={`number-input-${index}`}
+                                    aria-describedby="helper-text-explanation"
+                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                    placeholder="90210"
+                                    required
+                                    onChange={(e) => handleInputChange(payment.id, index, e)}
+                                />
                                 </form>
 
                             </td>
                              <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                {payment.Balance}
+                                {payment.totalexpectedSavings-payment.totalAmountSaved }
                              </td>
                              <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                {payment.Duration}
+                                {payment.specificDates.length} days
                              </td>
 
                         </tr>
@@ -169,10 +254,23 @@ export default function MakePayment(){
                     <div className="flex  border">
                         
                         
-                            <input type="number" id="search-dropdown" className="bg-ajo_darkBlue text-white block p-2.5  w-full z-20 text-sm  border border-gray-300" placeholder="Total" required />
-                            <button type="submit" className="w-full bg-green-400 text-white">
-                                Make Payment
-                            </button>
+                        <input type="number" 
+                        id="search-dropdown" 
+                        className="bg-ajo_darkBlue text-white block p-2.5  w-full z-20 text-sm  border border-gray-300"
+                         placeholder="Total" 
+                         required
+                         value={String(getTotal()) || 0}
+                        readOnly
+                         />
+                        <button
+                        
+
+                         onClick={GoToPayment}
+                          type="submit" 
+                          className="w-full bg-green-400 text-white"
+                          >
+                            Make Payment
+                        </button>
                         
                     </div>
                 </form>
@@ -180,6 +278,8 @@ export default function MakePayment(){
 
 
                 </tr>
+
+                
                
                 </>
                     
