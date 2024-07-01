@@ -52,7 +52,8 @@ export default function Analytics() {
 
   const organizationId = useSelector(selectOrganizationId);
   const user = useSelector(selectUser);
-
+  const organisationId = useSelector(selectOrganizationId)
+  
   const { client } = useAuth();
   const [selectedYear, setSelectedYear] = useState<{
     name: string;
@@ -125,6 +126,29 @@ export default function Analytics() {
         });
     },
   });
+
+
+  const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } = useQuery({
+    queryKey: ["organisation"],
+    queryFn: async () => {
+      return client
+        .get(
+          `/api/user/${organisationId}`,
+          {},
+        ) //populate this based onthee org
+        .then((response) => {
+          
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+      
+          throw error;
+        });
+    },
+  });
+  console.log(customerOrganisation)
+
+
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     if (allTransactions) {
@@ -387,10 +411,13 @@ export default function Analytics() {
           headers={[
             "S/N",
             "Name",
+            "Purpose Name",
             "Account No",
-            "General %",
-            "General Fee",
+            // "General % ",
+            // "General % Fee",
+            // "General Savings Amount",
             "Applied %",
+            "Applied % Fee",
             "Admin Fee",
             "Service Charge",
             "Applied Service Charge %",
@@ -423,19 +450,30 @@ export default function Analytics() {
                     {transaction.user.firstName} {transaction.user.lastName}{" "}
                     {transaction.user.groupName}
                   </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {transaction.purposeName}
+                  </td>
 
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {transaction.user.accountNumber || "---"}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    General %
+                  {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {transaction.adminFee ? 0 : customerOrganisation?.adminFee}
                   </td>
+                  
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    General fee
+                    {(customerOrganisation.adminFee/100) * (transaction.totalexpectedSavings)}
                   </td>
 
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {transaction.amount}
+                  </td> */}
+
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {transaction.appliedPercentage}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {(transaction.appliedPercentage/100) * (transaction.totalexpectedSavings)}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {AmountFormatter(transaction.adminFee)}

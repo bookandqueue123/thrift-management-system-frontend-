@@ -104,7 +104,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
     startDate: '',
     endDate: '',
     totalexpectedSavings: '',
-    collectionDate: ''
+    collectionDate: '',
   });
 
 
