@@ -92,7 +92,8 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
       endDate: '',
       totalexpectedSavings: '',
       collectionDate: '',
-      savingID: ''
+      savingID: '',
+    
     });
     const [showForm, setShowForm] = useState(false)
     const [customerName, setCustomerName] = useState("null");
@@ -428,7 +429,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
                 </div>
 
                 <div className="relative mb-4 md:w-[50%] md:mr-4">
-                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Customer Savings</label>
+                  <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Savings Purpose</label>
                   <select
                     name="savingID"
                     value={formData.savingID}

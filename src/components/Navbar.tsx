@@ -188,6 +188,7 @@ export const Sidebar = ({
           userPermissions.includes(permissionsMap["view-role"])
         ? "roles"
         : "",
+        "account-statement"
   ].filter(Boolean) as string[];
 
   const MenuBtn = ({
@@ -255,7 +256,7 @@ export const Sidebar = ({
                   }
                   className="block cursor-pointer rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
                 >
-                  {route === "analytics" ? "General Report" : route}
+                  {route === "analytics" ? "General Report" : route === "account-statement" ? "Account Statement" : route}
                 </Link>
               );
             })}
@@ -468,6 +469,7 @@ export const SuperAdminSidebar = ({
     "commission",
     "roles",
     "users",
+    "account-statement"
   ];
 
   const MenuBtn = ({
@@ -537,7 +539,7 @@ export const SuperAdminSidebar = ({
                   }
                   className="block cursor-pointer rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
                 >
-                  {route}
+                  { route === "account-statement" ? "Account Statement" : route}
                 </Link>
               );
             })}

@@ -125,10 +125,17 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
   } = useMutation({
     mutationKey: ["generalSavingsSetup"],
     mutationFn: async () => {
-      return client.put(`api/user/${organisationId}`, {
-        
-        adminFee: formData.percentageBased
-      });
+      const percentageBasedPayload = {
+        adminFee: 3,
+        dailyBased: false
+      }
+      const DailyBasedPayload = {
+        adminFee: 0,
+        dailyBased: true
+      }
+
+      const payload = formData.accountType === "individual" ? percentageBasedPayload : DailyBasedPayload
+      return client.put(`api/user/${organisationId}`, payload);
     },
     onSuccess(response: AxiosResponse<any, any>) {
       
@@ -208,7 +215,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
       
       <div className='border md:ml-[30%] md:mr-[15%] bg-white mt-[5%] mb-8 p-8'>
       <div className='flex justify-between'>
-          <h2 className="font-bold p-4">SAVING SETUP AND ADMIN FEE</h2>
+          <h2 className="font-bold p-4">GENERAL SAVING SETUP AND ADMIN FEE</h2>
           <div
               onClick={() => setModalState(false)}
               className="mr-8 cursor-pointer pt-2"
@@ -238,20 +245,34 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
               
               <div className="">
                 
+                <input
+                  type="radio"
+                  name="accountType"
+                  value="individual"
+                  checked={formData.accountType === 'individual'}
+                  onChange={handleChange}
+                  className="form-radio cursor-pointer"
+                />
+                <span className="ml-4 text-sm font-medium capitalize text-[#7D7D7D]">General(percentage-based)</span>
+              </div>
+
+              <div>
+                <label className="inline-flex items-center">
                   <input
                     type="radio"
                     name="accountType"
-                    value="individual"
-                    checked={formData.accountType === 'individual'}
+                    value="savings"
+                    checked={formData.accountType === 'savings'}
                     onChange={handleChange}
-                    className="form-radio cursor-pointer"
+                    className="form-radio cursor-pointer "
                   />
-                  <span className="ml-4 text-sm font-medium capitalize text-[#7D7D7D]">General(percentage-based)</span>
+                  <span className="ml-4 text-sm font-medium capitalize text-[#7D7D7D]">Savings amount based (daily)</span>
+                </label>
               </div>
              
             </div>
 
-
+            {formData.accountType === "individual" && (
               <div className="mb-4 w-[100%]">
               <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">General(percentage- based):</label>
               <input
@@ -265,6 +286,21 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
               />
               {errors.percentageBased && <p className="text-red-500">{errors.percentageBased}</p>}
             </div>
+            )}
+            {formData.accountType === "savings" && (
+              <div className="mb-4 w-[60%]">
+              <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Savings amount based (daily)</label>
+              <input
+                type="number"
+                name="amountBased"
+                value={formData.amountBased}
+                onChange={handleChange}
+                className="bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white "
+              />
+              {errors.amountBased && <p className="text-red-500">{errors.amountBased}</p>}
+            </div>
+            )}
+
         
             <div className="flex justify-center md:w-[100%] my-8">
     

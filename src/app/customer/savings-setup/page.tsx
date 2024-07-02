@@ -81,7 +81,7 @@ export default function Page(){
 const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>>}) => {
   const { client } = useAuth();
   const user = useSelector(selectUser)
-  console.log(user)
+
   const organisationId = useSelector(selectOrganizationId)
   const router = useRouter()
   const [showModal, setShowModal] = useState(false)
@@ -90,9 +90,32 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
   const [showErrorToast, setShowErrorsToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  
+  
+  const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } = useQuery({
+    queryKey: ["organisation"],
+    queryFn: async () => {
+      return client
+        .get(
+          `/api/user/${user.organisation}`,
+          {},
+        ) //populate this based onthee org
+        .then((response) => {
+          
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+      
+          throw error;
+        });
+    },
+  });
+
+ 
+
   const [formData, setFormData] = useState<setUpSavingsProps>({
     accountType: 'individual',
-    percentageBased: '',
+    percentageBased: customerOrganisation?.adminFee ?? "",
     amountBased: '',
     accountNumber: user.accountNumber ?? '',
     accountName: user.firstName + user.lastName,
@@ -103,7 +126,8 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
     startDate: '',
     endDate: '',
     totalexpectedSavings: '',
-    collectionDate: ''
+    collectionDate: '',
+    purposeRadioValue: 'existingPurpose'
   });
 
 
@@ -133,8 +157,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
   } = useMutation({
     mutationKey: ["savingsSetup"],
     mutationFn: async (values) => {
-      
-      return client.post(`/api/saving/customer-savings-setup`, {
+      const individualBasedPayload = {
         purposeName: formData.purpose,
         amount: formData.amount,
         startDate: formData.startDate,
@@ -142,10 +165,25 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
         organisation: organisationId,
         frequency: formData.frequency,
         users: [formData.userId],
-        dailyBased: formData.amountBased,
-        individualBased : formData.percentageBased,
+        // dailyBased: 0,
+        individualBased : customerOrganisation.adminFee,
         totalexpectedSavings: formData.totalexpectedSavings
-      });
+      }
+      const DailyBasedPayload = {
+        purposeName: formData.purpose,
+        amount: formData.amount,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        organisation: organisationId,
+        frequency: formData.frequency,
+        users: [formData.userId],
+        dailyBased: formData.amount,
+        // individualBased : 0,
+        totalexpectedSavings: formData.totalexpectedSavings
+      }
+      const payload = formData.accountType === "individual" ? individualBasedPayload : DailyBasedPayload
+      console.log(payload)
+      return client.post(`/api/saving/customer-savings-setup`, payload);
     },
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
@@ -167,7 +205,8 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
     startDate: '',
     endDate: '',
     totalexpectedSavings: '',
-    collectionDate: ''
+    collectionDate: '',
+    purposeRadioValue: 'existingPurpose'
       })
     },
     onError(error: AxiosError<any, any>) {
@@ -179,15 +218,15 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
       );
     },
   });
-  console.log(formData)
+
 
   const handleSubmit = (e: FormEvent<HTMLFormElement> ) => {
+   console.log(formData)
     e.preventDefault();
 
     const validationErrors = validateForm(formData);
     if (Object.keys(validationErrors).length === 0) {
      
-        console.log(formData)
         SetupSavings()
      
       //  setModalState(false)
@@ -203,10 +242,10 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
   const validateForm = (data : setUpSavingsProps) : Partial<setUpSavingsProps>=> {
     let errors: Partial<setUpSavingsProps> = {};
   
-    if (!data.percentageBased && !data.amountBased) {
-      errors.percentageBased = 'Either Percentage Based or Amount Based is required';
-      errors.amountBased = 'Either Percentage Based or Amount Based is required';
-    }
+    // if (!data.percentageBased && !data.amountBased) {
+    //   errors.percentageBased = 'Either Percentage Based or Amount Based is required';
+    //   errors.amountBased = 'Either Percentage Based or Amount Based is required';
+    // }
   
     if (!data.accountNumber) {
       errors.accountNumber = 'Account Number is required';
@@ -267,6 +306,8 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
     },
   });
 
+
+  
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
   
@@ -347,7 +388,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
                     onChange={handleChange}
                     className="form-radio cursor-pointer"
                   />
-                  <span className="ml-4 text-sm font-medium capitalize text-[#7D7D7D]">Individual(percentage-based)</span>
+                  <span className="ml-4 text-sm font-medium capitalize text-[#7D7D7D]">Individual(percentage-based) {customerOrganisation?.adminFee}%</span>
               </div>
               <div>
                 <label className="inline-flex items-center">
@@ -359,26 +400,30 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
                     onChange={handleChange}
                     className="form-radio cursor-pointer "
                   />
-                  <span className="ml-4 text-sm font-medium capitalize text-[#7D7D7D]">Savings amount based (daily)</span>
+                  <span className="ml-4 text-sm font-medium capitalize text-[#7D7D7D]">Savings amount based (daily) {formData.amount}</span>
                 </label>
               </div>
             </div>
 
-            {formData.accountType === "individual" && (
-              <div className="mb-4 w-[60%]">
-              <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Individual (Percentage Based)</label>
-              <input
-                type="number"
-                name="percentageBased"
-                value={formData.percentageBased}
-                onChange={handleChange}
-                className="bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white "
-                placeholder='input percentage' 
-                required 
-              />
-              {errors.percentageBased && <p className="text-red-500">{errors.percentageBased}</p>}
-            </div>
-            )}
+          
+              {/* {formData.accountType === "individual" && (
+                <div className="mb-4 w-[60%]">
+                <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Individual (Percentage Based)</label>
+                <input
+                 
+                  type="number"
+                  name="percentageBased"
+                  value={formData.percentageBased}
+                  onChange={handleChange}
+                  className="bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white "
+                  placeholder='input percentage' 
+                  required
+                  //  readOnly
+                />
+                {errors.percentageBased && <p className="text-red-500">{errors.percentageBased}</p>}
+              </div>
+              )
+            } */}
             
             {formData.accountType === "savings" && (
               <div className="mb-4 w-[60%]">
@@ -386,8 +431,9 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
               <input
                 type="number"
                 name="amountBased"
-                value={formData.amountBased}
+                value={formData.amount}
                 onChange={handleChange}
+                readOnly
                 className="bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white "
               />
               {errors.amountBased && <p className="text-red-500">{errors.amountBased}</p>}
@@ -431,17 +477,61 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
                   {errors.accountName && <p className="text-red-500">{errors.accountName}</p>}
                 </div>
               </div>
+
+              
               
             
-              <div className="mb-4 w-full">
+              <div className="mb-4 mt-4 w-full">
                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Enter Savings Purpose</label>
+
+                <div className="">
+                
                 <input
+                  type="radio"
+                  name="purposeRadioValue"
+                  value="existingPurpose"
+                  checked={formData.purposeRadioValue === 'existingPurpose'}
+                  onChange={handleChange}
+                  className="form-radio cursor-pointer"
+                />
+                <span className="ml-4 text-sm font-medium capitalize text-[#7D7D7D]">Choose from existing purpose</span>
+              </div>
+
+              <div className="">
+                
+                <input
+                  type="radio"
+                  name="purposeRadioValue"
+                  value="newPurpose"
+                  checked={formData.purposeRadioValue === 'newPurpose'}
+                  onChange={handleChange}
+                  className="form-radio cursor-pointer"
+                />
+                <span className="ml-4 text-sm font-medium capitalize text-[#7D7D7D]">Enter a new purpose</span>
+              </div>
+                {formData.purposeRadioValue === "existingPurpose" && (
+                  <select
+                  name="frequency"
+                  value={formData.frequency}
+                   onChange={handleChange}
+                  className="form-select bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white"
+                >
+                  <option value="">Select Purpose</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+                )}
+                {formData.purposeRadioValue ==="newPurpose" && (
+                  <input
                   name="purpose"
                   type='text'
                   value={formData.purpose}
                   onChange={handleChange}
                   className="form-select bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white"
                 />
+                )}
+                
                  
                 {errors.purpose && <p className="text-red-500">{errors.purpose}</p>}
               </div>

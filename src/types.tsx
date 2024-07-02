@@ -35,6 +35,7 @@ export type customer = {
   photo: File | any;
   userType: string;
   groupName: string;
+ 
 };
 
 export type setSavingsResponse = {
@@ -585,6 +586,7 @@ export interface setUpSavingsProps {
   collectionDate: string;
   userId: string;
   savingID?: string;
+  purposeRadioValue?: string
 }
 
 export interface createRoleProps {
