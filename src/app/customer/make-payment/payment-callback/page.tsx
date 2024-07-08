@@ -1,14 +1,15 @@
 'use client'
-import { Suspense, useEffect } from 'react';
+
+import React, { useEffect, useState , Suspense} from 'react';
+import { useSearchParams } from 'next/navigation'
 import axios from 'axios';
-import { useSearchParams } from 'next/navigation';
-import { apiUrl } from '@/api/hooks/useAuth';
+import { apiUrl } from '@/api/hooks/useAuth'; // Adjust import as necessary
 
 const PaymentCallback = () => {
-    const searchParams = useSearchParams()
- 
-    const transaction_id = searchParams.get('transaction_id')
-    
+    const searchParams = useSearchParams();
+    const transaction_id = searchParams.get('transaction_id');
+    const [processing, setProcessing] = useState(true);
+    const [paymentStatus, setPaymentStatus] = useState('');
 
     useEffect(() => {
         if (transaction_id) {
@@ -18,19 +19,35 @@ const PaymentCallback = () => {
 
     const verifyPayment = async () => {
         try {
-            const response = await axios.get(`${apiUrl}/api/pay/flw/verify-payment?transaction_id=${transaction_id}`);
+            const response = await axios.get(`${apiUrl}api/pay/flw/verify-payment?transaction_id=${transaction_id}`);
             if (response.data.status === 'success') {
-                console.log('Payment successful:', response.data);
+                setPaymentStatus('success');
             } else {
-                console.error('Payment failed:', response.data);
+                setPaymentStatus('failure');
             }
         } catch (error) {
             console.error('Error verifying payment:', error);
+            setPaymentStatus('failure');
+        } finally {
+            setProcessing(false);
         }
     };
 
-    return <div>Processing payment...</div>;
+    return (
+        <div className="flex flex-col items-center justify-center h-screen">
+            {processing ? (
+                <div className="animate-spin rounded-full h-20 w-20 border-b-4 border-gray-900"></div> // Tailwind CSS spinner
+            ) : paymentStatus === 'success' ? (
+                <h1 className="text-4xl text-white font-bold">Payment Successful!</h1>
+            ) : (
+                <h1 className="text-4xl text-red-600 font-bold">Payment Failed. Please try again.</h1>
+            )}
+        </div>
+    );
 };
+
+
+
 
 
 export default function CallbackPayment(){

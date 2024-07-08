@@ -80,6 +80,7 @@ const CustomerDashboard = () => {
       return client
         .get(`/api/saving/get-savings?user=${id}`)
         .then((response) => {
+          console.log(response.data)
           // setFilteredSavings(response.data.savings)
           return response.data.currentSavingsBalance;
         })

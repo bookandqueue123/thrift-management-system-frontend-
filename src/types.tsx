@@ -247,6 +247,7 @@ export interface MerchantSignUpProps {
   prefferedUrl: string;
   role: string;
   confirmPassword: string;
+  
 }
 
 export interface signInProps {
@@ -542,6 +543,9 @@ export interface UpdateMerchantKycProps {
   contactFullName: string;
   bankName: string;
   acctNo: string;
+  account_bank: string,
+    split_type: string,
+    split_value: string,
 }
 
 type MyFile = {

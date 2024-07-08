@@ -1208,7 +1208,7 @@ const PostingForm = ({
             <option disabled defaultValue={"Filter"} className="hidden">
               Select a category
             </option>
-            <option className="capitalize">online</option>
+            <option className="capitalize">online(organisation)</option>
             <option className="capitalize">cash</option>
           </select>
           {(isTouched.paymentMode || formErrors.paymentMode) && (
