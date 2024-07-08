@@ -416,9 +416,9 @@ export default function Analytics() {
             // "General % ",
             // "General % Fee",
             // "General Savings Amount",
-            "Applied %",
-            "Applied % Fee",
-            "Admin Fee",
+            "General/Individual %",
+            "General/individual Applied % Fee",
+            "General/individual Admin Fee(savings amount)",
             "Service Charge",
             "Applied Service Charge %",
 
