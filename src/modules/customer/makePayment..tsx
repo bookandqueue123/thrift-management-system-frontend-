@@ -8,39 +8,21 @@ import axios from "axios";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
-const data = [
-    {
-      "S/N": 1,
-      "Item/Purpose": "Rent",
-      "Debit Amount": 1000,
-      "Payment Start": "2024-01-01",
-      "Payment End": "2024-12-31",
-      "Credit Amount": 0,
-      "Balance": -1000,
-      "Duration": "1 year"
-    },
-    {
-      "S/N": 2,
-      "Item/Purpose": "Electricity Bill",
-      "Debit Amount": 50,
-      "Payment Start": "2024-04-01",
-      "Payment End": "2024-04-30",
-      "Credit Amount": 0,
-      "Balance": -50,
-      "Duration": "1 month"
-    },
-    {
-      "S/N": 3,
-      "Item/Purpose": "Groceries",
-      "Debit Amount": 200,
-      "Payment Start": "2024-04-15",
-      "Payment End": "2024-04-30",
-      "Credit Amount": 0,
-      "Balance": -200,
-      "Duration": "15 days"
-    },
-    // Add more data entries as needed
-  ];
+function formatDate(date: Date) {
+    return date.toISOString().split('T')[0];
+}
+
+function generateDateRange(startDate: Date, endDate: Date) {
+    const dates = [];
+    let currentDate = new Date(startDate);
+
+    while (currentDate <= new Date(endDate)) {
+        dates.push(formatDate(new Date(currentDate)));
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return dates;
+}
 
 export default function MakePayment() {
     const organisationId = useSelector(selectOrganizationId);
@@ -50,14 +32,19 @@ export default function MakePayment() {
 
     const [filteredArray, setFilteredArray] = useState<savingsFilteredById[]>([]);
     const [paymentDetails, setPaymentDetails] = useState<any>({});
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     const handleInputChange = (id: string, field: string, value: any) => {
+        const payment = filteredArray.find(p => p.id === id);
         setPaymentDetails((prevDetails: any) => ({
             ...prevDetails,
             [id]: {
                 ...prevDetails[id],
                 savingsId: id,
-                [field]: value
+                [field]: value,
+                purposeName: payment?.purposeName,
+                userFirstName: payment?.user?.firstName,
+                userLastName: payment?.user?.lastName,
             }
         }));
     };
@@ -90,11 +77,39 @@ export default function MakePayment() {
             setFilteredArray(filtered);
         }
     }, [allSavings?.savings, userId]);
-    console.log(filteredArray);
 
     const GoToPayment = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
-        console.log(Object.values(paymentDetails));
+        const newErrors: { [key: string]: string } = {};
+
+        // Validate payment details
+        Object.keys(paymentDetails).forEach((key) => {
+            const paymentDetail = paymentDetails[key];
+            const selectedDates = generateDateRange(paymentDetail.startDate, paymentDetail.endDate);
+            const payment = filteredArray.find(p => p.id === key);
+
+            if (!paymentDetail.startDate || !paymentDetail.endDate) {
+                newErrors[key] = "Start and end dates must be selected.";
+            } else if (!payment) {
+                newErrors[key] = "Invalid payment ID.";
+            } else if (new Date(paymentDetail.startDate) < new Date(payment.startDate) ||
+                new Date(paymentDetail.endDate) > new Date(payment.endDate)) {
+                newErrors[key] = "Selected dates must be within the allowed range.";
+            } else if (!paymentDetail.amount || paymentDetail.amount <= 0) {
+                newErrors[key] = "Amount must be provided and greater than 0.";
+            }
+
+            if (payment) {
+                paymentDetails[key].selectedDates = selectedDates;
+            }
+        });
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) {
+            return;
+        }
+        console.log(paymentDetails)
 
         try {
             const amount = getTotal();
@@ -102,9 +117,10 @@ export default function MakePayment() {
             const phoneNumber = user.phoneNumber;
             const customerName = user.firstName + user.lastName;
 
-            const response = await axios.post(`${apiUrl}api/pay/flw`, 
-            { amount, email, paymentDetails: Object.values(paymentDetails), userId, organisationId, phoneNumber, customerName, });
-            if (response.data.status === 'success') {
+            const response = await axios.post(`${apiUrl}api/pay/flw`,
+                { amount, email, paymentDetails: Object.values(paymentDetails), userId, organisationId, phoneNumber, customerName, });
+       
+                if (response.data.status === 'success') {
                 window.location.href = response.data.data.link;
             }
         } catch (error) {
@@ -166,38 +182,39 @@ export default function MakePayment() {
                                         {payment.amount}
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                      <span className="text-xs font-sm">{extractDate(payment.startDate)} <br/></span>
-                                      
-                                        <input 
-                                        className="p-1 rounded-md text-black"
-                                    
+                                        <span className="text-xs font-sm">{extractDate(payment.startDate)} <br /></span>
+
+                                        <input
+                                            className="p-1 rounded-md text-black"
                                             type="date"
                                             onChange={(e) => handleInputChange(payment.id, 'startDate', e.target.value)}
                                         />
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                    <span className="text-xs font-sm">{extractDate(payment.endDate)} <br/></span>
-                                        <input 
+                                        <span className="text-xs font-sm">{extractDate(payment.endDate)} <br /></span>
+                                        <input
                                             className="p-1 rounded-md text-black"
                                             type="date"
                                             onChange={(e) => handleInputChange(payment.id, 'endDate', e.target.value)}
                                         />
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                        <form className="max-w-sm mx-auto">
+                                        <form className="max-w-sm mx-auto mt-5">
+
                                             <input
                                                 type="number"
                                                 id={`number-input-${index}`}
                                                 aria-describedby="helper-text-explanation"
-                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                                 placeholder="90210"
                                                 required
                                                 onChange={(e) => handleInputChange(payment.id, 'amount', parseFloat(e.target.value) || 0)}
                                             />
+                                            {errors[payment.id] && <span className="text-red-500">{errors[payment.id]}</span>}
                                         </form>
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                        {(payment.totalexpectedSavings === undefined ? 0 : payment.totalexpectedSavings)-(payment.totalAmountSaved === undefined ? 0 : payment.totalAmountSaved) }
+                                        {(payment.totalexpectedSavings === undefined ? 0 : payment.totalexpectedSavings) - (payment.totalAmountSaved === undefined ? 0 : payment.totalAmountSaved)}
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                                         {payment.specificDates.length} days
@@ -216,18 +233,18 @@ export default function MakePayment() {
                                 <td>
                                     <form className="ml-[10%]">
                                         <div className="flex border">
-                                            <input 
-                                                type="number" 
-                                                id="search-dropdown" 
+                                            <input
+                                                type="number"
+                                                id="search-dropdown"
                                                 className="bg-ajo_darkBlue text-white block p-2.5  w-full z-20 text-sm  border border-gray-300"
-                                                placeholder="Total" 
+                                                placeholder="Total"
                                                 required
                                                 value={String(getTotal()) || 0}
                                                 readOnly
                                             />
                                             <button
                                                 onClick={GoToPayment}
-                                                type="submit" 
+                                                type="submit"
                                                 className="w-full bg-green-400 text-white"
                                             >
                                                 Make Payment
@@ -239,6 +256,11 @@ export default function MakePayment() {
                         </>}
                     />
                 </div>
+                {Object.keys(errors).map((key) => (
+                    <div key={key} className="text-red-500">
+                        {errors[key]}
+                    </div>
+                ))}
             </div>
         </div>
     );
