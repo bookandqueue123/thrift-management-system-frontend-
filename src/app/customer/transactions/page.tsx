@@ -40,16 +40,33 @@ const Transactions = () => {
     },
   });
 
+  const { data: allTransactions, isLoading: isLoadingAllTransactions } = useQuery({
+    queryKey: ["allTransactions"],
+    staleTime: 5000,
+    queryFn: async () => {
+      return client
+        .get(`/api/transactions`)
+        .then((response) => {
+          // setFilteredSavings(response.data.savings)
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          throw error;
+        });
+    },
+  });
+  console.log(allTransactions)
+  console.log(id)
   useEffect(() => {
-    if (allSavings?.savings) {
+    if (allTransactions) {
       // Check if Savings?.savings is not undefined or null
-      const filtered = allSavings.savings.filter(
-        (item: { user: { _id: string } }) => item?.user?._id === id,
+      const filtered = allTransactions?.filter(
+        (item: { customerId: string; }) => item?.customerId === id,
       );
       setCustomerSavings(filtered);
       setFilteredSavings(filtered);
     }
-  }, [allSavings, id]);
+  }, [allTransactions, id ]);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
@@ -179,7 +196,7 @@ const Transactions = () => {
               "Transaction Date",
               "Account Number",
               "Purpose",
-              "Reference",
+              // "Reference",
               "Customer Name",
               "email",
               "Phone Number",
@@ -201,33 +218,32 @@ const Transactions = () => {
                   {extractTime(savings.updatedAt || "-----")}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.accountNumber || "----"}
+                  {savings.accountNumber || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {savings.purposeName || "-----"}
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {savings._id || "-----"}
+                </td> */}
+                <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {savings.customerName ||"----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.firstName + " " + savings.user.lastName ||
-                    "----"}
+                  {savings.email}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.email}
+                  {savings.phoneNumber}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.phoneNumber}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {/* {transaction.channel} */}
+                  {savings.typeOfPosting}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   {/* {AmountFormatter(Number(transaction.amount))}  */}
                   {savings.amount} NGN
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.isPaid || "----"}
+                  {savings.status || "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   <button className="bg-white"></button>
