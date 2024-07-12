@@ -40,6 +40,7 @@ const Transactions = () => {
     },
   });
 
+
   const { data: allTransactions, isLoading: isLoadingAllTransactions } = useQuery({
     queryKey: ["allTransactions"],
     staleTime: 5000,
@@ -55,8 +56,7 @@ const Transactions = () => {
         });
     },
   });
-  console.log(allTransactions)
-  console.log(id)
+ 
   useEffect(() => {
     if (allTransactions) {
       // Check if Savings?.savings is not undefined or null

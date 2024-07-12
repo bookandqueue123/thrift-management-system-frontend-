@@ -145,6 +145,9 @@ export const Sidebar = ({
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
   const [setupdropdownOpen, setSetupDropdownOpen] = useState(false);
   const [generalAdminFeeOpen, setGeneralAdminFeeOpen] = useState(false);
+
+  const [purposeDropdownIsOpen, setpurposeDropdownIsOpen] = useState(false);
+  const [categoriesdropdownOpen, setCategoriesDropdownOpen] = useState(false);
   const toggleSidebar = () => {
     return onShow ? "visible" : "invisible";
   };
@@ -180,6 +183,7 @@ export const Sidebar = ({
           userPermissions.includes(permissionsMap["view-users"])
         ? "users"
         : "",
+      
     user?.role === "organisation"
       ? "roles"
       : (user?.role === "staff" &&
@@ -213,7 +217,7 @@ export const Sidebar = ({
   return (
     <aside>
       <div
-        className={`${toggleSidebar()} fixed h-full w-44 space-y-10 border-r border-r-ajo_offWhite border-opacity-80 bg-ajo_darkBlue`}
+        className={`${toggleSidebar()}  fixed h-full w-44 space-y-10 border-r border-r-ajo_offWhite border-opacity-80 bg-ajo_darkBlue overflow-y-auto`}
       >
         <div className="flex w-full items-center justify-between px-6 py-6">
           <Link href="/" tabIndex={-1} className="outline-none">
@@ -262,7 +266,7 @@ export const Sidebar = ({
             })}
           </div>
           <span className="w-full cursor-pointer">
-            {["settings", "sign out"].map((label) => (
+            {["item/purpose", "settings", "sign out"].map((label) => (
               <div
                 key={label}
                 className="relative flex w-full cursor-pointer items-center gap-x-4 rounded-lg px-4 py-2 text-start text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
@@ -277,7 +281,17 @@ export const Sidebar = ({
                   >
                     {label}
                   </Link>
-                ) : (
+                ): label ===  "item/purpose" ?  (
+                  <Link
+                    href="/merchant/purpose"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setpurposeDropdownIsOpen(!purposeDropdownIsOpen);
+                    }}
+                  >
+                    {label}
+                  </Link>
+                ):(
                   <span
                     onClick={() => {
                       SignOut();
@@ -288,6 +302,14 @@ export const Sidebar = ({
                 )}
 
                 {label === "settings" && (
+                  <Image
+                    src="/arrow_down.svg"
+                    alt="arrow down"
+                    width={8}
+                    height={6}
+                  />
+                )}
+                  {label === "item/purpose" && (
                   <Image
                     src="/arrow_down.svg"
                     alt="arrow down"
@@ -384,6 +406,104 @@ export const Sidebar = ({
                           height={12}
                         />
                       </div>
+
+                      {generalAdminFeeOpen && (
+                        <>
+                          <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
+                            <Link
+                              href="/merchant/settings/general-admin-fee-set-up"
+                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                            >
+                              General Admin fee
+                            </Link>
+                          </div>
+
+                          <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
+                            <Link
+                              href="/merchant/settings/general-admin-fee-set-up/update-general-adminfee"
+                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                            >
+                              Update General <br />
+                              Admin Fee
+                            </Link>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {label === "item/purpose" && purposeDropdownIsOpen && (
+                  <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+                   
+
+                    
+
+                    <div
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCategoriesDropdownOpen(!categoriesdropdownOpen);
+                      }}
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite  hover:text-ajo_darkBlue"
+                    >
+                      <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
+                        <span>
+                          Categories
+                        </span>
+
+                        <Image
+                          className="mr-2"
+                          src="/arrow_down.svg"
+                          alt="arrow down"
+                          width={12}
+                          height={12}
+                        />
+                      </div>
+
+                      {categoriesdropdownOpen && (
+                        <>
+                          <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
+                            <Link
+                              href="/merchant/purpose/category"
+                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                            >
+                              categories
+                            </Link>
+                          </div>
+
+                          {/* <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
+                            <Link
+                              href="/merchant/purpose/category"
+                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                            >
+                              View Categories
+                            </Link>
+                          </div> */}
+                        </>
+                      )}
+                    </div>
+
+                    <div
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setGeneralAdminFeeOpen(!generalAdminFeeOpen);
+                      }}
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
+                    >
+                      {/* <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
+                        <span>
+                          General Admin Fee <br />
+                          and Set up
+                        </span>
+
+                        <Image
+                          className="mr-2"
+                          src="/arrow_down.svg"
+                          alt="arrow down"
+                          width={12}
+                          height={12}
+                        />
+                      </div> */}
 
                       {generalAdminFeeOpen && (
                         <>

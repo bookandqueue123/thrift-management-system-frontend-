@@ -579,10 +579,10 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
             </div>  
             <div className="flex justify-center md:w-[100%] mb-8">
     
-                  <button 
+              <button 
                     
-                    className='rounded-md bg-ajo_blue hover:bg-indigo-500 focus:bg-indigo-500 py-5 px-9 text-sm text-ajo_offWhite w-100 md:w-[60%]'>Submit</button>
-                </div>
+                className='rounded-md bg-ajo_blue hover:bg-indigo-500 focus:bg-indigo-500 py-5 px-9 text-sm text-ajo_offWhite w-100 md:w-[60%]'>Submit</button>
+            </div>
           </form>
         </div>  
       </div>  
