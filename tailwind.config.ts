@@ -12,6 +12,7 @@ const config: Config = {
       colors: {
         ajo_blue: "#2D55FB",
         ajo_orange: "#EAAB40",
+        ajo_purple: "rgba(24, 18, 42, 1)",
         contact_bg: "rgba(234, 171, 64, 1)",
         lighter_bg: "rgba(255,255,255,0.1)",
         ajo_offWhite: "#F2F0FF",

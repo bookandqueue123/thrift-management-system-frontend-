@@ -608,6 +608,10 @@ export interface createRoleProps {
     "view-user": boolean;
   };
 }
+export interface CategoryFormValuesProps {
+  name: string;
+  description: string;
+}
 
 export interface createSuperRoleProps {
   superuser: string[];
