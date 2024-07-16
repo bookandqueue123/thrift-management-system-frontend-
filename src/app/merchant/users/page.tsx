@@ -907,7 +907,7 @@ const MutateUser = ({
             {/* Personal Details */}
             <section>
               <div className="my-3 flex flex-col gap-4 md:flex-row">
-                <div className="flex-1">
+                <div className="space-y-2">
                   <label
                     htmlFor="firstName"
                     className="m-0 text-xs font-medium text-ajo_darkBlue"

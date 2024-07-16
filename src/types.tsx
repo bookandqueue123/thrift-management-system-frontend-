@@ -752,3 +752,31 @@ export interface SavingsInterface {
   totalAmountCollected: number;
   nextWithdrawalDate: string;
 }
+
+export interface PurposeProps {
+  purposeName: string;
+  description: string;
+  category: string;
+  uniqueCode: string;
+  amount: string | Blob;
+  startDate: string | Blob;
+  startTime: string;
+  endDate: string | Blob;
+  endTime: string;
+  promoCode: string;
+  promoPercentage:  string | Blob;
+  referralBonus: string | Blob;
+  image: File | null;
+  imageUrl: string | null;
+  digitalItem: string | null;
+  visibility: 'general' | 'inhouse';
+  visibilityStartDate: string | Blob;
+  visibilityStartTime: string;
+  visibilityEndDate: string | Blob;
+  visibilityEndTime: string;
+  assignToCustomer: string;
+  assignedCustomers: string[];
+
+  organisation: string;
+  referralBonusValue: string;
+};
