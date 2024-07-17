@@ -148,6 +148,7 @@ export const Sidebar = ({
 
   const [purposeDropdownIsOpen, setpurposeDropdownIsOpen] = useState(false);
   const [categoriesdropdownOpen, setCategoriesDropdownOpen] = useState(false);
+  const [itemOpen, setItemOpen] = useState(false);
   const toggleSidebar = () => {
     return onShow ? "visible" : "invisible";
   };
@@ -486,15 +487,13 @@ export const Sidebar = ({
                     <div
                       onClick={(e) => {
                         e.preventDefault();
-                        setGeneralAdminFeeOpen(!generalAdminFeeOpen);
+                        setItemOpen(!itemOpen);
                       }}
                       className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
                     >
-                      {/* <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
+                      <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
                         <span>
-                          General Admin Fee <br />
-                          and Set up
-                        </span>
+                         Purposes                     </span>
 
                         <Image
                           className="mr-2"
@@ -503,28 +502,20 @@ export const Sidebar = ({
                           width={12}
                           height={12}
                         />
-                      </div> */}
+                      </div>
 
-                      {generalAdminFeeOpen && (
+                      {itemOpen && (
                         <>
                           <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
                             <Link
-                              href="/merchant/settings/general-admin-fee-set-up"
+                              href="/merchant/purpose/item"
                               className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
                             >
-                              General Admin fee
+                              purpose
                             </Link>
                           </div>
 
-                          <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
-                            <Link
-                              href="/merchant/settings/general-admin-fee-set-up/update-general-adminfee"
-                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                            >
-                              Update General <br />
-                              Admin Fee
-                            </Link>
-                          </div>
+                          
                         </>
                       )}
                     </div>
