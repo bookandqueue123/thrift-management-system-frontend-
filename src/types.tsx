@@ -780,3 +780,26 @@ export interface PurposeProps {
   organisation: string;
   referralBonusValue: string;
 };
+
+// interfaces/Coupon.ts
+export interface ICouponProps {
+  _id(_id: any): string;
+ 
+  name: string;
+  description: string;
+  amount: number |string;
+  applyToPurpose: '';
+  selectedCategories?: string[]; // Array of category IDs
+  selectedIndividualPurpose?: string; // Purpose ID
+  applyToCustomers: '';
+  selectedCustomerGroup?: string; // Customer group ID
+  selectedIndividualCustomer?: string; // Customer ID
+  startTime: string;
+  startDate: string; // ISO Date string
+  endTime: string;
+  endDate: string; // ISO Date string
+  notifications: string[]; // Array of 'email', 'sms', 'whatsapp'
+  organisation: string; // Organisation ID
+  couponCode?: string;
+}
+
