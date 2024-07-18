@@ -545,8 +545,8 @@ const MutateCategory = ({
                   <div className="mt-2">
                     <Field name="selectedCategories" as="select" className="block w-full border border-gray-300 rounded-md shadow-sm p-2">
                       <option value="">Select Category</option>
-                      {categories.map((category: { _id: string | number | readonly string[] | undefined; name: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; }) => (
-                        <option value={category._id}>{category.name}</option>
+                      {categories.map((category: { _id: string | number; name: string | number }) => (
+                        <option key={category._id} value={category._id}>{category.name}</option>
                       ))}
                      
                     </Field>
@@ -556,8 +556,8 @@ const MutateCategory = ({
                   <div className="mt-2">
                     <Field name="selectedIndividualPurpose" as="select" className="block w-full border border-gray-300 rounded-md shadow-sm p-2">
                       <option value="">Select all purpose</option>
-                      {allPurpose.map((purpose: { _id: string | number | readonly string[] | undefined; purposeName: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; }) => (
-                        <option value={purpose._id}>{purpose.purposeName}</option>
+                      {allPurpose.map((purpose: { _id: string | number; purposeName: string | number}) => (
+                        <option key={purpose._id} value={purpose._id}>{purpose.purposeName}</option>
                       ))}
                       
                       
@@ -588,8 +588,8 @@ const MutateCategory = ({
                   <div className="mt-2">
                     <Field name="selectedCustomerGroup" as="select" className="block w-full border border-gray-300 rounded-md shadow-sm p-2">
                       <option value="">Select group</option>
-                      {GroupCustomers.map((group: { _id: string | number | readonly string[] | undefined; groupName: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; }) => (
-                        <option value={group._id}>{group.groupName}</option>
+                      {GroupCustomers.map((group: { _id: string, groupName: string }) => (
+                        <option key={group._id} value={group._id}>{group.groupName}</option>
                       ))}
       
           
@@ -601,7 +601,7 @@ const MutateCategory = ({
                     <Field name="selectedIndividualCustomer" as="select" className="block w-full border border-gray-300 rounded-md shadow-sm p-2">
                       <option value="">Select a customer</option>
                       {IndividualCustomers.map((IndividualCustomer: { firstName: any; lastName: any; }) => (
-                        <option value="">{IndividualCustomer.firstName + IndividualCustomer.lastName}</option>
+                        <option key={IndividualCustomer.firstName} value="">{IndividualCustomer.firstName + IndividualCustomer.lastName}</option>
                       ))}
                       
                     </Field>
