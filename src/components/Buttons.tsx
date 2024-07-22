@@ -3,9 +3,11 @@ import React from "react";
 export const FilterDropdown = ({
   label,
   options,
+  placeholder,
 }: {
   label?: string;
   options: string[];
+  placeholder?: string
 }) => {
   return (
     <>
@@ -22,7 +24,7 @@ export const FilterDropdown = ({
           defaultValue={"Filter"}
         >
           <option disabled defaultValue={"Filter"} className="hidden">
-            Filter
+            {placeholder ? placeholder : 'Filter'}
           </option>
           {options.map((option) => (
             <option

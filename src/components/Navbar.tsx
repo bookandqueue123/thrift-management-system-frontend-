@@ -18,7 +18,9 @@ const CustomerNavbar = () => {
     "make-payment",
     "withdrawals",
     "transactions",
-    "savings-setup"
+    "savings-setup",
+    "savings-purpose",
+    "coupon"
   ];
   const { SignOut } = useAuth();
 
@@ -89,7 +91,7 @@ const CustomerNavbar = () => {
                     }
                     className={`rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}
                   >
-                    {route === "make-payment" ? "Make Payment" : route}
+                    {route === "make-payment" ? "Make Payment": route === "savings-setup" ? "Savings Setup" : route === 'savings-purpose' ? 'Savings Purpose' : route}
                   </Link>
                 );
               })}

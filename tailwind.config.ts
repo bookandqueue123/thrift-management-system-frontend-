@@ -23,6 +23,7 @@ const config: Config = {
         pendingText: "#CB8A14",
         successText: "#00BB5D",
         errorText: "#FF3E3E",
+        purposeBg: "#F9DAA7"
       },
       backgroundImage: {
         "dropdown-icon": "url('/arrow_down.svg')", // Add this line

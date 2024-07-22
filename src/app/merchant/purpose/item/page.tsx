@@ -76,11 +76,11 @@ const Purpose = () => {
 >([]);
 
   const {
-    data: allUsers,
-    isLoading: isLoadingAllUsers,
+    data: allPurpose,
+    isLoading: isLoadingAllPurpose,
     refetch,
   } = useQuery({
-    queryKey: ["allUsers"],
+    queryKey: ["allPurpose"],
     queryFn: async () => {
       return client
         .get(
@@ -145,8 +145,8 @@ const Purpose = () => {
     // setSearchResult(e.target.value);
 
 
-    if (allUsers) {
-      const filtered = allUsers.filter((item) =>
+    if (allPurpose) {
+      const filtered = allPurpose.filter((item) =>
         String(item.firstName || item.lastName).includes(
           String(e.target.value),
         ),
@@ -157,8 +157,8 @@ const Purpose = () => {
   };
   // const handleDateFilter = () => {
   //   // Filter the data based on the date range
-  //   if (allUsers) {
-  //     const filtered = allUsers.filter((item) => {
+  //   if (allPurpose) {
+  //     const filtered = allPurpose.filter((item) => {
   //       const itemDate = new Date(item.createdAt); // Convert item date to Date object
   //       const startDateObj = new Date(fromDate);
   //       const endDateObj = new Date(toDate);
@@ -176,8 +176,8 @@ const Purpose = () => {
     currentPage * PAGE_SIZE,
   );
   let totalPages = 0;
-  if (allUsers) {
-    totalPages = Math.ceil(allUsers.length / PAGE_SIZE);
+  if (allPurpose) {
+    totalPages = Math.ceil(allPurpose.length / PAGE_SIZE);
   }
 
   useEffect(() => {
@@ -441,8 +441,8 @@ const Purpose = () => {
                 </div>
               ) : (
                 <ModalConfirmation
-                  successTitle={`User ${modalToShow === "create-purpose" ? "Creation" : modalToShow === "edit-purpose" ? "Editing": ""} Successful`}
-                  errorTitle={`User ${modalToShow === "create-purpose" ? "Creation" : "Editing"} Failed`}
+                  successTitle={`Purpose ${modalToShow === "create-purpose" ? "Creation" : modalToShow === "edit-purpose" ? "Editing": ""} Successful`}
+                  errorTitle={`Purpose ${modalToShow === "create-purpose" ? "Creation" : "Editing"} Failed`}
                   status={isPurposeCreated || isPurposeEdited ? "success" : "failed"}
                   responseMessage={mutationResponse}
                 />
@@ -509,10 +509,10 @@ const {
 
   const {
     data: singlePurpose,
-    isLoading: isLoadingAllUsers,
+    isLoading: isLoadingAllPurpose,
     refetch: editingPurposeRefetched,
   } = useQuery({
-    queryKey: ["allUsers"],
+    queryKey: ["allPurpose"],
     queryFn: async () => {
       return client
         .get(
