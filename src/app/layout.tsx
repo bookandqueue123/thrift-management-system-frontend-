@@ -8,6 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import TanstackProvider from "../../providers/TanstackProvider";
 import { store } from "../../store/store";
 import { PermissionsProvider } from "@/api/hooks/usePermissions";
+import Script from "next/script";
 const montserrat = Montserrat({ subsets: ["latin"] });
 
 // export const metadata: Metadata = {
@@ -22,7 +23,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head></head>
+      <head>
+      
+      </head>
 
       <body className={montserrat.className}>
         <Provider store={store}>
@@ -31,6 +34,7 @@ export default function RootLayout({
               <PermissionsProvider>
                 <div className="">
                   <ToastContainer />
+                  <Script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.5.1/flowbite.min.js"></Script>
                   {children}
                 </div>
               </PermissionsProvider>
