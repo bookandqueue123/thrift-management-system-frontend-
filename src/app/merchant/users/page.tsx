@@ -19,7 +19,7 @@ import {
   staffResponse,
 } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
 import Image from "next/image";
 import Link from "next/link";
@@ -761,7 +761,11 @@ const MutateUser = ({
     setSelectedOptions(updatedOptions);
   };
 
+  
   return (
+    <div>
+      
+   
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
@@ -903,6 +907,7 @@ const MutateUser = ({
         submitForm,
       }) => (
         <form className=" flex flex-col items-center" onSubmit={handleSubmit}>
+          
           <div className=" mb-10 w-full space-y-10 rounded-md bg-white px-[5%] py-[3%]">
             {/* Personal Details */}
             <section>
@@ -2036,6 +2041,7 @@ const MutateUser = ({
         </form>
       )}
     </Formik>
+    </div>
   );
 };
 
