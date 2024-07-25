@@ -22,7 +22,7 @@ import {
 } from "@/types";
 import { extractDate } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -1912,6 +1912,7 @@ export const CreateCustomer = ({
   setError: Dispatch<SetStateAction<string>>;
 }) => {
   const { client } = useAuth();
+  const [selectedOption, setSelectedOption] = useState('manual');
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedStateArray, setselectedStateArray] = useState<StateProps[]>(
     [],
@@ -1924,6 +1925,7 @@ export const CreateCustomer = ({
  
   const [selectedValue, setSelectedValue] = useState('');
   const [organisationError, setOrganisationError] = useState('');
+  const [file, setFile] = useState(null);
 
   const pathname = usePathname()
   const isSuperAdminPath = pathname.includes('/superadmin')
@@ -2091,7 +2093,141 @@ export const CreateCustomer = ({
     },
   });
 
+
+
+  const handleFileChange = (e: any) => {
+    setFile(e.target.files[0]);
+  };
+  // const handleFileUpload = async (e) => {
+  //   e.preventDefault();
+  //   const formData = new FormData();
+  //   formData.append('file', file);
+  //   formData.append('organisation', organizationId)
+  //   console.log(formData)
+  //   try {
+  //     const response = await axios.post('http://localhost:4000/api/user/upload', formData, {
+  //       headers: {
+  //         'Content-Type': 'multipart/form-data',
+  //       },
+  //     });
+  //     console.log(response.data);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
+  const handleOptionChange = (event: { target: { value: SetStateAction<string>; }; }) => {
+    setSelectedOption(event.target.value);
+  }
+
+  const {mutate: uploadCustomer, isPending: isuploadingCustomers, isError:isuploadingCustomersError} = useMutation({
+    mutationKey: ['upload bulk customer'],
+    mutationFn: async(e: any) => {
+      e.preventDefault()
+      const formData = new FormData();
+      if (file) {
+        formData.append('file', file);
+      }
+      formData.append('organisation', organizationId)
+      console.log(formData)
+      return client.post(`/api/user/upload`, formData)
+
+    },
+    onSuccess(response) {
+      
+      setCustomerCreated(true);
+      setModalContent("confirmation");
+      setError("Customers created successfully. ")
+      setMutationResponse(response?.data.message);
+      setTimeout(() => {
+        setCloseModal(false);
+      }, 5000);
+    },
+
+    onError(error: AxiosError<any, any>) {
+      console.log(error)
+      const errorString = error.response?.data.errors.map((error: { message: string; row: any; }) => `Missing fields: ${error.message.split(': ')[1]} in row ${error.row}`).join(', ');
+      const errorString2 = error.response?.data.errors.map((error: { row: any; message: string; }) => `row ${error.row}: ${error.message} in row ${error.row}`).join(', ');
+      console.log(errorString2);
+       setCustomerCreated(false);
+      setModalContent("confirmation");
+      setMutationResponse(errorString2 ?? error.response?.data.message);
+      setError(error.response?.data.message ?? error.message);
+      if (error.response?.status === 413) {
+        console.log("Request Entity Too Large (413 Error)");
+        console.log(
+          "Custom error message: The file you're trying to upload is too large.",
+        );
+      } else {
+       
+      }
+     
+    },
+    
+
+
+  })
+
   return (
+    <div>
+      <div className="mb-4">
+        <label className="mr-4 text-white">
+          <input
+            type="radio"
+            value="manual"
+            checked={selectedOption === 'manual'}
+            onChange={handleOptionChange}
+            className="mr-2"
+          />
+          Create Manually
+        </label>
+        <label className="text-white">
+          <input
+            type="radio"
+            value="bulk"
+            checked={selectedOption === 'bulk'}
+            onChange={handleOptionChange}
+            className="mr-2"
+          />
+          Bulk Upload
+        </label>
+      </div>
+
+      {selectedOption === 'bulk' && (
+       <form onSubmit={uploadCustomer}>
+         <label
+          htmlFor="imageUrl"
+          className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
+        >
+          <input type="file" accept=".csv,.xlsx" onChange={handleFileChange} />
+        </label>
+        
+        <label
+            htmlFor="imageUrl"
+            className="cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
+          >
+       
+        <button
+         type="submit"
+         disabled={isuploadingCustomers}
+         >
+        {isuploadingCustomers ? (
+              <Image
+                src="/loadingSpinner.svg"
+                alt="loading spinner"
+                className="relative left-1/2"
+                width={25}
+                height={25}
+              />
+            ) : (
+              "Upload File"
+            )}
+        </button>
+        </label>
+      </form>
+      )}
+
+      {selectedOption === 'manual' && (
     <Formik
       initialValues={initialValues}
       validationSchema={Yup.object({
@@ -2797,6 +2933,7 @@ export const CreateCustomer = ({
           <MyEffectComponent formikValues={values} />
         </Form>
       )}
-    </Formik>
+    </Formik>)}
+    </div>
   );
 };
