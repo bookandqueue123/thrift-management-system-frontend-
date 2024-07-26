@@ -7,6 +7,7 @@ import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 import { CategoryFormValuesProps, permissionObject, ICouponProps } from "@/types";
+import { extractDate } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
@@ -179,6 +180,7 @@ const Categories = () => {
               "Category Name",
               "Coupon Code",
               "Description",
+              "Expiry date",
               "Action",
             ]}
             content={
@@ -199,6 +201,9 @@ const Categories = () => {
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {role.description || "----"}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {extractDate(role.endDate || "----")}
                     </td>
                     
                     <td className="flex gap-2 whitespace-nowrap px-6 py-4 text-sm">
@@ -310,10 +315,10 @@ const MutateCategory = ({
     name: '',
     description: '',
     amount: '',
-    applyToPurpose: '',
+    applyToPurpose: 'all-purpose',
     selectedCategories: [],
     selectedIndividualPurpose: '',
-    applyToCustomers: '',
+    applyToCustomers: 'all-customers',
     selectedCustomerGroup: '',
     selectedIndividualCustomer: '',
     startTime: '',
