@@ -788,10 +788,10 @@ export interface ICouponProps {
   name: string;
   description: string;
   amount: number |string;
-  applyToPurpose: '';
+  applyToPurpose: 'all-purpose' | 'select-category' | 'select-individual';
   selectedCategories?: string[]; // Array of category IDs
   selectedIndividualPurpose?: string; // Purpose ID
-  applyToCustomers: '';
+  applyToCustomers: 'all-customers' | 'group-of-customers' | 'individual-customer';
   selectedCustomerGroup?: string; // Customer group ID
   selectedIndividualCustomer?: string; // Customer ID
   startTime: string;

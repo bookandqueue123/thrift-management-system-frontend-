@@ -940,7 +940,7 @@ const Kyc = () => {
                 </div>
 
 
-                <div className="my-3 flex flex-col gap-4 md:flex-row">
+                <div className="hidden my-3 flex flex-col gap-4 md:flex-row">
                   <div className="flex-1">
                     <label
                       htmlFor="account_bank"
