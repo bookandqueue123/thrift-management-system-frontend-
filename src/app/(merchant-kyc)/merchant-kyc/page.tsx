@@ -100,6 +100,11 @@ const Kyc = () => {
       formData.append("organisationName", values.organisationName);
       formData.append("email", values.email);
       formData.append("phoneNumber", values.phoneNumber);
+      formData.append("bankAccountNumber", values.acctNo);
+      formData.append("account_bank", values.account_bank);
+      formData.append("split_type", values.split_type);
+      formData.append("split_value", values.split_value);
+      
 
       if (values.organisationLogo) {
         formData.append("businessLogo", values.organisationLogo[0]);
@@ -189,6 +194,10 @@ const Kyc = () => {
     contactFullName: "",
     bankName: "",
     acctNo: "",
+    account_bank: '044',
+    split_type: 'percentage',
+    split_value: '90',
+
   };
 
   const [allSections, setAllSections] = useState({
@@ -924,6 +933,66 @@ const Kyc = () => {
                     />
                     <ErrorMessage
                       name="acctNo"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                </div>
+
+
+                <div className="hidden my-3 flex flex-col gap-4 md:flex-row">
+                  <div className="flex-1">
+                    <label
+                      htmlFor="account_bank"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Account Bank
+                    </label>
+                    <Field
+                      name="account_bank"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="account_bank"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+
+                  <div className="flex-1">
+                    <label
+                      htmlFor="split_type"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Split Type
+                    </label>
+                    <Field
+                      name="split_type"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="split_type"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+
+                  <div className="flex-1">
+                    <label
+                      htmlFor="split_value"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Split Value
+                    </label>
+                    <Field
+                      name="split_value"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="split_value"
                       component="div"
                       className="text-xs text-red-500"
                     />

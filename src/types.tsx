@@ -35,6 +35,7 @@ export type customer = {
   photo: File | any;
   userType: string;
   groupName: string;
+ 
 };
 
 export type setSavingsResponse = {
@@ -184,6 +185,7 @@ export type allSavingsResponse = {
 };
 
 export type savingsFilteredById = {
+ 
   _id: string;
   purposeName: string;
   amount: number;
@@ -221,6 +223,7 @@ export type savingsFilteredById = {
     organisation: string;
     createdAt: string;
     updatedAt: string;
+    
     __v: number;
   };
   organisation: string;
@@ -232,6 +235,8 @@ export type savingsFilteredById = {
   savedDates: any[];
   specificDates: any[];
   id: string;
+  totalexpectedSavings?: number;
+  totalAmountSaved?: number
 };
 
 export interface MerchantSignUpProps {
@@ -242,6 +247,7 @@ export interface MerchantSignUpProps {
   prefferedUrl: string;
   role: string;
   confirmPassword: string;
+  
 }
 
 export interface signInProps {
@@ -436,6 +442,7 @@ export interface AssignedUser {
 }
 export interface User {
   _id: string;
+  name:string;
   firstName: string;
   lastName: string;
   otherName?: string;
@@ -536,6 +543,9 @@ export interface UpdateMerchantKycProps {
   contactFullName: string;
   bankName: string;
   acctNo: string;
+  account_bank: string,
+    split_type: string,
+    split_value: string,
 }
 
 type MyFile = {
@@ -580,6 +590,7 @@ export interface setUpSavingsProps {
   collectionDate: string;
   userId: string;
   savingID?: string;
+  purposeRadioValue?: string
 }
 
 export interface createRoleProps {
@@ -597,25 +608,30 @@ export interface createRoleProps {
     "view-user": boolean;
   };
 }
+export interface CategoryFormValuesProps {
+  name: string;
+  description: string;
+}
 
 export interface createSuperRoleProps {
+  superuser: string[];
   roleName: string;
   description: string;
-  viewPermissions: {
-    viewOrgDetails: boolean;
-    viewOrgCustomerDetails: boolean;
-    viewOrg: boolean;
-    generalPostingReport: boolean;
-    withdrawalReport: boolean;
-  };
-  editPermissions: {
-    editOrgCustomerDetails: boolean;
-    editOrgDetails: boolean;
-  };
-  actionPermissions: {
-    enableOrg: boolean;
-    disableOrg: boolean;
-  };
+  // viewPermissions: {
+  //   viewOrgDetails: boolean;
+  //   viewOrgCustomerDetails: boolean;
+  //   viewOrg: boolean;
+  //   generalPostingReport: boolean;
+  //   withdrawalReport: boolean;
+  // };
+  // editPermissions: {
+  //   editOrgCustomerDetails: boolean;
+  //   editOrgDetails: boolean;
+  // };
+  // actionPermissions: {
+  //   enableOrg: boolean;
+  //   disableOrg: boolean;
+  // };
 }
 
 export interface mutateUserProps {
@@ -736,3 +752,54 @@ export interface SavingsInterface {
   totalAmountCollected: number;
   nextWithdrawalDate: string;
 }
+
+export interface PurposeProps {
+  purposeName: string;
+  description: string;
+  category: string;
+  uniqueCode: string;
+  amount: string | Blob;
+  startDate: string | Blob;
+  startTime: string;
+  endDate: string | Blob;
+  endTime: string;
+  promoCode: string;
+  promoPercentage:  string | Blob;
+  referralBonus: string | Blob;
+  image: File | null;
+  imageUrl: string | null;
+  digitalItem: string | null;
+  visibility: 'general' | 'inhouse';
+  visibilityStartDate: string | Blob;
+  visibilityStartTime: string;
+  visibilityEndDate: string | Blob;
+  visibilityEndTime: string;
+  assignToCustomer: string;
+  assignedCustomers: string[];
+
+  organisation: string;
+  referralBonusValue: string;
+};
+
+// interfaces/Coupon.ts
+export interface ICouponProps {
+  _id(_id: any): string;
+ 
+  name: string;
+  description: string;
+  amount: number |string;
+  applyToPurpose: 'all-purpose' | 'select-category' | 'select-individual';
+  selectedCategories?: string[]; // Array of category IDs
+  selectedIndividualPurpose?: string; // Purpose ID
+  applyToCustomers: 'all-customers' | 'group-of-customers' | 'individual-customer';
+  selectedCustomerGroup?: string; // Customer group ID
+  selectedIndividualCustomer?: string; // Customer ID
+  startTime: string;
+  startDate: string; // ISO Date string
+  endTime: string;
+  endDate: string; // ISO Date string
+  notifications: string[]; // Array of 'email', 'sms', 'whatsapp'
+  organisation: string; // Organisation ID
+  couponCode?: string;
+}
+

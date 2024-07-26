@@ -395,7 +395,7 @@ const Posting = () => {
                   {savings.user.lga ?? "----"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  Posted By
+                  {user.role === 'organisation' ? 'Admin': ''}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                   Payment Mode
@@ -443,6 +443,7 @@ const PostingForm = ({
 }) => {
   const organizationId = useSelector(selectOrganizationId);
   const user = useSelector(selectUser);
+  console.log(user)
   const { assignedCustomers } = usePermissions();
 
   const { client } = useAuth();
@@ -702,7 +703,8 @@ const PostingForm = ({
       },
       enabled: !!postDetails.customerId,
     });
-
+    const postedby = user.role === 'organisation' ? 'Admin': (user.firstName + user.lastName)
+    console.log(postedby)
   const { mutate: postSavings, isPending: isPostingSavings } = useMutation({
     mutationFn: async () => {
       const datesInRange = DateRangeComponent({
@@ -730,7 +732,9 @@ const PostingForm = ({
           amount: Number(postDetails.amount.replace(",", "")),
         },
         paymentMode: postDetails.paymentMode,
-        narrative: postDetails.narrative,
+        narration: postDetails.narrative,
+        dayOfCollection: new Date,
+        postedBy: user.role === 'organisation' ? 'Admin': (user.firstName + user.lastName)
         // purposeName: postDetails.purposeName,
         // startDate: postDetails.startDate,
         // endDate: postDetails.endDate,
@@ -1208,7 +1212,7 @@ const PostingForm = ({
             <option disabled defaultValue={"Filter"} className="hidden">
               Select a category
             </option>
-            <option className="capitalize">online</option>
+            <option className="capitalize">online(organisation)</option>
             <option className="capitalize">cash</option>
           </select>
           {(isTouched.paymentMode || formErrors.paymentMode) && (

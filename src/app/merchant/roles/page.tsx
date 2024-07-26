@@ -68,6 +68,8 @@ const Roles = () => {
     staleTime: 5000,
   });
 
+ 
+
   const { data: allPermissions } = useQuery({
     queryKey: ["allPermissions"],
     queryFn: async () => {
@@ -83,7 +85,7 @@ const Roles = () => {
   });
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     if (allRoles) {
-      console.log(allRoles);
+
       const searchQuery = e.target.value.trim().toLowerCase();
       const filtered = allRoles.filter((item) =>
         item.name.toLowerCase().includes(searchQuery)
@@ -331,7 +333,7 @@ const MutateRole = ({
     },
   );
 
-  console.log(role)
+ 
 
   useEffect(() => {
     if(actionToTake === "edit-role"){
@@ -346,7 +348,7 @@ const MutateRole = ({
     
   }, [role, actionToTake]);
 
-  console.log(assignedPermissions)
+ 
   const initialValues: createRoleProps = actionToTake === 'edit-role' ? {
     roleName: role?.name ?? "",
     description: role?.description ?? "",
@@ -541,8 +543,7 @@ const MutateRole = ({
                 />
               ) : (
                 allPermissions?.map((permission: permissionObject) => {
-                  console.log(permission._id)
-                  console.log(assignedPermissions.includes(permission._id))
+                 
                   return (
                     <div className="flex gap-x-3" key={permission._id}>
                       <Field

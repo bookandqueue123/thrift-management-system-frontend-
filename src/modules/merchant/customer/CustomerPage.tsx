@@ -22,7 +22,7 @@ import {
 } from "@/types";
 import { extractDate } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -92,6 +92,7 @@ const Customers = () => {
   const [toDate, setToDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState("");
+  const [mutationResponse, setMutationResponse] = useState("");
 
   const { client } = useAuth();
   const token = useSelector(selectToken);
@@ -258,6 +259,10 @@ const Customers = () => {
     }
   };
 
+  useEffect(() => {
+    // Calling refetch to rerun the allRoles query
+    refetch();
+  }, [isCustomerCreated, refetch]);
   return (
     <>
       <div className="mb-4 space-y-2">
@@ -538,6 +543,7 @@ const Customers = () => {
                         setCustomerCreated={setIsCustomerCreated}
                         setModalContent={setModalContent}
                         setError={setError}
+                        setMutationResponse={setMutationResponse}
                       />
                     </div>
                   ) : (
@@ -545,7 +551,7 @@ const Customers = () => {
                       successTitle="Customer creation successful"
                       errorTitle="Customer Creation Failed"
                       status={isCustomerCreated ? "success" : "failed"}
-                      responseMessage={error}
+                      responseMessage={mutationResponse}
                     />
                   )}
                 </>
@@ -1892,18 +1898,21 @@ export const EditCustomer = ({
   );
 };
 
-const CreateCustomer = ({
+export const CreateCustomer = ({
   setCustomerCreated,
   setCloseModal,
   setModalContent,
   setError,
+  setMutationResponse,
 }: {
+  setMutationResponse: Dispatch<SetStateAction<string>>;
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   setCustomerCreated: Dispatch<SetStateAction<boolean>>;
   setModalContent: Dispatch<SetStateAction<"form" | "confirmation">>;
   setError: Dispatch<SetStateAction<string>>;
 }) => {
   const { client } = useAuth();
+  const [selectedOption, setSelectedOption] = useState('manual');
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedStateArray, setselectedStateArray] = useState<StateProps[]>(
     [],
@@ -1912,6 +1921,23 @@ const CreateCustomer = ({
   const organizationId = useSelector(selectOrganizationId);
   // console.log("ID:  " + organizationId);
   const [selectedLGAArray, setSelectesLGAArray] = useState<string[]>([]);
+  const [showDialog, setShowDialog] = useState(false)
+ 
+  const [selectedValue, setSelectedValue] = useState('');
+  const [organisationError, setOrganisationError] = useState('');
+  const [file, setFile] = useState(null);
+
+  const pathname = usePathname()
+  const isSuperAdminPath = pathname.includes('/superadmin')
+ 
+  
+
+  const handleOrganisationChange = (e: { target: { value: SetStateAction<string>; }; }) => {
+    setSelectedValue(e.target.value);
+    if (e.target.value) {
+      setError('');
+    }
+  };
 
   const initialValues: UpdateKycProps = {
     firstName: "",
@@ -1934,9 +1960,10 @@ const CreateCustomer = ({
     nin: "",
     bvn: "",
     bankAcctNo: "",
+    organisation: organizationId,
     // bankAcctName: "",
     // bankName: "",
-    organisation: "",
+    // organisation: "",
     userType: "individual",
   };
 
@@ -1978,6 +2005,23 @@ const CreateCustomer = ({
   }, [selectedCountry, selectedState]);
 
   const {
+    data: organizations,
+    isLoading: isUserLoading,
+    isError: getGroupError,
+  } = useQuery({
+    queryKey: ["allOrganizations"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user/get-url`, {})
+        .then((response) => {
+          return response.data;
+        })
+        .catch((error) => {
+          throw error;
+        });
+    },
+  });
+  const {
     mutate: createNewCustomer,
     isPending,
     isError,
@@ -2002,7 +2046,8 @@ const CreateCustomer = ({
       formData.append("nokPhone", values.nokPhone);
       formData.append("homeAddress", values.homeAddress);
       formData.append("userType", values.userType);
-      formData.append("organisation", organizationId);
+      (isSuperAdminPath ? formData.append("organisation", selectedValue) : formData.append("organisation", organizationId))
+      // formData.append("organisation", values.organisation);
       formData.append("nin", values.nin);
       formData.append("bvn", values.bvn);
       formData.append("meansOfID", values.meansOfID);
@@ -2024,6 +2069,8 @@ const CreateCustomer = ({
       
       setCustomerCreated(true);
       setModalContent("confirmation");
+      setError("Customer created successfully. ")
+      setMutationResponse(response?.data.message);
       setTimeout(() => {
         setCloseModal(false);
       }, 5000);
@@ -2032,6 +2079,7 @@ const CreateCustomer = ({
     onError(error: AxiosError<any, any>) {
       setCustomerCreated(false);
       setModalContent("confirmation");
+      setMutationResponse(error.response?.data.message);
       setError(error.response?.data.message ?? error.message);
       if (error.response?.status === 413) {
         console.log("Request Entity Too Large (413 Error)");
@@ -2045,7 +2093,141 @@ const CreateCustomer = ({
     },
   });
 
+
+
+  const handleFileChange = (e: any) => {
+    setFile(e.target.files[0]);
+  };
+  // const handleFileUpload = async (e) => {
+  //   e.preventDefault();
+  //   const formData = new FormData();
+  //   formData.append('file', file);
+  //   formData.append('organisation', organizationId)
+  //   console.log(formData)
+  //   try {
+  //     const response = await axios.post('http://localhost:4000/api/user/upload', formData, {
+  //       headers: {
+  //         'Content-Type': 'multipart/form-data',
+  //       },
+  //     });
+  //     console.log(response.data);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
+  const handleOptionChange = (event: { target: { value: SetStateAction<string>; }; }) => {
+    setSelectedOption(event.target.value);
+  }
+
+  const {mutate: uploadCustomer, isPending: isuploadingCustomers, isError:isuploadingCustomersError} = useMutation({
+    mutationKey: ['upload bulk customer'],
+    mutationFn: async(e: any) => {
+      e.preventDefault()
+      const formData = new FormData();
+      if (file) {
+        formData.append('file', file);
+      }
+      formData.append('organisation', organizationId)
+      console.log(formData)
+      return client.post(`/api/user/upload`, formData)
+
+    },
+    onSuccess(response) {
+      
+      setCustomerCreated(true);
+      setModalContent("confirmation");
+      setError("Customers created successfully. ")
+      setMutationResponse(response?.data.message);
+      setTimeout(() => {
+        setCloseModal(false);
+      }, 5000);
+    },
+
+    onError(error: AxiosError<any, any>) {
+      console.log(error)
+      const errorString = error.response?.data.errors.map((error: { message: string; row: any; }) => `Missing fields: ${error.message.split(': ')[1]} in row ${error.row}`).join(', ');
+      const errorString2 = error.response?.data.errors.map((error: { row: any; message: string; }) => `row ${error.row}: ${error.message} in row ${error.row}`).join(', ');
+      console.log(errorString2);
+       setCustomerCreated(false);
+      setModalContent("confirmation");
+      setMutationResponse(errorString2 ?? error.response?.data.message);
+      setError(error.response?.data.message ?? error.message);
+      if (error.response?.status === 413) {
+        console.log("Request Entity Too Large (413 Error)");
+        console.log(
+          "Custom error message: The file you're trying to upload is too large.",
+        );
+      } else {
+       
+      }
+     
+    },
+    
+
+
+  })
+
   return (
+    <div>
+      <div className="mb-4">
+        <label className="mr-4 text-white">
+          <input
+            type="radio"
+            value="manual"
+            checked={selectedOption === 'manual'}
+            onChange={handleOptionChange}
+            className="mr-2"
+          />
+          Create Manually
+        </label>
+        <label className="text-white">
+          <input
+            type="radio"
+            value="bulk"
+            checked={selectedOption === 'bulk'}
+            onChange={handleOptionChange}
+            className="mr-2"
+          />
+          Bulk Upload
+        </label>
+      </div>
+
+      {selectedOption === 'bulk' && (
+       <form onSubmit={uploadCustomer}>
+         <label
+          htmlFor="imageUrl"
+          className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
+        >
+          <input type="file" accept=".csv,.xlsx" onChange={handleFileChange} />
+        </label>
+        
+        <label
+            htmlFor="imageUrl"
+            className="cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
+          >
+       
+        <button
+         type="submit"
+         disabled={isuploadingCustomers}
+         >
+        {isuploadingCustomers ? (
+              <Image
+                src="/loadingSpinner.svg"
+                alt="loading spinner"
+                className="relative left-1/2"
+                width={25}
+                height={25}
+              />
+            ) : (
+              "Upload File"
+            )}
+        </button>
+        </label>
+      </form>
+      )}
+
+      {selectedOption === 'manual' && (
     <Formik
       initialValues={initialValues}
       validationSchema={Yup.object({
@@ -2067,6 +2249,7 @@ const CreateCustomer = ({
         nokRelationship: Yup.string().required("Required"),
         nokPhone: Yup.string().required("Required"),
         homeAddress: Yup.string().optional(),
+        //  organisation: Yup.string().optional(),
         photo: Yup.mixed()
           .required("Required")
           .test(
@@ -2112,12 +2295,30 @@ const CreateCustomer = ({
           .matches(/^\d{10}$/, "Account number should only contain digits"),
       })}
       onSubmit={(values, { setSubmitting }) => {
-        console.log("submitting........");
-        createNewCustomer(values);
+       
+      if(isSuperAdminPath){
+        
+        if (!selectedValue) {
+          alert(`You didn't select any organisation: ${selectedValue}`);
+          setError('Please select an option.');
+        } else {
+          setError('');
+          
+           createNewCustomer(values);
+          setTimeout(() => {
+            
+            setSubmitting(false);
+          }, 400);
+          // Han
+        }
+      } else{
+         createNewCustomer(values);
         setTimeout(() => {
-          // console.log(values);
+            
           setSubmitting(false);
         }, 400);
+      }
+        
       }}
     >
       {({
@@ -2134,6 +2335,8 @@ const CreateCustomer = ({
           encType="multipart/form-data"
           name="image"
         >
+        
+        
           <div className="flex w-full items-center justify-between gap-4">
             <div className="mb-3 w-1/2">
               <label
@@ -2196,6 +2399,58 @@ const CreateCustomer = ({
             />
           </div>
 
+          {isSuperAdminPath && (
+           
+           
+              <div className="mb-3">
+                <label
+                  htmlFor="organisation"
+                  className="m-0 text-xs font-medium text-white"
+                >
+                  Organization{" "}
+                  <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
+                </label>
+
+                <div>
+                  {/* <label htmlFor="dropdown">Choose an option:</label> */}
+                  <select 
+                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  id="dropdown"
+                   value={selectedValue} 
+                   onChange={handleOrganisationChange}>
+                    <option value="">--Select an option--</option>
+                    {organizations?.map((org: getOrganizationProps) => (
+                    <option key={org._id} value={org._id}>
+                      {org.organisationName}
+                    </option>
+                  ))}
+                  </select>
+                </div>
+                {organisationError && <p style={{ color: 'red' }}>{organisationError}</p>}
+               
+                {/* <Field
+                  as="select"
+                  id="organisation"
+                  name="organisation"
+                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                >
+                  <option value="">Select Organization</option>
+                  {organizations?.map((org: getOrganizationProps) => (
+                    <option key={org._id} value={org._id}>
+                      {org.organisationName}
+                    </option>
+                  ))}
+                </Field>
+                <ErrorMessage
+                  name="organisation"
+                  component="div"
+                  className="text-red-500"
+                /> */}
+              </div>
+            
+          )}
           <div className="mb-3">
             <label
               htmlFor="phoneNumber"
@@ -2416,7 +2671,7 @@ const CreateCustomer = ({
             </div>
             <div className="mb-3">
               <label
-                htmlFor="nokPhoneNumber"
+                htmlFor="nokPhone"
                 className="m-0 text-xs font-medium text-white"
               >
                 Next of Kin Phone number
@@ -2430,7 +2685,7 @@ const CreateCustomer = ({
                 />
               </div>
               <ErrorMessage
-                name="nokPhoneNumber"
+                name="nokPhone"
                 component="div"
                 className="text-red-500"
               />
@@ -2678,6 +2933,7 @@ const CreateCustomer = ({
           <MyEffectComponent formikValues={values} />
         </Form>
       )}
-    </Formik>
+    </Formik>)}
+    </div>
   );
 };

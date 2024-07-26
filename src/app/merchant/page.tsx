@@ -38,10 +38,11 @@ const MerchantDashboard = () => {
   const organizationId = useSelector(selectOrganizationId);
   const [isBalanceVisible, setIsBalanceVisible] = useState(false);
   const [permissionError, setPermissionError] = useState("")
-
+  const [merchantTotalCustomer, setMerchantTotalCustomer] = useState(0)
+  const [staffTotalAssignedCustomer, setStaffTotalAssignedCustomer] = useState(0)
   // const token = useSelector(selectToken)
   const user = useSelector(selectUser);
-  // console.log(user);
+
 
   //   console.log(organizationId)
 
@@ -82,7 +83,7 @@ const MerchantDashboard = () => {
         return client
           .get(`/api/saving/get-savings?organisation=${organizationId}`)
           .then((response: AxiosResponse<SavingsInterface, any>) => {
-             console.log(response.data);
+  
             if (user?.role === "staff") {
               let assignedUsersSavings = response.data.savings.filter(
                 (saving) =>
@@ -90,10 +91,14 @@ const MerchantDashboard = () => {
                     (assignee) => assignee._id === saving.user._id,
                   ),
               );
+              
+             
+             
               setFilteredTransactions(assignedUsersSavings);
             } else {
               setFilteredTransactions(response.data.savings);
             }
+           
             setTotalAmtCollected(response?.data?.totalAmountCollected);
             return response.data.savings;
           })
@@ -105,7 +110,7 @@ const MerchantDashboard = () => {
           });
       },
     });
-  // console.log(allTransactions);
+
 
   let totalPages = 0;
   if (allTransactions) {

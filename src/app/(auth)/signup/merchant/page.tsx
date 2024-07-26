@@ -40,6 +40,11 @@ const validationSchema = Yup.object().shape({
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password")], "Passwords must match")
     .required("Confirm Password is required"),
+  // account_bank: Yup.string().required("Account bank is required"),
+  // split_type: Yup.string().required("Account bank is required"),
+  // split_value: Yup.string().required("Split value is required"),
+  // bankAccountNumber: Yup.string().required("Bank Account Number is required"),
+
 });
 
 const MerchantForm = () => {
@@ -56,6 +61,10 @@ const MerchantForm = () => {
     prefferedUrl: "",
     password: "",
     confirmPassword: "",
+    // account_bank: '044',
+    // split_type: 'percentage',
+    // split_value: 90,
+    // bankAccountNumber: '',
     role: "organisation",
   };
 
@@ -73,13 +82,18 @@ const MerchantForm = () => {
         password: values.password,
         prefferedUrl: values.prefferedUrl,
         role: "organisation",
+        // account_bank: '044',
+        // bankAccountNumber: '0690000031',
+        // business_name: values.organisationName,
+        // split_value: 90,
+        // split_type: 'percentage'
       });
     },
 
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
       router.replace("/signin");
-      console.log(response.data);
+   
 
       setSuccessMessage((response as any).response.data.message);
 
@@ -278,6 +292,10 @@ const MerchantForm = () => {
                 className="text-xs text-red-500"
               />
             </div>
+
+            
+
+            
           </div>
           <button
             type="submit"

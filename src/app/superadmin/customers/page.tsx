@@ -1,15 +1,19 @@
 'use client'
-import { useAuth } from "@/api/hooks/useAuth";
+import { apiUrl, useAuth } from "@/api/hooks/useAuth";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import CustomerAction from "@/components/CustomerAction";
+import Modal, { ModalConfirmation } from "@/components/Modal";
 import TransactionsTable from "@/components/Tables";
+import { CreateCustomer } from "@/modules/merchant/customer/CustomerPage";
+import { selectToken } from "@/slices/OrganizationIdSlice";
 import { customer } from "@/types";
 import { extractDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
-import { ChangeEvent, SetStateAction, useState } from "react";
+import { ChangeEvent, SetStateAction, useEffect, useState } from "react";
 import { CiExport } from "react-icons/ci";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
+import { useSelector } from "react-redux";
 
 
 const mockData = [
@@ -46,13 +50,24 @@ const mockData = [
   ];
 export default function SuperAdminCustomer(){
   const { client } = useAuth();
+  const token = useSelector(selectToken);
    const PAGE_SIZE = 5;
    const [searchResult, setSearchResult] = useState("");
    const [fromDate, setFromDate] = useState("");
    const [toDate, setToDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredCustomers, setFilteredCustomer] = useState<customer[]>([]);
-  const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
+  const [modalState, setModalState] = useState(false);
+  const [modalContent, setModalContent] = useState<"form" | "confirmation">(
+    "form",
+  );
+  const [modalToShow, setModalToShow] = useState<
+    "view" | "savings" | "edit" | "create-customer" | ""
+  >("");
+  const [isCustomerCreated, setIsCustomerCreated] = useState(false);
+  const [error, setError] = useState("");
+  const [mutationResponse, setMutationResponse] = useState("");
+  const { data: allCustomers, isLoading: isLoadingAllCustomers, refetch } = useQuery({
     queryKey: ["allCustomers"],
     queryFn: async () => {
       return client
@@ -73,17 +88,19 @@ export default function SuperAdminCustomer(){
   });
   
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchResult(e.target.value);
-
-
+    const searchQuery = e.target.value.trim().toLowerCase();
+    setSearchResult(searchQuery);
+  
     if (allCustomers) {
       const filtered = allCustomers.filter((item) =>
-        String(item.accountNumber).includes(String(e.target.value)),
+        item.firstName.toLowerCase().includes(searchQuery) ||
+        item.lastName.toLowerCase().includes(searchQuery)
       );
       // Update the filtered data state
       setFilteredCustomer(filtered);
     }
   };
+  
 
   const handleFromDateChange = (event: {
     target: { value: SetStateAction<string> };
@@ -100,20 +117,39 @@ export default function SuperAdminCustomer(){
   };
 
   const handleDateFilter = () => {
-    // Filter the data based on the date range
     if (allCustomers) {
-      const filtered = allCustomers.filter((item) => {
+      const startDateObj = new Date(fromDate);
+      let endDateObj = new Date(toDate);
+      
+      // Adjust the endDateObj to the end of the day
+      endDateObj.setHours(23, 59, 59, 999);
+  
+     
+  
+      if (isNaN(startDateObj.getTime())) {
+        console.error('Invalid fromDate:', fromDate);
+        return;
+      }
+  
+      if (isNaN(endDateObj.getTime())) {
+        console.error('Invalid toDate:', toDate);
+        return;
+      }
+  
+      const filtered = allCustomers.filter((item: { createdAt: string | number | Date; }) => {
         const itemDate = new Date(item.createdAt); // Convert item date to Date object
-        const startDateObj = new Date(fromDate);
-        const endDateObj = new Date(toDate);
-
         return itemDate >= startDateObj && itemDate <= endDateObj;
       });
-
-      // Update the filtered data state
+  
       setFilteredCustomer(filtered);
     }
   };
+  
+  useEffect(() => {
+    if (fromDate && toDate) {
+      handleDateFilter();
+    }
+  }, [fromDate, toDate]);
 
   const paginatedCustomers = filteredCustomers?.slice(
     (currentPage - 1) * PAGE_SIZE,
@@ -136,6 +172,69 @@ export default function SuperAdminCustomer(){
       setCurrentPage(currentPage + 1);
     }
   };
+
+  useEffect(() => {
+    // Calling refetch to rerun the allRoles query
+    refetch();
+  }, [isCustomerCreated, refetch]);
+
+  const handleExport = async () => {
+  
+    try {
+      // const organisation = organisationId; 
+      const response = await fetch(`${apiUrl}api/user/export-superadmin-customer`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'users.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        console.error('Failed to export users:', response.statusText);
+      }
+    } catch (error) {
+      console.error('An error occurred while exporting users:', error);
+    }
+  };
+
+  const handleExcelExport = async () => {
+    try {
+      // const organisation = organisationId; // Replace with actual organisation ID or obtain it dynamically
+      const response = await fetch(`${apiUrl}api/user/export-superadmin-excel-customer`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'users.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        console.error('Failed to export users:', response.statusText);
+      }
+    } catch (error) {
+      console.error('An error occurred while exporting users:', error);
+    }
+  };
+
     return(
         <div>
            <div className="mb-4 space-y-2">
@@ -191,8 +290,9 @@ export default function SuperAdminCustomer(){
             label="Create new customers"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
             onButtonClick={() => {
-            //   setModalState(true);
-            //   setModalContent("form");
+              setModalState(true);
+              setModalToShow("create-customer");
+              setModalContent("form");
             }}
           />
          
@@ -218,8 +318,8 @@ export default function SuperAdminCustomer(){
             />
             </div>
               <div className="flex mt-4">
-                <button className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
-                <button className="px-4 py-2 text-white rounded-md border-none bg-transparent relative">
+                <button onClick={handleExport} className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
+                <button onClick={handleExcelExport} className="px-4 py-2 text-white rounded-md border-none bg-transparent relative">
                   
                   <u>Export as Excel</u>
                 </button>
@@ -285,6 +385,78 @@ export default function SuperAdminCustomer(){
           </tr>
       ))}
       />
+
+{modalState && (
+            <Modal
+              setModalState={setModalState}
+              title={
+                modalContent === "confirmation"
+                  ? ""
+                  : modalToShow === "view"
+                    ? "View Customer"
+                    : modalToShow === "edit"
+                      ? "Edit Customer"
+                      : modalToShow === "savings"
+                        ? "Savings Set Up"
+                        : modalToShow === "create-customer"
+                          ? "Create Customer"
+                          : ""
+              }
+            >
+              {modalToShow === "view" ? (
+                ""
+                // <ViewCustomer
+                //   customerId={customerToBeEdited}
+                //   setContent={setModalContent}
+                //   content={
+                //     modalContent === "confirmation" ? "confirmation" : "form"
+                //   }
+                //   closeModal={setModalState}
+                // />
+              ) : modalToShow === "savings" ? (""
+                // <SavingsSettings
+                //   customerId={customerToBeEdited}
+                //   setContent={setModalContent}
+                //   content={
+                //     modalContent === "confirmation" ? "confirmation" : "form"
+                //   }
+                //   closeModal={setModalState}
+                // />
+              ) : modalToShow === "edit" ? (""
+                // <EditCustomer
+                //   customerId={customerToBeEdited}
+                //   setContent={setModalContent}
+                //   content={
+                //     modalContent === "confirmation" ? "confirmation" : "form"
+                //   }
+                //   closeModal={setModalState}
+                // />
+              ) : modalToShow === "create-customer" ? (
+                <>
+                  {modalContent === "form" ? (
+                    <div className="px-[10%]">
+                      <CreateCustomer
+                        setCloseModal={setModalState}
+                        setCustomerCreated={setIsCustomerCreated}
+                        setModalContent={setModalContent}
+                        setError={setError}
+                        setMutationResponse={setMutationResponse}
+                      />
+                    </div>
+                  ) : (
+                    <ModalConfirmation
+                      successTitle="Customer creation successful"
+                      errorTitle="Customer Creation Failed"
+                      status={isCustomerCreated ? "success" : "failed"}
+                      responseMessage={mutationResponse}
+                    />
+                  )}
+                </>
+              ) : (
+                ""
+              )}
+            </Modal>
+          )}
 
         <div className="flex justify-center">
             <div className="flex items-center justify-center  space-x-2">

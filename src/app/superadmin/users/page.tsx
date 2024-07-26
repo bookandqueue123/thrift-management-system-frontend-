@@ -36,6 +36,7 @@ const Users = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [isUserEdited, setIsUserEdited] = useState(false);
 
   const { client } = useAuth();
 
@@ -43,6 +44,11 @@ const Users = () => {
   const [modalToShow, setModalToShow] = useState<
     "edit-user" | "create-user" | "view-user" | ""
   >("");
+  const [isUserCreated, setIsUserCreated] = useState(false);
+  
+  const [modalContent, setModalContent] = useState<"status" | "form" | "">(
+    "form",
+  );
 
   const [openDropdown, setOpenDropdown] = useState<number>(0);
   const toggleDropdown = (val: number) => {
@@ -53,7 +59,7 @@ const Users = () => {
     }
   };
   const [userToBeEdited, setUserToBeEdited] = useState("");
-
+  const [mutationResponse, setMutationResponse] = useState("");
   const {
     data: allUsers,
     isLoading: isLoadingAllUsers,
@@ -63,7 +69,7 @@ const Users = () => {
     queryFn: async () => {
       return client
         .get(
-          `/api/user?role=customer&organisation=${organisationId}&userType=individual`,
+          `/api/user?role=superuser`,
           {},
         )
         .then((response: AxiosResponse<customer[], any>) => {
@@ -77,6 +83,8 @@ const Users = () => {
     },
     staleTime: 5000,
   });
+
+  
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
   
@@ -119,6 +127,10 @@ const Users = () => {
   useEffect(() => {
     refetch();
   }, [isUserMutated, refetch]);
+  useEffect(() => {
+    refetch();
+  }, [isUserCreated, refetch]);
+
 
   return (
     <>
@@ -166,6 +178,8 @@ const Users = () => {
             onButtonClick={() => {
               setModalState(true);
               setModalToShow("create-user");
+              setModalContent("form");
+                setIsUserCreated(false);
             }}
           />
         </div>
@@ -208,17 +222,17 @@ const Users = () => {
                       {user.email || "----"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {user.phone || "----"}
+                      {user.phoneNumber || "----"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {user.address || "----"}
+                      {user.homeAddress || "----"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {user.assignedOrg || "----"}
+                      {(user.assignedUser).length }
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {user.assignedOrgName || "----"}
-                    </td>
+                    </td> */}
 
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       <StatusIndicator
@@ -239,11 +253,13 @@ const Users = () => {
                               setModalState(true);
                               setModalToShow("view-user");
                               setUserToBeEdited(user._id);
+                              setIsUserEdited(false);
                             },
                             () => {
                               setModalToShow("edit-user");
                               setModalState(true);
                               setUserToBeEdited(user._id);
+                              setIsUserEdited(false);
                             },
                           ],
                         }}
@@ -270,7 +286,7 @@ const Users = () => {
                       : ""
               }
             >
-              {!isUserMutated ? (
+              {modalContent === "form" ? (
                 <div className="px-[10%]">
                   {modalToShow === "view-user" ? (
                     <ViewUser userId={userToBeEdited} />
@@ -279,15 +295,20 @@ const Users = () => {
                       setCloseModal={setModalState}
                       setUserMutated={setIsUserMutated}
                       actionToTake={modalToShow}
+                      setUserCreated={setIsUserCreated}
+                      setUserEdited={setIsUserEdited}
+                      setModalContent={setModalContent}
+                      setMutationResponse={setMutationResponse}
+                      userToBeEdited={userToBeEdited}
                     />
                   )}
                 </div>
               ) : (
                 <ModalConfirmation
-                  successTitle={`Role ${modalToShow === "create-user" ? "Creation" : "Editing"} Successful`}
-                  errorTitle={`Role ${modalToShow === "create-user" ? "Creation" : "Editing"} Failed`}
-                  status={isUserMutated ? "success" : "failed"}
-                  responseMessage=""
+                  successTitle={`User ${modalToShow === "create-user" ? "Creation" : modalToShow === "edit-user" ? "Editing": ""} Successful`}
+                  errorTitle={`User ${modalToShow === "create-user" ? "Creation" : "Editing"} Failed`}
+                  status={isUserCreated || isUserEdited ? "success" : "failed"}
+                  responseMessage={mutationResponse}
                 />
               )}
             </Modal>
@@ -307,141 +328,87 @@ const MutateUser = ({
   setUserMutated,
   setCloseModal,
   actionToTake,
+  setUserCreated,
+  setUserEdited,
+  setModalContent,
+  userToBeEdited,
+  setMutationResponse
 }: {
   actionToTake: "create-user" | "edit-user" | "view-user" | "";
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   setUserMutated: Dispatch<SetStateAction<boolean>>;
+  setUserCreated: Dispatch<SetStateAction<boolean>>;
+  setUserEdited: Dispatch<SetStateAction<boolean>>;
+  setModalContent: Dispatch<SetStateAction<"" | "status" | "form">>;
+  setMutationResponse: Dispatch<SetStateAction<string>>;
+  userToBeEdited: string
+
 }) => {
   const { client } = useAuth();
 
-  const initialValues: mutateUserProps = {
-    firstName: "",
-    lastName: "",
+  interface userProps{
+    email: string,
+    phone: string,
+    address: string,
+   name: string,
+   selectOrganisation: string,
+   selectOrganisationGroup: string
+  }
+  const initialValues: userProps = {
+   
     email: "",
     phone: "",
-    homeAddress: "",
-    dept_unit: "",
-    userPicture: null,
-    guarantor2ID: null,
-    guarantorForm: null,
-    idType: "",
-    guarantor1Name: "",
-    guarantor1Email: "",
-    guarantor1Phone: "",
-    guarantor1Address: "",
-    guarantor2Name: "",
-    guarantor2Email: "",
-    guarantor2Phone: "",
-    guarantor2Address: "",
-
-    allCustomers: [],
-    assignedCustomers: [],
-    roles: [],
-    meansOfIDPhoto: null,
-    guarantorForm2: null
+    address: "",
+   name: "",
+   selectOrganisation: "",
+   selectOrganisationGroup: ""
   };
 
   const [assignType, setAssignType] = useState<"single" | "group">("single");
 
   const { mutate: createUser, isPending: isCreatingRole } = useMutation({
     mutationKey: ["create role"],
-    mutationFn: async (values: mutateUserProps) => {
-      // const socials = {
-      //   facebook: values.facebook,
-      //   twitter: values.instagram,
-      //   instagram: values.linkedIn,
-      //   linkedIn: values.twitter,
-      //   pintrest: values.pinterest,
-      // };
+    mutationFn: async (values: userProps) => {
 
-      // const formData = new FormData();
-
-      // formData.append("description", values.description);
-      // formData.append("region", values.city);
-      // formData.append("country", values.country);
-      // formData.append("state", values.state);
-      // formData.append("city", values.lga);
-      // formData.append("socialMedia", JSON.stringify(socials));
-      // formData.append("tradingName", values.tradingName);
-      // formData.append("website", values.websiteUrl);
-      // formData.append("businessEmailAdress", values.email);
-      // formData.append("officeAddress1", values.officeAddress);
-      // formData.append("officeAddress2", values.address2);
-      // formData.append("organisationName", values.organisationName);
-      // formData.append("email", values.email);
-      // formData.append("phoneNumber", values.phoneNumber);
-
-      // if (values.organisationLogo) {
-      //   formData.append("organisationLogo", values.organisationLogo[0]);
-      // }
-      //  if (values.BankRecommendation) {
-      //   formData.append("BankRecommendation", values.BankRecommendation[0]);
-      // }
-      //  if (values.CommunityRecommendation) {
-      //   formData.append("CommunityRecommendation", values.CommunityRecommendation[0]);
-      // }
-      //  if (values.CourtAffidavit) {
-      //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
-      //  }
+      
+      return client.post(`/api/user/create-superuser`, {
+       
+        name : values.name,
+        email : values.email,
+        phoneNumber : values.phone,
+        homeAddress: values.address,
+        assignedUser: assignType === "single" ? values.selectOrganisation : values.selectOrganisationGroup,
+        role:  "superuser"
       
       
-      return;
-      //  client.put(`/api/user/${userId}`, formData);
+      });
     },
 
     onSuccess(response) {
-      setUserMutated(true);
+      setUserCreated(true);
+      setModalContent("status");
+      setMutationResponse(response?.data.message);
       setTimeout(() => {
         setCloseModal(false);
-      }, 5000);
+        setModalContent("form")
+      }, 2000);
     },
 
     onError(error: AxiosError<any, any>) {
-      setUserMutated(false);
-     
+      setUserCreated(false);
+      setModalContent("status");
+      
+      setMutationResponse(error.response?.data.message);
+      setTimeout(() => {
+        setModalContent("form")
+      }, 1000);
     },
   });
 
   const { mutate: editUser, isPending: isEditingRole } = useMutation({
     mutationKey: ["edit role"],
-    mutationFn: async (values: mutateUserProps) => {
-      // const socials = {
-      //   facebook: values.facebook,
-      //   twitter: values.instagram,
-      //   instagram: values.linkedIn,
-      //   linkedIn: values.twitter,
-      //   pintrest: values.pinterest,
-      // };
-
-      // const formData = new FormData();
-
-      // formData.append("description", values.description);
-      // formData.append("region", values.city);
-      // formData.append("country", values.country);
-      // formData.append("state", values.state);
-      // formData.append("city", values.lga);
-      // formData.append("socialMedia", JSON.stringify(socials));
-      // formData.append("tradingName", values.tradingName);
-      // formData.append("website", values.websiteUrl);
-      // formData.append("businessEmailAdress", values.email);
-      // formData.append("officeAddress1", values.officeAddress);
-      // formData.append("officeAddress2", values.address2);
-      // formData.append("organisationName", values.organisationName);
-      // formData.append("email", values.email);
-      // formData.append("phoneNumber", values.phoneNumber);
-
-      // if (values.organisationLogo) {
-      //   formData.append("organisationLogo", values.organisationLogo[0]);
-      // }
-      //  if (values.BankRecommendation) {
-      //   formData.append("BankRecommendation", values.BankRecommendation[0]);
-      // }
-      //  if (values.CommunityRecommendation) {
-      //   formData.append("CommunityRecommendation", values.CommunityRecommendation[0]);
-      // }
-      //  if (values.CourtAffidavit) {
-      //    formData.append("CourtAffidavit", values.CourtAffidavit[0]);
-      //  }
+    mutationFn: async (values: userProps) => {
+      
       
       return;
       //  client.put(`/api/user/${userId}`, formData);
@@ -508,7 +475,8 @@ const MutateUser = ({
         setTimeout(() => {
           if (actionToTake === "create-user") {
             console.log("creating user.....................");
-            createUser(values);
+           
+             createUser(values);
           } else {
             console.log("editing user.....................");
             editUser(values);

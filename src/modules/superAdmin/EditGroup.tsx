@@ -6,29 +6,72 @@ import { FormErrors, FormValues, customer } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
 import Image from "next/image";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 interface SetUpSavingsProps {
+    organisationGroups: []
   // setContent: Dispatch<SetStateAction<"form" | "confirmation">>;
   // content: "form" | "confirmation";
-  closeModal: Dispatch<SetStateAction<boolean>>;
-  setIsGroupCreated: Dispatch<SetStateAction<boolean>>;
+  setCloseModal: Dispatch<SetStateAction<boolean>>;
+  setGroupMutated: Dispatch<SetStateAction<boolean>>;
+  actionToTake: "create-group" | "edit-group" | "";
+//   setIsGroupCreated: Dispatch<SetStateAction<boolean>>;
+  groupToBeEdited: string;
+  setGroupEdited: Dispatch<SetStateAction<boolean>>;
+  setModalContent: Dispatch<SetStateAction< "confirmation" | "form">>;
+  setMutationResponse: Dispatch<SetStateAction<string>>;
 } 
-const CreateOranisationGroupForm = ({closeModal, setIsGroupCreated}: SetUpSavingsProps) => {
+const EditOrganisationGroup = ({ setModalContent, groupToBeEdited, setCloseModal, setGroupEdited}: SetUpSavingsProps) => {
   const organizationId = useSelector(selectOrganizationId);
-
+ 
   const { client } = useAuth();
   const [showErrorModal, setShowErrorModal] = useState(false)
-  const [selectedOptions, setSelectedOptions] = useState<customer[]>([]);
+  const [selectedOptions, setSelectedOptions] = useState<any[]>([]);
   const [displayConfirmationModal, setDisplayConfirmationMedal] =
     useState(false);
   const [errorMessage, setErrorMessage] = useState("")  
  
+
+  const { data: group, isLoading: isLoadingGroup } = useQuery(
+    {
+      queryKey: ["group"],
+      queryFn: async () => {
+        return client
+          .get(`api/user/${groupToBeEdited}`)
+          .then((response) => {
+            return response.data;
+          })
+          .catch((error) => {
+            throw error;
+          });
+      },
+    },
+  );
+  const {
+    data: AllOrganisations,
+    isLoading: isOrganisationLoading,
+    isError: getGroupError,
+  } = useQuery({
+    queryKey: ["allOrganizations"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user/get-url`, {})
+        .then((response) => {
+          return response.data;
+        })
+        .catch((error) => {
+          throw error;
+        });
+    },
+  });
+ 
+
   const [saveDetails, setSaveDetails] = useState({
     
-    groupName: "",
-    description: "",
+    groupName: group?.groupName,
+    description: group?.description,
+    organisations: group?.organisations,
     startDate: "",
     endDate: "",
     collectionDate: "",
@@ -36,6 +79,20 @@ const CreateOranisationGroupForm = ({closeModal, setIsGroupCreated}: SetUpSaving
     // group:
   });
 
+  useEffect(() => {
+    setSaveDetails({
+        groupName: group?.groupName,
+    description: group?.description,
+    organisations: group?.organisations,
+    startDate: "",
+    endDate: "",
+    collectionDate: "",
+    frequency: "",
+    // group:
+    } ),
+    setSelectedOptions(group?.organisations)
+  }, [group])
+ 
   const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target as
       | HTMLInputElement
@@ -53,15 +110,20 @@ const CreateOranisationGroupForm = ({closeModal, setIsGroupCreated}: SetUpSaving
 
     const selectedId = value;
     const selectedOption = users?.find((option) => option._id === selectedId);
-    if (!selectedOptions.some((option) => option._id === selectedOption?._id)) {
-      setSelectedOptions([...selectedOptions, selectedOption!]);
+    
+    if (selectedOption && !selectedOptions.includes(selectedOption._id)) {
+      setSelectedOptions([...selectedOptions, selectedOption._id]);
     }
+    
   };
   const handleRemoveOption = (index: number) => {
     const updatedOptions = [...selectedOptions];
     updatedOptions.splice(index, 1);
     setSelectedOptions(updatedOptions);
   };
+ 
+
+  
 
   const {data: users, isLoading: isUserLoading, isError} = useQuery({
     queryKey: ["allUsers"],
@@ -80,31 +142,37 @@ const CreateOranisationGroupForm = ({closeModal, setIsGroupCreated}: SetUpSaving
   })
   
 
-  const selectedIds = selectedOptions.map((option) => option._id);
-  const groupId = selectedIds[0];
+   const selectedIds = selectedOptions?.map((option) => option._id);
+  // const groupId = selectedIds[0];
 
   const { mutate: postOrganisationGroups } = useMutation({
     mutationFn: async () => {
-      // closeModal(false)
-      
+      // setCloseModal(false)
+      console.log(saveDetails)
       const payload = {
         groupName: saveDetails.groupName,
         description: saveDetails.description,
         organisations: selectedIds
       };
       
-      return client.post(`api/user/create-organisation-group`, payload);
+      return client.put(`api/user/${groupToBeEdited}`, payload);
     },
     onSuccess: (response) => {
-      // console.log(response);
-      setSelectedOptions([])
+      // // console.log(response);
+      // setSelectedOptions([])
      
-      // setContent("confirmation");
-      setDisplayConfirmationMedal(true);
-      setIsGroupCreated(true)
+      // // setContent("confirmation");
+      // setDisplayConfirmationMedal(true);
+      // setGroupEdited(true)
+      // setTimeout(() => {
+      //   setCloseModal(false)
+      // }, 5000)
+      setGroupEdited(true);
+      setModalContent("confirmation");
       setTimeout(() => {
-        closeModal(false)
-      }, 5000)
+       setCloseModal(false);
+        setModalContent('form')
+      }, 1000)
      
     },
     onError: (error:any) => {
@@ -128,33 +196,23 @@ const CreateOranisationGroupForm = ({closeModal, setIsGroupCreated}: SetUpSaving
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isTouched, setIsTouched] = useState<{ [key: string]: boolean }>({});
 
-  const validateField = (
-    name: string,
-    value: string,
-    
-    // savingType: "named group" | "nameless group",
-  ) => {
-   
+  const validateField = (name: string, value: string) => {
     switch (name) {
       case "groupName":
         if (!value.trim()) return "Savings purpose is required";
         break;
       case "description":
-        if (!value.trim()) return "description is required";
-      
+        if (!value.trim()) return "Description is required";
         break;
-     
       case "addCustomers":
         if (selectedIds.length === 0) return "At least one user is required";
         break;
-
       default:
         return "";
     }
-
-    
     return "";
   };
+  
 
   
 
@@ -178,12 +236,12 @@ const CreateOranisationGroupForm = ({closeModal, setIsGroupCreated}: SetUpSaving
     let processedValue = value;
 
     // If the input field is 'description', remove commas and convert it to a number
-    if (name === "description") {
-      // Remove commas from the value using a regular expression
-      const unformattedValue = value.replace(/,/g, "");
-      // Parse the string to a floating point number
-      processedValue = parseFloat(unformattedValue).toString();
-    }
+    // if (name === "description") {
+    //   // Remove commas from the value using a regular expression
+    //   const unformattedValue = value.replace(/,/g, "");
+    //   // Parse the string to a floating point number
+    //   processedValue = parseFloat(unformattedValue).toString();
+    // }
 
     // Update the state 'saveDetails' with the new value, keeping previous state intact
     setSaveDetails((prev) => ({ ...prev, [name]: processedValue }));
@@ -209,7 +267,7 @@ const CreateOranisationGroupForm = ({closeModal, setIsGroupCreated}: SetUpSaving
 
   const onSubmitHandler = (e: React.FormEvent) => {
     setShowSelectError(true)
-    
+    console.log(saveDetails)
     if (selectedIds.length === 0) {
       setFormErrors((prevErrors) => ({
         ...prevErrors,
@@ -292,6 +350,7 @@ const CreateOranisationGroupForm = ({closeModal, setIsGroupCreated}: SetUpSaving
             </label>
             <span className="w-full">
               <input
+                value={saveDetails.groupName}
                 id="groupName"
                 name="groupName"
                 type="text"
@@ -318,31 +377,13 @@ const CreateOranisationGroupForm = ({closeModal, setIsGroupCreated}: SetUpSaving
             </label>
             <span className="w-full">
               <input
+              value={saveDetails.description}
                 id="description"
                 name="description"
                 placeholder="describe..."
                 type="text"
                 className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                onChange={(event) => {
-                  const { name, value } = event.target;
-                  setFormValues({ ...formValues, [name]: value });
-                  setFormErrors({
-                    ...formErrors,
-                    [name]: validateField(
-                      name,
-                      value,
-                      // saveDetails.savingsType as
-                      //   | "named group"
-                      //   | "nameless group",
-                    ),
-                  });
-                  const input = event.target.value.replace(/\D/g, "");
-                  const formatted = Number(input).toLocaleString();
-                  setSaveDetails((prev) => ({
-                    ...prev,
-                    ["description"]: input,
-                  }));
-                }}
+                onChange={handleInputChange}
                 onFocus={handleInputFocus}
                 required
               />
@@ -394,13 +435,19 @@ const CreateOranisationGroupForm = ({closeModal, setIsGroupCreated}: SetUpSaving
                 </span>
 
                 <div className="space-x-1 space-y-2">
-                  {selectedOptions.map((option, index) => (
-                    <div key={index} className="mb-2 mr-2 inline-block">
+                  {selectedOptions && selectedOptions.map((option, index) =>{
+                      
+                      const options = AllOrganisations?.find(
+                        (user: { _id: string; }) => user._id === String(option),
+                      ); 
+                     
+                    return(
+                      <div key={index} className="mb-2 mr-2 inline-block">
                       <p
                        
                         className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
                       >
-                        {option.organisationName}
+                        {options?.organisationName}
                         <svg
                            onClick={() => handleRemoveOption(index)}
                           className="ml-1 h-3 w-3 cursor-pointer text-gray-700"
@@ -418,7 +465,8 @@ const CreateOranisationGroupForm = ({closeModal, setIsGroupCreated}: SetUpSaving
                         </svg>
                       </p>
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </div>
@@ -442,4 +490,4 @@ const CreateOranisationGroupForm = ({closeModal, setIsGroupCreated}: SetUpSaving
   );
 };
 
-export default CreateOranisationGroupForm
+export default EditOrganisationGroup
