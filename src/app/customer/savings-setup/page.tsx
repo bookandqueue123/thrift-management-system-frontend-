@@ -221,7 +221,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
 
 
   const handleSubmit = (e: FormEvent<HTMLFormElement> ) => {
-   console.log(formData)
+
     e.preventDefault();
 
     const validationErrors = validateForm(formData);
