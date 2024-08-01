@@ -182,7 +182,7 @@ const Form = ({setModalState}:  {setModalState: Dispatch<SetStateAction<boolean>
         totalexpectedSavings: formData.totalexpectedSavings
       }
       const payload = formData.accountType === "individual" ? individualBasedPayload : DailyBasedPayload
-      console.log(payload)
+   
       return client.post(`/api/saving/customer-savings-setup`, payload);
     },
     onSuccess(response: AxiosResponse<any, any>) {

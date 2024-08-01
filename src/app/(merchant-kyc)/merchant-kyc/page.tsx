@@ -100,10 +100,10 @@ const Kyc = () => {
       formData.append("organisationName", values.organisationName);
       formData.append("email", values.email);
       formData.append("phoneNumber", values.phoneNumber);
-      formData.append("bankAccountNumber", values.acctNo);
-      formData.append("account_bank", values.account_bank);
-      formData.append("split_type", values.split_type);
-      formData.append("split_value", values.split_value);
+      // formData.append("bankAccountNumber", values.acctNo);
+      // formData.append("account_bank", values.account_bank);
+      // formData.append("split_type", values.split_type);
+      // formData.append("split_value", values.split_value);
       
 
       if (values.organisationLogo) {
@@ -192,11 +192,11 @@ const Kyc = () => {
     contactEmail: "",
     contactPhoneNumber: "",
     contactFullName: "",
-    bankName: "",
-    acctNo: "",
-    account_bank: '044',
-    split_type: 'percentage',
-    split_value: '90',
+    // bankName: "",
+    // acctNo: "",
+    // account_bank: '044',
+    // split_type: 'percentage',
+    // split_value: '90',
 
   };
 
@@ -318,18 +318,18 @@ const Kyc = () => {
             .typeError("Must be a number")
             .required("Required"),
           cacNumber: Yup.number().typeError("Must be a number").required("Required"),
-          bankName: Yup.string()
-            .required("Required")
-            .min(2, "Account name must be at least 2 characters")
-            .max(100, "Account name must be less than 100 characters")
-            .matches(
-              /^[a-zA-Z\s]*$/,
-              "Account name should only contain alphabets and spaces",
-            ),
-          acctNo: Yup.string()
-            .required("Required")
-            .length(10, "Account number must be exactly 10 digits")
-            .matches(/^\d{10}$/, "Account number should only contain digits"),
+          // bankName: Yup.string()
+          //   .required("Required")
+          //   .min(2, "Account name must be at least 2 characters")
+          //   .max(100, "Account name must be less than 100 characters")
+          //   .matches(
+          //     /^[a-zA-Z\s]*$/,
+          //     "Account name should only contain alphabets and spaces",
+          //   ),
+          // acctNo: Yup.string()
+          //   .required("Required")
+          //   .length(10, "Account number must be exactly 10 digits")
+          //   .matches(/^\d{10}$/, "Account number should only contain digits"),
           lga: Yup.string().required("Required"),
           officeAddress: Yup.string().required("Required"),
           organisationLogo: Yup.mixed()
@@ -900,7 +900,7 @@ const Kyc = () => {
                 <p className="mb-4  mt-8 text-white last:text-[16px] md:text-[18px]">
                   BUSINESS ACCOUNT DETAILS
                 </p>
-                <div className="my-3 flex flex-col gap-4 md:flex-row">
+                {/* <div className="my-3 flex flex-col gap-4 md:flex-row">
                   <div className="flex-1">
                     <label
                       htmlFor="bankName"
@@ -997,7 +997,7 @@ const Kyc = () => {
                       className="text-xs text-red-500"
                     />
                   </div>
-                </div>
+                </div> */}
 
                 <p className="my-6 text-[16px] text-white md:text-[18px]">
                   SOCIALS
@@ -1702,22 +1702,22 @@ const Kyc = () => {
                         {values.phoneNumber}
                       </div>
                     </span>
-                    <span className="mb-2 block">
+                    {/* <span className="mb-2 block">
                       <p className="mb-1 whitespace-nowrap text-sm text-ajo_offWhite">
                         Bank Name:
                       </p>
                       <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                         {values.bankName}
                       </div>
-                    </span>
-                    <span className="mb-2 block">
+                    </span> */}
+                    {/* <span className="mb-2 block">
                       <p className="mb-1 whitespace-nowrap text-sm text-ajo_offWhite">
                         Bank Account Number:
                       </p>
                       <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                         {values.acctNo}
                       </div>
-                    </span>
+                    </span> */}
                   </div>
 
                   <div className="my-12 flex flex-wrap gap-x-4">
@@ -1967,8 +1967,8 @@ const Kyc = () => {
                       activeSection === "contact" &&
                       !errors.phoneNumber &&
                       !errors.email &&
-                      !errors.bankName &&
-                      !errors.acctNo &&
+                      // !errors.bankName &&
+                      // !errors.acctNo &&
                       !errors.contactFullName &&
                       !errors.contactBvn &&
                       !errors.contactDOB &&

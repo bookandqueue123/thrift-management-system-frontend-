@@ -2129,7 +2129,7 @@ export const CreateCustomer = ({
         formData.append('file', file);
       }
       formData.append('organisation', organizationId)
-      console.log(formData)
+   
       return client.post(`/api/user/upload`, formData)
 
     },
@@ -2145,10 +2145,10 @@ export const CreateCustomer = ({
     },
 
     onError(error: AxiosError<any, any>) {
-      console.log(error)
+ 
       const errorString = error.response?.data.errors.map((error: { message: string; row: any; }) => `Missing fields: ${error.message.split(': ')[1]} in row ${error.row}`).join(', ');
       const errorString2 = error.response?.data.errors.map((error: { row: any; message: string; }) => `row ${error.row}: ${error.message} in row ${error.row}`).join(', ');
-      console.log(errorString2);
+    
        setCustomerCreated(false);
       setModalContent("confirmation");
       setMutationResponse(errorString2 ?? error.response?.data.message);
@@ -2194,37 +2194,46 @@ export const CreateCustomer = ({
       </div>
 
       {selectedOption === 'bulk' && (
-       <form onSubmit={uploadCustomer}>
-         <label
-          htmlFor="imageUrl"
-          className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
-        >
-          <input type="file" accept=".csv,.xlsx" onChange={handleFileChange} />
-        </label>
-        
-        <label
-            htmlFor="imageUrl"
-            className="cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
-          >
-       
-        <button
-         type="submit"
-         disabled={isuploadingCustomers}
-         >
-        {isuploadingCustomers ? (
-              <Image
-                src="/loadingSpinner.svg"
-                alt="loading spinner"
-                className="relative left-1/2"
-                width={25}
-                height={25}
-              />
-            ) : (
-              "Upload File"
-            )}
-        </button>
-        </label>
-      </form>
+        <div>
+          <div>
+          <a href="/users.csv" download="users.csv">
+            <button className="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 md:w-[40%]">
+              Download Sample file
+            </button>
+          </a>
+          </div>
+          <form onSubmit={uploadCustomer}>
+            <label
+              htmlFor="imageUrl"
+              className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
+            >
+              <input type="file" accept=".csv,.xlsx" onChange={handleFileChange} />
+            </label>
+            
+            <label
+                htmlFor="imageUrl"
+                className="cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
+              >
+          
+            <button
+            type="submit"
+            disabled={isuploadingCustomers}
+            >
+            {isuploadingCustomers ? (
+                  <Image
+                    src="/loadingSpinner.svg"
+                    alt="loading spinner"
+                    className="relative left-1/2"
+                    width={25}
+                    height={25}
+                  />
+                ) : (
+                  "Upload File"
+                )}
+            </button>
+            </label>
+          </form>
+      </div>  
       )}
 
       {selectedOption === 'manual' && (
