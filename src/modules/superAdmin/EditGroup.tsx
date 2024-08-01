@@ -267,7 +267,7 @@ const EditOrganisationGroup = ({ setModalContent, groupToBeEdited, setCloseModal
 
   const onSubmitHandler = (e: React.FormEvent) => {
     setShowSelectError(true)
-    console.log(saveDetails)
+   
     if (selectedIds.length === 0) {
       setFormErrors((prevErrors) => ({
         ...prevErrors,

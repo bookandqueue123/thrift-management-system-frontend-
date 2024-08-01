@@ -74,7 +74,7 @@ const Coupon = () => {
     staleTime: 5000,
   });
 
-  console.log(allCoupons)
+  
 
  
 

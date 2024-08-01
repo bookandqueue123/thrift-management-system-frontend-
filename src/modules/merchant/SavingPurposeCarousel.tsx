@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
+import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu'
 import { FaShareAlt, FaBookmark, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import 'react-horizontal-scrolling-menu/dist/styles.css';
 import Image from 'next/image';
@@ -161,7 +161,7 @@ const App = () => {
     return acc;
   }, {} as Record<string, PurposeProps[]>);
  
-console.log(groupedPurposes)
+
  
   const automobileCategoryPurpose = filteredPurposes?.filter((purpose: { category: { name: string | string[]; }; }) => purpose.category.name.includes("Automobile"));
 // console.log(automobileCategoryPurpose);

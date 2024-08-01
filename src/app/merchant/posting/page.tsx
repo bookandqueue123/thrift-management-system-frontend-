@@ -443,7 +443,7 @@ const PostingForm = ({
 }) => {
   const organizationId = useSelector(selectOrganizationId);
   const user = useSelector(selectUser);
-  console.log(user)
+
   const { assignedCustomers } = usePermissions();
 
   const { client } = useAuth();
@@ -704,7 +704,7 @@ const PostingForm = ({
       enabled: !!postDetails.customerId,
     });
     const postedby = user.role === 'organisation' ? 'Admin': (user.firstName + user.lastName)
-    console.log(postedby)
+
   const { mutate: postSavings, isPending: isPostingSavings } = useMutation({
     mutationFn: async () => {
       const datesInRange = DateRangeComponent({

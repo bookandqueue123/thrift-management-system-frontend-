@@ -127,7 +127,7 @@ export default function Analytics() {
     },
   });
 
-  console.log(allTransactions)
+
 
   const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } = useQuery({
     queryKey: ["organisation"],
