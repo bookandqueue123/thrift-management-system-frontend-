@@ -49,10 +49,10 @@ const AvatarDropdown = ({ logoutFn, avatarImg, routeOptions }: { logoutFn?: () =
               return (
                 <Link
                   key={route}
-                  href={`/customer/${route.toLowerCase()}`}
+                  href={`/merchant/${route.toLowerCase()}`}
                   className={`block px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
                 >
-                  {route}
+                  {route === "bank-settings" ? 'Bank Settings' : route}
                 </Link>
               );
             }

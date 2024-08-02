@@ -541,11 +541,11 @@ export interface UpdateMerchantKycProps {
   contactEmail: string;
   contactPhoneNumber: string;
   contactFullName: string;
-  bankName: string;
-  acctNo: string;
-  account_bank: string,
-    split_type: string,
-    split_value: string,
+  // bankName: string;
+  // acctNo: string;
+  // account_bank: string,
+  //   split_type: string,
+  //   split_value: string,
 }
 
 type MyFile = {

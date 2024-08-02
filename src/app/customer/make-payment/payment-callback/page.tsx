@@ -20,7 +20,7 @@ const PaymentCallback = () => {
     const verifyPayment = async () => {
         try {
             const response = await axios.get(`${apiUrl}api/pay/flw/verify-payment?transaction_id=${transaction_id}`);
-            console.log(response)
+      
             if (response.status === 200) {
                 setPaymentStatus('success');
             } else {

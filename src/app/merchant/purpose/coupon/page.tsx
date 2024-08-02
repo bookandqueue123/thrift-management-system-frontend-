@@ -504,7 +504,7 @@ const MutateCategory = ({
         initialValues={initialValues}
         validationSchema={CouponFormSchema}
         onSubmit={(values) => {
-          console.log('Form Values', values);
+       
        CreateCoupon(values)
         }}
       >
