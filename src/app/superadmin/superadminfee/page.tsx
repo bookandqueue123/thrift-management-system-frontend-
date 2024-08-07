@@ -47,15 +47,15 @@ const PaymentGateway = () => {
   const [roleToBeEdited, setRoleToBeEdited] = useState("");
 
   const {
-    data: allRoles,
-    isLoading: isLoadingAllRoles,
+    data: allGateways,
+    isLoading: isLoadingAllGatallGateways,
     refetch,
   } = useQuery({
-    queryKey: ["allRoles"],
+    queryKey: ["allGateways"],
     queryFn: async () => {
       return client
         .get(`api/payment-gateway`, {})
-        .then((response: AxiosResponse<roleResponse[], any>) => {
+        .then((response) => {
     
           setFilteredRoles(response.data);
           return response.data;
@@ -68,7 +68,7 @@ const PaymentGateway = () => {
     staleTime: 5000,
   });
 
-  console.log(allRoles)
+  console.log(allGateways)
  
 
   const { data: allPermissions } = useQuery({
@@ -85,10 +85,10 @@ const PaymentGateway = () => {
     },
   });
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    if (allRoles) {
+    if (allGateways) {
 
       const searchQuery = e.target.value.trim().toLowerCase();
-      const filtered = allRoles.filter((item) =>
+      const filtered = allGateways.filter((item: { name: string; }) =>
         item.name.toLowerCase().includes(searchQuery)
       );
       setFilteredRoles(filtered);
@@ -100,12 +100,12 @@ const PaymentGateway = () => {
     currentPage * PAGE_SIZE,
   );
   let totalPages = 0;
-  if (allRoles) {
-    totalPages = Math.ceil(allRoles.length / PAGE_SIZE);
+  if (allGateways) {
+    totalPages = Math.ceil(allGateways.length / PAGE_SIZE);
   }
 
   useEffect(() => {
-    // Calling refetch to rerun the allRoles query
+    // Calling refetch to rerun the allGateways query
     refetch();
   }, [isRoleCreated, isRoleEdited, refetch]);
 
@@ -184,7 +184,7 @@ const PaymentGateway = () => {
                   </p>
                 </tr>
               ) : (
-                paginatedRoles?.map((role: roleResponse, index) => (
+                paginatedRoles?.map((role, index) => (
                   <tr className="" key={index + 1}>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {index + 1}
