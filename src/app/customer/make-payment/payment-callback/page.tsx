@@ -4,8 +4,11 @@ import React, { useEffect, useState , Suspense} from 'react';
 import { useSearchParams } from 'next/navigation'
 import axios from 'axios';
 import { apiUrl } from '@/api/hooks/useAuth'; // Adjust import as necessary
+import { useSelector } from 'react-redux';
+import { selectToken } from '@/slices/OrganizationIdSlice';
 
 const PaymentCallback = () => {
+    const token = useSelector(selectToken)
     const searchParams = useSearchParams();
     const transaction_id = searchParams.get('transaction_id');
     const [processing, setProcessing] = useState(true);
@@ -18,9 +21,15 @@ const PaymentCallback = () => {
     }, [transaction_id]);
 
     const verifyPayment = async () => {
+    
+    
         try {
-            const response = await axios.get(`${apiUrl}api/pay/flw/verify-payment?transaction_id=${transaction_id}`);
-      
+            const response = await axios.get(`${apiUrl}api/pay/flw/verify-payment?transaction_id=${transaction_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+    
             if (response.status === 200) {
                 setPaymentStatus('success');
             } else {
@@ -33,6 +42,7 @@ const PaymentCallback = () => {
             setProcessing(false);
         }
     };
+    
 
     return (
         <div className="flex flex-col items-center justify-center h-screen">
