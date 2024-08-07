@@ -803,3 +803,10 @@ export interface ICouponProps {
   couponCode?: string;
 }
 
+export interface createGatewayProps{
+  feeType: string,
+    name: string,
+    fixedFee: string,
+    percentageFee: string
+}
+

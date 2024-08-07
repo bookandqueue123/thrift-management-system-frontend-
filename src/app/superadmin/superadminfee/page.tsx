@@ -6,7 +6,7 @@ import Modal, { ModalConfirmation } from "@/components/Modal";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
-import { createRoleProps, permissionObject, roleResponse } from "@/types";
+import { createGatewayProps, createRoleProps, permissionObject, roleResponse } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
@@ -26,9 +26,9 @@ const PaymentGateway = () => {
   const organisationId = useSelector(selectOrganizationId);
   const { userPermissions, permissionsMap } = usePermissions();
 
-  const [isRoleCreated, setIsRoleCreated] = useState(false);
-  const [isRoleEdited, setIsRoleEdited] = useState(false);
-  const [filteredRoles, setFilteredRoles] = useState<any[]>([]);
+  const [isPaymentGatewayCreated, setIsPaymentGatewayCreated] = useState(false);
+  const [isPaymentGatewayEdited, setIsPaymentGatewayEdited] = useState(false);
+  const [filteredPaymentGateways, setFilteredPaymentGateways] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -39,12 +39,12 @@ const PaymentGateway = () => {
 
   const [modalState, setModalState] = useState(false);
   const [modalToShow, setModalToShow] = useState<
-    "edit-role" | "create-role" | ""
+    "edit-payment-gateway" | "create-payment-gateway" | ""
   >("");
   const [modalContent, setModalContent] = useState<"status" | "form" | "">(
     "form",
   );
-  const [roleToBeEdited, setRoleToBeEdited] = useState("");
+  const [gatewayToBeEdited, setPaymentGatewayToBeEdited] = useState("");
 
   const {
     data: allGateways,
@@ -57,7 +57,7 @@ const PaymentGateway = () => {
         .get(`api/payment-gateway`, {})
         .then((response) => {
     
-          setFilteredRoles(response.data);
+          setFilteredPaymentGateways(response.data);
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -68,7 +68,7 @@ const PaymentGateway = () => {
     staleTime: 5000,
   });
 
-  console.log(allGateways)
+
  
 
   const { data: allPermissions } = useQuery({
@@ -91,11 +91,11 @@ const PaymentGateway = () => {
       const filtered = allGateways.filter((item: { name: string; }) =>
         item.name.toLowerCase().includes(searchQuery)
       );
-      setFilteredRoles(filtered);
+      setFilteredPaymentGateways(filtered);
     }
   };
 
-  const paginatedRoles = filteredRoles?.slice(
+  const paginatedPaymentGateways = filteredPaymentGateways?.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
@@ -107,7 +107,7 @@ const PaymentGateway = () => {
   useEffect(() => {
     // Calling refetch to rerun the allGateways query
     refetch();
-  }, [isRoleCreated, isRoleEdited, refetch]);
+  }, [isPaymentGatewayCreated, isPaymentGatewayEdited, refetch]);
 
   return (
     <>
@@ -155,9 +155,9 @@ const PaymentGateway = () => {
               style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
               onButtonClick={() => {
                 setModalState(true);
-                setModalToShow("create-role");
+                setModalToShow("create-payment-gateway");
                 setModalContent("form");
-                setIsRoleCreated(false);
+                setIsPaymentGatewayCreated(false);
               }}
             /> */}
         
@@ -177,33 +177,33 @@ const PaymentGateway = () => {
               "Action",
             ]}
             content={
-              filteredRoles.length === 0 ? (
+              filteredPaymentGateways.length === 0 ? (
                 <tr className="h-[3rem]">
                   <p className="relative left-[80%] mt-3 text-center text-sm font-semibold text-ajo_offWhite md:left-[180%]">
-                    No Roles yet
+                    No Payment Gateway yet
                   </p>
                 </tr>
               ) : (
-                paginatedRoles?.map((role, index) => (
+                paginatedPaymentGateways?.map((Gateway, index) => (
                   <tr className="" key={index + 1}>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {index + 1}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {role.name || "----"}
+                      {Gateway.name || "----"}
                     </td>
 
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {role.fixedFee || "----"}
+                      {Gateway.fixedFee || "----"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {role.percentageFee || "----"}
+                      {Gateway.percentageFee || "----"}
                     </td>
                     {/* <td className="whitespace-nowrap px-6 py-4 text-sm capitalize"> */}
                       
                       {/* {allPermissions
                         ?.filter((permission) =>
-                          role.permissions.some(
+                          Gateway.permissions.some(
                             (eachPermission) =>
                               eachPermission._id === permission._id,
                           ),
@@ -218,32 +218,28 @@ const PaymentGateway = () => {
                     </td> */}
 
                     <td className="flex gap-2 whitespace-nowrap px-6 py-4 text-sm">
-                      {(user?.role === "organisation" ||
-                        (user?.role === "staff" &&
-                          userPermissions.includes(
-                            permissionsMap["edit-role"],
-                          ))) && (
+                      
                         <Image
                           src="/pencil.svg"
                           alt="pencil"
                           width={20}
                           height={20}
                           onClick={() => {
-                            setModalToShow("edit-role");
+                            setModalToShow("edit-payment-gateway");
                             setModalState(true);
-                            setRoleToBeEdited(role._id);
+                            setPaymentGatewayToBeEdited(Gateway._id);
                             setModalContent("form");
-                            setIsRoleEdited(false);
+                            setIsPaymentGatewayEdited(false);
                           }}
                           className="cursor-pointer"
                         />
-                      )}
+                    
                       <Image
                         src="/trash.svg"
                         alt="pencil"
                         width={20}
                         height={20}
-                        // onClick={() => deleteGroup(role._id)}
+                        // onClick={() => deleteGroup(Gateway._id)}
                         className="cursor-pointer"
                       />
                       <Image
@@ -264,29 +260,29 @@ const PaymentGateway = () => {
             <Modal
               setModalState={setModalState}
               title={
-                modalToShow === "edit-role"
-                  ? "Edit Role"
-                  : modalToShow === "create-role"
-                    ? "Create a Role"
+                modalToShow === "edit-payment-gateway"
+                  ? "Edit Gateway"
+                  : modalToShow === "create-payment-gateway"
+                    ? "Create a Gateway"
                     : ""
               }
             >
               {modalContent === "form" ? (
                 <div className="px-[10%]">
-                  <MutateRole
-                    roleToBeEdited={roleToBeEdited}
+                  <MutateGateway
+                    gatewayToBeEdited={gatewayToBeEdited}
                     setCloseModal={setModalState}
-                    setRoleCreated={setIsRoleCreated}
-                    setRoleEdited={setIsRoleEdited}
+                    setGatewayCreated={setIsPaymentGatewayCreated}
+                    setGatewayEdited={setIsPaymentGatewayEdited}
                     setModalContent={setModalContent}
                     actionToTake={modalToShow}
                   />
                 </div>
               ) : (
                 <ModalConfirmation
-                  successTitle={`Role ${modalToShow === "create-role" ? "Creation" : "Editing"} Successful`}
-                  errorTitle={`Role ${modalToShow === "create-role" ? "Creation" : "Editing"} Failed`}
-                  status={isRoleCreated || isRoleEdited ? "success" : "failed"}
+                  successTitle={`Gateway ${modalToShow === "create-payment-gateway" ? "Creation" : "Editing"} Successful`}
+                  errorTitle={`Gateway ${modalToShow === "create-payment-gateway" ? "Creation" : "Editing"} Failed`}
+                  status={isPaymentGatewayCreated || isPaymentGatewayEdited ? "success" : "failed"}
                   responseMessage=""
                 />
               )}
@@ -303,32 +299,33 @@ const PaymentGateway = () => {
   );
 };
 
-const MutateRole = ({
-  setRoleEdited,
-  setRoleCreated,
+const MutateGateway = ({
+  setGatewayEdited,
+  setGatewayCreated,
   setCloseModal,
   actionToTake,
   setModalContent,
-  roleToBeEdited,
+  gatewayToBeEdited,
 }: {
-  roleToBeEdited: string
-  actionToTake: "create-role" | "edit-role" | "";
+  gatewayToBeEdited: string
+  actionToTake: "create-payment-gateway" | "edit-payment-gateway" | "";
   setCloseModal: Dispatch<SetStateAction<boolean>>;
-  setRoleCreated: Dispatch<SetStateAction<boolean>>;
-  setRoleEdited: Dispatch<SetStateAction<boolean>>;
+  setGatewayCreated: Dispatch<SetStateAction<boolean>>;
+  setGatewayEdited: Dispatch<SetStateAction<boolean>>;
   setModalContent: Dispatch<SetStateAction<"" | "status" | "form">>;
 }) => {
   const { client } = useAuth();
+  console.log(gatewayToBeEdited)
   const organisationId = useSelector(selectOrganizationId);
   const [assignedPermissions, setAssignedPermissions] = useState<string[]>([]);
   
   
-  const { data: role, isLoading: isLoadingRole } = useQuery(
+  const { data: gateway, isLoading: isLoadingGateway } = useQuery(
     {
-      queryKey: ["role"],
+      queryKey: ["gateway"],
       queryFn: async () => {
         return client
-          .get(`api/role/${roleToBeEdited}`)
+          .get(`api/payment-gateway/${gatewayToBeEdited}`)
           .then((response) => {
             return response.data;
           })
@@ -339,12 +336,13 @@ const MutateRole = ({
     },
   );
 
- 
+
+ console.log(gateway)
 
   useEffect(() => {
-    if(actionToTake === "edit-role"){
-      if (role?.permissions) {
-      const permissionsIds = role?.permissions?.map((permissions: { _id: any }) => permissions._id);
+    if(actionToTake === "edit-payment-gateway"){
+      if (gateway?.permissions) {
+      const permissionsIds = gateway?.permissions?.map((permissions: { _id: any }) => permissions._id);
       setAssignedPermissions(permissionsIds || []);
     }
     }
@@ -352,38 +350,24 @@ const MutateRole = ({
       setAssignedPermissions([])
     }
     
-  }, [role, actionToTake]);
+  }, [gateway, actionToTake]);
 
  
-  const initialValues: createRoleProps = actionToTake === 'edit-role' ? {
-    roleName: role?.name ?? "",
-    description: role?.description ?? "",
-    permissions: {
-      "edit-user": false,
-      "view-assigned-users": false,
-      "export-withdrawal": false,
-      "view-withdrawals": false,
-      "view-savings": false,
-      "export-saving": false,
-      "post-saving": false,
-      "set-saving": false,
-      "view-user": false,
-    },
+  const initialValues: createGatewayProps = actionToTake === 'edit-payment-gateway' ? {
+    name: gateway?.name ?? "",
+ 
+    feeType: gateway?.feeType ?? "",
+    fixedFee: gateway?.fixedFee ?? "",
+    percentageFee: gateway?.percentageFee?? "",
+
+    
   } : 
   {
-    roleName: "",
-    description: "",
-    permissions: {
-      "edit-user": false,
-      "view-assigned-users": false,
-      "export-withdrawal": false,
-      "view-withdrawals": false,
-      "view-savings": false,
-      "export-saving": false,
-      "post-saving": false,
-      "set-saving": false,
-      "view-user": false,
-    },
+    name: "",
+    feeType: "",
+    fixedFee: "",
+    percentageFee:"",
+   
   }
   const { data: allPermissions, isLoading: isLoadingAllPermissions } = useQuery(
     {
@@ -403,20 +387,19 @@ const MutateRole = ({
 
   
 
-  const { mutate: createRole, isPending: isCreatingRole } = useMutation({
+  const { mutate: createGateway, isPending: isCreatingRole } = useMutation({
     mutationKey: ["create role"],
-    mutationFn: async (values: createRoleProps) => {
-      return client.post(`/api/role`, {
-        name: values.roleName,
-        description: values.description,
-        organisation: organisationId,
-        permissions: assignedPermissions,
+    mutationFn: async (values: createGatewayProps) => {
+      return client.post(`api/payment-gateway`, {
+        name: values.name,
+       
+    
       });
     },
 
     onSuccess(response) {
       
-      setRoleCreated(true);
+      setGatewayCreated(true);
       setModalContent("status");
       setTimeout(() => {
         setCloseModal(false);
@@ -424,25 +407,26 @@ const MutateRole = ({
     },
 
     onError(error: AxiosError<any, any>) {
-      setRoleCreated(false);
+      setGatewayCreated(false);
       setModalContent("status");
 
     },
   });
 
-  const { mutate: editRole, isPending: isEditingRole } = useMutation({
+  const { mutate: editRole, isPending: isEditingGateway } = useMutation({
     mutationKey: ["edit role"],
-    mutationFn: async (values: createRoleProps) => {
-      return client.put(`/api/role/${roleToBeEdited}`, {
-        name: values.roleName,
-        description: values.description,
-        organisation: organisationId,
-        permissions: assignedPermissions,
+    mutationFn: async (values: createGatewayProps) => {
+     
+      return client.put(`api/payment-gateway/${gatewayToBeEdited}`, {
+        name: values.name,
+        feeType: values.feeType,
+        percetageFee: values.feeType === "fixedFee" ? '' : values.percentageFee,
+        fixedFee: values.feeType === "fixedFee" ? values.fixedFee : '',
       });
     },
 
     onSuccess(response) {
-      setRoleEdited(true);
+      setGatewayEdited(true);
       setModalContent("status");
 
       setTimeout(() => {
@@ -451,7 +435,7 @@ const MutateRole = ({
     },
 
     onError(error: AxiosError<any, any>) {
-      setRoleEdited(false);
+      setGatewayEdited(false);
       setModalContent("status");
 
 
@@ -465,13 +449,29 @@ const MutateRole = ({
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={Yup.object({
-        roleName: Yup.string().required("Required"),
+        name: Yup.string().required("Required"),
+        feeType: Yup.string().required('Required'),
+    fixedFee: Yup.number()
+        .nullable()
+        .when('feeType', (feeType: any, schema) => {
+            return feeType === 'fixedFee'
+                ? schema.required('Fixed Fee is required when Fixed Fee is selected')
+                : schema.nullable();
+        }),
+    percentage: Yup.number()
+        .nullable()
+        .when('feeType', (feeType: any, schema) => {
+            return feeType === 'percentage'
+                ? schema.required('Percentage is required when Percentage is selected')
+                : schema.nullable();
+        }),
       })}
       onSubmit={(values, { setSubmitting }) => {
+       
         setTimeout(() => {
-          if (actionToTake === "create-role") {
+          if (actionToTake === "create-payment-gateway") {
             console.log("creating role.....................");
-            createRole(values);
+            createGateway(values);
           } else {
             console.log("editing role.....................");
             editRole(values);
@@ -495,95 +495,55 @@ const MutateRole = ({
             <div className="space-y-3">
               <div className="">
                 <label
-                  htmlFor="roleName"
+                  htmlFor="name"
                   className="m-0 text-xs font-medium text-ajo_darkBlue"
                 >
                   Role Name / Title
                 </label>
                 <Field
                   onChange={handleChange}
-                  name="roleName"
+                  name="name"
                   type="text"
                   className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
                 />
                 <ErrorMessage
-                  name="roleName"
+                  name="name"
                   component="div"
                   className="text-xs text-red-500"
                 />
               </div>
-              <div className="">
-                <label
-                  htmlFor="description"
-                  className="m-0 text-xs font-medium text-ajo_darkBlue"
-                >
-                  Description
-                </label>
-                <Field
-                  name="description"
-                  type="text"
-                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  component="textarea"
-                  rows={4}
-                  cols={50}
-                />
-                <ErrorMessage
-                  name="description"
-                  component="div"
-                  className="text-xs text-red-500"
-                />
-              </div>
-            </div>
 
-            <p className="mb-2 pb-2 pt-4 text-xl font-semibold text-ajo_darkBlue">
-              Assign Permissions
-            </p>
-            <div className="space-y-3">
-              {isLoadingAllPermissions ? (
-                <Image
-                  src="/loadingSpinner.svg"
-                  alt="loading spinner"
-                  className="relative left-1/2"
-                  width={40}
-                  height={40}
-                />
-              ) : (
-                allPermissions?.map((permission: permissionObject) => {
-                 
-                  return (
-                    <div className="flex gap-x-3" key={permission._id}>
-                      <Field
-                        id={permission._id}
-                        name={`${permission.title}`}
-                        type="checkbox"
-                        className="block h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                        onChange={(e: any) => {
-                          handleChange(e);
-                          setAssignedPermissions((prev) => {
-                            const isIdPresent = prev.includes(permission._id);
-                            if (isIdPresent) {
-                              return prev.filter((id) => id !== permission._id);
-                            } else {
-                              return [...prev, permission._id];
-                            }
-                          });
-                        }}
-                        checked={assignedPermissions.includes(permission._id)}
-                      />
-                      <label
-                        htmlFor={permission._id}
-                        className="m-0 text-sm capitalize text-ajo_darkBlue"
-                      >
-                        {permission.title === "create-staff"
-                          ? "Create User"
-                          : permission.title === "view-assigned-users"
-                            ? "View Assigned Customers"
-                            : permission.title.replaceAll("-", " ")}
-                      </label>
+              <div  className="space-y-3">
+                <label className="m-0 text-xs font-medium text-ajo_darkBlue">
+                    <Field type="radio" name="feeType" value="fixedFee" />
+                    Fixed Fee
+                </label>
+                <label className="ml-4 m-0 text-xs font-medium text-ajo_darkBlue">
+                    <Field type="radio" name="feeType" value="percentageFee" />
+                    Percentage
+                </label>
+                <ErrorMessage name="feeType" component="div" />
+              </div>
+
+                {values.feeType === 'fixedFee' && (
+                    <div>
+                        <label>Fixed Fee</label>
+                        <Field className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300" type="number" name="fixedFee" />
+                        <ErrorMessage name="fixedFee" component="div" />
                     </div>
-                  );
-                })
-              )}
+                )}
+
+                {values.feeType === 'percentageFee' && (
+                    <div>
+                        <label>Percentage</label>
+                        <Field className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300" type="number" name="percentageFee" />
+                        <ErrorMessage name="percentageFee" component="div" />
+                    </div>
+                )}
+
+              
+                   
+               
             </div>
           </div>
           <button
@@ -592,7 +552,7 @@ const MutateRole = ({
             onClick={() => submitForm()}
             disabled={isSubmitting || isCreatingRole}
           >
-            {isSubmitting || isCreatingRole || isEditingRole ? (
+            {isSubmitting || isCreatingRole || isEditingGateway ? (
               <Image
                 src="/loadingSpinner.svg"
                 alt="loading spinner"
