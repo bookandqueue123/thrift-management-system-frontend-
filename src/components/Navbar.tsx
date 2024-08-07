@@ -618,7 +618,8 @@ export const SuperAdminSidebar = ({
     "commission",
     "roles",
     "users",
-    "account-statement"
+    "account-statement",
+    'superadminfee'
   ];
 
   const MenuBtn = ({

@@ -1,11 +1,12 @@
 import { apiUrl, useAuth } from "@/api/hooks/useAuth";
+import Modal from "@/components/Modal";
 import TransactionsTable from "@/components/Tables";
-import { selectOrganizationId, selectUser, selectUserId } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectToken, selectUser, selectUserId } from "@/slices/OrganizationIdSlice";
 import { savingsFilteredById } from "@/types";
 import { extractDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, Key, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 function formatDate(date: Date) {
@@ -25,8 +26,10 @@ function generateDateRange(startDate: Date, endDate: Date) {
 }
 
 export default function MakePayment() {
+    const token = useSelector(selectToken)
     const organisationId = useSelector(selectOrganizationId);
     const { client } = useAuth();
+    const [showModal, setShowModal] = useState(false)
     const user = useSelector(selectUser);
     const userId = useSelector(selectUserId);
 
@@ -68,6 +71,23 @@ export default function MakePayment() {
         },
     });
 
+    const { data: allGateways, isLoading: isLoadingAllGateways } = useQuery({
+        queryKey: ["all gateways"],
+        staleTime: 5000,
+        queryFn: async () => {
+            return client
+                .get(`/api/payment-gateway`)
+                .then((response) => {
+                
+                    return response.data;
+                })
+                .catch((error) => {
+                    throw error;
+                });
+        },
+    });
+     
+
     useEffect(() => {
         if (allSavings?.savings) {
             const filtered = allSavings.savings.filter(
@@ -80,14 +100,23 @@ export default function MakePayment() {
 
     const GoToPayment = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
+    
+    
+        // Check if paymentDetails is empty
+        if (Object.keys(paymentDetails).length === 0) {
+            setShowModal(false);
+            setErrors({ general: "No payment details provided." });
+            return;
+        }
+    
         const newErrors: { [key: string]: string } = {};
-
+    
         // Validate payment details
         Object.keys(paymentDetails).forEach((key) => {
             const paymentDetail = paymentDetails[key];
             const selectedDates = generateDateRange(paymentDetail.startDate, paymentDetail.endDate);
             const payment = filteredArray.find(p => p.id === key);
-
+    
             if (!paymentDetail.startDate || !paymentDetail.endDate) {
                 newErrors[key] = "Start and end dates must be selected.";
             } else if (!payment) {
@@ -98,38 +127,74 @@ export default function MakePayment() {
             } else if (!paymentDetail.amount || paymentDetail.amount <= 0) {
                 newErrors[key] = "Amount must be provided and greater than 0.";
             }
-
+    
             if (payment) {
                 paymentDetails[key].selectedDates = selectedDates;
             }
         });
-
+    
         setErrors(newErrors);
-
-        if (Object.keys(newErrors).length > 0) {
-            return;
+    
+        if (Object.keys(newErrors).length === 0) {
+            
+            setShowModal(true);
+        } else {
+            setShowModal(false);
         }
-        console.log(paymentDetails)
+    };
+    
 
+    const makeThePayment = async (fixedFee:  number) => {
         try {
-            const amount = getTotal();
+            const amount = Number(getTotal()) + fixedFee;
             const email = user.email;
             const phoneNumber = user.phoneNumber;
             const customerName = user.firstName + user.lastName;
 
+            console.log(paymentDetails, amount, email, phoneNumber, userId, organisationId, customerName)
             const response = await axios.post(`${apiUrl}api/pay/flw`,
-                { amount, email, paymentDetails: Object.values(paymentDetails), userId, organisationId, phoneNumber, customerName, });
+                { amount, email, paymentDetails: Object.values(paymentDetails), userId, organisationId, phoneNumber, customerName, },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
        
-                if (response.data.status === 'success') {
+            if (response.data.status === 'success') {
                 window.location.href = response.data.data.link;
             }
         } catch (error) {
             console.error(error);
         }
-    };
+    }
 
     return (
         <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
+          {showModal ? (
+            <Modal
+                title="Choose Payment Gateway"
+                setModalState={setShowModal}
+           >
+                <div className="flex items-center justify-center min-h-screen ">
+                    <div className="text-center">
+                    <h1 className="text-4xl font-bold mb-8 text-white">Make Payment</h1>
+                    {allGateways.map((gateway: { _id: Key | null | undefined; fixedFee: number; }) => (
+                        <button 
+                        key={gateway._id}
+                        onClick={() => makeThePayment(gateway.fixedFee)}
+                        className="w-full mb-4 py-4 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600">
+                        Flutterwave
+                    </button>
+                    ))}
+                    
+                    
+                    </div>
+                </div>
+           </Modal>
+          ): ""
+          }
+           
             <div className="mb-4 space-y-2">
                 <h6 className="text-base font-bold text-ajo_offWhite opacity-60">
                     Dashboard
@@ -157,8 +222,8 @@ export default function MakePayment() {
                             "S/N",
                             "Item/Purpose",
                             "Debit Amount",
-                            "Payment Start",
-                            "Payment End",
+                            "Payment Start Date",
+                            "Payment End Date",
                             "Credit Amount",
                             "Balance",
                             "Total Payment Duration"
@@ -236,7 +301,7 @@ export default function MakePayment() {
                                             <input
                                                 type="number"
                                                 id="search-dropdown"
-                                                className="bg-ajo_darkBlue text-white block p-2.5  w-full z-20 text-sm  border border-gray-300"
+                                                className="bg-ajo_darkBlue text-white block p-2.5  w-full text-sm  border border-gray-300"
                                                 placeholder="Total"
                                                 required
                                                 value={String(getTotal()) || 0}
