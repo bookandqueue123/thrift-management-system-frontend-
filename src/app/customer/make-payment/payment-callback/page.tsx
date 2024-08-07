@@ -1,13 +1,14 @@
 'use client'
 
 import React, { useEffect, useState , Suspense} from 'react';
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import axios from 'axios';
 import { apiUrl } from '@/api/hooks/useAuth'; // Adjust import as necessary
 import { useSelector } from 'react-redux';
 import { selectToken } from '@/slices/OrganizationIdSlice';
 
 const PaymentCallback = () => {
+    const router = useRouter()
     const token = useSelector(selectToken)
     const searchParams = useSearchParams();
     const transaction_id = searchParams.get('transaction_id');
@@ -32,6 +33,9 @@ const PaymentCallback = () => {
     
             if (response.status === 200) {
                 setPaymentStatus('success');
+                setTimeout(() => {
+                    router.push("/customer/make-payment")
+                }, 2000)
             } else {
                 setPaymentStatus('failure');
             }
