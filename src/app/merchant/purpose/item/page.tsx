@@ -774,9 +774,10 @@ const initialValues = actionToTake === 'edit-purpose' ?{
   };
 
   const { mutate: createPurpose, isPending: isCreatingPurpose } = useMutation(
-    {
+  {
    
     mutationFn: async (values: PurposeProps) => {
+      console.log(values, '780')
       const formData = new FormData()
       formData.append("purposeName", values.purposeName)
       formData.append("description", values.description)
