@@ -711,8 +711,8 @@ const initialValues = actionToTake === 'edit-purpose' ?{
         setTimeout(() => {
           if (actionToTake === "create-purpose") {
             console.log("creating user.....................");
-              console.log(values)
-              // createPurpose(values);
+              
+              createPurpose(values);
             
           } else {
             console.log("editing user.....................");
