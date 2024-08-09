@@ -37,7 +37,7 @@ export default function Page(){
           });
       },
     });
-    
+
 
    const daysLeft = (endDate: string | number | Date) => {
       const today = new Date();
@@ -46,6 +46,7 @@ export default function Page(){
       const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
       return daysDiff;
     }; 
+   
     return(
         <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
         <div className="mb-4 space-y-2">
@@ -124,8 +125,8 @@ export default function Page(){
                 <h2 className="my-2 font-semibold text-xs text-black">Description</h2>
                 <p className="text-xs">{SinglePurpose.description}</p>
                 <div className="my-4 flex ">
-                    <p className="font-semibold text-xs text-black">Start Date:<br /> {extractDate(SinglePurpose.startDate)}</p>
-                    <p className="mr-8 font-semibold text-xs text-black ml-16">End Date: <br /> {extractDate(SinglePurpose.endDate)}</p>
+                    <p className="font-semibold text-xs text-black">Start Date:<br /> {!SinglePurpose.startDate  ? "Nill" : extractDate(SinglePurpose.startDate)}</p>
+                    <p className="mr-8 font-semibold text-xs text-black ml-16">End Date: <br /> {!SinglePurpose.endDate ? "Nill" :  extractDate(SinglePurpose.endDate)}</p>
                 </div>
                 <p className="text-xl font-semibold">No of participants: <br /> {(SinglePurpose.assignedCustomers).length}</p>
             </div>

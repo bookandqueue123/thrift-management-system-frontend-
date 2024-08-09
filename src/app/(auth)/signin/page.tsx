@@ -116,7 +116,7 @@ const SignInForm = () => {
 
       setSuccessMessage((response as any).response.data.message);
 
-      setTimeout(() => {}, 3500);
+      setTimeout(() => {}, 2500);
     },
 
     onError(error: AxiosError<any, any>) {
