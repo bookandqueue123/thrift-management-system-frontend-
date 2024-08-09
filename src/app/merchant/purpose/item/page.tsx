@@ -680,15 +680,16 @@ const initialValues = actionToTake === 'edit-purpose' ?{
 
 
   const validationSchema = Yup.object().shape({
+    uniqueCode: Yup.string().length(8, 'The input must be exactly 8 characters').optional(),
     purposeName: Yup.string().required('Purpose name is required'),
     description: Yup.string().required('Description is required'),
     category: Yup.string().required('Category is required'),
     amount: Yup.number().required('Amount is required'),
-    startDate: Yup.date().required('Start date is required'),
-    startTime: Yup.string().required('Start time is required'),
-    endDate: Yup.date().required('End date is required'),
-    endTime: Yup.string().required('End time is required'),
-    promoPercentage: Yup.number().required('Promo percentage is required'),
+    startDate: Yup.date().optional(),
+    startTime: Yup.string().optional(),
+    endDate: Yup.date().optional(),
+    endTime: Yup.string().optional(),
+    promoPercentage: Yup.number().optional(),
     referralBonus: Yup.number().required('Referral bonus is required'),
     visibility: Yup.string().required('Visibility is required'),
     visibilityStartDate: Yup.date().required('Visibility start date is required'),
@@ -697,7 +698,7 @@ const initialValues = actionToTake === 'edit-purpose' ?{
     visibilityEndTime: Yup.string().required('Visibility end time is required'),
     assignedCustomers: Yup.array().optional(),
     imageUrl: Yup.string().required('Image is required'),
-    digitalItem: Yup.string().optional()
+    // digitalItem: Yup.string().optional()
     
   });
 
@@ -710,8 +711,8 @@ const initialValues = actionToTake === 'edit-purpose' ?{
         setTimeout(() => {
           if (actionToTake === "create-purpose") {
             console.log("creating user.....................");
-            
-              createPurpose(values);
+              console.log(values)
+              // createPurpose(values);
             
           } else {
             console.log("editing user.....................");
@@ -908,7 +909,12 @@ const initialValues = actionToTake === 'edit-purpose' ?{
   return (
     <form onSubmit={formik.handleSubmit} className="space-y-4">
       <div className="flex flex-col space-y-2">
-        <label className="m-0 text-xs font-medium text-white" htmlFor="purposeName">Purpose Name</label>
+        <label className="m-0 text-xs font-medium text-white" htmlFor="purposeName">
+        Purpose Name 
+        <span className=" font-base font-semibold text-[#FF0000]">
+           *
+        </span>
+        </label>
         <input
           id="purposeName"
           name="purposeName"
@@ -923,7 +929,12 @@ const initialValues = actionToTake === 'edit-purpose' ?{
       </div>
 
       <div className="flex flex-col space-y-2">
-        <label className="m-0 text-xs font-medium text-white" htmlFor="description">Description</label>
+        <label className="m-0 text-xs font-medium text-white" htmlFor="description">
+          Description
+          <span className="font-base font-semibold text-[#FF0000]">
+            *
+          </span>
+          </label>
         <textarea
           id="description"
           name="description"
@@ -938,7 +949,11 @@ const initialValues = actionToTake === 'edit-purpose' ?{
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col space-y-2">
-          <label className="m-0 text-xs font-medium text-white" htmlFor="category">Category</label>
+          <label className="m-0 text-xs font-medium text-white" htmlFor="category">
+            Category <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
+            </label>
           <select
             id="category"
             name="category"
@@ -969,11 +984,19 @@ const initialValues = actionToTake === 'edit-purpose' ?{
             value={formik.values.uniqueCode}
             className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
           />
+          {formik.errors.uniqueCode && formik.touched.uniqueCode && (
+            <div className="text-red-500"><>{formik.errors.uniqueCode}</></div>
+          )}
         </div>
       </div>
 
       <div className="flex flex-col space-y-2 w-[50%]">
-        <label className="m-0 text-xs font-medium text-white" htmlFor="amount">Amount</label>
+        <label className="m-0 text-xs font-medium text-white" htmlFor="amount">
+          Amount
+          <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
+          </label>
         <input
           id="amount"
           name="amount"
@@ -1061,23 +1084,24 @@ const initialValues = actionToTake === 'edit-purpose' ?{
       <div className="grid grid-cols-4 gap-4">
         <div className="flex flex-col space-y-2">
           <label className="m-0 text-xs font-medium text-white" htmlFor="promoCode">Promo Code</label>
-          <div className="flex items-center"> <button
-              type="button"
-              onClick={generatePromoCode}
-              className="mr-2 btn text-white"
-            >
-              Generate
-            </button>
-            <input
-              id="promoCode"
-              name="promoCode"
-              type="text"
-              onChange={formik.handleChange}
-              value={formik.values.promoCode}
-              className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
-            />
-           
-          </div>
+          <div className="relative flex items-center">
+  <button
+    type="button"
+    onClick={generatePromoCode}
+    className="bg-blue-500 px-4 rounded-md absolute left-2 top-1/2 transform -translate-y-1/2 btn text-white"
+  >
+    Generate
+  </button>
+  <input
+    id="promoCode"
+    name="promoCode"
+    type="text"
+    onChange={formik.handleChange}
+    value={formik.values.promoCode}
+    className="w-full pl-[7rem] rounded-lg border-0 bg-[#F3F4F6] p-3 text-[#7D7D7D]"
+  />
+</div>
+
         </div>
 
         <div className="flex flex-col space-y-2">
@@ -1169,7 +1193,10 @@ const initialValues = actionToTake === 'edit-purpose' ?{
                     htmlFor="imageUrl"
                     className="m-0 text-xs font-medium text-white"
                   >
-                    Upload Purpose/ Item’s Cover Image Picture
+                    Upload Purpose/ Item’s Cover Image Picture 
+                    <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
                   </label>
                   <label
                     htmlFor="imageUrl"
@@ -1415,7 +1442,12 @@ const initialValues = actionToTake === 'edit-purpose' ?{
 
 
       <div className="flex flex-col space-y-2">
-        <label className="m-0 text-xs font-medium text-white">Visibility</label>
+        <label className="m-0 text-xs font-medium text-white">
+          Visibility
+          <span className="font-base font-semibold text-[#FF0000]">
+            *
+          </span>
+        </label>
         <div className="flex items-center space-x-4">
           <div>
             <input
@@ -1448,7 +1480,12 @@ const initialValues = actionToTake === 'edit-purpose' ?{
 
       <div className="grid grid-cols-4 gap-4">
         <div className="flex flex-col space-y-2">
-          <label className="m-0 text-xs font-medium text-white" htmlFor="visibilityStartDate">Visibility Start Date</label>
+          <label className="m-0 text-xs font-medium text-white" htmlFor="visibilityStartDate">
+            Visibility Start Date
+            <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
+          </label>
           <input
         type="date"
         id="visibilityStartDate"
@@ -1464,7 +1501,12 @@ const initialValues = actionToTake === 'edit-purpose' ?{
         </div>
 
         <div className="flex flex-col space-y-2">
-          <label className="m-0 text-xs font-medium text-white" htmlFor="visibilityStartTime">Visibility Start Time</label>
+          <label className="m-0 text-xs font-medium text-white" htmlFor="visibilityStartTime">
+            Visibility Start Time
+            <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
+            </label>
           <input
             id="visibilityStartTime"
             name="visibilityStartTime"
@@ -1479,7 +1521,12 @@ const initialValues = actionToTake === 'edit-purpose' ?{
         </div>
 
         <div className="flex flex-col space-y-2">
-          <label className="m-0 text-xs font-medium text-white" htmlFor="visibilityEndDate">Visibility End Date</label>
+          <label className="m-0 text-xs font-medium text-white" htmlFor="visibilityEndDate">
+            Visibility End Date
+            <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
+            </label>
           <input
               type="date"
               id="visibilityEndDate"
@@ -1495,7 +1542,12 @@ const initialValues = actionToTake === 'edit-purpose' ?{
         </div>
 
         <div className="flex flex-col space-y-2">
-          <label className="m-0 text-xs font-medium text-white" htmlFor="visibilityEndTime">Visibility End Time</label>
+          <label className="m-0 text-xs font-medium text-white" htmlFor="visibilityEndTime">
+            Visibility End Time
+            <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
+            </label>
           <input
             id="visibilityEndTime"
             name="visibilityEndTime"
