@@ -585,7 +585,7 @@ const {
 // })
 //  }
 
-const initialValues = actionToTake === 'edit-purpose' ?{
+const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
   purposeName: singlePurpose?.purposeName ?? "",
   description: singlePurpose?.description ?? "",
   category: singlePurpose?.category ?? "",
@@ -597,7 +597,7 @@ const initialValues = actionToTake === 'edit-purpose' ?{
   endTime: singlePurpose?.endTime ?? "",
   promoCode: singlePurpose?.promoCode ?? "",
   promoPercentage: singlePurpose?.promoPercentage ?? "",
-  referralBonus: singlePurpose?.referralBonus ?? "",
+  referralBonus: singlePurpose?.referralBonus ?? 0,
   image: null,
   imageUrl: null,
   digitalItem: null,
@@ -609,6 +609,8 @@ const initialValues = actionToTake === 'edit-purpose' ?{
   assignToCustomer: singlePurpose?.assignToCustomer ?? "",
   assignedCustomers: singlePurpose?.assignedCustomers ?? "",
   referralBonusValue: singlePurpose?.referralBonusValue ?? "",
+  SelectorAll: singlePurpose?.SelectorAll ?? "",
+  selectorCategory: singlePurpose?.selectorCategory ?? "",
   organisation: organizationId,
  } : {
 
@@ -632,6 +634,8 @@ const initialValues = actionToTake === 'edit-purpose' ?{
     visibilityStartTime: '',
     visibilityEndDate: '',
     visibilityEndTime: '',
+    SelectorAll: 'selectorAllOptional',
+    selectorCategory: 'selectorCategoryOptional',
     assignToCustomer: '',
     assignedCustomers: [],
     // customerList: [],
@@ -696,6 +700,8 @@ const initialValues = actionToTake === 'edit-purpose' ?{
     visibilityStartTime: Yup.string().required('Visibility start time is required'),
     visibilityEndDate: Yup.date().required('Visibility end date is required'),
     visibilityEndTime: Yup.string().required('Visibility end time is required'),
+    SelectorAll: Yup.string().required('This field is required'),
+    selectorCategory: Yup.string().required('This field is required'),
     assignedCustomers: Yup.array().optional(),
     imageUrl: Yup.string().required('Image is required'),
     // digitalItem: Yup.string().optional()
@@ -711,7 +717,7 @@ const initialValues = actionToTake === 'edit-purpose' ?{
         setTimeout(() => {
           if (actionToTake === "create-purpose") {
             console.log("creating user.....................");
-              
+        
               createPurpose(values);
             
           } else {
@@ -776,7 +782,7 @@ const initialValues = actionToTake === 'edit-purpose' ?{
   const { mutate: createPurpose, isPending: isCreatingPurpose } = useMutation(
   {
    
-    mutationFn: async (values: PurposeProps) => {
+    mutationFn: async (values: any) => {
       console.log(values, '780')
       const formData = new FormData()
       formData.append("purposeName", values.purposeName)
@@ -801,6 +807,8 @@ const initialValues = actionToTake === 'edit-purpose' ?{
       formData.append('visibilityStartTime', values.visibilityStartTime);
       formData.append('visibilityEndDate', values.visibilityEndDate);
       formData.append('visibilityEndTime', values.visibilityEndTime);
+      formData.append('SelectorAll', values.SelectorAll);
+      formData.append('selectorCategory', values.selectorCategory);
       values.assignedCustomers.forEach((item: string | Blob) => formData.append("assignedCustomers[]", item))
 
       
@@ -826,7 +834,7 @@ const initialValues = actionToTake === 'edit-purpose' ?{
         setCloseModal(false);
         setModalContent("form")
         router.push("/merchant/purpose/item")
-      }, 1000);
+      }, 3000);
       
     },
 
@@ -837,7 +845,7 @@ const initialValues = actionToTake === 'edit-purpose' ?{
       setMutationResponse(error.response?.data.message);
       setTimeout(() => {
         setModalContent("form")
-      }, 1000);
+      }, 3000);
       
     },
   });
@@ -845,7 +853,7 @@ const initialValues = actionToTake === 'edit-purpose' ?{
   const { mutate: editPurpose, isPending: isEditingPurpose } = useMutation(
     {
    
-    mutationFn: async (values: PurposeProps) => {
+    mutationFn: async (values: any) => {
       const formData = new FormData()
       formData.append("purposeName", values.purposeName)
       formData.append("description", values.description)
@@ -868,6 +876,8 @@ const initialValues = actionToTake === 'edit-purpose' ?{
       formData.append('visibilityStartTime', values.visibilityStartTime);
       formData.append('visibilityEndDate', values.visibilityEndDate);
       formData.append('visibilityEndTime', values.visibilityEndTime);
+      formData.append('SelectorAll', values.SelectorAll);
+      formData.append('selectorCategory', values.selectorCategory);
       values.assignedCustomers.forEach((item: string | Blob) => formData.append("assignedCustomers[]", item))
 
       
@@ -948,6 +958,80 @@ const initialValues = actionToTake === 'edit-purpose' ?{
         )}
       </div>
 
+      <div className="flex flex-col space-y-2">
+        <label className="m-0 text-xs font-medium text-white">
+          Selector All
+          <span className="font-base font-semibold text-[#FF0000]">
+            *
+          </span>
+        </label>
+        <div className="flex items-center space-x-4">
+          <div>
+            <input
+              id="selectorAllMandatory"
+              type="radio"
+              name="SelectorAll"
+              value="selectorAllMandatory"
+              onChange={formik.handleChange}
+              checked={formik.values.SelectorAll === 'selectorAllMandatory'}
+            />
+            <label className="ml-2 m-0 text-xs font-medium text-white" htmlFor="selectorAllMandatory" >
+              Mandatory for all
+            </label>
+          </div>
+          <div>
+            <input
+              id="selectorAllOptional"
+              type="radio"
+              name="SelectorAll"
+              value="selectorAllOptional"
+              onChange={formik.handleChange}
+              checked={formik.values.SelectorAll === 'selectorAllOptional'}
+            />
+            <label className="m-2 m-0 text-xs font-medium text-white" htmlFor="selectorAllOptional" >
+              Optional for all
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col space-y-2">
+        <label className="m-0 text-xs font-medium text-white">
+          Selector Category
+          <span className="font-base font-semibold text-[#FF0000]">
+            *
+          </span>
+        </label>
+        <div className="flex items-center space-x-4">
+          <div>
+            <input
+              id="selectorCategoryMandatory"
+              type="radio"
+              name="selectorCategory"
+              value="selectorCategoryMandatory"
+              onChange={formik.handleChange}
+              checked={formik.values.selectorCategory === 'selectorCategoryMandatory'}
+            />
+            <label className="ml-2 m-0 text-xs font-medium text-white" htmlFor="selectorCategoryMandatory" >
+              Mandatory for all
+            </label>
+          </div>
+          <div>
+            <input
+              id="selectorCategoryOptional"
+              type="radio"
+              name="selectorCategory"
+              value="selectorCategoryOptional"
+              onChange={formik.handleChange}
+              checked={formik.values.selectorCategory === 'selectorCategoryOptional'}
+            />
+            <label className="m-2 m-0 text-xs font-medium text-white" htmlFor="selectorAllOptional" >
+              Optional for all
+            </label>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col space-y-2">
           <label className="m-0 text-xs font-medium text-white" htmlFor="category">
@@ -1017,14 +1101,14 @@ const initialValues = actionToTake === 'edit-purpose' ?{
         <div className="flex flex-col space-y-2">
           <label className="m-0 text-xs font-medium text-white" htmlFor="startDate">Start Date</label>
           <input
-        type="date"
-        id="startDate"
-        name="startDate"
-        value={formik.values.startDate}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        className="bg-right-20 w-full rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
-      />
+            type="date"
+            id="startDate"
+            name="startDate"
+            value={formik.values.startDate}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            className="bg-right-20 w-full rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+          />
           {formik.errors.startDate && formik.touched.startDate && (
             <div className="text-red-500">{formik.errors.startDate}</div>
           )}
@@ -1085,11 +1169,11 @@ const initialValues = actionToTake === 'edit-purpose' ?{
       <div className="grid grid-cols-4 gap-4">
         <div className="flex flex-col space-y-2">
           <label className="m-0 text-xs font-medium text-white" htmlFor="promoCode">Promo Code</label>
-          <div className="relative flex items-center">
+          <div className="relative flex flex-col sm:flex-row items-center">
   <button
     type="button"
     onClick={generatePromoCode}
-    className="bg-blue-500 px-4 rounded-md absolute left-2 top-1/2 transform -translate-y-1/2 btn text-white"
+    className="bg-blue-500 px-2 text-xs md:text-lg md:px-4 rounded-md mb-2 sm:mb-0 sm:absolute sm:left-2 sm:top-1/2 sm:transform sm:-translate-y-1/2 btn text-white"
   >
     Generate
   </button>
@@ -1099,9 +1183,10 @@ const initialValues = actionToTake === 'edit-purpose' ?{
     type="text"
     onChange={formik.handleChange}
     value={formik.values.promoCode}
-    className="w-full pl-[7rem] rounded-lg border-0 bg-[#F3F4F6] p-3 text-[#7D7D7D]"
+    className="w-full pl-4 sm:pl-[7rem] rounded-lg border-0 bg-[#F3F4F6] p-3 text-[#7D7D7D]"
   />
 </div>
+
 
         </div>
 
@@ -1141,7 +1226,7 @@ const initialValues = actionToTake === 'edit-purpose' ?{
           name="referralBonusValue"
           type="number"
           onChange={formik.handleChange}
-          value={((formik.values.referralBonus)/100) * formik.values.referralBonus}
+          value={formik.values.referralBonusValue}
           className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
         />
         {formik.errors.referralBonusValue && formik.touched.referralBonusValue && (
@@ -1229,7 +1314,7 @@ const initialValues = actionToTake === 'edit-purpose' ?{
                   </label>
                   {formik.values.imageUrl &&
                     formik.values.imageUrl[0] &&
-                    ((formik.values.imageUrl[0] as File).type.includes("image") ? (
+                    ((formik.values.imageUrl[0] as unknown as File).type.includes("image") ? (
                       <Image
                         src={URL.createObjectURL(formik.values.imageUrl[0])}
                         alt="imageUrl"
@@ -1245,9 +1330,10 @@ const initialValues = actionToTake === 'edit-purpose' ?{
                         title="Thumbnail Image"
                       ></iframe>
                     ))}
-                    {formik.errors.imageUrl && formik.touched.imageUrl && (
-            <div className="text-red-500">{formik.errors.imageUrl}</div>
-          )}
+                    {formik.errors.imageUrl && formik.touched.imageUrl && typeof formik.errors.imageUrl === 'string' && (
+                      <div className="text-red-500">{formik.errors.imageUrl}</div>
+                    )}
+
                  
                 </div>
                 ): ''}
@@ -1355,7 +1441,7 @@ const initialValues = actionToTake === 'edit-purpose' ?{
                   </label>
                   {formik.values.digitalItem &&
                     formik.values.digitalItem[0] &&
-                    ((formik.values.digitalItem[0] as File).type.includes("image") ? (
+                    ((formik.values.digitalItem[0] as unknown as File).type.includes("image") ? (
                       <Image
                         src={URL.createObjectURL(formik.values.digitalItem[0])}
                         alt="digitalItem"
@@ -1371,9 +1457,10 @@ const initialValues = actionToTake === 'edit-purpose' ?{
                         title="Thumbnail Image"
                       ></iframe>
                     ))}
-                    {formik.errors.digitalItem && formik.touched.digitalItem && (
-            <div className="text-red-500">{formik.errors.digitalItem}</div>
-          )}
+                    {formik.errors.imageUrl && formik.touched.imageUrl && typeof formik.errors.imageUrl === 'string' && (
+                      <div className="text-red-500">{formik.errors.imageUrl}</div>
+                    )}
+
                   {/* <div className="text-xs text-red-600">
                     <ErrorMessage name="digitalItem" />
                   </div> */}
