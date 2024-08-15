@@ -69,6 +69,89 @@
 
 // export default authSlice.reducer;
 
+// import { User } from "@/types";
+// import { createSlice } from "@reduxjs/toolkit";
+
+// // Check if window is defined (indicating we are in a client-side environment)
+// const isClient = typeof window !== "undefined";
+
+// // Retrieve organizationId and token from localStorage, if available
+// interface initialStateProps {
+//   organizationId: string | null;
+//   token: string | null;
+//   user: User | null;
+//   userId: string | null;
+// }
+
+// // Fxn to turn the user data from a JSON string to a User object
+// const parseUser = (userString: string | null): User | null =>  {
+//   try {
+//     return userString ? JSON.parse(userString) : null;
+//   } catch (error) {
+//     console.error("Error parsing user data:", error);
+//     return null;
+//   }
+// }
+
+// const initialState: initialStateProps = {
+//   organizationId: isClient
+//     ? localStorage.getItem("organizationId") || null
+//     : null,
+//   token: isClient ? localStorage.getItem("token") || null : null,
+//   user: isClient ? parseUser(localStorage.getItem("user")) || null : null,
+//   userId: isClient ? localStorage.getItem("userId") || null : null,
+// };
+
+
+
+
+// export const authSlice = createSlice({
+//   name: "auth",
+//   initialState,
+//   reducers: {
+//     setAuthData: (state, action) => {
+//       const { organizationId, token, user, userId } = action.payload;
+//       state.organizationId = organizationId;
+//       state.token = token;
+//       state.user = user;
+//       state.userId = userId;
+//       // Save organizationId and token to localStorage if in client-side environment
+//       if (isClient) {
+//         localStorage.setItem("organizationId", organizationId);
+//         localStorage.setItem("token", token);
+//         localStorage.setItem("user", JSON.stringify(user));
+//         localStorage.setItem("userId", userId);
+//       }
+//     },
+//     clearAuthData: (state) => {
+//       state.organizationId = null;
+//       state.token = null;
+//       state.user = null;
+//       state.userId = null;
+//       // Clear organizationId and token from localStorage if in client-side environment
+//       if (isClient) {
+//         localStorage.removeItem("organizationId");
+//         localStorage.removeItem("token");
+//         localStorage.removeItem("user");
+//         localStorage.removeItem("userId");
+//       }
+//     },
+//   },
+// });
+
+// export const { setAuthData, clearAuthData } = authSlice.actions;
+
+// export const selectOrganizationId = (state: {
+//   auth: { organizationId: string };
+// }) => state.auth.organizationId;
+// export const selectToken = (state: { auth: { token: string } }) =>
+//   state.auth.token;
+// export const selectUser = (state: { auth: { user: User } }) =>
+//   state.auth.user;
+// export const selectUserId = (state: { auth: { userId: string } }) =>
+//   state.auth.userId;
+// export default authSlice.reducer;
+
 import { User } from "@/types";
 import { createSlice } from "@reduxjs/toolkit";
 
@@ -81,17 +164,18 @@ interface initialStateProps {
   token: string | null;
   user: User | null;
   userId: string | null;
+  selectedProducts: React.Key[]; // Add selectedProducts state
 }
 
-// Fxn to turn the user data from a JSON string to a User object
-const parseUser = (userString: string | null): User | null =>  {
+// Function to turn the user data from a JSON string to a User object
+const parseUser = (userString: string | null): User | null => {
   try {
     return userString ? JSON.parse(userString) : null;
   } catch (error) {
     console.error("Error parsing user data:", error);
     return null;
   }
-}
+};
 
 const initialState: initialStateProps = {
   organizationId: isClient
@@ -100,10 +184,8 @@ const initialState: initialStateProps = {
   token: isClient ? localStorage.getItem("token") || null : null,
   user: isClient ? parseUser(localStorage.getItem("user")) || null : null,
   userId: isClient ? localStorage.getItem("userId") || null : null,
+  selectedProducts: [], // Initialize selectedProducts as an empty array
 };
-
-
-
 
 export const authSlice = createSlice({
   name: "auth",
@@ -115,7 +197,6 @@ export const authSlice = createSlice({
       state.token = token;
       state.user = user;
       state.userId = userId;
-      // Save organizationId and token to localStorage if in client-side environment
       if (isClient) {
         localStorage.setItem("organizationId", organizationId);
         localStorage.setItem("token", token);
@@ -128,7 +209,7 @@ export const authSlice = createSlice({
       state.token = null;
       state.user = null;
       state.userId = null;
-      // Clear organizationId and token from localStorage if in client-side environment
+      state.selectedProducts = []; // Clear selectedProducts array
       if (isClient) {
         localStorage.removeItem("organizationId");
         localStorage.removeItem("token");
@@ -136,18 +217,47 @@ export const authSlice = createSlice({
         localStorage.removeItem("userId");
       }
     },
+    addSelectedProduct: (state, action) => {
+      const productId = action.payload;
+      if (!state.selectedProducts.includes(productId)) {
+        state.selectedProducts.push(productId); // Add product ID if not already included
+      }
+    },
+    removeSelectedProduct: (state, action) => {
+      const productId = action.payload;
+      state.selectedProducts = state.selectedProducts.filter(
+        (id) => id !== productId
+      ); // Remove product ID from selectedProducts array
+    },
+    clearSelectedProducts: (state) => {
+      state.selectedProducts = []; // Clear all selected products
+    },
+    updateSelectedProducts: (state, action) => {
+      const productIds = action.payload;
+      state.selectedProducts = productIds; // Replace the entire selectedProducts array
+    },
   },
 });
 
-export const { setAuthData, clearAuthData } = authSlice.actions;
+
+export const {
+  setAuthData,
+  clearAuthData,
+  addSelectedProduct,
+  removeSelectedProduct,
+  clearSelectedProducts,
+  updateSelectedProducts
+} = authSlice.actions;
 
 export const selectOrganizationId = (state: {
   auth: { organizationId: string };
 }) => state.auth.organizationId;
 export const selectToken = (state: { auth: { token: string } }) =>
   state.auth.token;
-export const selectUser = (state: { auth: { user: User } }) =>
-  state.auth.user;
+export const selectUser = (state: { auth: { user: User } }) => state.auth.user;
 export const selectUserId = (state: { auth: { userId: string } }) =>
   state.auth.userId;
+export const selectSelectedProducts = (state: { auth: { selectedProducts: React.Key[] } }) =>
+  state.auth.selectedProducts; // Add selector for selectedProducts
+
 export default authSlice.reducer;

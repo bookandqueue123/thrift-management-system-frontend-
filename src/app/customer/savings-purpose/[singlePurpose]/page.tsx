@@ -115,8 +115,8 @@ export default function Page(){
         <div>
 
         <div className="relative p-6 mb-6 rounded-lg shadow-md">
-        <div className="absolute top-0 left-0 w-full h-1/2 bg-[#EBAE48] rounded-lg flex justify-center items-center ">
-            <h2 className="text-2xl font-bold text-ajo_darkBlue z-20 mt-[-12rem]">Savings Purpose</h2>
+        <div className="absolute top-0 left-0 w-full h-[100%] md:h-1/2 bg-[#EBAE48] rounded-lg flex justify-center items-center ">
+            <h2 className="hidden md:block text-2xl font-bold text-ajo_darkBlue z-20 md:mt-[-12rem]">Savings Purpose</h2>
         </div>
     <div className="bg-purposeBg relative z-10 mt-12 rounded-lg shadow-md mx-6">
         <div className="grid grid-cols-1 md:grid-cols-3 p-6">
@@ -132,14 +132,15 @@ export default function Page(){
             </div>
             <div className="mb-4 flex flex-col items-center mx-8">
                 <div className="flex justify-center w-full">
-                    <div className="w-full aspect-square rounded-full bg-gray-300 flex items-center justify-center">
+                    <div className="w-full  aspect-square rounded-full bg-gray-300 flex items-center justify-center">
                         <Image
                             src={SinglePurpose.imageUrl}
                             alt={SinglePurpose.purposeName}
                             width={200}
                             height={200}
-                            className="object-cover transform translate-x-2"
+                            className="object-cover  mr-2 transform translate-x-2 w-[100px] h-[100px] sm:w-[200px] sm:h-[200px]"
                         />
+
                     </div>
                 </div>
                 <p className="my-6 text-center text-2xl font-bold">NGN {AmountFormatter(SinglePurpose.amount)}</p>
