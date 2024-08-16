@@ -57,7 +57,7 @@ export default function MakePayment() {
      
 
     const getTotal = () => {
-        return Object.values(paymentDetails).reduce((acc: any, val: any) => acc + (val.quantity * val.amount || 0), 0);
+        return Object.values(paymentDetails).reduce((acc: any, val: any) => acc + ( val.amount || 0), 0);
     };
 
     const { data: allPurpose } = useQuery({
@@ -71,10 +71,12 @@ export default function MakePayment() {
         },
     });
 
+    
     const filteredPurposes = allPurpose?.filter((purpose: { _id: Key; }) =>
         selectedProducts.includes(purpose._id)
     );
 
+   
     const handleInputChange = (id: string, field: string, value: any) => {
         const payment = filteredPurposes.find((p: { _id: string; }) => p._id === id);
         
@@ -87,6 +89,7 @@ export default function MakePayment() {
                 purposeName: payment?.purposeName,
                 userFirstName: user?.firstName,
                 userLastName: user?.lastName,
+                
             }
         }));
     };
@@ -131,14 +134,36 @@ export default function MakePayment() {
     };
 
     const makeThePayment = async (fixedFee: number, percentageFee: number) => {
+     
+        // try {
+        //     const amount = Number(getTotal()) + decideCharge(fixedFee, percentageFee);
+        //     const email = user.email;
+        //     const phoneNumber = user.phoneNumber;
+        //     const customerName = user.firstName + user.lastName;
+
+        //     const response = await axios.post(`${apiUrl}api/purpose/payment`,
+        //         {purposeId: '66be32aa5d54b16031ee9c06',
+        //         customerId: userId,
+        //         paymentAmount: amount},
+        //         { headers: { Authorization: `Bearer ${token}` } }
+        //     );
+        //     console.log(response)
+        //     if (response.data.status === 'success') {
+        //         // window.location.href = response.data.data.link;
+        //     }
+        // } catch (error) {
+        //     console.error(error);
+        // }
+
         try {
             const amount = Number(getTotal()) + decideCharge(fixedFee, percentageFee);
             const email = user.email;
             const phoneNumber = user.phoneNumber;
             const customerName = user.firstName + user.lastName;
-
+            const redirectURL = 'customer/savings-purpose/make-payment/payment-callback'
             const response = await axios.post(`${apiUrl}api/pay/flw`,
-                { amount, email, paymentDetails: Object.values(paymentDetails), userId, organisationId, phoneNumber, customerName },
+            
+                { amount, redirectURL, email, paymentDetails: Object.values(paymentDetails), userId, organisationId, phoneNumber, customerName },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
@@ -149,7 +174,7 @@ export default function MakePayment() {
             console.error(error);
         }
     };
-
+    console.log(filteredPurposes)
     return (
         <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
           {showModal && (
@@ -184,7 +209,9 @@ export default function MakePayment() {
                         ]}
                         content={(
                             <>
-                                {filteredPurposes && filteredPurposes.map((purpose: { purposeName: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; amount: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | PromiseLikeOfReactNode | null | undefined; _id: string; endDate: string | number | Date; startDate: string | number | Date; }, index: number) => (
+                                {filteredPurposes && filteredPurposes.map((purpose: {
+                                    balance: any; purposeName: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; amount: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | PromiseLikeOfReactNode | null | undefined; _id: string; endDate: string | number | Date; startDate: string | number | Date; 
+}, index: number) => (
                                     <tr key={index}>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">{index + 1}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">{purpose.purposeName}</td>
@@ -210,7 +237,7 @@ export default function MakePayment() {
                                             <br/>
                                             {errors[purpose._id] && <span className="text-red-500">{errors[purpose._id]}</span>}
                                         </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm">Balance</td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm">{purpose.balance?.toFixed(2)}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">
                                         {!purpose.endDate ? "Nill" : daysBetweenDates(purpose.startDate, purpose.endDate)}
                                         </td>

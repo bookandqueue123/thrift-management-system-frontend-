@@ -320,9 +320,9 @@ const App = () => {
     },
     staleTime: 5000,
   });
- 
-  const filteredPurposes = allPurpose?.filter((purpose: { assignedCustomers: string | string[]; }) => purpose.assignedCustomers.includes(user?._id));
 
+  const filteredPurposes = allPurpose?.filter((purpose: { assignedCustomers: string | string[]; }) => purpose.assignedCustomers.includes(user?._id));
+  
   
   const groupedPurposes = filteredPurposes?.reduce((acc: { [x: string]: any[]; }, purpose: { category: { name: any; }; }) => {
     const categoryName = purpose.category.name;
@@ -335,7 +335,7 @@ const App = () => {
  
 
  
-  const automobileCategoryPurpose = filteredPurposes?.filter((purpose: { category: { name: string | string[]; }; }) => purpose.category.name.includes("Automobile"));
+  // const automobileCategoryPurpose = filteredPurposes?.filter((purpose: { category: { name: string | string[]; }; }) => purpose.category.name.includes("Automobile"));
 // console.log(automobileCategoryPurpose);
   return (
     <div className="App">
