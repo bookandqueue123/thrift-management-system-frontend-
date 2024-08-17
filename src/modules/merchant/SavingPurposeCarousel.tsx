@@ -132,27 +132,45 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
   };
 
   // Add mandatory products to selectedProducts on initial load
-  useEffect(() => {
-    if (!products) return; // Check if products is defined and not null
+  // useEffect(() => {
+  //   if (!products) return; // Check if products is defined and not null
 
+  //   Object.keys(products).forEach((categoryName) => {
+  //     const categoryProducts = products[categoryName];
+  //     categoryProducts.forEach((product: any) => {
+  //       if (
+  //         (product.SelectorAll === 'selectorAllMandatory' ||
+  //           (product.selectorCategory === 'selectorCategoryMandatory' &&
+  //             categoryProducts.some(
+  //               (p: any) =>
+  //                 p._id !== product._id &&
+  //                 (p.SelectorAll === 'selectorAllMandatory' || selectedProducts.includes(p._id))
+  //             ))) &&
+  //         !selectedProducts.includes(product._id)
+  //       ) {
+  //         dispatch(addSelectedProduct(product._id));
+  //       }
+  //     });
+  //   });
+  // }, [products, selectedProducts, dispatch]);
+  useEffect(() => {
+    if (!products) return;
+    
     Object.keys(products).forEach((categoryName) => {
       const categoryProducts = products[categoryName];
       categoryProducts.forEach((product: any) => {
-        if (
-          (product.SelectorAll === 'selectorAllMandatory' ||
-            (product.selectorCategory === 'selectorCategoryMandatory' &&
-              categoryProducts.some(
-                (p: any) =>
-                  p._id !== product._id &&
-                  (p.SelectorAll === 'selectorAllMandatory' || selectedProducts.includes(p._id))
-              ))) &&
-          !selectedProducts.includes(product._id)
-        ) {
+        const shouldSelect = 
+          product.SelectorAll === 'selectorAllMandatory' || 
+          (product.selectorCategory === 'selectorCategoryMandatory' && 
+          categoryProducts.some((p: { _id: React.Key; }) => p._id !== product._id && selectedProducts.includes(p._id)));
+  
+        if (shouldSelect && !selectedProducts.includes(product._id)) {
           dispatch(addSelectedProduct(product._id));
         }
       });
     });
-  }, [products, selectedProducts, dispatch]);
+  }, [products, dispatch]);
+  
 
   return (
     <div>
