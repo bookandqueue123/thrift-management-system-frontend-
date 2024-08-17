@@ -102,7 +102,7 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
     }
   };
 
-  console.log(selectedProducts)
+  
   
 
   // Handle checkbox change for entire category

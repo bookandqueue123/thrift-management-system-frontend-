@@ -28,7 +28,7 @@ function generateDateRange(startDate: Date, endDate: Date) {
 
 export default function MakePayment() {
     const token = useSelector(selectToken)
-    console.log(token)
+   
     const selectedProducts = useSelector(selectSelectedProducts);
     const organisationId = useSelector(selectOrganizationId);
     const { client } = useAuth();
@@ -175,9 +175,7 @@ export default function MakePayment() {
             console.error(error);
         }
     };
-    console.log(allPurpose, 'allPurpose')
-    console.log(filteredPurposes, "filteredPurposes")
-    console.log(selectedProducts, "selected product")
+    
     return (
         <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
           {showModal && (
