@@ -184,7 +184,9 @@ const initialState: initialStateProps = {
   token: isClient ? localStorage.getItem("token") || null : null,
   user: isClient ? parseUser(localStorage.getItem("user")) || null : null,
   userId: isClient ? localStorage.getItem("userId") || null : null,
-  selectedProducts: [], // Initialize selectedProducts as an empty array
+  selectedProducts: isClient
+    ? JSON.parse(localStorage.getItem("selectedProducts") || "[]")
+    : [], // Initialize from localStorage or an empty array
 };
 
 export const authSlice = createSlice({
