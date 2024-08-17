@@ -225,22 +225,52 @@ export const authSlice = createSlice({
     addSelectedProduct: (state, action) => {
       const productId = action.payload;
       if (!state.selectedProducts.includes(productId)) {
-        state.selectedProducts.push(productId); // Add product ID if not already included
+        state.selectedProducts.push(productId); 
+        if (isClient) {
+          localStorage.setItem('selectedProducts', JSON.stringify(state.selectedProducts));
+        }
       }
     },
     removeSelectedProduct: (state, action) => {
       const productId = action.payload;
-      state.selectedProducts = state.selectedProducts.filter(
-        (id) => id !== productId
-      ); // Remove product ID from selectedProducts array
-    },
-    clearSelectedProducts: (state) => {
-      state.selectedProducts = []; // Clear all selected products
+      state.selectedProducts = state.selectedProducts.filter(id => id !== productId);
+      if (isClient) {
+        localStorage.setItem('selectedProducts', JSON.stringify(state.selectedProducts));
+      }
     },
     updateSelectedProducts: (state, action) => {
       const productIds = action.payload;
-      state.selectedProducts = productIds; // Replace the entire selectedProducts array
+      state.selectedProducts = productIds;
+      if (isClient) {
+        localStorage.setItem('selectedProducts', JSON.stringify(state.selectedProducts));
+      }
     },
+    clearSelectedProducts: (state) => {
+      state.selectedProducts = [];
+      if (isClient) {
+        localStorage.removeItem('selectedProducts');
+      }
+    }
+    
+    // addSelectedProduct: (state, action) => {
+    //   const productId = action.payload;
+    //   if (!state.selectedProducts.includes(productId)) {
+    //     state.selectedProducts.push(productId); // Add product ID if not already included
+    //   }
+    // },
+    // removeSelectedProduct: (state, action) => {
+    //   const productId = action.payload;
+    //   state.selectedProducts = state.selectedProducts.filter(
+    //     (id) => id !== productId
+    //   ); // Remove product ID from selectedProducts array
+    // },
+    // clearSelectedProducts: (state) => {
+    //   state.selectedProducts = []; // Clear all selected products
+    // },
+    // updateSelectedProducts: (state, action) => {
+    //   const productIds = action.payload;
+    //   state.selectedProducts = productIds; // Replace the entire selectedProducts array
+    // },
   },
 });
 
