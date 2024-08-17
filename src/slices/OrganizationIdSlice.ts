@@ -192,16 +192,19 @@ export const authSlice = createSlice({
   initialState,
   reducers: {
     setAuthData: (state, action) => {
-      const { organizationId, token, user, userId } = action.payload;
+      const { organizationId, token, user, userId, selectedProducts } = action.payload;
       state.organizationId = organizationId;
       state.token = token;
       state.user = user;
       state.userId = userId;
+      state.selectedProducts = selectedProducts
       if (isClient) {
         localStorage.setItem("organizationId", organizationId);
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
         localStorage.setItem("userId", userId);
+        localStorage.setItem("selectedProducts", selectedProducts)
+        
       }
     },
     clearAuthData: (state) => {
