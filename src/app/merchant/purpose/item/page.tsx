@@ -845,7 +845,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
       setMutationResponse(error.response?.data.message);
       setTimeout(() => {
         setModalContent("form")
-      }, 3000);
+      }, 5000);
       
     },
   });
@@ -960,7 +960,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
 
       <div className="flex flex-col space-y-2">
         <label className="m-0 text-xs font-medium text-white">
-          Selector All
+          Select All
           <span className="font-base font-semibold text-[#FF0000]">
             *
           </span>
@@ -997,7 +997,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
 
       <div className="flex flex-col space-y-2">
         <label className="m-0 text-xs font-medium text-white">
-          Selector Category
+          Category Selection
           <span className="font-base font-semibold text-[#FF0000]">
             *
           </span>

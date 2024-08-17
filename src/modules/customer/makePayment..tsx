@@ -156,16 +156,17 @@ export default function MakePayment() {
         }
     }
     const makeThePayment = async (fixedFee:  number, percentageFee: number) => {
-
+       
+        
         try {
             const amount = Number(getTotal()) + decideCharge(fixedFee, percentageFee);
             const email = user.email;
             const phoneNumber = user.phoneNumber;
             const customerName = user.firstName + user.lastName;
-
+            const redirectURL = 'customer/make-payment/payment-callback'
            
             const response = await axios.post(`${apiUrl}api/pay/flw`,
-                { amount, email, paymentDetails: Object.values(paymentDetails), userId, organisationId, phoneNumber, customerName, },
+                { amount, redirectURL, email, paymentDetails: Object.values(paymentDetails), userId, organisationId, phoneNumber, customerName, },
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
