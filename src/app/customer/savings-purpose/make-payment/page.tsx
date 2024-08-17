@@ -28,6 +28,7 @@ function generateDateRange(startDate: Date, endDate: Date) {
 
 export default function MakePayment() {
     const token = useSelector(selectToken)
+    console.log(token)
     const selectedProducts = useSelector(selectSelectedProducts);
     const organisationId = useSelector(selectOrganizationId);
     const { client } = useAuth();
