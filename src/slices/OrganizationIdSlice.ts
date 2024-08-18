@@ -32,9 +32,22 @@ const initialState: initialStateProps = {
   token: isClient ? localStorage.getItem("token") || null : null,
   user: isClient ? parseUser(localStorage.getItem("user")) || null : null,
   userId: isClient ? localStorage.getItem("userId") || null : null,
-  selectedProducts: isClient
-    ? JSON.parse(localStorage.getItem("selectedProducts") || "[]")
-    : [], // Initialize from localStorage or an empty array
+//  selectedProducts: isClient
+//      ? JSON.parse(localStorage.getItem("selectedProducts") || "[]")
+//      : [], // Initialize from localStorage or an empty array
+  // selectedProducts: isClient
+  //   ? JSON.parse(localStorage.getItem("selectedProducts") || "[]")
+  //   : [], // Initialize from localStorage or an empty array
+
+  selectedProducts: isClient ? (() => {
+   try { const storedProducts = localStorage.getItem("selectedProducts");
+   return storedProducts ? JSON.parse(storedProducts) : [];
+   } catch (error) {
+   console.error("Error parsing selectedProducts from localStorage", error);
+   return [];
+   }
+   })()
+  : [],
 };
 
 
