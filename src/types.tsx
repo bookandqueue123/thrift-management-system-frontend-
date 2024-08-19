@@ -540,6 +540,7 @@ export interface UpdateMerchantKycProps {
   contactDOB: string;
   contactEmail: string;
   contactPhoneNumber: string;
+  businessPhoneNumber: string;
   contactFullName: string;
   // bankName: string;
   // acctNo: string;

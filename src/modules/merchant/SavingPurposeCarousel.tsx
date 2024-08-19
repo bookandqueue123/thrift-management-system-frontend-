@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { UseDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import AmountFormatter from '@/utils/AmountFormatter';
 // import './App.css';
 
 
@@ -291,7 +292,7 @@ const ProductCard = ({
       </div>
       <div className="info-section bg-ajo_orange text-black">
         <h3 className="product-name">{product.purposeName}</h3>
-        <p className="product-price">NGN{product.amount}</p>
+        <p className="product-price">NGN{AmountFormatter(product.amount)}</p>
         <p className="product-description">
           {truncateDescription(product.description, 15)}
         </p>

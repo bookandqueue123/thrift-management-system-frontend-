@@ -191,6 +191,7 @@ const Kyc = () => {
     contactDOB: "",
     contactEmail: "",
     contactPhoneNumber: "",
+    businessPhoneNumber: "",
     contactFullName: "",
     // bankName: "",
     // acctNo: "",
@@ -293,33 +294,39 @@ const Kyc = () => {
           email: Yup.string()
             .email("Invalid email format")
             .required("Required"),
-          country: Yup.string().required("Required"),
-          state: Yup.string().required("Required"),
-          contactFullName: Yup.string().required("Required"),
+          country: Yup.string().optional(),
+          state: Yup.string().optional(),
+          contactFullName: Yup.string().optional(),
           contactPhoneNumber: Yup.string()
             .matches(
               /^(?:\+234\d{10}|\d{11})$/,
               "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
             )
-            .required("Phone number is required"),
+            .optional(),
+            businessPhoneNumber: Yup.string()
+            .matches(
+              /^(?:\+234\d{10}|\d{11})$/,
+              "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
+            )
+            .required("required"),
           contactEmail: Yup.string()
             .email("Invalid email format")
-            .required("Required"),
-          contactDOB: Yup.date().required("Required"),
-          OrgRole: Yup.string().required("Required"),
-          contactNationality: Yup.string().required("Required"),
+            .optional(),
+          contactDOB: Yup.date().optional(),
+          OrgRole: Yup.string().optional(),
+          contactNationality: Yup.string().optional(),
           contactNIN: Yup.string()
             .matches(/^\d{11}$/, "NIN must be exactly 11 digits")
-            .required("Required"),
+            .optional(),
           contactBvn: Yup.string()
             .matches(/^\d{11}$/, "BVN must be exactly 11 digits")
-            .required("Required"),
+            .optional(),
           percentOwnership: Yup.number()
             .typeError("Must be a number")
-            .required("Required"),
-          cacNumber: Yup.number().typeError("Must be a number").required("Required"),
+            .optional(),
+          cacNumber: Yup.number().typeError("Must be a number").optional(),
           // bankName: Yup.string()
-          //   .required("Required")
+          //   .optional()
           //   .min(2, "Account name must be at least 2 characters")
           //   .max(100, "Account name must be less than 100 characters")
           //   .matches(
@@ -327,36 +334,37 @@ const Kyc = () => {
           //     "Account name should only contain alphabets and spaces",
           //   ),
           // acctNo: Yup.string()
-          //   .required("Required")
+          //   .optional()
           //   .length(10, "Account number must be exactly 10 digits")
           //   .matches(/^\d{10}$/, "Account number should only contain digits"),
-          lga: Yup.string().required("Required"),
-          officeAddress: Yup.string().required("Required"),
+          lga: Yup.string().optional(),
+          officeAddress: Yup.string().optional(),
           organisationLogo: Yup.mixed()
-            .required("Required")
-            .test(
-              "fileSize",
-              "File size must be less than 2MB",
-              (value: MyFileList) => {
-                if (value) {
-                  return value[0].size <= 2097152;
-                }
-                return true;
-              },
-            )
-            .test(
-              "fileType",
-              "Only .jpg, .png files are allowed",
-              (value: MyFileList) => {
-                if (value) {
-                  const file = value[0];
-                  const fileType = file.type;
-                  return fileType === "image/jpeg" || fileType === "image/png";
-                }
-                return true;
-              },
-            ),
-          description: Yup.string().required("Required"),
+          .nullable()
+          .optional()
+          .test(
+            "fileSize",
+            "File size must be less than 2MB",
+            (value) => {
+              if (value instanceof FileList && value.length > 0) {
+                return value[0].size <= 2097152; // 2MB limit
+              }
+              return true; // No file provided, so validation passes
+            }
+          )
+          .test(
+            "fileType",
+            "Only .jpg, .png files are allowed",
+            (value) => {
+              if (value instanceof FileList && value.length > 0) {
+                const fileType = value[0].type;
+                return fileType === "image/jpeg" || fileType === "image/png"; // Only .jpg or .png allowed
+              }
+              return true; // No file provided, so validation passes
+            }
+          ),
+
+          description: Yup.string().optional(),
           phoneNumber: Yup.string()
             .matches(
               /^(?:\+234\d{10}|\d{11})$/,
@@ -367,12 +375,13 @@ const Kyc = () => {
           tradingName: Yup.string().optional(),
           websiteUrl: Yup.string().optional(),
           BankRecommendation: Yup.mixed()
-            .required("Required")
+            .nullable()
+            .optional()
             .test(
               "fileSize",
               "File size must be less than 2MB",
-              (value: MyFileList) => {
-                if (value) {
+              (value) => {
+                if (value instanceof FileList && value.length > 0) {
                   return value[0].size <= 2097152;
                 }
                 return true;
@@ -381,8 +390,8 @@ const Kyc = () => {
             .test(
               "fileType",
               "Only .pdf, .jpg, .png files are allowed",
-              (value: MyFileList) => {
-                if (value) {
+              (value) => {
+                if (value instanceof FileList && value.length > 0) {
                   const file = value[0];
                   const fileType = file.type;
                   return (
@@ -395,12 +404,13 @@ const Kyc = () => {
               },
             ),
           contactPhoto: Yup.mixed()
-            .required("Required")
+          .nullable()
+            .optional()
             .test(
               "fileSize",
               "File size must be less than 2MB",
-              (value: MyFileList) => {
-                if (value) {
+              (value) => {
+                if (value instanceof FileList && value.length > 0) {
                   return value[0].size <= 2097152;
                 }
                 return true;
@@ -409,8 +419,8 @@ const Kyc = () => {
             .test(
               "fileType",
               "Only .pdf, .jpg, .png files are allowed",
-              (value: MyFileList) => {
-                if (value) {
+              (value) => {
+                if (value instanceof FileList && value.length > 0) {
                   const file = value[0];
                   const fileType = file.type;
                   return (
@@ -423,12 +433,13 @@ const Kyc = () => {
               },
             ),
           CertOfBusinessName: Yup.mixed()
-            .required("Required")
+            .nullable()
+            .optional()
             .test(
               "fileSize",
               "File size must be less than 2MB",
-              (value: MyFileList) => {
-                if (value) {
+              (value) => {
+                if (value instanceof FileList && value.length > 0) {
                   return value[0].size <= 2097152;
                 }
                 return true;
@@ -437,8 +448,8 @@ const Kyc = () => {
             .test(
               "fileType",
               "Only .pdf, .jpg, .png files are allowed",
-              (value: MyFileList) => {
-                if (value) {
+              (value) => {
+                if (value instanceof FileList && value.length > 0) {
                   const file = value[0];
                   const fileType = file.type;
                   return (
@@ -451,12 +462,13 @@ const Kyc = () => {
               },
             ),
           FormCacBn: Yup.mixed()
-            .required("Required")
+          .nullable()
+            .optional()
             .test(
               "fileSize",
               "File size must be less than 2MB",
-              (value: MyFileList) => {
-                if (value) {
+              (value) => {
+                if (value instanceof FileList && value.length > 0) {
                   return value[0].size <= 2097152;
                 }
                 return true;
@@ -465,8 +477,8 @@ const Kyc = () => {
             .test(
               "fileType",
               "Only .pdf, .jpg, .png files are allowed",
-              (value: MyFileList) => {
-                if (value) {
+              (value) => {
+                if (value instanceof FileList && value.length > 0) {
                   const file = value[0];
                   const fileType = file.type;
                   return (
@@ -479,12 +491,13 @@ const Kyc = () => {
               },
             ),
           CourtAffidavit: Yup.mixed()
-            .required("Required")
+          .nullable()
+            .optional()
             .test(
               "fileSize",
               "File size must be less than 2MB",
-              (value: MyFileList) => {
-                if (value) {
+              (value) => {
+                if (value instanceof FileList && value.length > 0) {
                   return value[0].size <= 2097152;
                 }
                 return true;
@@ -493,8 +506,8 @@ const Kyc = () => {
             .test(
               "fileType",
               "Only .pdf, .jpg, .png files are allowed",
-              (value: MyFileList) => {
-                if (value) {
+              (value) => {
+                if (value instanceof FileList && value.length > 0) {
                   const file = value[0];
                   const fileType = file.type;
                   return (
@@ -506,13 +519,14 @@ const Kyc = () => {
                 return true;
               },
             ),
-          CommunityRecommendation: Yup.mixed()
-            .required("Required")
+            CommunityRecommendation: Yup.mixed()
+            .nullable()
+            .optional()
             .test(
               "fileSize",
               "File size must be less than 2MB",
-              (value: MyFileList) => {
-                if (value) {
+              (value) => {
+                if (value instanceof FileList && value.length > 0) {
                   return value[0].size <= 2097152;
                 }
                 return true;
@@ -521,8 +535,8 @@ const Kyc = () => {
             .test(
               "fileType",
               "Only .pdf, .jpg, .png files are allowed",
-              (value: MyFileList) => {
-                if (value) {
+              (value) => {
+                if (value instanceof FileList && value.length > 0) {
                   const file = value[0];
                   const fileType = file.type;
                   return (
@@ -534,6 +548,34 @@ const Kyc = () => {
                 return true;
               },
             ),
+          // CommunityRecommendation: Yup.mixed()
+          //   .required("Required")
+          //   .test(
+          //     "fileSize",
+          //     "File size must be less than 2MB",
+          //     (value: MyFileList) => {
+          //       if (value) {
+          //         return value[0].size <= 2097152;
+          //       }
+          //       return true;
+          //     },
+          //   )
+          //   .test(
+          //     "fileType",
+          //     "Only .pdf, .jpg, .png files are allowed",
+          //     (value: MyFileList) => {
+          //       if (value) {
+          //         const file = value[0];
+          //         const fileType = file.type;
+          //         return (
+          //           fileType === "application/pdf" ||
+          //           fileType === "image/jpeg" ||
+          //           fileType === "image/png"
+          //         );
+          //       }
+          //       return true;
+          //     },
+          //   ),
         })}
         onSubmit={(values, { setSubmitting }) => {
           setTimeout(() => {
@@ -1503,6 +1545,25 @@ const Kyc = () => {
                   </span>
                 </p>
 
+                <div className="mb-4"> 
+                    <label
+                      htmlFor="businessPhoneNumber"
+                      className="m-0 text-xs font-medium text-white"
+                    >
+                      Contact’s Person Telephone Number
+                    </label>
+                    <Field
+                      name="businessPhoneNumber"
+                      type="tel"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    />
+                    <ErrorMessage
+                      name="businessPhoneNumber"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+
                 <div className="mb-4">
                   <label
                     htmlFor="cacNumber"
@@ -1521,6 +1582,8 @@ const Kyc = () => {
                     className="text-xs text-red-500"
                   />
                 </div>
+
+                
                 <p className="mt-4 text-base font-semibold text-ajo_offWhite">
                   Kindly upload documents that are:
                 </p>
@@ -1873,6 +1936,9 @@ const Kyc = () => {
                         <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
                           {values.contactPhoneNumber}
                         </div>
+                        <div className="rounded-md bg-white  px-4 py-2 capitalize text-ajo_darkBlue">
+                          {values.businessPhoneNumber}
+                        </div>
                       </span>
                     </div>
                   </div>
@@ -1993,6 +2059,7 @@ const Kyc = () => {
                     } else if (
                       allSections.identification &&
                       activeSection === "identification" &&
+                      !errors.businessPhoneNumber &&
                       !errors.cacNumber &&
                       !errors.FormCacBn &&
                       !errors.CertOfBusinessName
