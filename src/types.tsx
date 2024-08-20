@@ -542,6 +542,8 @@ export interface UpdateMerchantKycProps {
   contactPhoneNumber: string;
   businessPhoneNumber: string;
   contactFullName: string;
+  industry: string;
+  natureOfBusiness: string;
   // bankName: string;
   // acctNo: string;
   // account_bank: string,
