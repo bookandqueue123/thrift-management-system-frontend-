@@ -20,7 +20,7 @@ const Welcome = () => {
         Welcome !
       </p>
       <p className="mt-2 text-[#EAAB40] md:mt-4 md:text-xl">
-        In order to serve your business better, Ajo requires you provide the
+        In order to serve your business better, Finkia requires you provide the
         following details about your organization:
       </p>
       <div className="mt-8 flex flex-col gap-5">

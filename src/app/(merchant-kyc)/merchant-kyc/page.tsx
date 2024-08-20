@@ -10,7 +10,7 @@ import { ErrorMessage, Field, Formik } from "formik";
 import type {} from "ldrs";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { JSXElementConstructor, Key, PromiseLikeOfReactNode, ReactElement, ReactNode, Suspense, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
 
@@ -37,15 +37,42 @@ const Kyc = () => {
   );
   const [selectedState, setSelectedState] = useState("");
   const [selectedLGAArray, setSelectesLGAArray] = useState<string[]>([]);
+  const [selectedIndustry, setSelectedIndustry] = useState<string>("")
+  const [selectedNatureOfBusiness, setSelectedNatureOfBusiness] = useState<string[]>([]);
+ 
+  const {
+    data: allIndustries,
+    isLoading: isLoadingAllIndustry,
+  
+  } = useQuery({
+    queryKey: ["all Industries"],
+    queryFn: async () => {
+      return client
+        .get(`/api/industry`, {})
+        .then((response) => {
+    
+          
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
 
+          throw error;
+        });
+    },
+    staleTime: 5000,
+  });
+
+ 
   const MyEffectComponent = ({ formikValues }: { formikValues: any }) => {
     useEffect(() => {
       setSelectedCountry(formikValues.country);
       setSelectedState(formikValues.state);
+      setSelectedIndustry(formikValues.industry)
     }, [formikValues]);
 
     return null;
   };
+ 
 
   useEffect(() => {
     const filteredStates =
@@ -54,6 +81,15 @@ const Kyc = () => {
 
     setselectedStateArray(filteredStates);
   }, [selectedCountry]);
+
+  useEffect(() => {
+    const filteredIndustry =
+      allIndustries?.find((industry: { name: string; }) => industry.name === selectedIndustry)
+        
+    setSelectedNatureOfBusiness(filteredIndustry?.natureOfBusiness
+    )
+    // setselectedStateArray(filteredStates);
+  }, [selectedIndustry, allIndustries]);
 
   useEffect(() => {
     // Find the Country object in the dataset
@@ -94,6 +130,8 @@ const Kyc = () => {
       formData.append("socialMedia", JSON.stringify(socials));
       formData.append("tradingName", values.tradingName);
       formData.append("website", values.websiteUrl);
+      formData.append("industry", values.industry);
+      formData.append("natureOfBusiness", values.natureOfBusiness);
       formData.append("businessEmailAdress", values.email);
       formData.append("officeAddress1", values.officeAddress);
       formData.append("officeAddress2", values.address2);
@@ -156,6 +194,7 @@ const Kyc = () => {
         });
     },
   });
+  
 
   let initialValues: UpdateMerchantKycProps = {
     country: "",
@@ -170,6 +209,8 @@ const Kyc = () => {
     organisationName: userData?.organisationName ?? "",
     description: "",
     websiteUrl: "",
+    industry: "",
+    natureOfBusiness: "",
     email: userData?.email ?? "",
     facebook: "",
     instagram: "",
@@ -294,8 +335,8 @@ const Kyc = () => {
           email: Yup.string()
             .email("Invalid email format")
             .required("Required"),
-          country: Yup.string().optional(),
-          state: Yup.string().optional(),
+          country: Yup.string().required("required"),
+          state: Yup.string().required("required"),
           contactFullName: Yup.string().optional(),
           contactPhoneNumber: Yup.string()
             .matches(
@@ -337,8 +378,8 @@ const Kyc = () => {
           //   .optional()
           //   .length(10, "Account number must be exactly 10 digits")
           //   .matches(/^\d{10}$/, "Account number should only contain digits"),
-          lga: Yup.string().optional(),
-          officeAddress: Yup.string().optional(),
+          lga: Yup.string().required("required"),
+          officeAddress: Yup.string().required("required"),
           organisationLogo: Yup.mixed()
           .nullable()
           .optional()
@@ -374,6 +415,8 @@ const Kyc = () => {
           organisationName: Yup.string().required("Required"),
           tradingName: Yup.string().optional(),
           websiteUrl: Yup.string().optional(),
+          industry: Yup.string().optional(),
+          natureOfBusiness: Yup.string().optional(),
           BankRecommendation: Yup.mixed()
             .nullable()
             .optional()
@@ -579,6 +622,7 @@ const Kyc = () => {
         })}
         onSubmit={(values, { setSubmitting }) => {
           setTimeout(() => {
+            console.log(values)
             kycUpdate(values);
 
             setSubmitting(false);
@@ -663,7 +707,7 @@ const Kyc = () => {
                     className="text-xs text-red-500"
                   />
                 </div>
-                <div className="">
+                <div className="mb-4">
                   <label
                     htmlFor="websiteUrl"
                     className="m-0 text-xs font-medium text-white"
@@ -681,6 +725,71 @@ const Kyc = () => {
                     className="text-xs text-red-500"
                   />
                 </div>
+
+                <div className="mb-3">
+                  <label
+                    htmlFor="industry"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Industry
+                  </label>
+                  <Field
+                    onChange={handleChange}
+                    as="select"
+                    isInvalid={!!errors.industry}
+                    name="industry"
+                    id="industry"
+                    placeholder="Industry"
+                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  >
+                    <option>Select Industry</option>
+                      {allIndustries &&
+                        allIndustries.map((industry: { id:string; name: string }) => (
+                          <option key={industry.id} value={industry.name}>
+                          {industry.name}
+                        </option>
+                      ))}
+                  </Field>
+                  <ErrorMessage
+                    name="industry"
+                    component="div"
+                    className="text-xs text-red-500"
+                  />
+                </div>
+
+                
+                <div className="mb-4">
+                        <label
+                          htmlFor="natureOfBusiness"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%]"
+                        >
+                          Nature of Business
+                        </label>
+                        <div>
+                          <Field
+                            as="select"
+                            id="natureOfBusiness"
+                            name="natureOfBusiness"
+                            // type="text"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                          >
+                            <option>Select nature Of Business</option>
+
+                            {selectedNatureOfBusiness &&
+                              selectedNatureOfBusiness.map((natureOfBusinesses) => (
+                                <option key={natureOfBusinesses} value={natureOfBusinesses}>
+                                  {natureOfBusinesses}
+                                </option>
+                              ))}
+                          </Field>{" "}
+                        </div>
+                        <ErrorMessage
+                          name="natureOfBusiness"
+                          component="div"
+                          className="text-xs text-red-500"
+                        />
+                      </div>
+                
                 <div className="mt-4">
                   <label
                     htmlFor="organisationLogo"
