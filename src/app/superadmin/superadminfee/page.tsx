@@ -420,8 +420,8 @@ const MutateGateway = ({
       return client.put(`api/payment-gateway/${gatewayToBeEdited}`, {
         name: values.name,
         feeType: values.feeType,
-        percetageFee: values.feeType === "fixedFee" ? '' : values.percentageFee,
-        fixedFee: values.feeType === "fixedFee" ? values.fixedFee : '',
+        percentageFee: values.feeType === "percentageFee" ? values.percentageFee : 0,
+        fixedFee: values.feeType === "fixedFee" ? values.fixedFee : 0,
       });
     },
 

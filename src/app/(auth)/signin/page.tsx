@@ -116,7 +116,7 @@ const SignInForm = () => {
 
       setSuccessMessage((response as any).response.data.message);
 
-      setTimeout(() => {}, 3500);
+      setTimeout(() => {}, 2500);
     },
 
     onError(error: AxiosError<any, any>) {
@@ -289,7 +289,7 @@ const SignInPage = () => {
           SignIn
         </p>
         <p className="mt-2 text-center text-sm text-ajo_orange">
-          Experience the power of seamless savings with Ajo.
+          Experience the power of seamless savings with Finkia.
         </p>
         <SignInForm />
         <div className="mt-6 justify-center md:flex md:gap-1">

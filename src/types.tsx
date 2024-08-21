@@ -540,7 +540,10 @@ export interface UpdateMerchantKycProps {
   contactDOB: string;
   contactEmail: string;
   contactPhoneNumber: string;
+  businessPhoneNumber: string;
   contactFullName: string;
+  industry: string;
+  natureOfBusiness: string;
   // bankName: string;
   // acctNo: string;
   // account_bank: string,
@@ -758,27 +761,29 @@ export interface PurposeProps {
   description: string;
   category: string;
   uniqueCode: string;
-  amount: string | Blob;
-  startDate: string | Blob;
+  amount: number;
+  startDate: string | number | readonly string[] | undefined;
   startTime: string;
-  endDate: string | Blob;
+  endDate: string | number | readonly string[] | undefined;
   endTime: string;
   promoCode: string;
-  promoPercentage:  string | Blob;
-  referralBonus: string | Blob;
+  promoPercentage:  number;
+  referralBonus: number;
   image: File | null;
-  imageUrl: string | null;
-  digitalItem: string | null;
+  imageUrl: any;
+  digitalItem: any;
   visibility: 'general' | 'inhouse';
-  visibilityStartDate: string | Blob;
+  visibilityStartDate: string | number | readonly string[] | undefined;
   visibilityStartTime: string;
-  visibilityEndDate: string | Blob;
+  visibilityEndDate: string | number | readonly string[] | undefined;
   visibilityEndTime: string;
   assignToCustomer: string;
   assignedCustomers: string[];
 
   organisation: string;
   referralBonusValue: string;
+  SelectorAll: 'selectorAllMandatory' | 'selectorAllOptional',
+  selectorCategory: 'selectorCategoryOptional' | 'selectorCategoryMandatory'
 };
 
 // interfaces/Coupon.ts

@@ -143,17 +143,30 @@ export default function MakePayment() {
         }
     };
     
-
-    const makeThePayment = async (fixedFee:  number) => {
+    const decideCharge = (fixedFee: number, percentageFee: number) => {
+        if(fixedFee > percentageFee){
+            return fixedFee
+        }else if(percentageFee > fixedFee){
+            const percentageAmount = ((percentageFee/100) * Number(getTotal()))
+        
+            return percentageAmount
+        }
+        else{
+            return fixedFee
+        }
+    }
+    const makeThePayment = async (fixedFee:  number, percentageFee: number) => {
+       
+        
         try {
-            const amount = Number(getTotal()) + fixedFee;
+            const amount = Number(getTotal()) + decideCharge(fixedFee, percentageFee);
             const email = user.email;
             const phoneNumber = user.phoneNumber;
             const customerName = user.firstName + user.lastName;
-
-            console.log(paymentDetails, amount, email, phoneNumber, userId, organisationId, customerName)
+            const redirectURL = 'customer/make-payment/payment-callback'
+           
             const response = await axios.post(`${apiUrl}api/pay/flw`,
-                { amount, email, paymentDetails: Object.values(paymentDetails), userId, organisationId, phoneNumber, customerName, },
+                { amount, redirectURL, email, paymentDetails: Object.values(paymentDetails), userId, organisationId, phoneNumber, customerName, },
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -179,10 +192,10 @@ export default function MakePayment() {
                 <div className="flex items-center justify-center min-h-screen ">
                     <div className="text-center">
                     <h1 className="text-4xl font-bold mb-8 text-white">Make Payment</h1>
-                    {allGateways.map((gateway: { _id: Key | null | undefined; fixedFee: number; }) => (
+                    {allGateways.map((gateway: { _id: Key | null | undefined; fixedFee: number; percentageFee: number; }) => (
                         <button 
                         key={gateway._id}
-                        onClick={() => makeThePayment(gateway.fixedFee)}
+                        onClick={() => makeThePayment(gateway.fixedFee, gateway.percentageFee)}
                         className="w-full mb-4 py-4 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600">
                         Flutterwave
                     </button>

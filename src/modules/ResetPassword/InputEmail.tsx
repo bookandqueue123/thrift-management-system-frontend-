@@ -65,7 +65,7 @@ const InputEmail: React.FC = () => {
             Forgot Password?
           </p>
           <p className="mt-2 text-center text-sm text-ajo_orange">
-            Experience the power of seamless savings with Ajo.
+            Experience the power of seamless savings with Finkia.
           </p>
 
           <Formik

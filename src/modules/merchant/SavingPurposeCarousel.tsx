@@ -1,44 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu'
 import { FaShareAlt, FaBookmark, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import 'react-horizontal-scrolling-menu/dist/styles.css';
 import Image from 'next/image';
 import { useAuth } from '@/api/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
-import { useSelector } from 'react-redux';
-import { selectOrganizationId, selectUser } from '@/slices/OrganizationIdSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { addSelectedProduct, removeSelectedProduct, selectOrganizationId, selectSelectedProducts, selectUser, setAuthData, updateSelectedProducts } from '@/slices/OrganizationIdSlice';
 import { PurposeProps } from '@/types';
 import { getLetterFromIndex } from '@/utils/LetterIndex';
 import Link from 'next/link';
+import { UseDispatch } from 'react-redux';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import AmountFormatter from '@/utils/AmountFormatter';
 // import './App.css';
 
-const ProductCard = ({ product }: {product: any}) => {
-  return (
-    <Link href={`/customer/savings-purpose/${product._id}`}>
-    <div className="product-card">
-      <div className="image-section">
-        <Image
-        height={81}
-        width={219.25} 
-        src={product.imageUrl}
-         alt={product.purposeName}
-          className="product-image" />
-        <div className="icon-container">
-          <FaShareAlt className="icon" />
-          <FaBookmark className="icon" />
-        </div>
-      </div>
-      <div className="info-section bg-ajo_orange text-black">
-        <h3 className="product-name ">{product.purposeName}</h3>
-        <p className="product-price ">NGN{product.amount}</p>
-        <p className="product-description">{product.description}</p>
-        <a href="#" className="read-more">Read more</a>
-      </div>
-    </div>
-    </Link>
-    
-  );
-};
+
+
+
 
 const LeftArrow = () => {
   const { isFirstItemVisible, scrollPrev } = React.useContext(VisibilityContext);
@@ -75,49 +55,259 @@ const HalfBgCategoryName = ({ name }: {name: string}) => {
   );
 };
 
-const ProductHorizontalScroll = ({ products }: {products: any}) => {
+
+
+
+const ProductHorizontalScroll = ({ products }: { products: any }) => {
+  const router = useRouter();
+  const dispatch = useDispatch();
+
+  // Access the selectedProducts array from Redux
+  const selectedProducts = useSelector(selectSelectedProducts);
+
+  // Handle checkbox change for individual items
+  const handleCheckboxChange = (id: React.Key, isChecked: boolean, product: any) => {
+    const categoryProducts = products[product.category];
+    const isSelectorAllMandatory = product.SelectorAll === 'selectorAllMandatory';
+    const isSelectorCategoryMandatory = product.selectorCategory === 'selectorCategoryMandatory';
+  
+    if (isSelectorAllMandatory) {
+      // Always add if it's 'selectorAllMandatory' and prevent removal
+      if (!selectedProducts.includes(id)) {
+        dispatch(addSelectedProduct(id));
+      }
+      return;
+    }
+  
+    if (isChecked) {
+      if (!selectedProducts.includes(id)) {
+        dispatch(addSelectedProduct(id));
+      }
+    } else {
+      if (isSelectorCategoryMandatory) {
+        // Ensure categoryProducts is defined and check if any other products are selected
+        if (categoryProducts && categoryProducts.length > 0) {
+          const anyOtherChecked = categoryProducts.some(
+            (p: any) => selectedProducts.includes(p._id) && p._id !== id
+          );
+  
+          if (!anyOtherChecked) {
+            dispatch(removeSelectedProduct(id)); // Uncheck if no other product in the category is checked
+          }
+        } else {
+          dispatch(removeSelectedProduct(id)); // Uncheck if there are no other products
+        }
+      } else {
+        dispatch(removeSelectedProduct(id)); // Normal product, just remove it
+      }
+    }
+  };
+
+  
+  
+
+  // Handle checkbox change for entire category
+  const handleCategoryCheckboxChange = (categoryProducts: any[], isChecked: boolean) => {
+    const updatedProducts = [...selectedProducts];
+
+    categoryProducts.forEach((product) => {
+      const isSelectorAllMandatory = product.SelectorAll === 'selectorAllMandatory';
+      const isSelectorCategoryMandatory = product.selectorCategory === 'selectorCategoryMandatory';
+
+      if (isChecked) {
+        if (!updatedProducts.includes(product._id)) {
+          updatedProducts.push(product._id);
+        }
+      } else {
+        if (!isSelectorAllMandatory) {
+          const index = updatedProducts.indexOf(product._id);
+          if (index > -1) {
+            updatedProducts.splice(index, 1);
+          }
+        }
+      }
+    });
+
+    // Dispatch the action to update the selectedProducts in the store
+    dispatch(updateSelectedProducts(updatedProducts));
+  };
+
+  // Add mandatory products to selectedProducts on initial load
+  // useEffect(() => {
+  //   if (!products) return; // Check if products is defined and not null
+
+  //   Object.keys(products).forEach((categoryName) => {
+  //     const categoryProducts = products[categoryName];
+  //     categoryProducts.forEach((product: any) => {
+  //       if (
+  //         (product.SelectorAll === 'selectorAllMandatory' ||
+  //           (product.selectorCategory === 'selectorCategoryMandatory' &&
+  //             categoryProducts.some(
+  //               (p: any) =>
+  //                 p._id !== product._id &&
+  //                 (p.SelectorAll === 'selectorAllMandatory' || selectedProducts.includes(p._id))
+  //             ))) &&
+  //         !selectedProducts.includes(product._id)
+  //       ) {
+  //         dispatch(addSelectedProduct(product._id));
+  //       }
+  //     });
+  //   });
+  // }, [products, selectedProducts, dispatch]);
+  useEffect(() => {
+    if (!products) return;
+    
+    Object.keys(products).forEach((categoryName) => {
+      const categoryProducts = products[categoryName];
+      categoryProducts.forEach((product: any) => {
+        const shouldSelect = 
+          product.SelectorAll === 'selectorAllMandatory' || 
+          (product.selectorCategory === 'selectorCategoryMandatory' && 
+          categoryProducts.some((p: { _id: React.Key; }) => p._id !== product._id && selectedProducts.includes(p._id)));
+  
+        if (shouldSelect && !selectedProducts.includes(product._id)) {
+          dispatch(addSelectedProduct(product._id));
+        }
+      });
+    });
+  }, [products, dispatch]);
+  
 
   return (
     <div>
-      <>
-        
-        {/* <p>Category A: Automobile and Gadget</p> */}
-        
-        {/* <div className="scroll-container">
-            <ScrollMenu LeftArrow={LeftArrow} RightArrow={RightArrow}>
-                {products?.map((product: { id: React.Key | null | undefined; }) => (
-                <ProductCard key={product.id} product={product} />
-                ))}
-            </ScrollMenu>
-        </div> */}
-       </>
+      <div
+        className="text-red-500 text-5xl hover:text-blue-500 cursor-pointer"
+        onClick={() => router.push(`/customer/savings-purpose/make-payment`)}
+      >
+        {selectedProducts.length}
+      </div>
+      {products &&
+        Object.keys(products).map((categoryName, index) => {
+          const categoryProducts = products[categoryName];
+          const allChecked = categoryProducts.every(
+            (product: any) =>
+              product.SelectorAll === 'selectorAllMandatory' ||
+              selectedProducts.includes(product._id)
+          );
 
-
-       {products && Object.keys(products)?.map((categoryName, index) => (
-  <div 
-    key={categoryName}
-    style={{
-   borderRadius: index === 0 ? '10px' : '0',
-      background: index === 0 ? 'linear-gradient(to bottom, #EAAB40 50%, transparent 50%)' : 'none'
-    }}
-  >
-    <h3 className={`text-black text-center text-extrabold ${index === 0 ? 'block' : 'hidden'}`}>Featured Savings Purpose</h3>
-    
-    <h2 className='text-white text-bold pl-4'>Category {(getLetterFromIndex(index))}: {categoryName}</h2>
-    <div className="scroll-container">
-      <ScrollMenu LeftArrow={LeftArrow} RightArrow={RightArrow}>
-        {products[categoryName].map((purpose: { _id: React.Key | null | undefined; }) => (
-          <ProductCard key={purpose._id} product={purpose} />
-        ))}
-      </ScrollMenu>
+          return (
+            <div
+              key={categoryName}
+              style={{
+                borderRadius: index === 0 ? '10px' : '0',
+                background:
+                  index === 0
+                    ? 'linear-gradient(to bottom, #EAAB40 50%, transparent 50%)'
+                    : 'none',
+              }}
+            >
+              <div className="flex items-center pl-4">
+                <h2 className="text-white text-bold">Category: {categoryName}</h2>
+                <input
+                  type="checkbox"
+                  className="ml-2"
+                  checked={allChecked}
+                  onChange={(e) =>
+                    handleCategoryCheckboxChange(categoryProducts, e.target.checked)
+                  }
+                />
+              </div>
+              <div className="scroll-container">
+                <ScrollMenu LeftArrow={LeftArrow} RightArrow={RightArrow}>
+                  {categoryProducts.map((purpose: any) => (
+                    <ProductCard
+                      key={purpose._id}
+                      product={purpose}
+                      onCheckboxChange={(id, isChecked) =>
+                        handleCheckboxChange(id, isChecked, purpose)
+                      }
+                      isChecked={
+                        purpose.SelectorAll === 'selectorAllMandatory' ||
+                        selectedProducts.includes(purpose._id)
+                      }
+                    />
+                  ))}
+                </ScrollMenu>
+              </div>
+            </div>
+          );
+        })}
     </div>
-  </div>
-))}
-
-    </div>
-
   );
 };
+
+
+
+
+const ProductCard = ({
+  product,
+  onCheckboxChange,
+  isChecked,
+}: {
+  product: any;
+  onCheckboxChange: (id: React.Key, isChecked: boolean) => void;
+  isChecked: boolean;
+}) => {
+  const router = useRouter();
+  const truncateDescription = (description: string, wordLimit: number) => {
+    const words = description.split(' ');
+    return (
+      words.slice(0, wordLimit).join(' ') +
+      (words.length > wordLimit ? '...' : '')
+    );
+  };
+
+  return (
+    <div className="product-card">
+      <div className="checkbox-container" style={{ marginLeft: '8px' }}>
+            <input
+              type="checkbox"
+              checked={isChecked}
+              onChange={(e) =>
+                onCheckboxChange(product._id, e.target.checked)
+              }
+            />
+          </div>
+      <div className="image-section">
+        
+        <Image
+          height={81}
+          width={219.25}
+          src={product.imageUrl}
+          alt={product.purposeName}
+          className="product-image"
+        />
+        <div
+          className="icon-container"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <FaShareAlt className="icon" />
+          <FaBookmark className="icon" />
+          
+        </div>
+      </div>
+      <div className="info-section bg-ajo_orange text-black">
+        <h3 className="product-name">{product.purposeName}</h3>
+        <p className="product-price">NGN{AmountFormatter(product.amount)}</p>
+        <p className="product-description">
+          {truncateDescription(product.description, 15)}
+        </p>
+        <a
+          href={`/customer/savings-purpose/${product._id}`}
+          className="read-more"
+        >
+          Read more
+        </a>
+      </div>
+    </div>
+  );
+};
+
+
 
 
 const App = () => {
@@ -151,7 +341,10 @@ const App = () => {
     },
     staleTime: 5000,
   });
-  const filteredPurposes = allPurpose?.filter((purpose: { assignedCustomers: string | string[]; }) => purpose.assignedCustomers.includes(user._id));
+
+  const filteredPurposes = allPurpose?.filter((purpose: { assignedCustomers: string | string[]; }) => purpose.assignedCustomers.includes(user?._id));
+  
+  
   const groupedPurposes = filteredPurposes?.reduce((acc: { [x: string]: any[]; }, purpose: { category: { name: any; }; }) => {
     const categoryName = purpose.category.name;
     if (!acc[categoryName]) {
@@ -163,7 +356,7 @@ const App = () => {
  
 
  
-  const automobileCategoryPurpose = filteredPurposes?.filter((purpose: { category: { name: string | string[]; }; }) => purpose.category.name.includes("Automobile"));
+  // const automobileCategoryPurpose = filteredPurposes?.filter((purpose: { category: { name: string | string[]; }; }) => purpose.category.name.includes("Automobile"));
 // console.log(automobileCategoryPurpose);
   return (
     <div className="App">
@@ -173,3 +366,4 @@ const App = () => {
 };
 
 export default App;
+

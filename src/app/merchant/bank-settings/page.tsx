@@ -32,7 +32,7 @@ const MyForm = () => {
     const initialValues: bankProps = {
         bankName: null,
         bankAccountNumber: '',
-        split_value: '95',
+        split_value: '100',
         split_type: 'percentage',
       }
     const validationSchema = Yup.object().shape({

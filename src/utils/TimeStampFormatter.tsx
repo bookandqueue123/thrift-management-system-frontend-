@@ -51,3 +51,28 @@ export function extractTime(dateString: string | Date): string {
   // Return the formatted time string
   return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 }
+
+
+export function daysBetweenDates(startDateString: string | number | Date, endDateString: string | number | Date) {
+  const startDate = new Date(startDateString);
+  const endDate = new Date(endDateString);
+  const timeDifference = Number(endDate) - Number(startDate);
+  const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+
+  const dayOrDays = daysDifference === 1 ? 'day' : 'days';
+  return `${daysDifference} ${dayOrDays}`;
+}
+
+export function daysUntilDate(futureDateString: string | number | Date) {
+  const futureDate = new Date(futureDateString);
+  const today = new Date();
+
+  const timeDifference = Number(futureDate) - Number(today);
+  const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+
+  const dayOrDays = daysDifference === 1 ? 'day' : 'days';
+  return `${daysDifference} ${dayOrDays}`;
+}
+
+
+

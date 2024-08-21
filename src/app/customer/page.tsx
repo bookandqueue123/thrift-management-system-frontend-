@@ -4,7 +4,7 @@ import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
 import Modal from "@/components/Modal";
 import TransactionsTable from "@/components/Tables";
-import { selectUserId } from "@/slices/OrganizationIdSlice";
+import { selectSelectedProducts, selectUserId } from "@/slices/OrganizationIdSlice";
 import { allSavingsResponse } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { extractDate, extractTime } from "@/utils/TimeStampFormatter";
@@ -17,6 +17,8 @@ import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { useSelector } from "react-redux";
 
 const CustomerDashboard = () => {
+  const selectedProducts = useSelector(selectSelectedProducts);
+  console.log(selectedProducts)
   const PAGE_SIZE = 5;
   const [modalState, setModalState] = useState(true);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
