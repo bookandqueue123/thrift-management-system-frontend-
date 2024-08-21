@@ -97,6 +97,7 @@ export default function MakePayment() {
 
     const GoToPayment = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
+        console.log(paymentDetails)
         if (Object.keys(paymentDetails).length === 0) {
             setShowModal(false);
             setErrors({ general: "No payment details provided." });

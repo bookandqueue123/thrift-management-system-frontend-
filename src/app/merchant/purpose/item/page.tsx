@@ -591,6 +591,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
   category: singlePurpose?.category ?? "",
   uniqueCode: singlePurpose?.uniqueCode ?? "",
   amount: singlePurpose?.amount ?? 0,
+  quantity: singlePurpose?.quantity ?? "Nill",
   startDate: extractDate(singlePurpose?.startDate) ?? "",
   startTime: singlePurpose?.startTime ?? "",
   endDate: extractDate(singlePurpose?.endDate) ?? "",
@@ -619,6 +620,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
     category: '',
     uniqueCode: '',
     amount: 0,
+    quantity: 1,
     startDate: '',
     startTime: '',
     endDate: '',
@@ -689,6 +691,14 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
     description: Yup.string().required('Description is required'),
     category: Yup.string().required('Category is required'),
     amount: Yup.number().required('Amount is required'),
+    quantity: Yup.mixed()
+  .test('is-number-or-string', 'Quantity must be a number or a string Nill if the purpose is unquantifiabe', function (value) {
+    return (
+      typeof value === 'number' ||
+      (typeof value === 'string' && !isNaN(Number(value)))
+    );
+  })
+  .required('Quantity is required'),
     startDate: Yup.date().optional(),
     startTime: Yup.string().optional(),
     endDate: Yup.date().optional(),
@@ -791,7 +801,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
      formData.append("organisation", organizationId)
       formData.append("uniqueCode", values.uniqueCode)
        formData.append("amount", values.amount)
-      
+      formData.append("quantity", values.quantity)
       formData.append('startDate', values.startDate);
       formData.append('startTime', values.startTime);
       formData.append('endDate', values.endDate);
@@ -858,10 +868,10 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
       formData.append("purposeName", values.purposeName)
       formData.append("description", values.description)
       formData.append("category", values.category)
-     formData.append("organisation", organizationId)
+      formData.append("organisation", organizationId)
       formData.append("uniqueCode", values.uniqueCode)
-       formData.append("amount", values.amount)
-      
+      formData.append("amount", values.amount)
+      formData.append("quantity", values.quantity)
       formData.append('startDate', values.startDate);
       formData.append('startTime', values.startTime);
       formData.append('endDate', values.endDate);
@@ -958,6 +968,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
         )}
       </div>
 
+      <div className="grid grid-cols-2 gap-4"> 
       <div className="flex flex-col space-y-2">
         <label className="m-0 text-xs font-medium text-white">
           Select All
@@ -1032,6 +1043,43 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
         </div>
       </div>
 
+      <div className="flex flex-col space-y-2">
+        <label className="m-0 text-xs font-medium text-white">
+          Visibility
+          <span className="font-base font-semibold text-[#FF0000]">
+            *
+          </span>
+        </label>
+        <div className="flex items-center space-x-4">
+          <div>
+            <input
+              id="visibilityGeneral"
+              type="radio"
+              name="visibility"
+              value="general"
+              onChange={formik.handleChange}
+              checked={formik.values.visibility === 'general'}
+            />
+            <label className="ml-2 m-0 text-xs font-medium text-white" htmlFor="visibilityGeneral" >
+              General Visibility
+            </label>
+          </div>
+          <div>
+            <input
+              id="visibilityInhouse"
+              type="radio"
+              name="visibility"
+              value="inhouse"
+              onChange={formik.handleChange}
+              checked={formik.values.visibility === 'inhouse'}
+            />
+            <label className="m-2 m-0 text-xs font-medium text-white" htmlFor="visibilityInhouse" >
+              Inhouse
+            </label>
+          </div>
+        </div>
+      </div>
+      </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col space-y-2">
           <label className="m-0 text-xs font-medium text-white" htmlFor="category">
@@ -1075,7 +1123,8 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
         </div>
       </div>
 
-      <div className="flex flex-col space-y-2 w-[50%]">
+      <div className="grid grid-cols-2 gap-4">
+      <div className="flex flex-col space-y-2 ">
         <label className="m-0 text-xs font-medium text-white" htmlFor="amount">
           Amount
           <span className="font-base font-semibold text-[#FF0000]">
@@ -1095,8 +1144,28 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
         )}
       </div>
 
+      <div className="flex flex-col space-y-2 ">
+        <label className="m-0 text-xs font-medium text-white" htmlFor="quantity">
+          Quantity (Nill for unquantifiabe purpose/item)
+          <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
+          </label>
+        <input
+          id="quantity"
+          name="quantity"
+         
+          onChange={formik.handleChange}
+          value={formik.values.quantity}
+          className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+        />
+        {formik.errors.quantity && formik.touched.quantity && (
+          <div className="text-red-500"><>{formik.errors.quantity}</></div>
+        )}
+      </div>
+        </div>
         <div><h1 className="text-xl text-white">Maximum payment Duration</h1>
-      <div className="grid grid-cols-4 gap-4 mt-1">
+      <div className="grid grid-cols-2 gap-4 mt-1">
         
         <div className="flex flex-col space-y-2">
           <label className="m-0 text-xs font-medium text-white" htmlFor="startDate">Start Date</label>
@@ -1529,42 +1598,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
 
 
 
-      <div className="flex flex-col space-y-2">
-        <label className="m-0 text-xs font-medium text-white">
-          Visibility
-          <span className="font-base font-semibold text-[#FF0000]">
-            *
-          </span>
-        </label>
-        <div className="flex items-center space-x-4">
-          <div>
-            <input
-              id="visibilityGeneral"
-              type="radio"
-              name="visibility"
-              value="general"
-              onChange={formik.handleChange}
-              checked={formik.values.visibility === 'general'}
-            />
-            <label className="ml-2 m-0 text-xs font-medium text-white" htmlFor="visibilityGeneral" >
-              General Visibility
-            </label>
-          </div>
-          <div>
-            <input
-              id="visibilityInhouse"
-              type="radio"
-              name="visibility"
-              value="inhouse"
-              onChange={formik.handleChange}
-              checked={formik.values.visibility === 'inhouse'}
-            />
-            <label className="m-2 m-0 text-xs font-medium text-white" htmlFor="visibilityInhouse" >
-              Inhouse
-            </label>
-          </div>
-        </div>
-      </div>
+      
 
       <div className="grid grid-cols-4 gap-4">
         <div className="flex flex-col space-y-2">

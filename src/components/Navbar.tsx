@@ -618,6 +618,7 @@ export const SuperAdminSidebar = ({
     "commission",
     "roles",
     "industry",
+    "category",
     "users",
     "account-statement",
     'superadminfee'
