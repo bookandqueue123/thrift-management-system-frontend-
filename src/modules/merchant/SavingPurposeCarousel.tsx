@@ -83,6 +83,16 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
       if (!selectedProducts.includes(id)) {
         dispatch(addSelectedProduct(id));
       }
+  
+      // Check and add mandatory category products
+      categoryProducts.forEach((categoryProduct: any) => {
+        if (
+          categoryProduct.selectorCategory === 'selectorCategoryMandatory' &&
+          !selectedProducts.includes(categoryProduct._id)
+        ) {
+          dispatch(addSelectedProduct(categoryProduct._id));
+        }
+      });
     } else {
       if (isSelectorCategoryMandatory) {
         // Ensure categoryProducts is defined and check if any other products are selected
@@ -102,7 +112,7 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
       }
     }
   };
-
+  
   
   
 
@@ -163,23 +173,32 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
         const shouldSelect = 
           product.SelectorAll === 'selectorAllMandatory' || 
           (product.selectorCategory === 'selectorCategoryMandatory' && 
-          categoryProducts.some((p: { _id: React.Key; }) => p._id !== product._id && selectedProducts.includes(p._id)));
+          (categoryProducts.some((p: { _id: React.Key; SelectorAll: string }) => p._id !== product._id && (p.SelectorAll === 'selectorAllMandatory' || selectedProducts.includes(p._id)))));
   
         if (shouldSelect && !selectedProducts.includes(product._id)) {
           dispatch(addSelectedProduct(product._id));
         }
       });
     });
-  }, [products, dispatch]);
+  }, [products, selectedProducts, dispatch]);
   
-
+  const clearSelectedProducts = () => {
+    localStorage.removeItem('selectedProducts');
+    // Optionally, you can dispatch an action to update the Redux state as well
+    dispatch(updateSelectedProducts([])); // Clear the Redux state too
+  };
   return (
     <div>
-      <div
-        className="text-red-500 text-5xl hover:text-blue-500 cursor-pointer"
-        onClick={() => router.push(`/customer/savings-purpose/make-payment`)}
-      >
-        {selectedProducts.length}
+      <div>
+      <button onClick={clearSelectedProducts}>Clear Selected Products</button>
+        <div className='text-4xl text-white mb-4'>
+        Total Selected Item(s):
+         <span 
+          onClick={() => router.push(`/customer/savings-purpose/make-payment`)} 
+          className="text-red-500 border-2 border-white px-4 ml-2 text-3xl hover:text-blue-500 cursor-pointer">
+            {selectedProducts.length}
+          </span>
+        </div>
       </div>
       {products &&
         Object.keys(products).map((categoryName, index) => {
@@ -257,19 +276,27 @@ const ProductCard = ({
     );
   };
 
+  const renderQuantityOptions = () => {
+    if (product.quantity === 'Nill') {
+      return <option value="Nill">Nill</option>;
+    }
+    return Array.from({ length: product.quantity }, (_, i) => (
+      <option key={i + 1} value={i + 1}>
+        {i + 1}
+      </option>
+    ));
+  };
+
   return (
     <div className="product-card">
       <div className="checkbox-container" style={{ marginLeft: '8px' }}>
-            <input
-              type="checkbox"
-              checked={isChecked}
-              onChange={(e) =>
-                onCheckboxChange(product._id, e.target.checked)
-              }
-            />
-          </div>
+        <input
+          type="checkbox"
+          checked={isChecked}
+          onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
+        />
+      </div>
       <div className="image-section">
-        
         <Image
           height={81}
           width={219.25}
@@ -287,12 +314,21 @@ const ProductCard = ({
         >
           <FaShareAlt className="icon" />
           <FaBookmark className="icon" />
-          
         </div>
       </div>
       <div className="info-section bg-ajo_orange text-black">
         <h3 className="product-name">{product.purposeName}</h3>
+        <div className="product-price-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <p className="product-price">NGN{AmountFormatter(product.amount)}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 'auto' }}>
+          <label htmlFor={`quantity-${product._id}`} style={{ fontSize: '0.9rem', marginBottom: '4px' }}>Qty</label>
+          {product.quantity}
+          {/* <select id={`quantity-${product._id}`} className="quantity-dropdown">
+            {renderQuantityOptions()}
+          </select> */}
+        </div>
+      </div>
+
         <p className="product-description">
           {truncateDescription(product.description, 15)}
         </p>
@@ -306,6 +342,7 @@ const ProductCard = ({
     </div>
   );
 };
+
 
 
 

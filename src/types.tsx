@@ -673,6 +673,7 @@ export interface permissionObject {
 }
 
 export interface roleResponse {
+  ownerRole: string;
   _id: string;
   name: string;
   description: string;
@@ -762,6 +763,7 @@ export interface PurposeProps {
   category: string;
   uniqueCode: string;
   amount: number;
+  quantity: number | string;
   startDate: string | number | readonly string[] | undefined;
   startTime: string;
   endDate: string | number | readonly string[] | undefined;

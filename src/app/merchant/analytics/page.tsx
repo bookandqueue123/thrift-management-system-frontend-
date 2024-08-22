@@ -474,7 +474,7 @@ export default function Analytics() {
                     {transaction.appliedPercentage}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {(transaction.appliedPercentage/100) * (transaction.totalexpectedSavings)}
+                    {((transaction.appliedPercentage/100) * (transaction.totalexpectedSavings)).toFixed(2)}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {AmountFormatter(transaction.adminFee)}
