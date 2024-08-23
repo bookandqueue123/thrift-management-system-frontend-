@@ -14,6 +14,7 @@ import { UseDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import AmountFormatter from '@/utils/AmountFormatter';
+import { CustomButton } from '@/components/Buttons';
 // import './App.css';
 
 
@@ -190,15 +191,21 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
   return (
     <div>
       <div>
-      <button onClick={clearSelectedProducts}>Clear Selected Products</button>
-        <div className='text-4xl text-white mb-4'>
+      {/* <button onClick={clearSelectedProducts}>Clear Selected Products</button> */}
+        <div className='text-2xl text-extrabold text-white mb-4'>
         Total Selected Item(s):
          <span 
-          onClick={() => router.push(`/customer/savings-purpose/make-payment`)} 
-          className="text-red-500 border-2 border-white px-4 ml-2 text-3xl hover:text-blue-500 cursor-pointer">
+          // onClick={() => router.push(`/customer/savings-purpose/make-payment`)} 
+          className="text-white border-2 border-white px-4 ml-2 text-xl hover:text-blue-500 cursor-pointer">
             {selectedProducts.length}
           </span>
         </div>
+        <CustomButton
+        label="Pay for Selected Item(s)"
+        type='button'
+        style="bg-white text-bold mb-2 text-[15px] py-3 px-2 text-black hover:text-white hover:bg-[#EAAB40] rounded-md flex-1"
+        onButtonClick={() => router.push(`/customer/savings-purpose/make-payment`)}
+       />
       </div>
       {products &&
         Object.keys(products).map((categoryName, index) => {

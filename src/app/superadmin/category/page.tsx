@@ -36,7 +36,8 @@ const Categories = () => {
 
   const { client } = useAuth();
   const user = useSelector(selectUser);
-
+  const userId = useSelector(selectUserId)
+  const [searchResult, setSearchResult] = useState("");
   const [modalState, setModalState] = useState(false);
   const [modalToShow, setModalToShow] = useState<
     "edit-category" | "create-category" | ""
@@ -54,10 +55,10 @@ const Categories = () => {
     queryKey: ["allCatgories"],
     queryFn: async () => {
       return client
-        .get(`/api/categories?organisation=${organisationId}`, {})
+        .get(`/api/categories?ownerRole=superadmin`, {})
         .then((response: AxiosResponse<roleResponse[], any>) => {
     
-          
+          setFilteredCategories(response.data)
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -68,12 +69,12 @@ const Categories = () => {
     staleTime: 5000,
   });
 
-  useEffect(() => {
-    const superadminCategories = allCatgories?.filter(category => category.ownerRole === 'superadmin');
+  // useEffect(() => {
+  //   const superadminCategories = allCatgories?.filter(category => category.ownerRole === 'superadmin');
         
 
-        setFilteredCategories(superadminCategories || []);
-  }, [allCatgories])
+  //       setFilteredCategories(superadminCategories || []);
+  // }, [allCatgories])
 
  
 
@@ -91,6 +92,7 @@ const Categories = () => {
     },
   });
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchResult(e.target.value);
     if (allCatgories) {
 
       const searchQuery = e.target.value.trim().toLowerCase();

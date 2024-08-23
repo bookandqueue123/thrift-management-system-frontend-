@@ -5,7 +5,7 @@ import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import Modal, { ModalConfirmation } from "@/components/Modal";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
-import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { selectOrganizationId, selectUser, selectUserId } from "@/slices/OrganizationIdSlice";
 import { CategoryFormValuesProps, permissionObject, roleResponse } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
@@ -36,7 +36,7 @@ const Categories = () => {
 
   const { client } = useAuth();
   const user = useSelector(selectUser);
-
+  const userId = useSelector(selectUserId)
   const [modalState, setModalState] = useState(false);
   const [modalToShow, setModalToShow] = useState<
     "edit-category" | "create-category" | ""
@@ -54,7 +54,7 @@ const Categories = () => {
     queryKey: ["allCatgories"],
     queryFn: async () => {
       return client
-        .get(`/api/categories?organisation=${organisationId}`, {})
+        .get(`/api/categories?ownerRole=merchant&ownerId=${userId}`, {})
         .then((response: AxiosResponse<roleResponse[], any>) => {
     
           setFilteredCategories(response.data);
@@ -68,6 +68,12 @@ const Categories = () => {
     staleTime: 5000,
   });
 
+  // useEffect(() => {
+  //   const merchantCategories = filteredCategories?.filter(category => category.ownerRole === 'merchant' && category.ownerId === userId );
+       
+
+  //       setFilteredCategories(merchantCategories || []);
+  // }, [userId])
  
 
   const { data: allPermissions } = useQuery({
@@ -295,6 +301,7 @@ const MutateCategory = ({
   setModalContent: Dispatch<SetStateAction<"" | "status" | "form">>;
 }) => {
   const { client } = useAuth();
+  const userId = useSelector(selectUserId)
   const organisationId = useSelector(selectOrganizationId);
   const [assignedPermissions, setAssignedPermissions] = useState<string[]>([]);
   
@@ -386,7 +393,8 @@ const MutateCategory = ({
       return client.put(`/api/categories/${categoryToBeEdited}`, {
         name: values.name,
         description: values.description,
-       
+        ownerId: userId,
+        ownerRole: "merchant"
       });
     },
 

@@ -646,7 +646,7 @@ export const SuperAdminSidebar = ({
   return (
     <aside>
       <div
-        className={`${toggleSidebar()} fixed h-full w-44 space-y-10 border-r border-r-ajo_offWhite border-opacity-80 bg-ajo_darkBlue`}
+        className={`${toggleSidebar()} overflow-y-auto fixed h-full w-44 space-y-10 border-r border-r-ajo_offWhite border-opacity-80 bg-ajo_darkBlue`}
       >
         <div className="flex w-full items-center justify-between px-6 py-6">
           <Link href="/" tabIndex={-1} className="outline-none">
