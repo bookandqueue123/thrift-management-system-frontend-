@@ -367,7 +367,8 @@ const MutateCategory = ({
       return client.post(`/api/categories`, {
         name: values.name,
         description: values.description,
-        
+        ownerId: userId,
+        ownerRole: "merchant"
       });
     },
 
