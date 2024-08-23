@@ -673,6 +673,7 @@ export interface permissionObject {
 }
 
 export interface roleResponse {
+  ownerId: string;
   ownerRole: string;
   _id: string;
   name: string;

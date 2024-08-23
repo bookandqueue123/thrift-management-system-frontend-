@@ -479,6 +479,7 @@ const MutateUser = ({
 }) => {
 
   const router = useRouter()
+  const userId = useSelector(selectUserId)
   const { client } = useAuth();
   const organizationId = useSelector(selectOrganizationId);
   const [selectedOptions, setSelectedOptions] = useState<
@@ -494,7 +495,7 @@ const {
     queryKey: ["allCatgories"],
     queryFn: async () => {
       return client
-        .get(`/api/categories?organisation=${organizationId}`, {})
+        .get(`/api/categories?ownerRole=merchant&ownerId=${userId}`, {})
         .then((response: AxiosResponse<roleResponse[], any>) => {
           return response.data;
         })
@@ -505,6 +506,27 @@ const {
     },
     staleTime: 5000,
   });
+
+  const {
+    data: allGeneralCategories,
+    isLoading: isLoadingAllGeneralCategories,
+    refetch: refetchGeneralCategories,
+  } = useQuery({
+    queryKey: ["allGeneralCategories"],
+    queryFn: async () => {
+      return client
+        .get(`/api/categories?ownerRole=superadmin`, {})
+        .then((response: AxiosResponse<roleResponse[], any>) => {
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+
+          throw error;
+        });
+    },
+    staleTime: 5000,
+  });
+
 
 
   const {
@@ -739,6 +761,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
         }, 800);
     },
   });
+
 
   useEffect(() => {
     const calculateReferralBonusValue = () => {
@@ -1096,9 +1119,14 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
           >
             <option value="">Select Category</option>
             
-            {allCatgories?.map(category => (
+            {formik.values.visibility === "inhouse" ? allCatgories?.map(category => (
                 <option key={category._id} value={category._id}>{category.name}</option>
-            ))}
+            )):
+            allGeneralCategories?.map(category => (
+              <option key={category._id} value={category._id}>{category.name}</option>
+          ))
+          
+          }
             
             {/* <option value="category2">Category 2</option> */}
           </select>

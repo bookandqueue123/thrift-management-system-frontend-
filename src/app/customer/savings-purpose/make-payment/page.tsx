@@ -4,6 +4,7 @@ import Modal from "@/components/Modal";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId, selectSelectedProducts, selectToken, selectUser, selectUserId } from "@/slices/OrganizationIdSlice";
 import { savingsFilteredById } from "@/types";
+import AmountFormatter from "@/utils/AmountFormatter";
 import { daysBetweenDates, daysUntilDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -217,7 +218,7 @@ export default function MakePayment() {
                                     <tr key={index}>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">{index + 1}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">{purpose.purposeName}</td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm">{purpose.amount}</td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm">{(AmountFormatter(Number(purpose.amount)))}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">
                                             <input
                                                 type="number"
@@ -227,7 +228,7 @@ export default function MakePayment() {
                                             />
                                         </td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                            {(Number(purpose.amount) * (paymentDetails[purpose._id]?.quantity || 1)).toFixed(2)}
+                                            {AmountFormatter(parseFloat((Number(purpose.amount) * (paymentDetails[purpose._id]?.quantity || 1)).toFixed(2)))}
                                         </td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">
                                             <input
@@ -239,7 +240,7 @@ export default function MakePayment() {
                                             <br/>
                                             {errors[purpose._id] && <span className="text-red-500">{errors[purpose._id]}</span>}
                                         </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm">{purpose.balance?.toFixed(2)}</td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm">{AmountFormatter(purpose.balance?.toFixed(2))}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">
                                         {!purpose.endDate ? "Nill" : daysBetweenDates(purpose.startDate, purpose.endDate)}
                                         </td>
