@@ -3,6 +3,7 @@ import Banner from "@/components/Banner";
 import Link from "next/link";
 
 const Landing = () => {
+  
   return (
     <main className="md:flex">
       <Banner />
