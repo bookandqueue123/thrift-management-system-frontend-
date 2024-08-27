@@ -728,7 +728,29 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
     SelectorAll: Yup.string().required('This field is required'),
     selectorCategory: Yup.string().required('This field is required'),
     assignedCustomers: Yup.array().optional(),
-    imageUrl: Yup.string().required('Image is required'),
+    imageUrl: Yup.mixed()
+          .required()
+          .test(
+            "fileSize",
+            "File size must be less than or equal to 1MB",
+            (value) => {
+              if (value instanceof FileList && value.length > 0) {
+                return value[0].size <= 1048576; // 1MB limit
+              }
+              return true; // No file provided, so validation passes
+            }
+          )
+          .test(
+            "fileType",
+            "Only .jpg, .png files are allowed",
+            (value) => {
+              if (value instanceof FileList && value.length > 0) {
+                const fileType = value[0].type;
+                return fileType === "image/jpeg" || fileType === "image/png"; // Only .jpg or .png allowed
+              }
+              return true; // No file provided, so validation passes
+            }
+          ),
     // digitalItem: Yup.string().optional()
     
   });
@@ -817,7 +839,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
      formData.append("organisation", organizationId)
       formData.append("uniqueCode", values.uniqueCode)
        formData.append("amount", values.amount)
-       formData.append("merchantQuantity", typeof values.quantity === 'string' ? 'Nill' : values.quantity);
+       formData.append("merchantQuantity",  values.quantity);
       formData.append('startDate', values.startDate);
       formData.append('startTime', values.startTime);
       formData.append('endDate', values.endDate);

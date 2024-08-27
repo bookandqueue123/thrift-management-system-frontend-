@@ -333,6 +333,7 @@ export interface WithdrawalProps {
 }
 
 export interface Organisation {
+  lga: string;
   accountNumber: string;
   assignedCustomer?: any[];
   businessEmailAdress: string;
@@ -371,6 +372,8 @@ export interface Organisation {
   __v?: number;
   _id?: string;
   photo?: string;
+  industry: string;
+  natureOfBusiness: string;
 }
 
 export interface Guarantor {

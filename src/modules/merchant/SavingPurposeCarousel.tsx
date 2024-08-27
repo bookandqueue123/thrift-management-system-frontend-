@@ -315,11 +315,11 @@ const ProductCard = ({
         </div>
         <div className="image-section h-[40%]">
           <Image
-            height={150}
+            height={100}
             width={150}
             src={product.imageUrl}
             alt={product.purposeName}
-            className="product-image"
+            className="product-image p-4"
           />
           <div
             className="icon-container"
