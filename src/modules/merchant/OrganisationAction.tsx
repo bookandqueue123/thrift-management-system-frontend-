@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StatusIndicator } from "@/components/StatusIndicator";
-import { NoBackgroundModal } from "@/components/Modal";
+import Modal, { NoBackgroundModal } from "@/components/Modal";
 import { ViewOrganisation } from "./ViewOrganisation";
 import { EditOrganisation } from "./EditOrganisation";
 //import { EditCustomer, SavingsSettings, ViewCustomer } from "@/modules/merchant/customer/CustomerPage";
@@ -81,7 +81,7 @@ export default function OrganisationAction({index, organisationId}: Organisation
             />
 
         {modalState && (
-            <NoBackgroundModal
+            <Modal
               setModalState={setModalState}
               title={
                 modalContent === "confirmation"
@@ -125,7 +125,7 @@ export default function OrganisationAction({index, organisationId}: Organisation
               ) : (
                 ""
               )}
-            </NoBackgroundModal>
+            </Modal>
           )}
         </div>
     )

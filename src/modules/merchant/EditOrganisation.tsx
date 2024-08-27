@@ -32,7 +32,8 @@ export const EditOrganisation = ({
       [],
     );
     const [selectedState, setSelectedState] = useState("");
-  
+    const [selectedIndustry, setSelectedIndustry] = useState<string>("")
+  const   [selectedNatureOfBusiness, setSelectedNatureOfBusiness] = useState<string[]>([]);
     
     const { client } = useAuth();
     const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
@@ -49,6 +50,7 @@ export const EditOrganisation = ({
           });
       },
     });
+
   
     const {
       data: organizations,
@@ -104,6 +106,8 @@ export const EditOrganisation = ({
         formData.append("state", values.state);
        
         formData.append("city", values.city);
+        formData.append("industry", values.industry);
+        formData.append("natureOfBusiness", values.natureOfBusiness);
         // formData.append("description", values.description);
         
       
@@ -131,6 +135,7 @@ export const EditOrganisation = ({
         // This function will run whenever the value of 'formikValues.myField' changes
         setSelectedCountry(formikValues.country);
         setSelectedState(formikValues.state);
+        setSelectedIndustry(formikValues.industry)
       }, [formikValues]); // Add 'formikValues.myField' as a dependency
   
       return null; // Since this is a utility component, it doesn't render anything
@@ -162,9 +167,39 @@ export const EditOrganisation = ({
       }
     }, [selectedCountry, selectedState]);
    
+    const {
+      data: allIndustries,
+      isLoading: isLoadingAllIndustry,
+    
+    } = useQuery({
+      queryKey: ["all Industries"],
+      queryFn: async () => {
+        return client
+          .get(`/api/industry`, {})
+          .then((response) => {
+      
+            
+            return response.data;
+          })
+          .catch((error: AxiosError<any, any>) => {
   
+            throw error;
+          });
+      },
+      staleTime: 5000,
+    });
+    
+    useEffect(() => {
+      const filteredIndustry =
+        allIndustries?.find((industry: { name: string; }) => industry.name === selectedIndustry)
+          
+      setSelectedNatureOfBusiness(filteredIndustry?.natureOfBusiness
+      )
+      // setselectedStateArray(filteredStates);
+    }, [selectedIndustry, allIndustries]);
+  console.log(customerInfo)
     return (
-      <div className="mx-auto mt-8 w-[100%] overflow-hidden rounded-md bg-white p-4 shadow-md">
+      <div className="mx-auto text-white mt-8 w-[100%] overflow-hidden rounded-md  p-4 shadow-md">
         <div>
           {customerInfo && (
             <Formik
@@ -178,13 +213,14 @@ export const EditOrganisation = ({
                 officeAddress2: customerInfo?.officeAddress2,
                 country: customerInfo?.country,
                 state: customerInfo?.state,
-                // lga: customerInfo?.lga,
+                 lga: customerInfo?.lga,
                 city: customerInfo?.city,
                 region: customerInfo.region,
                 tradingName: customerInfo.tradingName,
                 website: customerInfo.website,
                 description: customerInfo.description,
-               
+                industry: customerInfo.industry,
+                natureOfBusiness: customerInfo.natureOfBusiness,
               }}
               validationSchema={Yup.object({
                 organisationName: Yup.string().required("Required"),
@@ -195,13 +231,16 @@ export const EditOrganisation = ({
                  officeAddress1: Yup.string().optional(),
                 officeAddress2: Yup.string().optional(),
                 country: Yup.string().required("Required"),
-                state: Yup.string().required("Required"),           
+                state: Yup.string().required("Required"),     
+                lga: Yup.string().required("Required"),                 
                 city: Yup.string().required("Required"),
                 region: Yup.string().required("Required"),
                  tradingName: Yup.string().optional(),
                 website: Yup.string().required("Required"),
                
                 description: Yup.string().required("Required"),
+                industry: Yup.string().optional(),
+                natureOfBusiness: Yup.string().optional(),
               })}
               onSubmit={(values, { setSubmitting }) => {
               
@@ -226,7 +265,7 @@ export const EditOrganisation = ({
                   className="mx-auto mt-4 w-[90%] space-y-3 md:w-[80%]"
                 >
                   
-                  <p className="mb-8 mt-2 text-xl text-gray-600 font-bold">Edit Organisation Details</p>
+                  <p className="mb-8 mt-2 text-xl text-white font-bold">Edit Organisation Details</p>
                     <div className="mt-8">
                       <div className="mb-8 ">
                         
@@ -234,7 +273,7 @@ export const EditOrganisation = ({
                           <div className="md:flex">
                             <label
                               htmlFor="organisationName"
-                              className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                              className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium"
                             >
                               Name{" "}
                               <span className="font-base font-semibold text-[#FF0000]">
@@ -246,7 +285,7 @@ export const EditOrganisation = ({
                                 id="organisationName"
                                 name="organisationName"
                                 type="text"
-                                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
                               />
                               <ErrorMessage
                                 name="organisationName"
@@ -258,6 +297,37 @@ export const EditOrganisation = ({
                           </div>
                             
                         </div>
+                        <div className="mb-4 mt-8">
+                        <div className="items-center gap-6 ">
+                          <div className="md:flex">
+                          <label
+                            htmlFor="description"
+                            className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium "
+                          >
+                            Description{" "}
+                            <span className="font-base font-semibold text-[#FF0000]">
+                              *
+                            </span>
+                          </label>
+                          <div className="w-full">
+                          <Field
+                            id="description"
+                            name="description"
+                            as="textarea"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6] p-3 text-black"
+                          />
+
+                            <ErrorMessage
+                            name="description"
+                            component="div"
+                            className="text-red-700"
+                          />
+                          </div>
+                          
+                        </div>
+                          </div>
+                        </div>
+                          
                           
                        
   
@@ -266,7 +336,7 @@ export const EditOrganisation = ({
                             <div className="md:flex">
                               <label
                                 htmlFor="accountNumber                            "
-                                className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                                className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium"
                               >
                                 Account Number{" "}
 
@@ -279,7 +349,7 @@ export const EditOrganisation = ({
                                   id="accountNumber"
                                   name="accountNumber"
                                   type="text"
-                                  className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                                  className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
                                 />
                                 <ErrorMessage
                                 name="accountNumber"
@@ -299,7 +369,7 @@ export const EditOrganisation = ({
                           <div className="md:flex">
                           <label
                             htmlFor="phoneNumber"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                            className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium"
                           >
                             Phone Number{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
@@ -311,7 +381,7 @@ export const EditOrganisation = ({
                               id="phoneNumber"
                               name="phoneNumber"
                               type="tel"
-                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
                             />
                             <ErrorMessage
                             name="phoneNumber"
@@ -330,7 +400,7 @@ export const EditOrganisation = ({
                            <div className="md:flex">
                            <label
                             htmlFor="email"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                            className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium"
                           >
                             Email address{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
@@ -343,7 +413,7 @@ export const EditOrganisation = ({
                             id="email"
                             name="email"
                             type="email"
-                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
                           />
                           <ErrorMessage
                             name="email"
@@ -363,7 +433,7 @@ export const EditOrganisation = ({
                           <div className="md:flex">
                           <label
                             htmlFor="businessEmailAdress"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                            className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium"
                           >
                             Business Email Adress {" "}
                             <span className="font-base font-semibold text-[#FF0000]">
@@ -375,7 +445,7 @@ export const EditOrganisation = ({
                             id="businessEmailAdress"
                             name="businessEmailAdress"
                             type="businessEmailAdress"
-                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
                           />
                           <ErrorMessage
                             name="businessEmailAdress"
@@ -394,7 +464,7 @@ export const EditOrganisation = ({
                           <div className="md:flex">
                           <label
                             htmlFor="officeAddress1"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium "
+                            className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium "
                           >
                             Office Address1{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
@@ -407,7 +477,7 @@ export const EditOrganisation = ({
                               id="officeAddress1"
                               name="officeAddress1"
                               type="text"
-                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
                             /> 
                             <ErrorMessage
                             name="officeAddress1"
@@ -429,7 +499,7 @@ export const EditOrganisation = ({
                           <div className="md:flex">
                           <label
                             htmlFor="officeAddress2"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                            className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium"
                           >
                             Office Address2{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
@@ -442,7 +512,7 @@ export const EditOrganisation = ({
                               id="officeAddress2"
                               name="officeAddress2"
                               type="text"
-                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
                             /> 
                             <ErrorMessage
                             name="officeAddress2"
@@ -463,7 +533,7 @@ export const EditOrganisation = ({
                           <div className="md:flex">
                           <label
                             htmlFor="country"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                            className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium"
                           >
                             Country
                           </label>
@@ -476,7 +546,7 @@ export const EditOrganisation = ({
                             id="country"
                             // type="text"
                             placeholder="country"
-                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
                           >
                             <option>Select Country</option>
                             {StatesAndLGAs &&
@@ -506,7 +576,7 @@ export const EditOrganisation = ({
                           <div className="md:flex">
                             <label
                             htmlFor="state"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium "
+                            className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium "
                           >
                             State
                           </label>
@@ -516,7 +586,7 @@ export const EditOrganisation = ({
                             id="state"
                             name="state"
                             // type="text"
-                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
                           >
                             <option>Select State</option>
   
@@ -539,19 +609,22 @@ export const EditOrganisation = ({
                           
                           
                         </div>
-                        {/* <div className="mb-3">
+                        <div className="mb-3">
+                          <div className="items-center gap-6 ">
+                          <div className="md:flex">
                           <label
                             htmlFor="lga"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium"
+                            className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium"
                           >
-                            Local Government Area (lga)
+                            Local Government <br/> Area (lga)
                           </label>
+                          <div className="w-full">
                           <Field
                             as="select"
                             id="lga"
                             name="lga"
                             // type="text"
-                            className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
                           >
                             <option>Select LGA</option>
   
@@ -567,7 +640,10 @@ export const EditOrganisation = ({
                             component="div"
                             className="text-xs text-red-700"
                           />
-                        </div> */}
+                          </div>
+                          </div>
+                          </div>
+                        </div>
   
                         <div className="mb-8">
                         <div className="items-center gap-6 ">
@@ -575,7 +651,7 @@ export const EditOrganisation = ({
                             
                           <label
                             htmlFor="city"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium "
+                            className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium "
                           >
                             City{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
@@ -587,7 +663,7 @@ export const EditOrganisation = ({
                               id="city"
                               name="city"
                               type="city"
-                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
                             />
                             <ErrorMessage
                             name="city"
@@ -606,7 +682,7 @@ export const EditOrganisation = ({
                           <div className="md:flex">
                           <label
                             htmlFor="region"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium "
+                            className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium "
                           >
                             region{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
@@ -618,7 +694,7 @@ export const EditOrganisation = ({
                               id="region"
                               name="region"
                               type="region"
-                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
                             />
                             <ErrorMessage
                             name="region"
@@ -638,7 +714,7 @@ export const EditOrganisation = ({
                           <div className="md:flex">
                           <label
                             htmlFor="tradingName"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium "
+                            className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium "
                           >
                             Trading Name{" "}
                             <span className="font-base font-semibold text-[#FF0000]">
@@ -650,7 +726,7 @@ export const EditOrganisation = ({
                               id="tradingName"
                               name="tradingName"
                               type="tradingName"
-                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
                             /><ErrorMessage
                             name="tradingName"
                             component="div"
@@ -665,66 +741,119 @@ export const EditOrganisation = ({
                         </div>
 
                         <div className="mb-8">
-                        <div className="items-center gap-6 ">
-                           <div className="md:flex">
-                           <label
-                            htmlFor="website"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium "
-                          >
-                            Website{" "}
-                            <span className="font-base font-semibold text-[#FF0000]">
-                              *
-                            </span>
-                          </label>
-                          <div className="w-full">
-                            <Field
-                              id="website"
+                          <div className="items-center gap-6 ">
+                            <div className="md:flex">
+                              <label
+                                htmlFor="website"
+                                className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium "  >
+                            
+                                Website{" "}
+                                <span className="font-base font-semibold text-[#FF0000]">
+                                  *
+                                </span>
+                              </label>
+                            <div className="w-full">
+                              <Field
+                                id="website"
+                                name="website"
+                                type="website"
+                                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
+                              />
+                              <ErrorMessage
                               name="website"
-                              type="website"
-                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                              component="div"
+                              className="text-red-700"
                             />
-                            <ErrorMessage
-                            name="website"
-                            component="div"
-                            className="text-red-700"
-                          />
+                            </div>
+                            
+                            </div>
                           </div>
-                          
-                           </div>
+                       
                         </div>
-                         
-                          
-                        </div>
+                        
 
-                        <div className="mb-8">
-                        <div className="items-center gap-6 ">
-                          <div className="md:flex">
-                          <label
-                            htmlFor="description"
-                            className="md:mt-[2%] text-gray-600 w-[20%] whitespace-nowrap text-xs font-medium "
-                          >
-                            Description{" "}
-                            <span className="font-base font-semibold text-[#FF0000]">
-                              *
-                            </span>
-                          </label>
-                          <div className="w-full">
-                            <Field
-                              id="description"
-                              name="description"
-                              type="description"
-                              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                            /><ErrorMessage
-                            name="description"
-                            component="div"
-                            className="text-red-700"
-                          />
+                        <div className="mb-3">
+                          <div className="items-center gap-6 ">
+                            <div className="md:flex">
+                              <label
+                                htmlFor="industry"
+                                className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium "  >
+                            
+                                Industry{" "}
+                                <span className="font-base font-semibold text-[#FF0000]">
+                                  *
+                                </span>
+                              </label>
+                              <div className="w-full">
+                                <Field
+                                  onChange={handleChange}
+                                  as="select"
+                                  isInvalid={!!errors.industry}
+                                  name="industry"
+                                  id="industry"
+                                  placeholder="Industry"
+                                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
+                                >
+                                  <option>Select Industry</option>
+                                    {allIndustries &&
+                                      allIndustries.map((industry: { id:string; name: string }) => (
+                                        <option key={industry.id} value={industry.name}>
+                                        {industry.name}
+                                      </option>
+                                    ))}
+                                </Field>
+                                <ErrorMessage
+                                  name="industry"
+                                  component="div"
+                                  className="text-xs text-red-500"
+                                />
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          
-                        </div>
-                          </div>
-                        </div>
-                          
+
+                
+                <div className="mb-4">
+             
+                <div className="items-center gap-6 ">
+                <div className="md:flex">
+                <label
+                  htmlFor="tradingName"
+                  className="md:mt-[2%] text-white w-[20%] whitespace-nowrap text-xs font-medium "
+                >
+                  Nature of Business{" "}
+                  <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
+                </label>
+                <div className="w-full">
+                    <Field
+                      as="select"
+                      id="natureOfBusiness"
+                      name="natureOfBusiness"
+                      // type="text"
+                      className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-black"
+                    >
+                      <option>Select nature Of Business</option>
+
+                      {selectedNatureOfBusiness &&
+                        selectedNatureOfBusiness.map((natureOfBusinesses) => (
+                          <option key={natureOfBusinesses} value={natureOfBusinesses}>
+                            {natureOfBusinesses}
+                          </option>
+                        ))}
+                    </Field>{" "}
+              
+                  <ErrorMessage
+                    name="natureOfBusiness"
+                    component="div"
+                    className="text-xs text-red-500"
+                  />  
+                  </div>
+                  </div>
+                    </div>
+                      </div>
+                        
                           
                        
                       </div>
