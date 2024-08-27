@@ -87,6 +87,7 @@ export default function SuperAdminCustomer(){
     },
   });
   
+
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const searchQuery = e.target.value.trim().toLowerCase();
     setSearchResult(searchQuery);
@@ -151,6 +152,7 @@ export default function SuperAdminCustomer(){
     }
   }, [fromDate, toDate]);
 
+  console.log(filteredCustomers)
   const paginatedCustomers = filteredCustomers?.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
@@ -235,6 +237,7 @@ export default function SuperAdminCustomer(){
     }
   };
 
+ 
     return(
         <div>
            <div className="mb-4 space-y-2">
@@ -374,7 +377,7 @@ export default function SuperAdminCustomer(){
                   {customer.lga}
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {customer.organisation}
+                  {customer.organisationName}
               </td>
               <td className="whitespace-nowrap px-6 py-4 text-sm">
                 <CustomerAction

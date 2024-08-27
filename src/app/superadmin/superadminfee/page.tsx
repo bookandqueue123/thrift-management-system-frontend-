@@ -315,7 +315,7 @@ const MutateGateway = ({
   setModalContent: Dispatch<SetStateAction<"" | "status" | "form">>;
 }) => {
   const { client } = useAuth();
-  console.log(gatewayToBeEdited)
+
   const organisationId = useSelector(selectOrganizationId);
   const [assignedPermissions, setAssignedPermissions] = useState<string[]>([]);
   
@@ -337,7 +337,7 @@ const MutateGateway = ({
   );
 
 
- console.log(gateway)
+
 
   useEffect(() => {
     if(actionToTake === "edit-payment-gateway"){

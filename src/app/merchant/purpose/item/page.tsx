@@ -713,14 +713,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
     description: Yup.string().required('Description is required'),
     category: Yup.string().required('Category is required'),
     amount: Yup.number().required('Amount is required'),
-    quantity: Yup.mixed()
-  .test('is-number-or-string', 'Quantity must be a number or a string Nill if the purpose is unquantifiabe', function (value) {
-    return (
-      typeof value === 'number' ||
-      (typeof value === 'string' && !isNaN(Number(value)))
-    );
-  })
-  .required('Quantity is required'),
+    quantity: Yup.mixed().required('Quantity is required'),
     startDate: Yup.date().optional(),
     startTime: Yup.string().optional(),
     endDate: Yup.date().optional(),
@@ -816,7 +809,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
   {
    
     mutationFn: async (values: any) => {
-      console.log(values, '780')
+      
       const formData = new FormData()
       formData.append("purposeName", values.purposeName)
       formData.append("description", values.description)
@@ -824,7 +817,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
      formData.append("organisation", organizationId)
       formData.append("uniqueCode", values.uniqueCode)
        formData.append("amount", values.amount)
-      formData.append("quantity", values.quantity)
+       formData.append("merchantQuantity", typeof values.quantity === 'string' ? 'Nill' : values.quantity);
       formData.append('startDate', values.startDate);
       formData.append('startTime', values.startTime);
       formData.append('endDate', values.endDate);
@@ -1376,7 +1369,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
                     htmlFor="imageUrl"
                     className="m-0 text-xs font-medium text-white"
                   >
-                    Upload Purpose/ Item’s Cover Image Picture 
+                    Upload Purpose/ Item’s Cover Image Picture (max-size - 150 by 150)
                     <span className="font-base font-semibold text-[#FF0000]">
                     *
                   </span>

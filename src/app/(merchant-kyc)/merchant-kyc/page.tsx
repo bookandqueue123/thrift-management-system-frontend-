@@ -622,7 +622,7 @@ const Kyc = () => {
         })}
         onSubmit={(values, { setSubmitting }) => {
           setTimeout(() => {
-            console.log(values)
+           
             kycUpdate(values);
 
             setSubmitting(false);

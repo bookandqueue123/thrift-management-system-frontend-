@@ -18,7 +18,7 @@ import { useSelector } from "react-redux";
 
 const CustomerDashboard = () => {
   const selectedProducts = useSelector(selectSelectedProducts);
-  console.log(selectedProducts)
+
   const PAGE_SIZE = 5;
   const [modalState, setModalState] = useState(true);
   const [modalContent, setModalContent] = useState<"form" | "confirmation">(
