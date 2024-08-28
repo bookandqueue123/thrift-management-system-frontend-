@@ -100,6 +100,7 @@ const Purpose = () => {
     staleTime: 5000,
   });
 
+
   
 
   const {
@@ -706,6 +707,25 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
     },
   });
 
+  const { data: allCustomersUnfiltered, isLoading: isLoadingAllCustomersUnfiltered } = useQuery({
+    queryKey: ["allCustomers"],
+    queryFn: async () => {
+      return client
+        .get(
+          `/api/user?role=customer&userType=individual`,
+          {},
+        )
+        .then((response: AxiosResponse<customer[], any>) => {
+          
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          throw error;
+        });
+    },
+  });
+  const customerIds = allCustomersUnfiltered?.map(customer => customer._id);
+
 
   const validationSchema = Yup.object().shape({
     uniqueCode: Yup.string().length(8, 'The input must be exactly 8 characters').optional(),
@@ -857,8 +877,9 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
       formData.append('visibilityEndTime', values.visibilityEndTime);
       formData.append('SelectorAll', values.SelectorAll);
       formData.append('selectorCategory', values.selectorCategory);
-      values.assignedCustomers.forEach((item: string | Blob) => formData.append("assignedCustomers[]", item))
+      const assignedCustomers = values.visibility === 'general' ? customerIds : values.assignedCustomers;
 
+      assignedCustomers.forEach((item: string | Blob) => formData.append("assignedCustomers[]", item));
       
       if(values.imageUrl){
         formData.append("imageUrl", values.imageUrl[0]);
@@ -1728,14 +1749,16 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
       </div>
 
       <div className="mb-4 w-3/4">
+              {formik.values.visibility !== "general" ? 
                 <label
                   htmlFor="assignedCustomers"
                   className="m-0 text-xs font-medium text-white"
                 >
                   Assign Customers
-                </label>
+                </label> : ""
+                }
                
-               {actionToTake === 'create-purpose' ?
+               {actionToTake === 'create-purpose' && formik.values.visibility !== "general" ?
                (
                   <div className="w-full">
                   <select
@@ -1862,7 +1885,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
         )}
 
 
-    {actionToTake === 'create-purpose' ? (
+    {actionToTake === 'create-purpose' && formik.values.visibility !== "general"? (
       <div className="flex gap-x-3  mt-2">
       <input
       id="selectAllCustomers"

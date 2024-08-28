@@ -76,7 +76,7 @@ const SignInForm = () => {
       
       if (response.data.role === "customer") {
         if (user) {
-          router.replace(`/customer`);
+          router.replace(`/customer/savings-purpose`);
         }
       } else if (response.data.role === "superadmin") {
         router.replace("/superadmin");

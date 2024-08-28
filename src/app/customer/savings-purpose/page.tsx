@@ -2,8 +2,33 @@
 
 import { FilterDropdown } from "@/components/Buttons"
 import PurposeCarousel from "@/modules/merchant/SavingPurposeCarousel"
+import { updateSelectedProducts } from "@/slices/OrganizationIdSlice";
+import { useEffect, useState } from "react";
+import { useDispatch, UseDispatch } from "react-redux";
 
 export default function Page(){
+    const dispatch = useDispatch()
+    const [selectedCategory, setSelectedCategory] = useState('general');
+
+    useEffect(() => {
+        localStorage.removeItem('selectedProducts');
+        // Optionally, you can dispatch an action to update the Redux state as well
+        dispatch(updateSelectedProducts([]));
+    })
+    const handleGeneralClick = () => {
+        setSelectedCategory('general')
+        localStorage.removeItem('selectedProducts');
+        // Optionally, you can dispatch an action to update the Redux state as well
+        dispatch(updateSelectedProducts([])); // Clear the Redux sta
+    }
+    
+    const handleInhouseClick = () => {
+        setSelectedCategory('inhouse')
+        localStorage.removeItem('selectedProducts');
+        // Optionally, you can dispatch an action to update the Redux state as well
+        dispatch(updateSelectedProducts([]));
+    }
+ 
     return(
         <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
             <div className="mb-4 space-y-2">
@@ -73,8 +98,34 @@ export default function Page(){
               </div>
           </div>
 
+          <div className="text-white">
+            <label>
+                <input
+                type="radio"
+                name="category"
+                value="general"
+                checked={selectedCategory === 'general'}
+                onChange={() => handleGeneralClick()}
+                />
+                <span className="ml-2">General</span>
+            </label>
+            <label className="ml-8">
+                <input
+                type="radio"
+                name="category"
+                value="inhouse"
+                checked={selectedCategory === 'inhouse'}
+                onChange={() => handleInhouseClick()}
+                />
+                <span className="ml-2">
+                    Inhouse
+                </span>
+                
+            </label>
+         </div>
+
           <div>
-            <PurposeCarousel/>
+            <PurposeCarousel categoryToshow={selectedCategory}/>
           </div>
 
         </div>

@@ -19,7 +19,8 @@ const CustomerNavbar = () => {
     "withdrawals",
     "transactions",
     "savings-setup",
-    "savings-purpose",
+    // "savings-purpose",
+    "savings-dashboard",
     "coupon"
   ];
   const { SignOut } = useAuth();
@@ -87,11 +88,11 @@ const CustomerNavbar = () => {
                   <Link
                     key={route}
                     href={
-                      route !== "dashboard" ? `/customer/${route}` : "/customer"
+                      route !== "dashboard" ? `/customer/${route}` : "/customer/savings-purpose"
                     }
                     className={`rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}
                   >
-                    {route === "make-payment" ? "Make Payment": route === "savings-setup" ? "Savings Setup" : route === 'savings-purpose' ? 'Savings Purpose' : route}
+                    {route === "make-payment" ? "Make Payment": route === "savings-setup" ? "Savings Setup" : route === 'savings-purpose' ? 'Savings Purpose' : route === 'savings-dashboard' ? 'Savings Dashboard' : route}
                   </Link>
                 );
               })}
