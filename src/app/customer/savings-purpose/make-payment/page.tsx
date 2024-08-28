@@ -78,6 +78,7 @@ export default function MakePayment() {
     const filteredPurposes = allPurpose?.filter((purpose: { _id: Key; }) =>
         selectedProducts.includes(purpose._id)
     );
+  
 
    
     const handleInputChange = (id: string, field: string, value: any) => {
