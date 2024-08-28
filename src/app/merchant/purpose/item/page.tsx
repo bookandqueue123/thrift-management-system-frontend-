@@ -752,10 +752,10 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
           .required()
           .test(
             "fileSize",
-            "File size must be less than or equal to 1MB",
+            "File size must be less than or equal to 5MB",
             (value) => {
               if (value instanceof FileList && value.length > 0) {
-                return value[0].size <= 1048576; // 1MB limit
+                return value[0].size <= 5242880; // 5MB limit
               }
               return true; // No file provided, so validation passes
             }
@@ -1412,7 +1412,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
                     htmlFor="imageUrl"
                     className="m-0 text-xs font-medium text-white"
                   >
-                    Upload Purpose/ Item’s Cover Image Picture (max-size - 150 by 150)
+                    Upload Purpose/ Item’s Cover Image Picture (max-size - 5MB)
                     <span className="font-base font-semibold text-[#FF0000]">
                     *
                   </span>

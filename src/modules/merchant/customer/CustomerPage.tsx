@@ -2264,10 +2264,10 @@ export const CreateCustomer = ({
           .required("Required")
           .test(
             "fileSize",
-            "File size must be less than 2MB",
+            "File size must be less than 5MB",
             (value: MyFileList) => {
               if (value) {
-                return value[0].size <= 2097152;
+                return value[0].size <= 5242880;
               }
               return true;
             },
@@ -2277,10 +2277,10 @@ export const CreateCustomer = ({
           .required("Means of ID photo is required")
           .test(
             "fileSize",
-            "File size must be less than 2MB",
+            "File size must be less than 5MB",
             (value: MyFileList) => {
               if (value) {
-                return value[0].size <= 2097152;
+                return value[0].size <= 5242880;
               }
               return true;
             },
@@ -2726,7 +2726,7 @@ export const CreateCustomer = ({
                 htmlFor="photoUpload"
                 className="text-md block font-medium text-white"
               >
-                Photo
+                Photo(max size - 5MB)
               </label>
               <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5">
                 <input
@@ -2795,7 +2795,7 @@ export const CreateCustomer = ({
                 htmlFor="image"
                 className="text-md block font-medium text-white "
               >
-                {!values.meansOfID ? "Means  of Id" : values.meansOfID} Photo
+                {!values.meansOfID ? "Means  of Id" : values.meansOfID} Photo (max size - 5MB)
               </label>
               <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5">
                 <input
