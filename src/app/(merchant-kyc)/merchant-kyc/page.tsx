@@ -397,10 +397,10 @@ const Kyc = () => {
           .optional()
           .test(
             "fileSize",
-            "File size must be less than or equal to 1MB",
+            "File size must be less than or equal to 5MB",
             (value) => {
               if (value instanceof FileList && value.length > 0) {
-                return value[0].size <= 1048576; // 1MB limit
+                return value[0].size <=  5242880; // 5MB limit
               }
               return true; // No file provided, so validation passes
             }
@@ -434,10 +434,10 @@ const Kyc = () => {
             .optional()
             .test(
               "fileSize",
-              "File size must be less than or equal to 1MB",
+              "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <= 1048576;
+                  return value[0].size <=  5242880;
                 }
                 return true;
               },
@@ -463,10 +463,10 @@ const Kyc = () => {
             .optional()
             .test(
               "fileSize",
-              "File size must be less than or equal to 1MB",
+              "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <= 1048576;
+                  return value[0].size <=  5242880;
                 }
                 return true;
               },
@@ -492,10 +492,10 @@ const Kyc = () => {
             .optional()
             .test(
               "fileSize",
-              "File size must be less than or equal to 1MB",
+              "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <= 1048576;
+                  return value[0].size <=  5242880;
                 }
                 return true;
               },
@@ -521,10 +521,10 @@ const Kyc = () => {
             .optional()
             .test(
               "fileSize",
-              "File size must be less than or equal to 1MB",
+              "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <= 1048576;
+                  return value[0].size <=  5242880;
                 }
                 return true;
               },
@@ -550,10 +550,10 @@ const Kyc = () => {
             .optional()
             .test(
               "fileSize",
-              "File size must be less than or equal to 1MB",
+              "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <= 1048576;
+                  return value[0].size <=  5242880;
                 }
                 return true;
               },
@@ -579,10 +579,10 @@ const Kyc = () => {
             .optional()
             .test(
               "fileSize",
-              "File size must be less than or equal to 1MB",
+              "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <= 1048576;
+                  return value[0].size <=  5242880;
                 }
                 return true;
               },
@@ -607,10 +607,10 @@ const Kyc = () => {
           //   .required("Required")
           //   .test(
           //     "fileSize",
-          //     "File size must be less than or equal to 1MB",
+          //     "File size must be less than or equal to 5MB",
           //     (value: MyFileList) => {
           //       if (value) {
-          //         return value[0].size <= 1048576;
+          //         return value[0].size <=  5242880;
           //       }
           //       return true;
           //     },

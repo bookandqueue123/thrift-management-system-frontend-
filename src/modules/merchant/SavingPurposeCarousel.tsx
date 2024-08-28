@@ -198,7 +198,7 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
          <span 
           // onClick={() => router.push(`/customer/savings-purpose/make-payment`)} 
           className="text-white border-2 border-white px-4 ml-2 text-xl hover:text-blue-500 cursor-pointer">
-            {selectedProducts.length}
+            {selectedProducts?.length}
           </span>
         </div>
         <CustomButton
@@ -364,8 +364,11 @@ const ProductCard = ({
 
 
 
+interface categoryToSHowProps{
+  categoryToshow: string
+}
 
-const App = () => {
+const App = ({categoryToshow}: categoryToSHowProps) => {
   const organisationId = useSelector(selectOrganizationId);
   const user = useSelector(selectUser)
   
@@ -396,9 +399,39 @@ const App = () => {
     },
     staleTime: 5000,
   });
+  const {
+    data: allPurposeUnfiltered,
+    isLoading: isLoadingAllPurposeUnfiltered,
+    refetch: refetchAllPurposeUnfiltered,
+  } = useQuery({
+    queryKey: ["allPurpose"],
+    queryFn: async () => {
+      return client
+        .get(
+          `/api/purpose`,
+          {},
+        )
+        .then((response) => {
 
-  const filteredPurposes = allPurpose?.filter((purpose: { assignedCustomers: string | string[]; }) => purpose.assignedCustomers.includes(user?._id));
-  
+          
+          return response.data;
+        })
+        .catch((error) => {
+     
+          throw error;
+        });
+    },
+    staleTime: 5000,
+  });
+
+
+
+  const filteredAllPurposes = allPurpose?.filter((purpose: {
+    visibility: string; assignedCustomers: string | string[]; 
+}) => purpose.assignedCustomers.includes(user?._id) &&  purpose.visibility === "inhouse");
+  const generalAllPurposeUnfiltered = allPurposeUnfiltered?.filter((purpose: { visibility: string; }) => purpose.visibility === 'general')
+
+  const filteredPurposes = categoryToshow === 'general' ? generalAllPurposeUnfiltered : filteredAllPurposes
   
   const groupedPurposes = filteredPurposes?.reduce((acc: { [x: string]: any[]; }, purpose: { category: { name: any; }; }) => {
     const categoryName = purpose.category.name;
