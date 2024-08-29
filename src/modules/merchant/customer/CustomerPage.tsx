@@ -186,7 +186,7 @@ const Customers = () => {
       setFilteredCustomer(filtered);
     }
   };
-  console.log(filteredCustomers)
+
 
   const paginatedCustomers = filteredCustomers?.slice(
     (currentPage - 1) * PAGE_SIZE,

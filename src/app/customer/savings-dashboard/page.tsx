@@ -10,6 +10,7 @@ import AmountFormatter from "@/utils/AmountFormatter";
 import { extractDate, extractTime } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, Suspense, useEffect, useState } from "react";
 import { CiExport } from "react-icons/ci";
@@ -190,15 +191,18 @@ const CustomerDashboard = () => {
           Ensure Uninterrupted Service by Uploading Your KYC
         </p>
 
+       
+       
         <CustomButton
           type="button"
           label="Upload KYC document"
           style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-          onButtonClick={() => router.push(`signup/customer/kyc?id=${id}`)}
+          onButtonClick={() => router.push(`../../signup/customer/kyc?id=${id}`)}
         />
       </div>
     );
   };
+
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
@@ -214,6 +218,12 @@ const CustomerDashboard = () => {
 
       {LoggedInUser && (
         <>
+        <CustomButton
+          type="button"
+          label="Upload KYC document"
+          style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+          onButtonClick={() => router.push(`/superadmin`)}
+        />
           <div className="mb-4 space-y-2">
             <h6 className="text-base font-bold text-ajo_offWhite opacity-60">
               Dashboard
