@@ -771,7 +771,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
               return true; // No file provided, so validation passes
             }
           ),
-    // digitalItem: Yup.string().optional()
+     digitalItem: Yup.string().optional()
     
   });
 
@@ -1139,6 +1139,202 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
         </div>
       </div>
       </div>
+
+      {formik.values.visibility !== "general" ? 
+                <label
+                  htmlFor="assignedCustomers"
+                  className="m-0 text-xs font-medium text-white"
+                >
+                  Assign Customers
+                </label> : ""
+                }
+               
+               {actionToTake === 'create-purpose' && formik.values.visibility !== "general" ?
+               (
+                  <div className="w-full">
+                  <select
+      title="Select an option"
+      name="assignedCustomers"
+      className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+        handleOptionChange(e);
+        let assignedCustomers = formik.values.assignedCustomers;
+
+        if (!assignedCustomers.includes(e.target.value)) {
+          const updatedAssignedCustomers = [
+            ...assignedCustomers,
+            e.target.value,
+          ];
+          formik.setFieldValue("assignedCustomers", updatedAssignedCustomers);
+        }
+      }}
+    >
+      <option value="" label="Select an option" />
+      {allCustomers?.map((option) => (
+        <option key={option._id} value={option._id}>
+          {option.firstName} {option.lastName}
+        </option>
+      ))}
+    </select>
+
+        <div className="space-x-1 space-y-2">
+          {formik.values.assignedCustomers.map((customerId: string, index: number ) => {
+            const option = allCustomers?.find(
+              (user) => user._id === customerId,
+            );
+            return (
+              <div key={index} className="mb-2 mr-2 inline-block">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleRemoveOption(index);
+                    const updatedCustomers =
+                      formik.values.assignedCustomers.filter(
+                        (id: any) => id !== customerId,
+                      );
+                    formik.setFieldValue(
+                      "assignedCustomers",
+                      updatedCustomers,
+                    );
+                  }}
+                  className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
+                >
+                  {option?.firstName} {option?.lastName}
+                  <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
+                    ×
+                  </span>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      )
+      : ""}
+
+{actionToTake === 'edit-purpose' ? (
+  <div className="w-full">
+    <select
+      title="Select an option"
+      name="assignedCustomers"
+      className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+      onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+        handleOptionChange(e);
+        let assignedCustomers = assignedCustomerIds;
+
+        if (!assignedCustomers.includes(e.target.value)) {
+          const updatedAssignedCustomers = [
+            ...assignedCustomers,
+            e.target.value,
+          ];
+          setAssignedCustomerIds(updatedAssignedCustomers);
+        }
+      }}
+    >
+      <option value="hidden"></option>
+      {allCustomers?.map((option) => (
+        <option key={option._id} value={option._id}>
+          {option.firstName + "76"} {option.lastName}
+        </option>
+      ))}
+    </select>
+
+    <div className="space-x-1 space-y-2">
+      
+      {assignedCustomerIds.map((customerId: string, index: number) => {
+        const option = allCustomers?.find(
+          (user) => user._id === customerId,
+        );
+        
+        return (
+          <div key={index} className="mb-2 mr-2 inline-block">
+            <button
+              type="button"
+              onClick={() => {
+                handleRemoveOption(index);
+                const updatedCustomers = assignedCustomerIds.filter(
+                  (id: any) => id !== customerId,
+                );
+                setAssignedCustomerIds(updatedCustomers);
+              }}
+              className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
+            >
+              {option?.firstName} {option?.lastName}
+              <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
+                ×
+              </span>
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+) : ""}
+
+{formik.errors.assignedCustomers && formik.touched.assignedCustomers && (
+          <div className="text-red-500"><>{formik.errors.assignedCustomers}</></div>
+        )}
+
+
+    {actionToTake === 'create-purpose' && formik.values.visibility !== "general"? (
+      <div className="flex gap-x-3  mt-2">
+      <input
+      id="selectAllCustomers"
+      name="selectAllCustomers"
+      type="checkbox"
+      className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
+       checked={formik.values.assignedCustomers.length === allCustomers?.length}
+      onChange={(e) => {
+        if (e.target.checked) {
+          formik.setFieldValue(
+            "assignedCustomers",
+            allCustomers?.map((customer) => customer._id),
+          );
+        } else {
+          formik.setFieldValue("assignedCustomers", []);
+        }
+      }}
+    />
+              
+      <label
+        htmlFor="selectAllCustomers"
+        className="m-0 text-sm capitalize text-white"
+      >
+        Select all Customers
+      </label>
+    </div>
+      ): ''}
+
+{actionToTake === 'edit-purpose' ? (
+  <div className="flex gap-x-3">
+    <input
+      id="selectAllCustomers"
+      name="selectAllCustomers"
+      type="checkbox"
+      className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
+      checked={
+        assignedCustomerIds.length === allCustomers?.length
+      }
+      onChange={(e) => {
+        if (e.target.checked) {
+          if (allCustomers) {
+            setAssignedCustomerIds(allCustomers.map((customer) => customer._id));
+          }
+        } else {
+          setAssignedCustomerIds([]);
+        }
+      }}
+    />
+    <label
+      htmlFor="selectAllCustomers"
+      className="m-0 text-sm capitalize text-white"
+    >
+      Select all Customers
+    </label>
+  </div>
+) : ""}
+
+
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col space-y-2">
           <label className="m-0 text-xs font-medium text-white" htmlFor="category">
@@ -1480,7 +1676,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
                   htmlFor="image"
                   className="mb-8  text-xs font-medium text-white"
                 >
-                  Picture
+                  Picture (max-size - 5MB)
                 </label>
                   {formik.values.imageUrl && (formik.values.imageUrl as string).length > 0 && formik.values.imageUrl  ? (
                       <Image
@@ -1542,7 +1738,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
                     htmlFor="digitalItem"
                     className="m-0 text-xs font-medium text-white"
                   >
-                    Upload Purpose/ Item’s for video, audio or document (Optional)
+                    Upload Purpose/ Item’s for video, audio or document (Optional max-size - 5MB)
                   </label>
                   <label
                     htmlFor="digitalItem"
@@ -1609,7 +1805,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
                   htmlFor="image"
                   className="mb-8  text-xs font-medium text-white"
                 >
-                  Picture
+                  Picture (max-size - 5MB)
                 </label>
                   {formik.values.digitalItem && (formik.values.digitalItem as string).length > 0 && formik.values.digitalItem  ? (
                       <Image
@@ -1749,201 +1945,9 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
       </div>
 
       <div className="mb-4 w-3/4">
-              {formik.values.visibility !== "general" ? 
-                <label
-                  htmlFor="assignedCustomers"
-                  className="m-0 text-xs font-medium text-white"
-                >
-                  Assign Customers
-                </label> : ""
-                }
-               
-               {actionToTake === 'create-purpose' && formik.values.visibility !== "general" ?
-               (
-                  <div className="w-full">
-                  <select
-      title="Select an option"
-      name="assignedCustomers"
-      className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
-      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-        handleOptionChange(e);
-        let assignedCustomers = formik.values.assignedCustomers;
+           
 
-        if (!assignedCustomers.includes(e.target.value)) {
-          const updatedAssignedCustomers = [
-            ...assignedCustomers,
-            e.target.value,
-          ];
-          formik.setFieldValue("assignedCustomers", updatedAssignedCustomers);
-        }
-      }}
-    >
-      <option value="" label="Select an option" />
-      {allCustomers?.map((option) => (
-        <option key={option._id} value={option._id}>
-          {option.firstName} {option.lastName}
-        </option>
-      ))}
-    </select>
-
-        <div className="space-x-1 space-y-2">
-          {formik.values.assignedCustomers.map((customerId: string, index: number ) => {
-            const option = allCustomers?.find(
-              (user) => user._id === customerId,
-            );
-            return (
-              <div key={index} className="mb-2 mr-2 inline-block">
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleRemoveOption(index);
-                    const updatedCustomers =
-                      formik.values.assignedCustomers.filter(
-                        (id: any) => id !== customerId,
-                      );
-                    formik.setFieldValue(
-                      "assignedCustomers",
-                      updatedCustomers,
-                    );
-                  }}
-                  className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
-                >
-                  {option?.firstName} {option?.lastName}
-                  <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
-                    ×
-                  </span>
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      )
-      : ""}
-
-{actionToTake === 'edit-purpose' ? (
-  <div className="w-full">
-    <select
-      title="Select an option"
-      name="assignedCustomers"
-      className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
-      onChange={(e: ChangeEvent<HTMLSelectElement>) => {
-        handleOptionChange(e);
-        let assignedCustomers = assignedCustomerIds;
-
-        if (!assignedCustomers.includes(e.target.value)) {
-          const updatedAssignedCustomers = [
-            ...assignedCustomers,
-            e.target.value,
-          ];
-          setAssignedCustomerIds(updatedAssignedCustomers);
-        }
-      }}
-    >
-      <option value="hidden"></option>
-      {allCustomers?.map((option) => (
-        <option key={option._id} value={option._id}>
-          {option.firstName + "76"} {option.lastName}
-        </option>
-      ))}
-    </select>
-
-    <div className="space-x-1 space-y-2">
-      
-      {assignedCustomerIds.map((customerId: string, index: number) => {
-        const option = allCustomers?.find(
-          (user) => user._id === customerId,
-        );
-        
-        return (
-          <div key={index} className="mb-2 mr-2 inline-block">
-            <button
-              type="button"
-              onClick={() => {
-                handleRemoveOption(index);
-                const updatedCustomers = assignedCustomerIds.filter(
-                  (id: any) => id !== customerId,
-                );
-                setAssignedCustomerIds(updatedCustomers);
-              }}
-              className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
-            >
-              {option?.firstName} {option?.lastName}
-              <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
-                ×
-              </span>
-            </button>
-          </div>
-        );
-      })}
-    </div>
-  </div>
-) : ""}
-
-{formik.errors.assignedCustomers && formik.touched.assignedCustomers && (
-          <div className="text-red-500"><>{formik.errors.assignedCustomers}</></div>
-        )}
-
-
-    {actionToTake === 'create-purpose' && formik.values.visibility !== "general"? (
-      <div className="flex gap-x-3  mt-2">
-      <input
-      id="selectAllCustomers"
-      name="selectAllCustomers"
-      type="checkbox"
-      className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
-       checked={formik.values.assignedCustomers.length === allCustomers?.length}
-      onChange={(e) => {
-        if (e.target.checked) {
-          formik.setFieldValue(
-            "assignedCustomers",
-            allCustomers?.map((customer) => customer._id),
-          );
-        } else {
-          formik.setFieldValue("assignedCustomers", []);
-        }
-      }}
-    />
-              
-      <label
-        htmlFor="selectAllCustomers"
-        className="m-0 text-sm capitalize text-white"
-      >
-        Select all Customers
-      </label>
-    </div>
-      ): ''}
-
-{actionToTake === 'edit-purpose' ? (
-  <div className="flex gap-x-3">
-    <input
-      id="selectAllCustomers"
-      name="selectAllCustomers"
-      type="checkbox"
-      className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
-      checked={
-        assignedCustomerIds.length === allCustomers?.length
-      }
-      onChange={(e) => {
-        if (e.target.checked) {
-          if (allCustomers) {
-            setAssignedCustomerIds(allCustomers.map((customer) => customer._id));
-          }
-        } else {
-          setAssignedCustomerIds([]);
-        }
-      }}
-    />
-    <label
-      htmlFor="selectAllCustomers"
-      className="m-0 text-sm capitalize text-white"
-    >
-      Select all Customers
-    </label>
-  </div>
-) : ""}
-
-<button
+        <button
             type="submit"
             className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
             onClick={() => {
@@ -1963,7 +1967,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
             ) : (
               "Submit"
             )}
-          </button>
+        </button>
       </div>
     </form>
   );
