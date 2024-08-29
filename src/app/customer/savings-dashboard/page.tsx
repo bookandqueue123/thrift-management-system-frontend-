@@ -218,12 +218,7 @@ const CustomerDashboard = () => {
 
       {LoggedInUser && (
         <>
-        <CustomButton
-          type="button"
-          label="Upload KYC document"
-          style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-          onButtonClick={() => router.push(`/superadmin`)}
-        />
+       
           <div className="mb-4 space-y-2">
             <h6 className="text-base font-bold text-ajo_offWhite opacity-60">
               Dashboard
