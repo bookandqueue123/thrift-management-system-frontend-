@@ -136,6 +136,15 @@ const Kyc = () => {
       formData.append("officeAddress1", values.officeAddress);
       formData.append("officeAddress2", values.address2);
       formData.append("organisationName", values.organisationName);
+      formData.append("contactFullName", values.contactFullName);
+      formData.append("contactPhoneNumber", values.contactPhoneNumber);
+      formData.append("contactEmail", values.contactEmail);
+      formData.append("contactDOB", values.contactDOB);
+      formData.append("contactRole", values.OrgRole);
+      formData.append("contactNationality", values.contactNationality);
+      formData.append("contactBvn", values.contactBvn);
+      formData.append("contactNIN", values.contactNIN);
+      formData.append("ContactPercentOwnership", values.percentOwnership);
       formData.append("email", values.email);
       formData.append("phoneNumber", values.phoneNumber);
       // formData.append("bankAccountNumber", values.acctNo);
@@ -161,6 +170,9 @@ const Kyc = () => {
       }
       if (values.CourtAffidavit) {
         formData.append("courtAffidavit", values.CourtAffidavit[0]);
+      }
+      if (values.contactPhoto) {
+        formData.append("contactPersonID", values.contactPhoto[0]);
       }
       return client.put(`/api/user/${userId}`, formData);
     },
@@ -197,20 +209,20 @@ const Kyc = () => {
   
 
   let initialValues: UpdateMerchantKycProps = {
-    country: "",
-    state: "",
-    lga: "",
-    city: "",
+    country: userData?.country,
+    state: userData?.state,
+    lga: userData?.lga,
+    city: userData?.city,
     phoneNumber: userData?.phoneNumber ?? "",
-    officeAddress: "",
+    officeAddress: userData?.officeAddress1,
     address2: "",
     organisationLogo: null,
     tradingName: "",
     organisationName: userData?.organisationName ?? "",
     description: "",
     websiteUrl: "",
-    industry: "",
-    natureOfBusiness: "",
+    industry: userData?.industry,
+    natureOfBusiness: userData?.natureOfBusiness,
     email: userData?.email ?? "",
     facebook: "",
     instagram: "",
@@ -223,17 +235,17 @@ const Kyc = () => {
     FormCacBn: null,
     CertOfBusinessName: null,
     contactPhoto: null,
-    percentOwnership: "",
+    percentOwnership: userData?.ContactPercentOwnership,
     cacNumber: "",
-    contactBvn: "",
-    contactNIN: "",
-    contactNationality: "",
-    OrgRole: "",
-    contactDOB: "",
-    contactEmail: "",
-    contactPhoneNumber: "",
+    contactBvn: userData?.contactBvn,
+    contactNIN: userData?.contactNIN,
+    contactNationality: userData?.contactNationality,
+    OrgRole: userData?.contactRole,
+    contactDOB: userData?.contactDOB,
+    contactEmail: userData?.contactEmail,
+    contactPhoneNumber: userData?.contactPhoneNumber,
     businessPhoneNumber: "",
-    contactFullName: "",
+    contactFullName: userData?.contactFullName,
     // bankName: "",
     // acctNo: "",
     // account_bank: '044',
@@ -385,10 +397,10 @@ const Kyc = () => {
           .optional()
           .test(
             "fileSize",
-            "File size must be less than 2MB",
+            "File size must be less than or equal to 5MB",
             (value) => {
               if (value instanceof FileList && value.length > 0) {
-                return value[0].size <= 2097152; // 2MB limit
+                return value[0].size <=  5242880; // 5MB limit
               }
               return true; // No file provided, so validation passes
             }
@@ -422,10 +434,10 @@ const Kyc = () => {
             .optional()
             .test(
               "fileSize",
-              "File size must be less than 2MB",
+              "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <= 2097152;
+                  return value[0].size <=  5242880;
                 }
                 return true;
               },
@@ -451,10 +463,10 @@ const Kyc = () => {
             .optional()
             .test(
               "fileSize",
-              "File size must be less than 2MB",
+              "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <= 2097152;
+                  return value[0].size <=  5242880;
                 }
                 return true;
               },
@@ -480,10 +492,10 @@ const Kyc = () => {
             .optional()
             .test(
               "fileSize",
-              "File size must be less than 2MB",
+              "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <= 2097152;
+                  return value[0].size <=  5242880;
                 }
                 return true;
               },
@@ -509,10 +521,10 @@ const Kyc = () => {
             .optional()
             .test(
               "fileSize",
-              "File size must be less than 2MB",
+              "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <= 2097152;
+                  return value[0].size <=  5242880;
                 }
                 return true;
               },
@@ -538,10 +550,10 @@ const Kyc = () => {
             .optional()
             .test(
               "fileSize",
-              "File size must be less than 2MB",
+              "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <= 2097152;
+                  return value[0].size <=  5242880;
                 }
                 return true;
               },
@@ -567,10 +579,10 @@ const Kyc = () => {
             .optional()
             .test(
               "fileSize",
-              "File size must be less than 2MB",
+              "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <= 2097152;
+                  return value[0].size <=  5242880;
                 }
                 return true;
               },
@@ -595,10 +607,10 @@ const Kyc = () => {
           //   .required("Required")
           //   .test(
           //     "fileSize",
-          //     "File size must be less than 2MB",
+          //     "File size must be less than or equal to 5MB",
           //     (value: MyFileList) => {
           //       if (value) {
-          //         return value[0].size <= 2097152;
+          //         return value[0].size <=  5242880;
           //       }
           //       return true;
           //     },
@@ -621,8 +633,9 @@ const Kyc = () => {
           //   ),
         })}
         onSubmit={(values, { setSubmitting }) => {
+          console.log(values, 123)
           setTimeout(() => {
-            console.log(values)
+           
             kycUpdate(values);
 
             setSubmitting(false);

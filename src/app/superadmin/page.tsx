@@ -42,6 +42,7 @@ export default function SuperAdminDashboard(){
     },
   });
 
+
   const paginatedOrganisations = filteredOrganisations?.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
@@ -67,6 +68,8 @@ export default function SuperAdminDashboard(){
         });
     },
   });
+
+ 
   
   const paginatedCustomers = filteredCustomers?.slice(
     (currentPage - 1) * PAGE_SIZE,
@@ -212,7 +215,7 @@ export default function SuperAdminDashboard(){
                     {customer.lga || "---"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {customer.organisation || "---"}
+                    {customer.organisationName || "---"}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm">
                 <CustomerAction

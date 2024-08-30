@@ -9,7 +9,7 @@ import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as Yup from "yup";
 
 const initialValues: CustomerSignUpProps = {
@@ -53,7 +53,28 @@ const Page = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [filteredOrganisations, setFilteredOrganisations] = useState([]);
 
+
+  const [isliveProduction, setIsliveProduction] = useState(false);
+  const [host, setHost] = useState("");
+  const [isHomepageSet, setIsHomepageSet] = useState(false);
   const router = useRouter();
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      setHost(url.host);
+      
+    }
+    
+
+    if (host === "www.finkia.com.ng") {
+    setIsliveProduction(true);
+    } else {
+      setIsliveProduction(false);
+    }
+    setIsHomepageSet(true);
+    
+  }, [host]);
+
 
   const {
     mutate: CustomerSignUp,
@@ -120,7 +141,25 @@ const Page = () => {
   });
 
 
+  const liveOrganisations = organizations?.filter((organization: { organisationName: string; }) => (
+    organization.organisationName === "FINKIA"
+  ))
+ 
+  const organizationsToDisplay = isliveProduction ? liveOrganisations : organizations
+ if(!isHomepageSet){
   return (
+    <div className="flex min-h-[100vh] justify-center bg-ajo_darkBlue pt-[10%]">
+      <Image
+        src="/loadingSpinner.svg"
+        alt="loading spinner"
+        width={80}
+        height={80}
+      />
+    </div>
+  );
+ }
+  return (
+   
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
@@ -265,7 +304,7 @@ const Page = () => {
                   className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                 >
                   <option value="">Select Organization</option>
-                  {organizations?.map((org: getOrganizationProps) => (
+                  {organizationsToDisplay?.map((org: getOrganizationProps) => (
                     <option key={org._id} value={org._id}>
                       {org.organisationName}
                     </option>

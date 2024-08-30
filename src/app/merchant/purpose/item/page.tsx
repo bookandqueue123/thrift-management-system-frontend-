@@ -100,6 +100,7 @@ const Purpose = () => {
     staleTime: 5000,
   });
 
+
   
 
   const {
@@ -479,6 +480,7 @@ const MutateUser = ({
 }) => {
 
   const router = useRouter()
+  const userId = useSelector(selectUserId)
   const { client } = useAuth();
   const organizationId = useSelector(selectOrganizationId);
   const [selectedOptions, setSelectedOptions] = useState<
@@ -494,7 +496,7 @@ const {
     queryKey: ["allCatgories"],
     queryFn: async () => {
       return client
-        .get(`/api/categories?organisation=${organizationId}`, {})
+        .get(`/api/categories?ownerRole=merchant&ownerId=${userId}`, {})
         .then((response: AxiosResponse<roleResponse[], any>) => {
           return response.data;
         })
@@ -505,6 +507,27 @@ const {
     },
     staleTime: 5000,
   });
+
+  const {
+    data: allGeneralCategories,
+    isLoading: isLoadingAllGeneralCategories,
+    refetch: refetchGeneralCategories,
+  } = useQuery({
+    queryKey: ["allGeneralCategories"],
+    queryFn: async () => {
+      return client
+        .get(`/api/categories?ownerRole=superadmin`, {})
+        .then((response: AxiosResponse<roleResponse[], any>) => {
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+
+          throw error;
+        });
+    },
+    staleTime: 5000,
+  });
+
 
 
   const {
@@ -591,6 +614,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
   category: singlePurpose?.category ?? "",
   uniqueCode: singlePurpose?.uniqueCode ?? "",
   amount: singlePurpose?.amount ?? 0,
+  quantity: singlePurpose?.quantity ?? "Nill",
   startDate: extractDate(singlePurpose?.startDate) ?? "",
   startTime: singlePurpose?.startTime ?? "",
   endDate: extractDate(singlePurpose?.endDate) ?? "",
@@ -619,6 +643,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
     category: '',
     uniqueCode: '',
     amount: 0,
+    quantity: 1,
     startDate: '',
     startTime: '',
     endDate: '',
@@ -682,6 +707,25 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
     },
   });
 
+  const { data: allCustomersUnfiltered, isLoading: isLoadingAllCustomersUnfiltered } = useQuery({
+    queryKey: ["allCustomers"],
+    queryFn: async () => {
+      return client
+        .get(
+          `/api/user?role=customer&userType=individual`,
+          {},
+        )
+        .then((response: AxiosResponse<customer[], any>) => {
+          
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          throw error;
+        });
+    },
+  });
+  const customerIds = allCustomersUnfiltered?.map(customer => customer._id);
+
 
   const validationSchema = Yup.object().shape({
     uniqueCode: Yup.string().length(8, 'The input must be exactly 8 characters').optional(),
@@ -689,6 +733,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
     description: Yup.string().required('Description is required'),
     category: Yup.string().required('Category is required'),
     amount: Yup.number().required('Amount is required'),
+    quantity: Yup.mixed().required('Quantity is required'),
     startDate: Yup.date().optional(),
     startTime: Yup.string().optional(),
     endDate: Yup.date().optional(),
@@ -703,8 +748,31 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
     SelectorAll: Yup.string().required('This field is required'),
     selectorCategory: Yup.string().required('This field is required'),
     assignedCustomers: Yup.array().optional(),
-    imageUrl: Yup.string().required('Image is required'),
-    // digitalItem: Yup.string().optional()
+    imageUrl: Yup.mixed()
+          
+          .required()
+          .test(
+            "fileSize",
+            "File size must be less than or equal to 5MB",
+            (value) => {
+              if (value instanceof FileList && value.length > 0) {
+                return value[0].size <= 5242880; // 5MB limit
+              }
+              return true; // No file provided, so validation passes
+            }
+          )
+          .test(
+            "fileType",
+            "Only .jpg, .png files are allowed",
+            (value) => {
+              if (value instanceof FileList && value.length > 0) {
+                const fileType = value[0].type;
+                return fileType === "image/jpeg" || fileType === "image/png"; // Only .jpg or .png allowed
+              }
+              return true; // No file provided, so validation passes
+            }
+          ),
+    //  digitalItem: Yup.string().optional()
     
   });
 
@@ -713,7 +781,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
      validationSchema,
      enableReinitialize: true,
     onSubmit: (values, {setSubmitting}) => {
-       
+      
         setTimeout(() => {
           if (actionToTake === "create-purpose") {
             console.log("creating user.....................");
@@ -729,6 +797,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
         }, 800);
     },
   });
+
 
   useEffect(() => {
     const calculateReferralBonusValue = () => {
@@ -783,7 +852,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
   {
    
     mutationFn: async (values: any) => {
-      console.log(values, '780')
+      
       const formData = new FormData()
       formData.append("purposeName", values.purposeName)
       formData.append("description", values.description)
@@ -791,7 +860,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
      formData.append("organisation", organizationId)
       formData.append("uniqueCode", values.uniqueCode)
        formData.append("amount", values.amount)
-      
+       formData.append("merchantQuantity",  values.quantity);
       formData.append('startDate', values.startDate);
       formData.append('startTime', values.startTime);
       formData.append('endDate', values.endDate);
@@ -809,8 +878,9 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
       formData.append('visibilityEndTime', values.visibilityEndTime);
       formData.append('SelectorAll', values.SelectorAll);
       formData.append('selectorCategory', values.selectorCategory);
-      values.assignedCustomers.forEach((item: string | Blob) => formData.append("assignedCustomers[]", item))
+      const assignedCustomers = values.visibility === 'general' ? customerIds : values.assignedCustomers;
 
+      assignedCustomers.forEach((item: string | Blob) => formData.append("assignedCustomers[]", item));
       
       if(values.imageUrl){
         formData.append("imageUrl", values.imageUrl[0]);
@@ -858,10 +928,10 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
       formData.append("purposeName", values.purposeName)
       formData.append("description", values.description)
       formData.append("category", values.category)
-     formData.append("organisation", organizationId)
+      formData.append("organisation", organizationId)
       formData.append("uniqueCode", values.uniqueCode)
-       formData.append("amount", values.amount)
-      
+      formData.append("amount", values.amount)
+      formData.append("quantity", values.quantity)
       formData.append('startDate', values.startDate);
       formData.append('startTime', values.startTime);
       formData.append('endDate', values.endDate);
@@ -958,6 +1028,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
         )}
       </div>
 
+      <div className="grid grid-cols-2 gap-4"> 
       <div className="flex flex-col space-y-2">
         <label className="m-0 text-xs font-medium text-white">
           Select All
@@ -1032,6 +1103,239 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
         </div>
       </div>
 
+      <div className="flex flex-col space-y-2">
+        <label className="m-0 text-xs font-medium text-white">
+          Visibility
+          <span className="font-base font-semibold text-[#FF0000]">
+            *
+          </span>
+        </label>
+        <div className="flex items-center space-x-4">
+          <div>
+            <input
+              id="visibilityGeneral"
+              type="radio"
+              name="visibility"
+              value="general"
+              onChange={formik.handleChange}
+              checked={formik.values.visibility === 'general'}
+            />
+            <label className="ml-2 m-0 text-xs font-medium text-white" htmlFor="visibilityGeneral" >
+              General Visibility
+            </label>
+          </div>
+          <div>
+            <input
+              id="visibilityInhouse"
+              type="radio"
+              name="visibility"
+              value="inhouse"
+              onChange={formik.handleChange}
+              checked={formik.values.visibility === 'inhouse'}
+            />
+            <label className="m-2 m-0 text-xs font-medium text-white" htmlFor="visibilityInhouse" >
+              Inhouse
+            </label>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      {formik.values.visibility !== "general" ? 
+                <label
+                  htmlFor="assignedCustomers"
+                  className="m-0 text-xs font-medium text-white"
+                >
+                  Assign Customers
+                </label> : ""
+                }
+               
+               {actionToTake === 'create-purpose' && formik.values.visibility !== "general" ?
+               (
+                  <div className="w-full">
+                  <select
+      title="Select an option"
+      name="assignedCustomers"
+      className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+        handleOptionChange(e);
+        let assignedCustomers = formik.values.assignedCustomers;
+
+        if (!assignedCustomers.includes(e.target.value)) {
+          const updatedAssignedCustomers = [
+            ...assignedCustomers,
+            e.target.value,
+          ];
+          formik.setFieldValue("assignedCustomers", updatedAssignedCustomers);
+        }
+      }}
+    >
+      <option value="" label="Select an option" />
+      {allCustomers?.map((option) => (
+        <option key={option._id} value={option._id}>
+          {option.firstName} {option.lastName}
+        </option>
+      ))}
+    </select>
+
+        <div className="space-x-1 space-y-2">
+          {formik.values.assignedCustomers.map((customerId: string, index: number ) => {
+            const option = allCustomers?.find(
+              (user) => user._id === customerId,
+            );
+            return (
+              <div key={index} className="mb-2 mr-2 inline-block">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleRemoveOption(index);
+                    const updatedCustomers =
+                      formik.values.assignedCustomers.filter(
+                        (id: any) => id !== customerId,
+                      );
+                    formik.setFieldValue(
+                      "assignedCustomers",
+                      updatedCustomers,
+                    );
+                  }}
+                  className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
+                >
+                  {option?.firstName} {option?.lastName}
+                  <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
+                    ×
+                  </span>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      )
+      : ""}
+
+{actionToTake === 'edit-purpose' ? (
+  <div className="w-full">
+    <select
+      title="Select an option"
+      name="assignedCustomers"
+      className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+      onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+        handleOptionChange(e);
+        let assignedCustomers = assignedCustomerIds;
+
+        if (!assignedCustomers.includes(e.target.value)) {
+          const updatedAssignedCustomers = [
+            ...assignedCustomers,
+            e.target.value,
+          ];
+          setAssignedCustomerIds(updatedAssignedCustomers);
+        }
+      }}
+    >
+      <option value="hidden"></option>
+      {allCustomers?.map((option) => (
+        <option key={option._id} value={option._id}>
+          {option.firstName + "76"} {option.lastName}
+        </option>
+      ))}
+    </select>
+
+    <div className="space-x-1 space-y-2">
+      
+      {assignedCustomerIds.map((customerId: string, index: number) => {
+        const option = allCustomers?.find(
+          (user) => user._id === customerId,
+        );
+        
+        return (
+          <div key={index} className="mb-2 mr-2 inline-block">
+            <button
+              type="button"
+              onClick={() => {
+                handleRemoveOption(index);
+                const updatedCustomers = assignedCustomerIds.filter(
+                  (id: any) => id !== customerId,
+                );
+                setAssignedCustomerIds(updatedCustomers);
+              }}
+              className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
+            >
+              {option?.firstName} {option?.lastName}
+              <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
+                ×
+              </span>
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+) : ""}
+
+{formik.errors.assignedCustomers && formik.touched.assignedCustomers && (
+          <div className="text-red-500"><>{formik.errors.assignedCustomers}</></div>
+        )}
+
+
+    {actionToTake === 'create-purpose' && formik.values.visibility !== "general"? (
+      <div className="flex gap-x-3  mt-2">
+      <input
+      id="selectAllCustomers"
+      name="selectAllCustomers"
+      type="checkbox"
+      className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
+       checked={formik.values.assignedCustomers.length === allCustomers?.length}
+      onChange={(e) => {
+        if (e.target.checked) {
+          formik.setFieldValue(
+            "assignedCustomers",
+            allCustomers?.map((customer) => customer._id),
+          );
+        } else {
+          formik.setFieldValue("assignedCustomers", []);
+        }
+      }}
+    />
+              
+      <label
+        htmlFor="selectAllCustomers"
+        className="m-0 text-sm capitalize text-white"
+      >
+        Select all Customers
+      </label>
+    </div>
+      ): ''}
+
+{actionToTake === 'edit-purpose' ? (
+  <div className="flex gap-x-3">
+    <input
+      id="selectAllCustomers"
+      name="selectAllCustomers"
+      type="checkbox"
+      className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
+      checked={
+        assignedCustomerIds.length === allCustomers?.length
+      }
+      onChange={(e) => {
+        if (e.target.checked) {
+          if (allCustomers) {
+            setAssignedCustomerIds(allCustomers.map((customer) => customer._id));
+          }
+        } else {
+          setAssignedCustomerIds([]);
+        }
+      }}
+    />
+    <label
+      htmlFor="selectAllCustomers"
+      className="m-0 text-sm capitalize text-white"
+    >
+      Select all Customers
+    </label>
+  </div>
+) : ""}
+
+
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col space-y-2">
           <label className="m-0 text-xs font-medium text-white" htmlFor="category">
@@ -1048,9 +1352,14 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
           >
             <option value="">Select Category</option>
             
-            {allCatgories?.map(category => (
+            {formik.values.visibility === "inhouse" ? allCatgories?.map(category => (
                 <option key={category._id} value={category._id}>{category.name}</option>
-            ))}
+            )):
+            allGeneralCategories?.map(category => (
+              <option key={category._id} value={category._id}>{category.name}</option>
+          ))
+          
+          }
             
             {/* <option value="category2">Category 2</option> */}
           </select>
@@ -1075,7 +1384,8 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
         </div>
       </div>
 
-      <div className="flex flex-col space-y-2 w-[50%]">
+      <div className="grid grid-cols-2 gap-4">
+      <div className="flex flex-col space-y-2 ">
         <label className="m-0 text-xs font-medium text-white" htmlFor="amount">
           Amount
           <span className="font-base font-semibold text-[#FF0000]">
@@ -1095,8 +1405,28 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
         )}
       </div>
 
+      <div className="flex flex-col space-y-2 ">
+        <label className="m-0 text-xs font-medium text-white" htmlFor="quantity">
+          Quantity (Nill for unquantifiabe purpose/item)
+          <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
+          </label>
+        <input
+          id="quantity"
+          name="quantity"
+         
+          onChange={formik.handleChange}
+          value={formik.values.quantity}
+          className="bg-right-20 w-full rounded-lg border-0  bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D] md:bg-none"
+        />
+        {formik.errors.quantity && formik.touched.quantity && (
+          <div className="text-red-500"><>{formik.errors.quantity}</></div>
+        )}
+      </div>
+        </div>
         <div><h1 className="text-xl text-white">Maximum payment Duration</h1>
-      <div className="grid grid-cols-4 gap-4 mt-1">
+      <div className="grid grid-cols-2 gap-4 mt-1">
         
         <div className="flex flex-col space-y-2">
           <label className="m-0 text-xs font-medium text-white" htmlFor="startDate">Start Date</label>
@@ -1279,7 +1609,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
                     htmlFor="imageUrl"
                     className="m-0 text-xs font-medium text-white"
                   >
-                    Upload Purpose/ Item’s Cover Image Picture 
+                    Upload Purpose/ Item’s Cover Image Picture (max-size - 5MB)
                     <span className="font-base font-semibold text-[#FF0000]">
                     *
                   </span>
@@ -1347,7 +1677,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
                   htmlFor="image"
                   className="mb-8  text-xs font-medium text-white"
                 >
-                  Picture
+                  Picture (max-size - 5MB)
                 </label>
                   {formik.values.imageUrl && (formik.values.imageUrl as string).length > 0 && formik.values.imageUrl  ? (
                       <Image
@@ -1409,7 +1739,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
                     htmlFor="digitalItem"
                     className="m-0 text-xs font-medium text-white"
                   >
-                    Upload Purpose/ Item’s for video, audio or document (Optional)
+                    Upload Purpose/ Item’s for video, audio or document (Optional max-size - 5MB)
                   </label>
                   <label
                     htmlFor="digitalItem"
@@ -1476,7 +1806,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
                   htmlFor="image"
                   className="mb-8  text-xs font-medium text-white"
                 >
-                  Picture
+                  Picture (max-size - 5MB)
                 </label>
                   {formik.values.digitalItem && (formik.values.digitalItem as string).length > 0 && formik.values.digitalItem  ? (
                       <Image
@@ -1529,42 +1859,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
 
 
 
-      <div className="flex flex-col space-y-2">
-        <label className="m-0 text-xs font-medium text-white">
-          Visibility
-          <span className="font-base font-semibold text-[#FF0000]">
-            *
-          </span>
-        </label>
-        <div className="flex items-center space-x-4">
-          <div>
-            <input
-              id="visibilityGeneral"
-              type="radio"
-              name="visibility"
-              value="general"
-              onChange={formik.handleChange}
-              checked={formik.values.visibility === 'general'}
-            />
-            <label className="ml-2 m-0 text-xs font-medium text-white" htmlFor="visibilityGeneral" >
-              General Visibility
-            </label>
-          </div>
-          <div>
-            <input
-              id="visibilityInhouse"
-              type="radio"
-              name="visibility"
-              value="inhouse"
-              onChange={formik.handleChange}
-              checked={formik.values.visibility === 'inhouse'}
-            />
-            <label className="m-2 m-0 text-xs font-medium text-white" htmlFor="visibilityInhouse" >
-              Inhouse
-            </label>
-          </div>
-        </div>
-      </div>
+      
 
       <div className="grid grid-cols-4 gap-4">
         <div className="flex flex-col space-y-2">
@@ -1651,199 +1946,9 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
       </div>
 
       <div className="mb-4 w-3/4">
-                <label
-                  htmlFor="assignedCustomers"
-                  className="m-0 text-xs font-medium text-white"
-                >
-                  Assign Customers
-                </label>
-               
-               {actionToTake === 'create-purpose' ?
-               (
-                  <div className="w-full">
-                  <select
-      title="Select an option"
-      name="assignedCustomers"
-      className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
-      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-        handleOptionChange(e);
-        let assignedCustomers = formik.values.assignedCustomers;
+           
 
-        if (!assignedCustomers.includes(e.target.value)) {
-          const updatedAssignedCustomers = [
-            ...assignedCustomers,
-            e.target.value,
-          ];
-          formik.setFieldValue("assignedCustomers", updatedAssignedCustomers);
-        }
-      }}
-    >
-      <option value="" label="Select an option" />
-      {allCustomers?.map((option) => (
-        <option key={option._id} value={option._id}>
-          {option.firstName} {option.lastName}
-        </option>
-      ))}
-    </select>
-
-        <div className="space-x-1 space-y-2">
-          {formik.values.assignedCustomers.map((customerId: string, index: number ) => {
-            const option = allCustomers?.find(
-              (user) => user._id === customerId,
-            );
-            return (
-              <div key={index} className="mb-2 mr-2 inline-block">
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleRemoveOption(index);
-                    const updatedCustomers =
-                      formik.values.assignedCustomers.filter(
-                        (id: any) => id !== customerId,
-                      );
-                    formik.setFieldValue(
-                      "assignedCustomers",
-                      updatedCustomers,
-                    );
-                  }}
-                  className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
-                >
-                  {option?.firstName} {option?.lastName}
-                  <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
-                    ×
-                  </span>
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      )
-      : ""}
-
-{actionToTake === 'edit-purpose' ? (
-  <div className="w-full">
-    <select
-      title="Select an option"
-      name="assignedCustomers"
-      className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
-      onChange={(e: ChangeEvent<HTMLSelectElement>) => {
-        handleOptionChange(e);
-        let assignedCustomers = assignedCustomerIds;
-
-        if (!assignedCustomers.includes(e.target.value)) {
-          const updatedAssignedCustomers = [
-            ...assignedCustomers,
-            e.target.value,
-          ];
-          setAssignedCustomerIds(updatedAssignedCustomers);
-        }
-      }}
-    >
-      <option value="hidden"></option>
-      {allCustomers?.map((option) => (
-        <option key={option._id} value={option._id}>
-          {option.firstName + "76"} {option.lastName}
-        </option>
-      ))}
-    </select>
-
-    <div className="space-x-1 space-y-2">
-      
-      {assignedCustomerIds.map((customerId: string, index: number) => {
-        const option = allCustomers?.find(
-          (user) => user._id === customerId,
-        );
-        
-        return (
-          <div key={index} className="mb-2 mr-2 inline-block">
-            <button
-              type="button"
-              onClick={() => {
-                handleRemoveOption(index);
-                const updatedCustomers = assignedCustomerIds.filter(
-                  (id: any) => id !== customerId,
-                );
-                setAssignedCustomerIds(updatedCustomers);
-              }}
-              className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
-            >
-              {option?.firstName} {option?.lastName}
-              <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
-                ×
-              </span>
-            </button>
-          </div>
-        );
-      })}
-    </div>
-  </div>
-) : ""}
-
-{formik.errors.assignedCustomers && formik.touched.assignedCustomers && (
-          <div className="text-red-500"><>{formik.errors.assignedCustomers}</></div>
-        )}
-
-
-    {actionToTake === 'create-purpose' ? (
-      <div className="flex gap-x-3  mt-2">
-      <input
-      id="selectAllCustomers"
-      name="selectAllCustomers"
-      type="checkbox"
-      className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
-       checked={formik.values.assignedCustomers.length === allCustomers?.length}
-      onChange={(e) => {
-        if (e.target.checked) {
-          formik.setFieldValue(
-            "assignedCustomers",
-            allCustomers?.map((customer) => customer._id),
-          );
-        } else {
-          formik.setFieldValue("assignedCustomers", []);
-        }
-      }}
-    />
-              
-      <label
-        htmlFor="selectAllCustomers"
-        className="m-0 text-sm capitalize text-white"
-      >
-        Select all Customers
-      </label>
-    </div>
-      ): ''}
-
-{actionToTake === 'edit-purpose' ? (
-  <div className="flex gap-x-3">
-    <input
-      id="selectAllCustomers"
-      name="selectAllCustomers"
-      type="checkbox"
-      className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
-      checked={
-        assignedCustomerIds.length === allCustomers?.length
-      }
-      onChange={(e) => {
-        if (e.target.checked) {
-          if (allCustomers) {
-            setAssignedCustomerIds(allCustomers.map((customer) => customer._id));
-          }
-        } else {
-          setAssignedCustomerIds([]);
-        }
-      }}
-    />
-    <label
-      htmlFor="selectAllCustomers"
-      className="m-0 text-sm capitalize text-white"
-    >
-      Select all Customers
-    </label>
-  </div>
-) : ""}
-
-<button
+        <button
             type="submit"
             className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
             onClick={() => {
@@ -1863,7 +1968,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
             ) : (
               "Submit"
             )}
-          </button>
+        </button>
       </div>
     </form>
   );

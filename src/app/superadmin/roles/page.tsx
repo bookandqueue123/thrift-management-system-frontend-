@@ -696,12 +696,12 @@ const MutateRole = ({
                   <div className="space-x-1 space-y-2">
                     {assignedUsersIds.map((userId: string, index: number ) => {
                     
-                      console.log(userId)
+                     
                       const option = getSuperUsers?.find(
                         (user: { _id: string; }) => user._id === userId,
                       );
 
-                      console.log(option)
+                     
                       return (
                         <div key={index} className="mb-2 mr-2 inline-block">
                           <button

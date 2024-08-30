@@ -4,6 +4,7 @@ import Modal from "@/components/Modal";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId, selectSelectedProducts, selectToken, selectUser, selectUserId } from "@/slices/OrganizationIdSlice";
 import { savingsFilteredById } from "@/types";
+import AmountFormatter from "@/utils/AmountFormatter";
 import { daysBetweenDates, daysUntilDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -71,11 +72,13 @@ export default function MakePayment() {
                 .catch((error) => { throw error });
         },
     });
+   
 
     
     const filteredPurposes = allPurpose?.filter((purpose: { _id: Key; }) =>
         selectedProducts.includes(purpose._id)
     );
+  
 
    
     const handleInputChange = (id: string, field: string, value: any) => {
@@ -97,6 +100,7 @@ export default function MakePayment() {
 
     const GoToPayment = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
+       
         if (Object.keys(paymentDetails).length === 0) {
             setShowModal(false);
             setErrors({ general: "No payment details provided." });
@@ -211,25 +215,32 @@ export default function MakePayment() {
                         content={(
                             <>
                                 {filteredPurposes && filteredPurposes.map((purpose: {
+                                    total: number;
+                                    quantity: number;
                                     balance: any; purposeName: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; amount: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | PromiseLikeOfReactNode | null | undefined; _id: string; endDate: string | number | Date; startDate: string | number | Date; 
-}, index: number) => (
+                                    }, index: number) => (
                                     <tr key={index}>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">{index + 1}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">{purpose.purposeName}</td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm">{purpose.amount}</td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm">{(AmountFormatter(Number(purpose.amount)))}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                            <input
-                                                type="number"
-                                                onChange={(e) => handleInputChange(purpose._id, 'quantity', parseFloat(e.target.value) || 0)}
-                                                className="bg-gray-50 border text-gray-900 text-sm rounded-lg p-1.5"
-                                                min={1}
-                                            />
+                                        <input
+                                            type="number"
+                                            onChange={(e) => handleInputChange(purpose._id, 'quantity', parseFloat(e.target.value) || 0)}
+                                            className="bg-gray-50 border text-gray-900 text-sm rounded-lg p-1.5"
+                                            min={1}
+                                            value={paymentDetails[purpose._id]?.quantity || purpose.quantity || ""}  // Ensure value is properly set
+                                            readOnly={purpose.quantity !== 0}  // Make the input read-only if quantity is not 0
+                                        />
+
+                                    </td>
+
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm">
+                                            {purpose.total === 0 || !purpose.total ? AmountFormatter(parseFloat((Number(purpose.amount) * (paymentDetails[purpose._id]?.quantity || 1)).toFixed(2))) : AmountFormatter(purpose.total)}
                                         </td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                            {(Number(purpose.amount) * (paymentDetails[purpose._id]?.quantity || 1)).toFixed(2)}
-                                        </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm">
                                             <input
+                                                
                                                 type="number"
                                                 onChange={(e) => handleInputChange(purpose._id, 'amount', parseFloat(e.target.value) || 0)}
                                                 className="bg-gray-50 border text-gray-900 text-sm rounded-lg p-1.5"
@@ -238,7 +249,7 @@ export default function MakePayment() {
                                             <br/>
                                             {errors[purpose._id] && <span className="text-red-500">{errors[purpose._id]}</span>}
                                         </td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm">{purpose.balance?.toFixed(2)}</td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm">{AmountFormatter(purpose.balance?.toFixed(2))}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">
                                         {!purpose.endDate ? "Nill" : daysBetweenDates(purpose.startDate, purpose.endDate)}
                                         </td>

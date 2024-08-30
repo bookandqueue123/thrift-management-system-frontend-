@@ -37,6 +37,7 @@ const Categories = () => {
   const { client } = useAuth();
   const user = useSelector(selectUser);
   const userId = useSelector(selectUserId)
+  const [searchResult, setSearchResult] = useState("");
   const [modalState, setModalState] = useState(false);
   const [modalToShow, setModalToShow] = useState<
     "edit-category" | "create-category" | ""
@@ -54,10 +55,10 @@ const Categories = () => {
     queryKey: ["allCatgories"],
     queryFn: async () => {
       return client
-        .get(`/api/categories?ownerRole=merchant&ownerId=${userId}`, {})
+        .get(`/api/categories?ownerRole=superadmin`, {})
         .then((response: AxiosResponse<roleResponse[], any>) => {
     
-          setFilteredCategories(response.data);
+          setFilteredCategories(response.data)
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -69,11 +70,12 @@ const Categories = () => {
   });
 
   // useEffect(() => {
-  //   const merchantCategories = filteredCategories?.filter(category => category.ownerRole === 'merchant' && category.ownerId === userId );
-       
+  //   const superadminCategories = allCatgories?.filter(category => category.ownerRole === 'superadmin');
+        
 
-  //       setFilteredCategories(merchantCategories || []);
-  // }, [userId])
+  //       setFilteredCategories(superadminCategories || []);
+  // }, [allCatgories])
+
  
 
   const { data: allPermissions } = useQuery({
@@ -90,6 +92,7 @@ const Categories = () => {
     },
   });
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchResult(e.target.value);
     if (allCatgories) {
 
       const searchQuery = e.target.value.trim().toLowerCase();
@@ -153,9 +156,7 @@ const Categories = () => {
               </svg>
             </form>
           </span>
-          {(user?.role === "organisation" ||
-            (user?.role === "staff" &&
-              userPermissions.includes(permissionsMap["create-category"]))) && (
+         
             <CustomButton
               type="button"
               label="Create a Category"
@@ -167,7 +168,7 @@ const Categories = () => {
                 setIsCategoryCreated(false);
               }}
             />
-          )}
+        
         </div>
 
         <p className="mb-2 text-base font-medium text-white">
@@ -200,11 +201,7 @@ const Categories = () => {
                     </td>
                     
                     <td className="flex gap-2 whitespace-nowrap px-6 py-4 text-sm">
-                      {(user?.role === "organisation" ||
-                        (user?.role === "staff" &&
-                          userPermissions.includes(
-                            permissionsMap["edit-category"],
-                          ))) && (
+                      
                         <Image
                           src="/pencil.svg"
                           alt="pencil"
@@ -219,7 +216,7 @@ const Categories = () => {
                           }}
                           className="cursor-pointer"
                         />
-                      )}
+                  
                       <Image
                         src="/trash.svg"
                         alt="pencil"
@@ -286,209 +283,155 @@ const Categories = () => {
 };
 
 const MutateCategory = ({
-  setCategoryEdited,
-  setCategoryCreated,
-  setCloseModal,
-  actionToTake,
-  setModalContent,
-  categoryToBeEdited,
-}: {
-  categoryToBeEdited: string
-  actionToTake: "create-category" | "edit-category" | "";
-  setCloseModal: Dispatch<SetStateAction<boolean>>;
-  setCategoryCreated: Dispatch<SetStateAction<boolean>>;
-  setCategoryEdited: Dispatch<SetStateAction<boolean>>;
-  setModalContent: Dispatch<SetStateAction<"" | "status" | "form">>;
-}) => {
-  const { client } = useAuth();
-  const userId = useSelector(selectUserId)
-  const organisationId = useSelector(selectOrganizationId);
-  const [assignedPermissions, setAssignedPermissions] = useState<string[]>([]);
+    setCategoryEdited,
+    setCategoryCreated,
+    setCloseModal,
+    actionToTake,
+    setModalContent,
+    categoryToBeEdited,
+  }: {
+    categoryToBeEdited: string;
+    actionToTake: "create-category" | "edit-category" | "";
+    setCloseModal: Dispatch<SetStateAction<boolean>>;
+    setCategoryCreated: Dispatch<SetStateAction<boolean>>;
+    setCategoryEdited: Dispatch<SetStateAction<boolean>>;
+    setModalContent: Dispatch<SetStateAction<"" | "status" | "form">>;
+  }) => {
+    const { client } = useAuth();
+    const userId = useSelector(selectUserId)
+    
+
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [submittedData, setSubmittedData] = useState<{
+      name: string;
+      description: string;
+    } | null>(null);
   
-  
-  const { data: category, isLoading: isLoadingCategory } = useQuery(
-    {
-      queryKey: ["category"],
-      queryFn: async () => {
-        return client
-          .get(`api/categories/${categoryToBeEdited}`)
-          .then((response) => {
-            return response.data;
-          })
-          .catch((error) => {
-            throw error;
-          });
-      },
-    },
-  );
-
- 
-
-
-
- 
-  const initialValues: CategoryFormValuesProps = actionToTake === 'edit-category' ? {
-    name: category?.name ?? "",
-    description: category?.description ?? "",
-  } : 
-  {
-    name: "",
-    description: "",
-  }
-  const validationSchema = Yup.object({
-    name: Yup.string()
-      .max(50, 'Name must be 50 characters or less')
-      .required('Name is required'),
-    description: Yup.string()
-      .max(200, 'Description must be 200 characters or less')
-      .required('Description is required'),
-  });
-  const { data: allPermissions, isLoading: isLoadingAllPermissions } = useQuery(
-    {
-      queryKey: ["allPermissions"],
-      queryFn: async () => {
-        return client
-          .get("api/permission")
-          .then((response) => {
-            return response.data;
-          })
-          .catch((error) => {
-            throw error;
-          });
-      },
-    },
-  );
-
-  
-
-  const { mutate: CreateCategory, isPending: isCreatingRole } = useMutation({
-    mutationKey: ["create category"],
-    mutationFn: async (values: CategoryFormValuesProps) => {
-      return client.post(`/api/categories`, {
-        name: values.name,
-        description: values.description,
-        ownerId: userId,
-        ownerRole: "merchant"
-      });
-    },
-
-    onSuccess(response) {
-      
-      setCategoryCreated(true);
-      setModalContent("status");
-      setTimeout(() => {
-        setCloseModal(false);
-      }, 5000);
-    },
-
-    onError(error: AxiosError<any, any>) {
-      setCategoryCreated(false);
-      setModalContent("status");
-      
-    },
-  });
-
-  const { mutate: editCategory, isPending: isEditingRole } = useMutation({
-    mutationKey: ["edit Category"],
-    mutationFn: async (values: CategoryFormValuesProps) => {
-      return client.put(`/api/categories/${categoryToBeEdited}`, {
-        name: values.name,
-        description: values.description,
-        ownerId: userId,
-        ownerRole: "merchant"
-      });
-    },
-
-    onSuccess(response) {
-      setCategoryEdited(true);
-      setModalContent("status");
-
-      setTimeout(() => {
-        setCloseModal(false);
-      }, 5000);
-    },
-
-    onError(error: AxiosError<any, any>) {
-      setCategoryEdited(false);
-      setModalContent("status");
-
-
-    },
-  });
-
-  
-
-  return (
-    <Formik
-    initialValues={initialValues}
-    validationSchema={validationSchema}
-    onSubmit={(values, { setSubmitting }) => {
-        setTimeout(() => {
-          if (actionToTake === "create-category") {
-            console.log("creating Category.....................");
-            CreateCategory(values);
-          } else {
-            console.log("editing role.....................");
-            editCategory(values);
+    useEffect(() => {
+      if (actionToTake === "edit-category" && categoryToBeEdited) {
+        const fetchCategory = async () => {
+          try {
+            const response = await client.get(`/api/categories/${categoryToBeEdited}`);
+            const data = response.data;
+    
+            setName(data.name);
+            setDescription(data.description);
+          } catch (error) {
+            console.error(error);
           }
-
-          setSubmitting(false);
-        }, 800);
-      }}
-  >
-    {({ isSubmitting, values, submitForm }) => (
-      <Form>
-       <div className='p-[5%] bg-ajo_purple'>
-       <div >
-          <label htmlFor="name" className='text-white'>Name</label>
-          <Field
-          value={values.name}
-           type="text"
-            id="name" 
-            name="name" 
-            className="bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white "
+        };
+  
+        fetchCategory();
+      }
+    }, [actionToTake, categoryToBeEdited]);
+  
+    const { mutate: handleMutation, isPending, isError } = useMutation({
+      mutationKey: [actionToTake === "create-category" ? "create category" : "update category", name],
+      mutationFn: async () => {
+        if (actionToTake === "create-category") {
+          return client.post(`/api/categories`, {
+            name: name,
+            description: description,
+            ownerRole: "superadmin",
+             ownerId: userId
+          });
+        } else if (actionToTake === "edit-category") {
+          return client.put(`/api/categories/${categoryToBeEdited}`, {
+            name: name,
+            description: description,
+          });
+        }
+      },
+      onSuccess(response: any) {
+        if (actionToTake === "create-category") {
+          setCategoryCreated(true);
+        } else if (actionToTake === "edit-category") {
+          setCategoryEdited(true);
+        }
+        setSubmittedData(response.data);
+        setModalContent("status");
+        setTimeout(() => {
+          setCloseModal(false);
+        }, 5000);
+      },
+      onError(error: AxiosError<any, any>) {
+        console.error(error);
+        if (actionToTake === "create-category") {
+          setCategoryCreated(false);
+        } else if (actionToTake === "edit-category") {
+          setCategoryEdited(false);
+        }
+        setModalContent("status");
+      },
+    });
+  
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      handleMutation();
+    };
+  
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <form
+          onSubmit={handleSubmit}
+          className="max-w-lg mx-auto p-4 bg-white shadow-md rounded"
+        >
+          <h2 className="text-2xl font-bold mb-4">
+            {actionToTake === "edit-category" ? "Edit Category" : "Create Category"}
+          </h2>
+  
+          <div className="mb-4">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              Category Name
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              required
             />
-          <ErrorMessage className='text-red-500' name="name" component="div" />
-        </div>
-
-        <div className='my-[3%]'> 
-          <label className='text-white' htmlFor="description">Description</label>
-          <Field 
-          values={values.description}
-          as="textarea" 
-          id="description" 
-          name="description" 
-          className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-sm text-[#7D7D7D]"
-          />
-          <ErrorMessage className='text-red-500' name="description" component="div" />
-        </div>
-
-        <div className="flex justify-center md:w-[100%] mb-8">
-        <button
+          </div>
+  
+          <div className="mb-4">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              Description
+            </label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+              required
+            />
+          </div>
+  
+          <button
             type="submit"
-            className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
-            onClick={() => submitForm()}
-            disabled={isSubmitting || isCreatingRole}
+            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
           >
-            {isSubmitting || isCreatingRole || isEditingRole ? (
-              <Image
-                src="/loadingSpinner.svg"
-                alt="loading spinner"
-                className="relative left-1/2"
-                width={25}
-                height={25}
-              />
-            ) : (
-              "Submit"
-            )}
+            {actionToTake === "edit-category" ? "Update" : "Submit"}
           </button>
-        </div>
-       </div>
-      </Form>
-    )}
-  </Formik>
-  );
-};
+        </form>
+  
+        {submittedData && (
+          <div className="mt-4 p-4 bg-green-100 rounded">
+            <h3 className="text-xl font-bold">
+              Category {actionToTake === "edit-category" ? "Updated" : "Created"} Successfully
+            </h3>
+            <p><strong>Name:</strong> {submittedData.name}</p>
+            <p><strong>Description:</strong> {submittedData.description}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+
+  
+  
 
 export default function Page() {
   return <Categories />;

@@ -3,6 +3,7 @@ import Modal from "@/components/Modal";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId, selectToken, selectUser, selectUserId } from "@/slices/OrganizationIdSlice";
 import { savingsFilteredById } from "@/types";
+import AmountFormatter from "@/utils/AmountFormatter";
 import { extractDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -257,7 +258,7 @@ export default function MakePayment() {
                                         {payment.purposeName}
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                        {payment.amount}
+                                        {AmountFormatter(payment.amount)}
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                                         <span className="text-xs font-sm">{extractDate(payment.startDate)} <br /></span>

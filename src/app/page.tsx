@@ -17,6 +17,7 @@ export default function Home() {
       setHost(url.host);
       
     }
+    
 
     if (host === "www.finkia.com.ng" || host === "staging.finkia.com.ng") {
       setHomePageToShow("finkia");

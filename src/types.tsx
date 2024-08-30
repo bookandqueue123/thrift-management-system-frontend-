@@ -333,6 +333,7 @@ export interface WithdrawalProps {
 }
 
 export interface Organisation {
+  lga: string;
   accountNumber: string;
   assignedCustomer?: any[];
   businessEmailAdress: string;
@@ -371,6 +372,8 @@ export interface Organisation {
   __v?: number;
   _id?: string;
   photo?: string;
+  industry: string;
+  natureOfBusiness: string;
 }
 
 export interface Guarantor {
@@ -673,6 +676,8 @@ export interface permissionObject {
 }
 
 export interface roleResponse {
+  ownerId: string;
+  ownerRole: string;
   _id: string;
   name: string;
   description: string;
@@ -762,6 +767,7 @@ export interface PurposeProps {
   category: string;
   uniqueCode: string;
   amount: number;
+  quantity: number | string;
   startDate: string | number | readonly string[] | undefined;
   startTime: string;
   endDate: string | number | readonly string[] | undefined;

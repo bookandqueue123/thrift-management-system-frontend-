@@ -565,15 +565,16 @@ import { useSelector } from "react-redux";
 import StatesAndLGAs from "@/api/statesAndLGAs.json"
 import * as Yup from "yup";
 
-import { Kyc } from "./kyc";
+import { Kyc } from "../../../../../modules/merchant/customer/kyc";
 
 
-function KYCFallBack(){
-  return <>Loading...</>
+function KYCFallBack() {
+  return <div>Loading your KYC information, please wait...</div>;
 }
 
 export const dynamic = 'force-dynamic'
 export default function Page(){
+  
   return(
     <div>
       <Suspense fallback={<KYCFallBack/>}>

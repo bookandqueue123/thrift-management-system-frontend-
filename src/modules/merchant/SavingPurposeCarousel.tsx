@@ -14,6 +14,7 @@ import { UseDispatch } from 'react-redux';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import AmountFormatter from '@/utils/AmountFormatter';
+import { CustomButton } from '@/components/Buttons';
 // import './App.css';
 
 
@@ -83,6 +84,16 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
       if (!selectedProducts.includes(id)) {
         dispatch(addSelectedProduct(id));
       }
+  
+      // Check and add mandatory category products
+      categoryProducts.forEach((categoryProduct: any) => {
+        if (
+          categoryProduct.selectorCategory === 'selectorCategoryMandatory' &&
+          !selectedProducts.includes(categoryProduct._id)
+        ) {
+          dispatch(addSelectedProduct(categoryProduct._id));
+        }
+      });
     } else {
       if (isSelectorCategoryMandatory) {
         // Ensure categoryProducts is defined and check if any other products are selected
@@ -102,7 +113,7 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
       }
     }
   };
-
+  
   
   
 
@@ -163,23 +174,39 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
         const shouldSelect = 
           product.SelectorAll === 'selectorAllMandatory' || 
           (product.selectorCategory === 'selectorCategoryMandatory' && 
-          categoryProducts.some((p: { _id: React.Key; }) => p._id !== product._id && selectedProducts.includes(p._id)));
+          (categoryProducts.some((p: { _id: React.Key; SelectorAll: string }) => p._id !== product._id && (p.SelectorAll === 'selectorAllMandatory' || selectedProducts.includes(p._id)))));
   
         if (shouldSelect && !selectedProducts.includes(product._id)) {
           dispatch(addSelectedProduct(product._id));
         }
       });
     });
-  }, [products, dispatch]);
+  }, [products, selectedProducts, dispatch]);
   
+  const clearSelectedProducts = () => {
+    localStorage.removeItem('selectedProducts');
+    // Optionally, you can dispatch an action to update the Redux state as well
+    dispatch(updateSelectedProducts([])); // Clear the Redux state too
+  };
 
   return (
     <div>
-      <div
-        className="text-red-500 text-5xl hover:text-blue-500 cursor-pointer"
-        onClick={() => router.push(`/customer/savings-purpose/make-payment`)}
-      >
-        {selectedProducts.length}
+      <div>
+      {/* <button onClick={clearSelectedProducts}>Clear Selected Products</button> */}
+        <div className='text-2xl text-extrabold text-white mb-4'>
+        Total Selected Item(s):
+         <span 
+          // onClick={() => router.push(`/customer/savings-purpose/make-payment`)} 
+          className="text-white border-2 border-white px-4 ml-2 text-xl hover:text-blue-500 cursor-pointer">
+            {selectedProducts?.length}
+          </span>
+        </div>
+        <CustomButton
+        label="Pay for Selected Item(s)"
+        type='button'
+        style="bg-white text-bold mb-2 text-[15px] py-3 px-2 text-black hover:text-white hover:bg-[#EAAB40] rounded-md flex-1"
+        onButtonClick={() => router.push(`/customer/savings-purpose/make-payment`)}
+       />
       </div>
       {products &&
         Object.keys(products).map((categoryName, index) => {
@@ -257,51 +284,78 @@ const ProductCard = ({
     );
   };
 
+  const renderQuantityOptions = () => {
+    if (product.quantity === 'Nill') {
+      return <option value="Nill">Nill</option>;
+    }
+    return Array.from({ length: product.quantity }, (_, i) => (
+      <option key={i + 1} value={i + 1}>
+        {i + 1}
+      </option>
+    ));
+  };
+
   return (
-    <div className="product-card">
-      <div className="checkbox-container" style={{ marginLeft: '8px' }}>
-            <input
-              type="checkbox"
-              checked={isChecked}
-              onChange={(e) =>
-                onCheckboxChange(product._id, e.target.checked)
-              }
-            />
-          </div>
-      <div className="image-section">
-        
-        <Image
-          height={81}
-          width={219.25}
-          src={product.imageUrl}
-          alt={product.purposeName}
-          className="product-image"
+    <div className=''>
+
+        <input
+          className='ml-4'
+          type="checkbox"
+          checked={isChecked}
+          onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
         />
-        <div
-          className="icon-container"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <FaShareAlt className="icon" />
-          <FaBookmark className="icon" />
-          
+      <div className="product-card">
+        
+        <div className="checkbox-container" style={{ marginLeft: '8px' }}>
+          {/* <input
+            type="checkbox"
+            checked={isChecked}
+            onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
+          /> */}
         </div>
-      </div>
-      <div className="info-section bg-ajo_orange text-black">
-        <h3 className="product-name">{product.purposeName}</h3>
-        <p className="product-price">NGN{AmountFormatter(product.amount)}</p>
-        <p className="product-description">
-          {truncateDescription(product.description, 15)}
-        </p>
-        <a
-          href={`/customer/savings-purpose/${product._id}`}
-          className="read-more"
-        >
-          Read more
-        </a>
+        <div className="image-section h-[40%]">
+          <Image
+            height={100}
+            width={150}
+            src={product.imageUrl}
+            alt={product.purposeName}
+            className="product-image p-4"
+          />
+          <div
+            className="icon-container"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <FaShareAlt className="icon" />
+            <FaBookmark className="icon" />
+          </div>
+        </div>
+        <div className="info-section bg-ajo_orange text-black">
+          <h3 className="product-name">{product.purposeName}</h3>
+          <div className="product-price-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <p className="product-price">NGN{AmountFormatter(product.amount)}</p>
+          <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 'auto' }}>
+            <label htmlFor={`quantity-${product._id}`} style={{ fontSize: '0.9rem', marginBottom: '4px' }}>Qty</label>
+            {product.merchantQuantity}
+            {/* <select id={`quantity-${product._id}`} className="quantity-dropdown">
+              {renderQuantityOptions()}
+            </select> */}
+          </div>
+        </div>
+
+          <p className="product-description">
+            {truncateDescription(product.description, 15)}
+          </p>
+          <a
+            href={`/customer/savings-purpose/${product._id}`}
+            className="read-more"
+          >
+            Read more
+          </a>
+        </div>
       </div>
     </div>
   );
@@ -310,7 +364,11 @@ const ProductCard = ({
 
 
 
-const App = () => {
+interface categoryToSHowProps{
+  categoryToshow: string
+}
+
+const App = ({categoryToshow}: categoryToSHowProps) => {
   const organisationId = useSelector(selectOrganizationId);
   const user = useSelector(selectUser)
   
@@ -341,9 +399,39 @@ const App = () => {
     },
     staleTime: 5000,
   });
+  const {
+    data: allPurposeUnfiltered,
+    isLoading: isLoadingAllPurposeUnfiltered,
+    refetch: refetchAllPurposeUnfiltered,
+  } = useQuery({
+    queryKey: ["allPurpose"],
+    queryFn: async () => {
+      return client
+        .get(
+          `/api/purpose`,
+          {},
+        )
+        .then((response) => {
 
-  const filteredPurposes = allPurpose?.filter((purpose: { assignedCustomers: string | string[]; }) => purpose.assignedCustomers.includes(user?._id));
-  
+          
+          return response.data;
+        })
+        .catch((error) => {
+     
+          throw error;
+        });
+    },
+    staleTime: 5000,
+  });
+
+
+
+  const filteredAllPurposes = allPurpose?.filter((purpose: {
+    visibility: string; assignedCustomers: string | string[]; 
+}) => purpose.assignedCustomers.includes(user?._id) &&  purpose.visibility === "inhouse");
+  const generalAllPurposeUnfiltered = allPurposeUnfiltered?.filter((purpose: { visibility: string; }) => purpose.visibility === 'general')
+
+  const filteredPurposes = categoryToshow === 'general' ? generalAllPurposeUnfiltered : filteredAllPurposes
   
   const groupedPurposes = filteredPurposes?.reduce((acc: { [x: string]: any[]; }, purpose: { category: { name: any; }; }) => {
     const categoryName = purpose.category.name;

@@ -250,9 +250,9 @@ const Roles = () => {
               setModalState={setModalState}
               title={
                 modalToShow === "edit-role"
-                  ? "Edit Role"
+                  ? "Edit Industry"
                   : modalToShow === "create-role"
-                    ? "Create a Role"
+                    ? "Create Industry"
                     : ""
               }
             >
@@ -269,8 +269,8 @@ const Roles = () => {
                 </div>
               ) : (
                 <ModalConfirmation
-                  successTitle={`Role ${modalToShow === "create-role" ? "Creation" : "Editing"} Successful`}
-                  errorTitle={`Role ${modalToShow === "create-role" ? "Creation" : "Editing"} Failed`}
+                  successTitle={`Industry ${modalToShow === "create-role" ? "Creation" : "Editing"} Successful`}
+                  errorTitle={`Insustry ${modalToShow === "create-role" ? "Creation" : "Editing"} Failed`}
                   status={isRoleCreated || isRoleEdited ? "success" : "failed"}
                   responseMessage=""
                 />

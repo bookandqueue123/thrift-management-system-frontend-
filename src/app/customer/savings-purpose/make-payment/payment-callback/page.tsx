@@ -1,41 +1,41 @@
 'use client'
 
-import React, { useEffect, useState , Suspense} from 'react';
-import { useRouter, useSearchParams } from 'next/navigation'
+import React, { useEffect, useState, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import { apiUrl } from '@/api/hooks/useAuth'; // Adjust import as necessary
 import { useSelector } from 'react-redux';
 import { selectToken } from '@/slices/OrganizationIdSlice';
 
 const PaymentCallback = () => {
-    const router = useRouter()
-    const token = useSelector(selectToken)
+    const router = useRouter();
+    const token = useSelector(selectToken);
     const searchParams = useSearchParams();
     const transaction_id = searchParams.get('transaction_id');
     const [processing, setProcessing] = useState(true);
     const [paymentStatus, setPaymentStatus] = useState('');
+    const hasFetched = useRef(false); // Track if the effect has already run
 
     useEffect(() => {
-        if (transaction_id) {
+        if (transaction_id && !hasFetched.current) {
             verifyPayment();
+            hasFetched.current = true; // Mark the effect as having run
         }
     }, [transaction_id]);
 
     const verifyPayment = async () => {
-    
-    
         try {
             const response = await axios.get(`${apiUrl}api/pay/flw/verify-purpose-payment?transaction_id=${transaction_id}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
-    
+
             if (response.status === 200) {
                 setPaymentStatus('success');
                 setTimeout(() => {
-                    router.push("/customer/savings-purpose")
-                }, 2000)
+                    router.push("/customer/savings-purpose");
+                }, 2000);
             } else {
                 setPaymentStatus('failure');
             }
@@ -46,7 +46,6 @@ const PaymentCallback = () => {
             setProcessing(false);
         }
     };
-    
 
     return (
         <div className="flex flex-col items-center justify-center h-screen">
@@ -61,14 +60,10 @@ const PaymentCallback = () => {
     );
 };
 
-
-
-
-
-export default function CallbackPayment(){
-    return(
+export default function CallbackPayment() {
+    return (
         <Suspense>
-            <PaymentCallback/>
+            <PaymentCallback />
         </Suspense>
-    )
+    );
 }

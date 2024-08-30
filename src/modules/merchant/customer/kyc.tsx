@@ -311,10 +311,10 @@ export const Kyc = () => {
             .required("Required")
             .test(
               "fileSize",
-              "File size must be less than 2MB",
+              "File size must be less than 5MB",
               (value: MyFileList) => {
                 if (value) {
-                  return value[0].size <= 2097152;
+                  return value[0].size <= 5242880;
                 }
                 return true;
               },
@@ -324,35 +324,37 @@ export const Kyc = () => {
             .required("Means of ID photo is required")
             .test(
               "fileSize",
-              "File size must be less than 2MB",
+              "File size must be less than 5MB",
               (value: MyFileList) => {
                 if (value) {
-                  return value[0].size <= 2097152;
+                  return value[0].size <= 5242880;
                 }
                 return true;
               },
             ),
           nin: Yup.string().optional(),
           bvn: Yup.string().optional(),
-          bankName: Yup.string()
-            .required("Required")
-            .min(2, "Bank name must be at least 2 characters")
-            .max(50, "Bank name must be less than 50 characters"),
-          bankAcctName: Yup.string()
-            .required("Required")
-            .min(2, "Account name must be at least 2 characters")
-            .max(100, "Account name must be less than 100 characters")
-            .matches(
-              /^[a-zA-Z\s]*$/,
-              "Account name should only contain alphabets and spaces",
-            ),
+          // bankName: Yup.string()
+          //   .required("Required")
+          //   .min(2, "Bank name must be at least 2 characters")
+          //   .max(50, "Bank name must be less than 50 characters"),
+          // bankAcctName: Yup.string()
+          //   .required("Required")
+          //   .min(2, "Account name must be at least 2 characters")
+          //   .max(100, "Account name must be less than 100 characters")
+          //   .matches(
+          //     /^[a-zA-Z\s]*$/,
+          //     "Account name should only contain alphabets and spaces",
+          //   ),
           bankAcctNo: Yup.string()
             .required("Required")
             .length(10, "Account number must be exactly 10 digits")
             .matches(/^\d{10}$/, "Account number should only contain digits"),
-          // organisation: Yup.string().required("Required"),
+            organisation: Yup.string().optional(),
+            userType: Yup.string().optional(),
         })}
         onSubmit={(values, { setSubmitting }) => {
+          console.log(values)
           setTimeout(() => {
             kycUpdate(values);
        
@@ -605,7 +607,7 @@ export const Kyc = () => {
                       htmlFor="photo"
                       className="text-md block font-medium text-white"
                     >
-                      Photo
+                      Photo (max-size - 5MB)
                     </label>
                     <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5">
                       <input
@@ -674,7 +676,7 @@ export const Kyc = () => {
                       className="text-md block font-medium text-white"
                     >
                       {!values.meansOfID ? "Means  of Id" : values.meansOfID}{" "}
-                      Photo
+                      Photo (max-size - 5MB)
                     </label>
                     <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5">
                       <input
@@ -940,7 +942,18 @@ export const Kyc = () => {
                   className="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
                   disabled={isSubmitting}
                 >
-                  Submit
+                  { isPending ? (
+                    <Image
+                      src="/loadingSpinner.svg"
+                      alt="loading spinner"
+                      className="relative left-1/2"
+                      width={25}
+                      height={25}
+                    />
+                  ) : (
+                    "Submit"
+                  )}
+                  
                 </button>
               )}
             </div>
