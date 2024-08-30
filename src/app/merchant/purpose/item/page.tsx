@@ -749,6 +749,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
     selectorCategory: Yup.string().required('This field is required'),
     assignedCustomers: Yup.array().optional(),
     imageUrl: Yup.mixed()
+          
           .required()
           .test(
             "fileSize",
@@ -771,7 +772,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
               return true; // No file provided, so validation passes
             }
           ),
-     digitalItem: Yup.string().optional()
+    //  digitalItem: Yup.string().optional()
     
   });
 
@@ -780,7 +781,7 @@ const initialValues:PurposeProps = actionToTake === 'edit-purpose' ?{
      validationSchema,
      enableReinitialize: true,
     onSubmit: (values, {setSubmitting}) => {
-       
+      
         setTimeout(() => {
           if (actionToTake === "create-purpose") {
             console.log("creating user.....................");

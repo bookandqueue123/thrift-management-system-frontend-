@@ -12,19 +12,19 @@ import { selectUser } from "@/slices/OrganizationIdSlice";
 const CustomerNavbar = () => {
   // const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
   const [DropdownMenuIsOpen, setDropdownMenuIsOpen] = useState(false);
-
+  const [savingsDashboardDropdownIsOpen, setSavingsDashboardDropdownIsOpen] = useState(false)
   const endpoints = [
     "dashboard",
     "make-payment",
     "withdrawals",
     "transactions",
     "savings-setup",
-    // "savings-purpose",
-    "savings-dashboard",
+    "savings-purpose",
+    // "savings-dashboard",
     "coupon"
   ];
   const { SignOut } = useAuth();
-
+  const routeOptions=["Savings Dashboard", "Purchase Items Report"]
   return (
     <nav className="border-ajo_offWhite border-opacity-40 md:border-b">
       <div className="mx-auto max-w-7xl px-2 md:px-6 lg:px-8">
@@ -83,6 +83,7 @@ const CustomerNavbar = () => {
               />
             </div>
             <div className="hidden items-center gap-x-2 md:flex">
+              <div>
               {endpoints.map((route) => {
                 return (
                   <Link
@@ -97,7 +98,51 @@ const CustomerNavbar = () => {
                 );
               })}
             </div>
+            
+            </div>
           </div>
+
+          <div className="pr-2 md:pl-11">
+      {/* <!-- Profile dropdown --> */}
+      <button
+        type="button"
+        className="flex items-center gap-x-2 rounded-full {`rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}"
+        onClick={() => setSavingsDashboardDropdownIsOpen(!savingsDashboardDropdownIsOpen)}
+      >
+        Savings Dashboard
+        <svg width="10" height="5" viewBox="0 0 12 7" fill="none">
+          <path
+            d="M1 1L6 6L11 1"
+            stroke="#BDBDBD"
+            strokeWidth="1"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="sr-only">Open user menu</span>
+      </button>
+      {savingsDashboardDropdownIsOpen && (
+        <div className="absolute right-0 top-14 z-10 mt-2 w-48  rounded-md bg-white bg-opacity-20 py-1 shadow-lg">
+          {routeOptions.map((route, index) => {
+            
+              return (
+                <Link
+                  key={route}
+                  href={route === 'Savings Dashboard' ? '/customer/savings-dashboard' : route === "Purchase Items Report" ? "/customer/purpose-report" : `/customer/${route.toLowerCase()}`}
+                  className={`block px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
+                >
+                  {route === "bank-settings" ? 'Bank Settings' : route}
+                </Link>
+              );
+            }
+          )}
+        </div>
+      )}
+    </div>
+
+
+          
+
           <AvatarDropdown
             avatarImg="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
             routeOptions={["profile", "settings", "sign out"]}
