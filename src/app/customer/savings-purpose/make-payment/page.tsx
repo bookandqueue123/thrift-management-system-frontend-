@@ -56,6 +56,7 @@ export default function MakePayment() {
                 });
         },
     });
+    console.log(allGateways)
      
 
     const getTotal = () => {
@@ -72,6 +73,7 @@ export default function MakePayment() {
                 .catch((error) => { throw error });
         },
     });
+    console.log(allPurpose)
    
 
     
@@ -138,7 +140,7 @@ export default function MakePayment() {
         return Math.max(fixedFee, (percentageFee / 100) * Number(getTotal()));
     };
 
-    const makeThePayment = async (fixedFee: number, percentageFee: number) => {
+    const makeThePayment = async (fixedFee: number, percentageFee: number, gatewayName: string) => {
      
         // try {
         //     const amount = Number(getTotal()) + decideCharge(fixedFee, percentageFee);
@@ -168,7 +170,7 @@ export default function MakePayment() {
             const redirectURL = 'customer/savings-purpose/make-payment/payment-callback'
             const response = await axios.post(`${apiUrl}api/pay/flw`,
             
-                { amount, redirectURL, email, paymentDetails: Object.values(paymentDetails), userId, organisationId, phoneNumber, customerName },
+                { amount, redirectURL, email, paymentDetails: Object.values(paymentDetails), userId, organisationId, phoneNumber, customerName, gatewayName },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
@@ -190,12 +192,14 @@ export default function MakePayment() {
             <div className="flex items-center justify-center min-h-screen ">
                 <div className="text-center">
                 <h1 className="text-4xl font-bold mb-8 text-white">Make Payment</h1>
-                {allGateways?.map((gateway: { _id: Key | null | undefined; fixedFee: number; percentageFee: number; }) => (
+                {allGateways?.map((gateway: {
+                    name: string; _id: Key | null | undefined; fixedFee: number; percentageFee: number; 
+}) => (
                     <button 
                     key={gateway._id}
-                    onClick={() => makeThePayment(gateway.fixedFee, gateway.percentageFee)}
+                    onClick={() => makeThePayment(gateway.fixedFee, gateway.percentageFee, gateway.name)}
                     className="w-full mb-4 py-4 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600">
-                    Flutterwave
+                    {gateway.name}
                 </button>
                 ))}
                 

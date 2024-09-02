@@ -428,7 +428,7 @@ const App = ({categoryToshow}: categoryToSHowProps) => {
 
   const filteredAllPurposes = allPurpose?.filter((purpose: {
     visibility: string; assignedCustomers: string | string[]; 
-}) => purpose.assignedCustomers.includes(user?._id) &&  purpose.visibility === "inhouse");
+}) => purpose.assignedCustomers?.includes(user?._id) &&  purpose.visibility === "inhouse");
   const generalAllPurposeUnfiltered = allPurposeUnfiltered?.filter((purpose: { visibility: string; }) => purpose.visibility === 'general')
 
   const filteredPurposes = categoryToshow === 'general' ? generalAllPurposeUnfiltered : filteredAllPurposes
