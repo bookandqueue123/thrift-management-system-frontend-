@@ -45,17 +45,20 @@ export default function PurposeReport() {
                 <div className="mt-8">
                     <TransactionsTable
                         headers={[
-                            "S/N", "Item/Purpose", "Category", "Amount", "Quantity", "Total", "Balance",
+                            "S/N", "Customer", "Item/Purpose", "Category", "Amount", "Quantity", "Total", "Balance",
                             "Total Payment Duration", "Days Left", "Payment Completion %", "Transaction reference", "Time and date of transaction",
                             "Payment gateway", "Payment status"
                         ]}
                         content={(
                             <>
-                                {allPurpose && allPurpose.map((payment: { name: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; category: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; amount: number; quantity: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; total: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; balance: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; TotalPaymentDuration: any; DaysLeft: any; paymentCompletionPercentage: any; transactionReference: any; timeAndDate: string | Date; PaymentGateway: any; }, index: number) => (
+                                {allPurpose && allPurpose.map((payment: {
+                                    customerName: ReactNode; name: string; category: string ; amount: number; quantity: string | number | boolean  | PromiseLikeOfReactNode | null | undefined; total: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; balance: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; TotalPaymentDuration: any; DaysLeft: any; paymentCompletionPercentage: any; transactionReference: any; timeAndDate: string | Date; PaymentGateway: any; 
+}, index: number) => (
                                     <tr key={index}>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">
                                             {index + 1}
                                         </td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm ">{payment.customerName || "---"}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm ">{payment.name}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.category}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm ">{AmountFormatter(payment.amount)}</td>

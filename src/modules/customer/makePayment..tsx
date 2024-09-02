@@ -156,7 +156,7 @@ export default function MakePayment() {
             return fixedFee
         }
     }
-    const makeThePayment = async (fixedFee:  number, percentageFee: number) => {
+    const makeThePayment = async (fixedFee:  number, percentageFee: number, gatewayName: string) => {
        
         
         try {
@@ -193,12 +193,14 @@ export default function MakePayment() {
                 <div className="flex items-center justify-center min-h-screen ">
                     <div className="text-center">
                     <h1 className="text-4xl font-bold mb-8 text-white">Make Payment</h1>
-                    {allGateways.map((gateway: { _id: Key | null | undefined; fixedFee: number; percentageFee: number; }) => (
+                    {allGateways.map((gateway: {
+                        name: string; _id: Key | null | undefined; fixedFee: number; percentageFee: number; 
+}) => (
                         <button 
                         key={gateway._id}
-                        onClick={() => makeThePayment(gateway.fixedFee, gateway.percentageFee)}
+                        onClick={() => makeThePayment(gateway.fixedFee, gateway.percentageFee, gateway.name)}
                         className="w-full mb-4 py-4 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600">
-                        Flutterwave
+                        {gateway.name}
                     </button>
                     ))}
                     
