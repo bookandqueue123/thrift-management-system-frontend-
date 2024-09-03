@@ -603,6 +603,42 @@ export const Sidebar = ({
                         </>
                       )}
                     </div>
+
+                    <div
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setItemOpen(!itemOpen);
+                      }}
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
+                    >
+                      <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
+                        <span>
+                         Purchased Item <br/> Report</span>
+
+                        <Image
+                          className="mr-2"
+                          src="/arrow_down.svg"
+                          alt="arrow down"
+                          width={12}
+                          height={12}
+                        />
+                      </div>
+
+                      {itemOpen && (
+                        <>
+                          <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
+                            <Link
+                              href="/merchant/purpose/item-report"
+                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                            >
+                               Purchased Item <br/> Report
+                            </Link>
+                          </div>
+
+                          
+                        </>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
