@@ -28,14 +28,6 @@ export default function PurposeReport() {
                 .catch((error) => { throw error });
         },
     });
-   
-    console.log(allPurpose)
-
-   
-  
-
-
-    
     
     return (
         <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
@@ -53,7 +45,7 @@ export default function PurposeReport() {
                             <>
                                 {allPurpose && allPurpose.map((payment: {
                                     customerName: ReactNode; name: string; category: string ; amount: number; quantity: string | number | boolean  | PromiseLikeOfReactNode | null | undefined; total: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; balance: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; TotalPaymentDuration: any; DaysLeft: any; paymentCompletionPercentage: any; transactionReference: any; timeAndDate: string | Date; PaymentGateway: any; 
-}, index: number) => (
+                            }, index: number) => (
                                     <tr key={index}>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm">
                                             {index + 1}
@@ -66,7 +58,7 @@ export default function PurposeReport() {
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.total}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.balance}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.TotalPaymentDuration || "NULL"}</td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.DaysLeft || "NULL"} </td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.DaysLeft || "NULL"} {payment.DaysLeft ? 'days left' : ''}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.paymentCompletionPercentage || "NULL"} </td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.transactionReference || "NULL"} </td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{extractDate(payment.timeAndDate )} {extractTime( payment.timeAndDate) || "NULL"} </td>
