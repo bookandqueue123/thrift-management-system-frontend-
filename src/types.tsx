@@ -3,6 +3,8 @@ import { ReactNode } from "react";
 import { Url } from "url";
 
 export type customer = {
+  industry: string;
+  natureOfBusiness: string;
   officeAddress1: string;
   organisationName?: string;
   _id: string;

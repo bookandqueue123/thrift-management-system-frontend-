@@ -151,6 +151,7 @@ export default function SuperAdminCustomer(){
     // Calling refetch to rerun the allRoles query
     refetch();
   }, [isGroupCreated, refetch]);
+ 
 
   const handleExport = async () => {
   
