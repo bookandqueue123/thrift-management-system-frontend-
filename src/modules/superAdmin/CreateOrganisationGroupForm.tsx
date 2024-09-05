@@ -104,6 +104,7 @@ const CreateOranisationGroupForm = ({
         description: saveDetails.description,
         organisations: selectedOptions,
         generalSpace: generalSpace,
+        selectedService: selectedService,
       };
 
       return client.post(`api/user/create-organisation-group`, payload);
@@ -275,6 +276,7 @@ const CreateOranisationGroupForm = ({
     { name: string; lgas: string[] }[]
   >([]);
   const [generalSpace, setGeneralSpace] = useState("Yes"); // Default value is 'true'
+  const [selectedService, setSelectedService] = useState("both"); // "Both" is selected by default
 
   const handleSelectAllOrganizations = (e: {
     target: { checked: boolean | ((prevState: boolean) => boolean) };
@@ -351,6 +353,12 @@ const CreateOranisationGroupForm = ({
 
   const handleChange = (e: { target: { value: SetStateAction<string> } }) => {
     setGeneralSpace(e.target.value);
+  };
+
+  const handleRadioChange = (event: {
+    target: { value: SetStateAction<string> };
+  }) => {
+    setSelectedService(event.target.value);
   };
 
   return (
@@ -669,6 +677,49 @@ const CreateOranisationGroupForm = ({
               <option value="Yes">Yes</option>
               <option value="No">No</option>
             </select>
+          </div>
+
+          <div className="items-center gap-6 md:flex">
+            <label
+              htmlFor="groupName"
+              className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+            >
+              Services:
+            </label>
+            <div className="flex w-full text-white">
+              <label>
+                <input
+                  type="radio"
+                  name="options"
+                  value="savings"
+                  checked={selectedService === "savings"}
+                  onChange={handleRadioChange}
+                />
+                <span className="ml-2">Savings</span>
+              </label>
+              <br />
+              <label className="ml-8">
+                <input
+                  type="radio"
+                  name="options"
+                  value="purchaseSales"
+                  checked={selectedService === "purchaseSales"}
+                  onChange={handleRadioChange}
+                />
+                <span className="ml-2">Purchase Sales</span>
+              </label>
+              <br />
+              <label className="ml-8">
+                <input
+                  type="radio"
+                  name="options"
+                  value="both"
+                  checked={selectedService === "both"}
+                  onChange={handleRadioChange}
+                />
+                <span className="ml-2">Both</span>
+              </label>
+            </div>
           </div>
 
           <div className="mt-4 space-x-1 space-y-2 md:ml-[20%]">

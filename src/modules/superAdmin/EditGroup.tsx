@@ -58,7 +58,6 @@ const EditOrganisationGroup = ({
   const [selectedOptions, setSelectedOptions] = useState(
     group?.organisation ?? [],
   );
-  console.log(selectedOptions);
 
   const {
     data: AllOrganisations,
@@ -165,6 +164,7 @@ const EditOrganisationGroup = ({
         description: saveDetails.description,
         organisations: selectedOptions,
         generalSpace: generalSpace,
+        selectedService: selectedService,
       };
 
       return client.put(`api/user/${groupToBeEdited}`, payload);
@@ -204,9 +204,9 @@ const EditOrganisationGroup = ({
 
   const validateField = (name: string, value: string) => {
     switch (name) {
-      case "groupName":
-        if (!value.trim()) return "Savings purpose is required";
-        break;
+      // case "groupName":
+      //   if (!value.trim()) return "Savings purpose is required";
+      //   break;
       case "description":
         if (!value.trim()) return "Description is required";
         break;
@@ -329,6 +329,9 @@ const EditOrganisationGroup = ({
   const [selectedStateArray, setselectedStateArray] = useState<
     { name: string; lgas: string[] }[]
   >([]);
+  const [selectedService, setSelectedService] = useState(
+    group?.selectedService ?? "",
+  ); // "Both" is selected by default
   const handleSelectAllOrganizations = (e: {
     target: { checked: boolean | ((prevState: boolean) => boolean) };
   }) => {
@@ -398,6 +401,12 @@ const EditOrganisationGroup = ({
   const handleChange = (e: { target: { value: SetStateAction<string> } }) => {
     setGeneralSpace(e.target.value);
   };
+  const handleRadioChange = (event: {
+    target: { value: SetStateAction<string> };
+  }) => {
+    setSelectedService(event.target.value);
+  };
+
   return (
     <div>
       {showErrorModal ? (
@@ -663,6 +672,49 @@ const EditOrganisationGroup = ({
                   </div>
                 );
               })}
+          </div>
+
+          <div className="items-center gap-6 md:flex">
+            <label
+              htmlFor="groupName"
+              className="m-0 w-[20%] whitespace-nowrap text-xs font-medium text-white"
+            >
+              Services:
+            </label>
+            <div className="flex w-full text-white">
+              <label>
+                <input
+                  type="radio"
+                  name="options"
+                  value="savings"
+                  checked={selectedService === "savings"}
+                  onChange={handleRadioChange}
+                />
+                <span className="ml-2">Savings</span>
+              </label>
+              <br />
+              <label className="ml-8">
+                <input
+                  type="radio"
+                  name="options"
+                  value="purchaseSales"
+                  checked={selectedService === "purchaseSales"}
+                  onChange={handleRadioChange}
+                />
+                <span className="ml-2">Purchase Sales</span>
+              </label>
+              <br />
+              <label className="ml-8">
+                <input
+                  type="radio"
+                  name="options"
+                  value="both"
+                  checked={selectedService === "both"}
+                  onChange={handleRadioChange}
+                />
+                <span className="ml-2">Both</span>
+              </label>
+            </div>
           </div>
 
           <div className="flex items-center justify-center pb-12 pt-4">
