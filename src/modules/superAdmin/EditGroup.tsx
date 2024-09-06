@@ -167,7 +167,7 @@ const EditOrganisationGroup = ({
         selectedService: selectedService,
       };
 
-      return client.put(`api/user/${groupToBeEdited}`, payload);
+      return client.put(`api/user/edit-group/${groupToBeEdited}`, payload);
     },
     onSuccess: (response) => {
       // // console.log(response);
