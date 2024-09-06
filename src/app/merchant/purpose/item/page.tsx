@@ -642,7 +642,7 @@ const MutateUser = ({
           image: null,
           imageUrl: null,
           digitalItem: null,
-          visibility: "general",
+          visibility: "inhouse",
           visibilityStartDate: "",
           visibilityStartTime: "",
           visibilityEndDate: "",
@@ -1105,22 +1105,26 @@ const MutateUser = ({
             <span className="font-base font-semibold text-[#FF0000]">*</span>
           </label>
           <div className="flex items-center space-x-4">
-            <div>
-              <input
-                id="visibilityGeneral"
-                type="radio"
-                name="visibility"
-                value="general"
-                onChange={formik.handleChange}
-                checked={formik.values.visibility === "general"}
-              />
-              <label
-                className="m-0 ml-2 text-xs font-medium text-white"
-                htmlFor="visibilityGeneral"
-              >
-                General Visibility
-              </label>
-            </div>
+            {organisation && organisation?.generalSpace === "Yes" ? (
+              <div>
+                <input
+                  id="visibilityGeneral"
+                  type="radio"
+                  name="visibility"
+                  value="general"
+                  onChange={formik.handleChange}
+                  checked={formik.values.visibility === "general"}
+                />
+                <label
+                  className="m-0 ml-2 text-xs font-medium text-white"
+                  htmlFor="visibilityGeneral"
+                >
+                  General Visibility
+                </label>
+              </div>
+            ) : (
+              ""
+            )}
             <div>
               <input
                 id="visibilityInhouse"
