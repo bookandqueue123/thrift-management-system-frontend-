@@ -411,7 +411,9 @@ export default function SuperAdminCustomer() {
             )
           }
         />
-        {showSuccessToast && <SuccessToaster message={"Sign in successful!"} />}
+        {showSuccessToast && (
+          <SuccessToaster message={"Group Deleted successfully!"} />
+        )}
         {showErrorToast && <ErrorToaster message={"Error deleting group"} />}
 
         {modalState && (
