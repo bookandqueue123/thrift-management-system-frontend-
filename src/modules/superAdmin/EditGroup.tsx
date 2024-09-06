@@ -77,6 +77,9 @@ const EditOrganisationGroup = ({
     },
   });
 
+  const [selectedService, setSelectedService] = useState(
+    group?.selectedService ?? "",
+  );
   const [saveDetails, setSaveDetails] = useState({
     groupName: group?.groupName,
     description: group?.description,
@@ -86,6 +89,7 @@ const EditOrganisationGroup = ({
     collectionDate: "",
     frequency: "",
     industry: "",
+    // generalSpace: group?.generalSpace,
     // group:
   });
 
@@ -100,8 +104,11 @@ const EditOrganisationGroup = ({
       frequency: "",
       industry: group?.industry || "",
       // group:
+      // generalSpace: group?.generalSpace,
     }),
-      setSelectedOptions(group?.organisations);
+      setGeneralSpace(group?.generalSpace);
+    setSelectedService(group?.selectedService);
+    setSelectedOptions(group?.organisations);
   }, [group]);
 
   const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -158,7 +165,7 @@ const EditOrganisationGroup = ({
   const { mutate: postOrganisationGroups } = useMutation({
     mutationFn: async () => {
       // setCloseModal(false)
-      console.log(saveDetails);
+
       const payload = {
         groupName: saveDetails.groupName,
         description: saveDetails.description,
@@ -207,9 +214,9 @@ const EditOrganisationGroup = ({
       // case "groupName":
       //   if (!value.trim()) return "Savings purpose is required";
       //   break;
-      case "description":
-        if (!value.trim()) return "Description is required";
-        break;
+      // case "description":
+      //   if (!value.trim()) return "Description is required";
+      //   break;
       case "addCustomers":
         if (selectedIds.length === 0) return "At least one user is required";
         break;
@@ -329,9 +336,7 @@ const EditOrganisationGroup = ({
   const [selectedStateArray, setselectedStateArray] = useState<
     { name: string; lgas: string[] }[]
   >([]);
-  const [selectedService, setSelectedService] = useState(
-    group?.selectedService ?? "",
-  ); // "Both" is selected by default
+
   const handleSelectAllOrganizations = (e: {
     target: { checked: boolean | ((prevState: boolean) => boolean) };
   }) => {
@@ -630,11 +635,13 @@ const EditOrganisationGroup = ({
             >
               General Space
             </label>
+
             <select
               id="trueFalseDropdown"
               name="trueFalseDropdown"
               value={generalSpace}
               onChange={handleChange}
+              onFocus={handleInputFocus}
               className="mt-1 w-full cursor-pointer rounded-lg bg-[#F3F4F6] p-3 text-[#7D7D7D]"
             >
               <option value="Yes">Yes</option>
