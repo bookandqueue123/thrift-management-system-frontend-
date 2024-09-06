@@ -3,24 +3,24 @@ import { apiUrl, useAuth } from "@/api/hooks/useAuth";
 import Modal from "@/components/Modal";
 import TransactionsTable from "@/components/Tables";
 import {
-    selectOrganizationId,
-    selectSelectedProducts,
-    selectToken,
-    selectUser,
-    selectUserId,
+  selectOrganizationId,
+  selectSelectedProducts,
+  selectToken,
+  selectUser,
+  selectUserId,
 } from "@/slices/OrganizationIdSlice";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { daysBetweenDates, daysUntilDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import {
-    JSXElementConstructor,
-    Key,
-    PromiseLikeOfReactNode,
-    ReactElement,
-    ReactNode,
-    ReactPortal,
-    useState,
+  JSXElementConstructor,
+  Key,
+  PromiseLikeOfReactNode,
+  ReactElement,
+  ReactNode,
+  ReactPortal,
+  useState,
 } from "react";
 import { useSelector } from "react-redux";
 
@@ -81,13 +81,12 @@ export default function MakePayment() {
     );
   };
 
-  console.log(getTotalCommission());
   const { data: allPurpose } = useQuery({
     queryKey: ["allPurpose"],
     staleTime: 5000,
     queryFn: async () => {
       return client
-        .get(`/api/purpose?organisation=${organisationId}`)
+        .get(`/api/purpose`)
         .then((response) => response.data)
         .catch((error) => {
           throw error;
@@ -99,7 +98,6 @@ export default function MakePayment() {
     selectedProducts.includes(purpose._id),
   );
 
-
   const handleInputChange = (id: string, field: string, value: any) => {
     const payment = filteredPurposes.find((p: { _id: string }) => p._id === id);
 
@@ -108,7 +106,7 @@ export default function MakePayment() {
 
       // If the updated field is 'amount', use the new value for platformFee calculation
       const updatedAmount = field === "amount" ? value : existingAmount;
-   
+
       return {
         ...prevDetails,
         [id]: {
