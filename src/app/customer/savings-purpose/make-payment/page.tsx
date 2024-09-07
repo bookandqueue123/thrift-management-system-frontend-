@@ -183,6 +183,7 @@ export default function MakePayment() {
       const email = user.email;
       const phoneNumber = user.phoneNumber;
       const customerName = user.firstName + user.lastName;
+      const accountNumber = user.accountNumber;
       const redirectURL =
         "customer/savings-purpose/make-payment/payment-callback";
       const response = await axios.post(
@@ -197,6 +198,7 @@ export default function MakePayment() {
           organisationId,
           phoneNumber,
           customerName,
+          accountNumber,
           gatewayName,
           platformCharge,
         },
