@@ -3,7 +3,11 @@ import { apiUrl, useAuth } from "@/api/hooks/useAuth";
 import { FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
 import TransactionsTable from "@/components/Tables";
-import { selectOrganizationId, selectToken, selectUser } from "@/slices/OrganizationIdSlice";
+import {
+  selectOrganizationId,
+  selectToken,
+  selectUser,
+} from "@/slices/OrganizationIdSlice";
 
 import AmountFormatter from "@/utils/AmountFormatter";
 
@@ -19,16 +23,20 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { usePermissions } from "@/api/hooks/usePermissions";
 import Alert from "@/components/Alert";
 import PaginationBar from "@/components/Pagination";
-import { useSelector } from "react-redux";
 import Image from "next/image";
+import { useSelector } from "react-redux";
 
 const MerchantDashboard = () => {
   const PAGE_SIZE = 5;
   const { client } = useAuth();
   const token = useSelector(selectToken);
-  const { userPermissions, permissionsLoading, permissionsMap, assignedCustomers } =
-    usePermissions();
-  
+  const {
+    userPermissions,
+    permissionsLoading,
+    permissionsMap,
+    assignedCustomers,
+  } = usePermissions();
+
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,12 +45,12 @@ const MerchantDashboard = () => {
   );
   const organizationId = useSelector(selectOrganizationId);
   const [isBalanceVisible, setIsBalanceVisible] = useState(false);
-  const [permissionError, setPermissionError] = useState("")
-  const [merchantTotalCustomer, setMerchantTotalCustomer] = useState(0)
-  const [staffTotalAssignedCustomer, setStaffTotalAssignedCustomer] = useState(0)
+  const [permissionError, setPermissionError] = useState("");
+  const [merchantTotalCustomer, setMerchantTotalCustomer] = useState(0);
+  const [staffTotalAssignedCustomer, setStaffTotalAssignedCustomer] =
+    useState(0);
   // const token = useSelector(selectToken)
   const user = useSelector(selectUser);
-
 
   //   console.log(organizationId)
 
@@ -83,7 +91,6 @@ const MerchantDashboard = () => {
         return client
           .get(`/api/saving/get-savings?organisation=${organizationId}`)
           .then((response: AxiosResponse<SavingsInterface, any>) => {
-  
             if (user?.role === "staff") {
               let assignedUsersSavings = response.data.savings.filter(
                 (saving) =>
@@ -91,26 +98,23 @@ const MerchantDashboard = () => {
                     (assignee) => assignee._id === saving.user._id,
                   ),
               );
-              
-             
-             
+
               setFilteredTransactions(assignedUsersSavings);
             } else {
               setFilteredTransactions(response.data.savings);
             }
-           
+
             setTotalAmtCollected(response?.data?.totalAmountCollected);
             return response.data.savings;
           })
           .catch((error: AxiosError<any, any>) => {
-            if (error.response?.data.message.includes('unauthorized')) {
+            if (error.response?.data.message.includes("unauthorized")) {
               setPermissionError(error.response?.data.message);
             }
             throw error;
           });
       },
     });
-
 
   let totalPages = 0;
   if (allTransactions) {
@@ -141,8 +145,8 @@ const MerchantDashboard = () => {
   };
 
   const handleExport = async () => {
-    const user = organizationId
-    const organisation = organizationId
+    const user = organizationId;
+    const organisation = organizationId;
     try {
       const response = await axios.get(`${apiUrl}api/saving/export-savings`, {
         params: {
@@ -152,47 +156,49 @@ const MerchantDashboard = () => {
         headers: {
           Authorization: `Bearer ${token}`, // Include the token in the headers
         },
-        responseType: 'blob', // Important for handling binary data
+        responseType: "blob", // Important for handling binary data
       });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', 'savings.csv');
+      link.setAttribute("download", "savings.csv");
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (error) {
-      console.error('Error exporting savings:', error);
-      alert('Failed to export savings. Please try again.');
+      console.error("Error exporting savings:", error);
+      alert("Failed to export savings. Please try again.");
     }
   };
 
   const handleExcelExport = async () => {
-    const user = organizationId
-    const organisation = organizationId
+    const user = organizationId;
+    const organisation = organizationId;
     try {
-      const response = await axios.get(`${apiUrl}api/saving/export-excel-savings`, {
-        params: {
-          organisation,
-          
+      const response = await axios.get(
+        `${apiUrl}api/saving/export-excel-savings`,
+        {
+          params: {
+            organisation,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the headers
+          },
+          responseType: "blob",
         },
-        headers: {
-          Authorization: `Bearer ${token}`, // Include the token in the headers
-        },
-        responseType: 'blob',
-      });
+      );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', 'savings.xlsx');
+      link.setAttribute("download", "savings.xlsx");
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (error) {
-      console.error('Error exporting savings:', error);
-      alert('Failed to export savings. Please try again.');
+      console.error("Error exporting savings:", error);
+      alert("Failed to export savings. Please try again.");
     }
   };
 
@@ -205,7 +211,6 @@ const MerchantDashboard = () => {
     pendingPayout: user?.pendingPayout ?? 0,
     kycVerified: user?.kycVerified,
   };
-
 
   if (permissionsLoading) {
     return (
@@ -395,13 +400,19 @@ const MerchantDashboard = () => {
                     permissionsMap["export-saving"],
                   ))) && (
                 <div className="mt-4 flex">
-                  <button onClick={handleExport} className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite">
+                  <button
+                    onClick={handleExport}
+                    className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite"
+                  >
                     Export as CSV{" "}
                     <span className="ml-2 mt-1">
                       <CiExport />
                     </span>
                   </button>
-                  <button onClick={handleExcelExport} className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
+                  <button
+                    onClick={handleExcelExport}
+                    className="relative rounded-md border-none bg-transparent px-4 py-2 text-white"
+                  >
                     <u>Export as Excel</u>
                   </button>
                 </div>
@@ -438,31 +449,32 @@ const MerchantDashboard = () => {
                   paginatedTransactions.map((transaction, index) => (
                     <tr className="" key={index}>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {extractDate(transaction.createdAt)}{" "}
-                        {extractTime(transaction.createdAt)}
+                        {extractDate(transaction?.createdAt)}{" "}
+                        {extractTime(transaction?.createdAt)}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {transaction._id}
+                        {transaction?._id}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {transaction.user.firstName} {transaction.user.lastName}
+                        {transaction.user?.firstName}{" "}
+                        {transaction.user?.lastName}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {transaction.user.email}
+                        {transaction.user?.email}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {transaction.user.phoneNumber}
+                        {transaction.user?.phoneNumber}
                       </td>
 
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
                         Channel
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {AmountFormatter(Number(transaction.amount))} NGN
+                        {AmountFormatter(Number(transaction?.amount))} NGN
                       </td>
 
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
-                        {transaction.isPaid}
+                        {transaction?.isPaid}
                       </td>
                     </tr>
                   ))

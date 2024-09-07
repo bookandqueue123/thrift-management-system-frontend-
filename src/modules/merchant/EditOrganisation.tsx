@@ -33,7 +33,7 @@ export const EditOrganisation = ({
     );
     const [selectedState, setSelectedState] = useState("");
     const [selectedIndustry, setSelectedIndustry] = useState<string>("")
-  const   [selectedNatureOfBusiness, setSelectedNatureOfBusiness] = useState<string[]>([]);
+    const   [selectedNatureOfBusiness, setSelectedNatureOfBusiness] = useState<string[]>([]);
     
     const { client } = useAuth();
     const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
@@ -197,7 +197,7 @@ export const EditOrganisation = ({
       )
       // setselectedStateArray(filteredStates);
     }, [selectedIndustry, allIndustries]);
-  console.log(customerInfo)
+ 
     return (
       <div className="mx-auto text-white mt-8 w-[100%] overflow-hidden rounded-md  p-4 shadow-md">
         <div>

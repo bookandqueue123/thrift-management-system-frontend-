@@ -63,7 +63,7 @@ export default function PurposeReport() {
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.total}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.balance}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.TotalPaymentDuration || "NULL"}</td>
-                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.DaysLeft || "NULL"} </td>
+                                        <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.DaysLeft || "NULL"} {payment.DaysLeft ? 'days left' : ''}</td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.paymentCompletionPercentage || "NULL"} </td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{payment.transactionReference || "NULL"} </td>
                                         <td className="whitespace-nowrap px-6 py-4 text-sm text-capitalize">{extractDate(payment.timeAndDate )} {extractTime( payment.timeAndDate) || "NULL"} </td>

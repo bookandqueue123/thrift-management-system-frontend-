@@ -1,8 +1,9 @@
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { ReactNode } from "react";
-import { Url } from "url";
 
 export type customer = {
+  industry: string;
+  natureOfBusiness: string;
   officeAddress1: string;
   organisationName?: string;
   _id: string;
@@ -35,7 +36,6 @@ export type customer = {
   photo: File | any;
   userType: string;
   groupName: string;
- 
 };
 
 export type setSavingsResponse = {
@@ -185,7 +185,6 @@ export type allSavingsResponse = {
 };
 
 export type savingsFilteredById = {
- 
   _id: string;
   purposeName: string;
   amount: number;
@@ -223,7 +222,7 @@ export type savingsFilteredById = {
     organisation: string;
     createdAt: string;
     updatedAt: string;
-    
+
     __v: number;
   };
   organisation: string;
@@ -236,7 +235,7 @@ export type savingsFilteredById = {
   specificDates: any[];
   id: string;
   totalexpectedSavings?: number;
-  totalAmountSaved?: number
+  totalAmountSaved?: number;
 };
 
 export interface MerchantSignUpProps {
@@ -247,7 +246,6 @@ export interface MerchantSignUpProps {
   prefferedUrl: string;
   role: string;
   confirmPassword: string;
-  
 }
 
 export interface signInProps {
@@ -445,7 +443,7 @@ export interface AssignedUser {
 }
 export interface User {
   _id: string;
-  name:string;
+  name: string;
   firstName: string;
   lastName: string;
   otherName?: string;
@@ -489,7 +487,6 @@ export interface User {
   guarantor1?: Guarantor;
   guarantor2?: Guarantor;
 }
-
 
 export interface CountryAndStateProps {
   country: string;
@@ -596,7 +593,7 @@ export interface setUpSavingsProps {
   collectionDate: string;
   userId: string;
   savingID?: string;
-  purposeRadioValue?: string
+  purposeRadioValue?: string;
 }
 
 export interface createRoleProps {
@@ -647,7 +644,7 @@ export interface mutateUserProps {
   phone: string;
   homeAddress: string;
   dept_unit: string;
-  userPicture:  null;
+  userPicture: null;
   meansOfIDPhoto: null;
   guarantor2ID: null;
   guarantorForm: null;
@@ -687,9 +684,9 @@ export interface roleResponse {
   updatedAt: string;
   __v: number;
 }
- 
+
 export interface staffResponse {
-  photo: string | StaticImport ;
+  photo: string | StaticImport;
   guarantor1: {
     fullName: string;
     phoneNumber: string;
@@ -723,26 +720,25 @@ export interface staffResponse {
   createdAt: string;
   updatedAt: string;
   __v: number;
-  guarantorForm2:string;
+  guarantorForm2: string;
   guarantorForm: string;
   meansOfID: string;
-  meansOfIDPhoto: any
-  
+  meansOfIDPhoto: any;
 }
-interface assignedUserdata{
+interface assignedUserdata {
   _id: string; // or _id if that's what it should be
   firstName: string;
   lastName: string;
 }
-interface RolesData{
-  name: string
+interface RolesData {
+  name: string;
 }
 
 export interface permissionsState {
   permissionsMap: { [key: string]: string };
   userPermissions: string[];
   permissionsLoading: boolean;
-  assignedCustomers: AssignedUser[]
+  assignedCustomers: AssignedUser[];
 }
 
 export interface PermissionsProviderProps {
@@ -752,7 +748,6 @@ export interface PermissionsProviderProps {
 export interface PermissionsMap {
   [key: string]: string;
 }
-
 
 export interface SavingsInterface {
   savings: savings[];
@@ -767,18 +762,19 @@ export interface PurposeProps {
   category: string;
   uniqueCode: string;
   amount: number;
+  amountWithoutCharge: number;
   quantity: number | string;
   startDate: string | number | readonly string[] | undefined;
   startTime: string;
   endDate: string | number | readonly string[] | undefined;
   endTime: string;
   promoCode: string;
-  promoPercentage:  number;
+  promoPercentage: number;
   referralBonus: number;
   image: File | null;
   imageUrl: any;
   digitalItem: any;
-  visibility: 'general' | 'inhouse';
+  visibility: "general" | "inhouse";
   visibilityStartDate: string | number | readonly string[] | undefined;
   visibilityStartTime: string;
   visibilityEndDate: string | number | readonly string[] | undefined;
@@ -788,21 +784,24 @@ export interface PurposeProps {
 
   organisation: string;
   referralBonusValue: string;
-  SelectorAll: 'selectorAllMandatory' | 'selectorAllOptional',
-  selectorCategory: 'selectorCategoryOptional' | 'selectorCategoryMandatory'
-};
+  SelectorAll: "selectorAllMandatory" | "selectorAllOptional";
+  selectorCategory: "selectorCategoryOptional" | "selectorCategoryMandatory";
+}
 
 // interfaces/Coupon.ts
 export interface ICouponProps {
   _id(_id: any): string;
- 
+
   name: string;
   description: string;
-  amount: number |string;
-  applyToPurpose: 'all-purpose' | 'select-category' | 'select-individual';
+  amount: number | string;
+  applyToPurpose: "all-purpose" | "select-category" | "select-individual";
   selectedCategories?: string[]; // Array of category IDs
   selectedIndividualPurpose?: string; // Purpose ID
-  applyToCustomers: 'all-customers' | 'group-of-customers' | 'individual-customer';
+  applyToCustomers:
+    | "all-customers"
+    | "group-of-customers"
+    | "individual-customer";
   selectedCustomerGroup?: string; // Customer group ID
   selectedIndividualCustomer?: string; // Customer ID
   startTime: string;
@@ -814,10 +813,9 @@ export interface ICouponProps {
   couponCode?: string;
 }
 
-export interface createGatewayProps{
-  feeType: string,
-    name: string,
-    fixedFee: string,
-    percentageFee: string
+export interface createGatewayProps {
+  feeType: string;
+  name: string;
+  fixedFee: string;
+  percentageFee: string;
 }
-
