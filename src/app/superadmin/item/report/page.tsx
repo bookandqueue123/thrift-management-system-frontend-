@@ -1,7 +1,6 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
 import { FilterDropdown } from "@/components/Buttons";
-import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 import AmountFormatter from "@/utils/AmountFormatter";
@@ -16,13 +15,16 @@ import {
   useState,
 } from "react";
 import { CiExport } from "react-icons/ci";
+import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { useSelector } from "react-redux";
+
 export default function PurposeReport() {
   const { client } = useAuth();
   const PAGE_SIZE = 5;
   const organisationId = useSelector(selectOrganizationId);
   const [filteredPurposes, setFilteredPurposes] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+
   const { data: allPurpose } = useQuery({
     queryKey: ["allPurpose"],
     staleTime: 5000,
@@ -38,16 +40,28 @@ export default function PurposeReport() {
         });
     },
   });
+
   const paginatedPurposes = filteredPurposes?.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
 
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
   let totalPages = 0;
   if (allPurpose) {
     totalPages = Math.ceil(allPurpose?.length / PAGE_SIZE);
   }
-
   return (
     <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
       <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -151,6 +165,7 @@ export default function PurposeReport() {
           <TransactionsTable
             headers={[
               "S/N",
+              "Merchant",
               "Customer Name",
               "Customer Account Number",
               "Item/Purpose",
@@ -175,6 +190,7 @@ export default function PurposeReport() {
                   paginatedPurposes.map(
                     (
                       payment: {
+                        organisation: any;
                         platformFee: ReactNode;
                         actualAmount: ReactNode;
                         accountNumber: string;
@@ -228,6 +244,9 @@ export default function PurposeReport() {
                         <td className="whitespace-nowrap px-6 py-4 text-sm">
                           {index + 1}
                         </td>
+                        <td className="whitespace-nowrap px-6 py-4 text-sm">
+                          {payment.organisation.organisationName}
+                        </td>
                         <td className="whitespace-nowrap px-6 py-4 text-sm ">
                           {payment.customerName === "Nill"
                             ? "Protected"
@@ -252,6 +271,7 @@ export default function PurposeReport() {
                         <td className="whitespace-nowrap px-6 py-4 text-sm ">
                           {payment.platformFee}
                         </td>
+
                         <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
                           {payment.quantity}
                         </td>
@@ -289,14 +309,48 @@ export default function PurposeReport() {
                   )}
               </>
             }
-          />
-          <div className="flex justify-center">
-            <PaginationBar
-              setCurrentPage={setCurrentPage}
-              currentPage={currentPage}
-              totalPages={totalPages}
-            />
-            {/* <PaginationBar apiResponse={DummyCustomers} /> */}
+          />{" "}
+          <div className="flex items-center justify-center  space-x-2">
+            <button
+              className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+              onClick={goToPreviousPage}
+            >
+              <MdKeyboardArrowLeft />
+            </button>
+
+            <button
+              className="cursor-pointer  rounded-md p-2 text-blue-500 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+              onClick={() => setCurrentPage(currentPage)}
+            >
+              {currentPage}
+            </button>
+
+            <button
+              className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              {currentPage + 1}
+            </button>
+            <button
+              className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+              onClick={() => setCurrentPage(currentPage + 2)}
+            >
+              {currentPage + 2}
+            </button>
+
+            <button
+              className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+              onClick={goToNextPage}
+            >
+              <MdKeyboardArrowRight />
+            </button>
+
+            {/* <button
+                className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
+                onClick={() => dispatch(setCurrentPage(currentPage + 6))}
+              >
+                {currentPage + 6}
+              </button> */}
           </div>
         </div>
       </div>

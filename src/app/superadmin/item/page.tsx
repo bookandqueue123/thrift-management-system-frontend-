@@ -4,9 +4,9 @@ import { FilterDropdown } from "@/components/Buttons";
 import PaginationBar from "@/components/Pagination";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import AmountFormatter from "@/utils/AmountFormatter";
-import { extractDate, extractTime } from "@/utils/TimeStampFormatter";
+import { DateDuration } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import {
   JSXElementConstructor,
   PromiseLikeOfReactNode,
@@ -17,8 +17,11 @@ import {
 } from "react";
 import { CiExport } from "react-icons/ci";
 import { useSelector } from "react-redux";
-export default function PurposeReport() {
+import { UrlObject } from "url";
+
+export default function Purpose() {
   const { client } = useAuth();
+
   const PAGE_SIZE = 5;
   const organisationId = useSelector(selectOrganizationId);
   const [filteredPurposes, setFilteredPurposes] = useState<any[]>([]);
@@ -28,7 +31,7 @@ export default function PurposeReport() {
     staleTime: 5000,
     queryFn: async () => {
       return client
-        .get(`/api/purpose/payment/item`)
+        .get(`/api/purpose`)
         .then((response) => {
           setFilteredPurposes(response.data);
           return response.data;
@@ -143,6 +146,7 @@ export default function PurposeReport() {
           </div>
         </div>
       </div>
+
       <div className="mb-4 space-y-2">
         <p className="mt-8 pl-2 text-xs text-ajo_offWhite">
           *Please Scroll sideways to view all content
@@ -151,45 +155,33 @@ export default function PurposeReport() {
           <TransactionsTable
             headers={[
               "S/N",
-              "Customer Name",
-              "Customer Account Number",
               "Item/Purpose",
+              "Purpose/item Id Number",
+              "Description",
+              "Merchant",
+
+              "Total Customers(buyer)",
+              "Amount(by Merchant)",
+              "Commission %",
+              "Platform Fee (% of c)",
+              "Discount",
+
+              "Total Amount",
+              "Total platform fee",
+              "General Space(Yes/No)",
               "Category",
-              "Amount",
-              "Merchant's Revenue",
-              "Platform Fee",
-              "Quantity",
-              "Total",
-              "Balance",
-              "Total Payment Duration",
-              "Days Left",
-              "Payment Completion %",
-              "Transaction reference",
-              "Time and date of transaction",
-              "Payment gateway",
-              "Payment status",
+              "Picture",
+              "Visibility Duration",
+              "Promo",
+              "Sharing",
             ]}
             content={
               <>
                 {paginatedPurposes &&
                   paginatedPurposes.map(
                     (
-                      payment: {
-                        platformFee: ReactNode;
-                        actualAmount: ReactNode;
-                        accountNumber: string;
-                        customerName: ReactNode;
-                        name: string;
-                        category: string;
-                        amount: number;
-                        quantity:
-                          | string
-                          | number
-                          | boolean
-                          | PromiseLikeOfReactNode
-                          | null
-                          | undefined;
-                        total:
+                      purpose: {
+                        purposeName:
                           | string
                           | number
                           | boolean
@@ -202,7 +194,7 @@ export default function PurposeReport() {
                           | PromiseLikeOfReactNode
                           | null
                           | undefined;
-                        balance:
+                        uniqueCode:
                           | string
                           | number
                           | boolean
@@ -215,12 +207,131 @@ export default function PurposeReport() {
                           | PromiseLikeOfReactNode
                           | null
                           | undefined;
-                        TotalPaymentDuration: any;
-                        DaysLeft: any;
-                        paymentCompletionPercentage: any;
-                        transactionReference: any;
-                        timeAndDate: string | Date;
-                        PaymentGateway: any;
+                        description:
+                          | string
+                          | number
+                          | boolean
+                          | ReactElement<
+                              any,
+                              string | JSXElementConstructor<any>
+                            >
+                          | Iterable<ReactNode>
+                          | ReactPortal
+                          | PromiseLikeOfReactNode
+                          | null
+                          | undefined;
+                        organisation: {
+                          organisationName:
+                            | string
+                            | number
+                            | boolean
+                            | ReactElement<
+                                any,
+                                string | JSXElementConstructor<any>
+                              >
+                            | Iterable<ReactNode>
+                            | ReactPortal
+                            | PromiseLikeOfReactNode
+                            | null
+                            | undefined;
+                          purposeCommission:
+                            | string
+                            | number
+                            | boolean
+                            | ReactElement<
+                                any,
+                                string | JSXElementConstructor<any>
+                              >
+                            | Iterable<ReactNode>
+                            | ReactPortal
+                            | PromiseLikeOfReactNode
+                            | null
+                            | undefined;
+                          generalSpace:
+                            | string
+                            | number
+                            | boolean
+                            | ReactElement<
+                                any,
+                                string | JSXElementConstructor<any>
+                              >
+                            | Iterable<ReactNode>
+                            | ReactPortal
+                            | PromiseLikeOfReactNode
+                            | null
+                            | undefined;
+                        };
+                        assignedCustomers: string | any[];
+                        amountWithoutCharge:
+                          | string
+                          | number
+                          | boolean
+                          | ReactElement<
+                              any,
+                              string | JSXElementConstructor<any>
+                            >
+                          | Iterable<ReactNode>
+                          | PromiseLikeOfReactNode
+                          | null
+                          | undefined;
+                        amount:
+                          | string
+                          | number
+                          | boolean
+                          | ReactElement<
+                              any,
+                              string | JSXElementConstructor<any>
+                            >
+                          | Iterable<ReactNode>
+                          | PromiseLikeOfReactNode
+                          | null
+                          | undefined;
+                        promoPercentage:
+                          | string
+                          | number
+                          | boolean
+                          | ReactElement<
+                              any,
+                              string | JSXElementConstructor<any>
+                            >
+                          | Iterable<ReactNode>
+                          | ReactPortal
+                          | PromiseLikeOfReactNode
+                          | null
+                          | undefined;
+                        totalPlatformFee:
+                          | string
+                          | number
+                          | boolean
+                          | ReactElement<
+                              any,
+                              string | JSXElementConstructor<any>
+                            >
+                          | Iterable<ReactNode>
+                          | ReactPortal
+                          | PromiseLikeOfReactNode
+                          | null
+                          | undefined;
+                        category: {
+                          name:
+                            | string
+                            | number
+                            | boolean
+                            | ReactElement<
+                                any,
+                                string | JSXElementConstructor<any>
+                              >
+                            | Iterable<ReactNode>
+                            | ReactPortal
+                            | PromiseLikeOfReactNode
+                            | null
+                            | undefined;
+                        };
+                        imageUrl: string | UrlObject;
+                        visibilityEndDate: string | number | Date;
+                        visibilityStartDate: string | number | Date;
+                        promocode: any;
+                        referralBonus: any;
                       },
                       index: number,
                     ) => (
@@ -229,60 +340,79 @@ export default function PurposeReport() {
                           {index + 1}
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-sm ">
-                          {payment.customerName === "Nill"
-                            ? "Protected"
-                            : payment.customerName || "---"}
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm ">
-                          {payment.accountNumber || "---"}
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm ">
-                          {payment.name}
+                          {purpose.purposeName}
                         </td>
                         <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
-                          {payment.category}
+                          {purpose.uniqueCode}
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-sm ">
-                          {AmountFormatter(payment.amount)}
+                          {purpose.description}
+                        </td>
+                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
+                          {purpose.organisation.organisationName}
+                        </td>
+                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
+                          {purpose.assignedCustomers.length}
+                        </td>
+                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
+                          {purpose.amountWithoutCharge}
+                        </td>
+                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
+                          {purpose.organisation.purposeCommission}
+                        </td>
+                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
+                          {Number(purpose.amount) -
+                            Number(purpose.amountWithoutCharge)}
+                        </td>
+                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
+                          {purpose.promoPercentage}
+                        </td>
+                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
+                          {purpose.amount}
+                        </td>
+                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
+                          {purpose.totalPlatformFee}
+                        </td>
+                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
+                          {purpose.organisation.generalSpace}
+                        </td>
+                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
+                          {purpose.category.name}
+                        </td>
+                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
+                          {purpose.imageUrl ? (
+                            <Link target="_blank" href={purpose.imageUrl}>
+                              <button
+                                style={{
+                                  borderRadius: "5px",
+                                  padding: "8px",
+                                  paddingRight: "16px",
+                                  paddingLeft: "16px",
+                                  backgroundColor: "#F2F2F2",
+                                  color: "black",
+                                }}
+                                //  onClick={() => router.push(purpose.imageUrl)}
+                              >
+                                View Picture
+                              </button>
+                            </Link>
+                          ) : (
+                            "No Evidence"
+                          )}
+                        </td>
+                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
+                          {DateDuration(
+                            purpose.visibilityEndDate,
+                            purpose.visibilityStartDate,
+                          )}{" "}
+                          day(s)
+                        </td>
+                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
+                          {purpose.promocode || "N/A"}
                         </td>
 
-                        <td className="whitespace-nowrap px-6 py-4 text-sm ">
-                          {payment.actualAmount}
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-sm ">
-                          {payment.platformFee}
-                        </td>
                         <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
-                          {payment.quantity}
-                        </td>
-                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
-                          {payment.total}
-                        </td>
-                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
-                          {payment.balance}
-                        </td>
-                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
-                          {payment.TotalPaymentDuration || "NULL"}
-                        </td>
-                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
-                          {payment.DaysLeft || "NULL"}{" "}
-                          {payment.DaysLeft ? "days left" : ""}
-                        </td>
-                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
-                          {payment.paymentCompletionPercentage || "NULL"}{" "}
-                        </td>
-                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
-                          {payment.transactionReference || "NULL"}{" "}
-                        </td>
-                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
-                          {extractDate(payment.timeAndDate)}{" "}
-                          {extractTime(payment.timeAndDate) || "NULL"}{" "}
-                        </td>
-                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
-                          {payment.PaymentGateway || "NULL"}{" "}
-                        </td>
-                        <td className="text-capitalize whitespace-nowrap px-6 py-4 text-sm">
-                          Success{" "}
+                          {purpose.referralBonus || "N/A"}
                         </td>
                       </tr>
                     ),
