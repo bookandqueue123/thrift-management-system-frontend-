@@ -93,6 +93,7 @@ export default function MakePayment() {
         });
     },
   });
+  console.log(allPurpose);
 
   const filteredPurposes = allPurpose?.filter((purpose: { _id: Key }) =>
     selectedProducts.includes(purpose._id),

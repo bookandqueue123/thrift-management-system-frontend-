@@ -12,7 +12,8 @@ import AvatarDropdown from "./Dropdowns";
 const CustomerNavbar = () => {
   // const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
   const [DropdownMenuIsOpen, setDropdownMenuIsOpen] = useState(false);
-  const [savingsDashboardDropdownIsOpen, setSavingsDashboardDropdownIsOpen] = useState(false)
+  const [savingsDashboardDropdownIsOpen, setSavingsDashboardDropdownIsOpen] =
+    useState(false);
   const endpoints = [
     "dashboard",
     "make-payment",
@@ -21,10 +22,10 @@ const CustomerNavbar = () => {
     "savings-setup",
     "savings-purpose",
     // "savings-dashboard",
-    "coupon"
+    "coupon",
   ];
   const { SignOut } = useAuth();
-  const routeOptions=["Savings Dashboard", "Purchase Items Report"]
+  const routeOptions = ["Savings Dashboard", "Purchase Items Report"];
   return (
     <nav className="border-ajo_offWhite border-opacity-40 md:border-b">
       <div className="mx-auto max-w-7xl px-2 md:px-6 lg:px-8">
@@ -84,64 +85,78 @@ const CustomerNavbar = () => {
             </div>
             <div className="hidden items-center gap-x-2 md:flex">
               <div>
-              {endpoints.map((route) => {
-                return (
-                  <Link
-                    key={route}
-                    href={
-                      route !== "dashboard" ? `/customer/${route}` : "/customer/savings-purpose"
-                    }
-                    className={`rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}
-                  >
-                    {route === "make-payment" ? "Make Payment": route === "savings-setup" ? "Savings Setup" : route === 'savings-purpose' ? 'Savings Purpose' : route === 'savings-dashboard' ? 'Savings Dashboard' : route}
-                  </Link>
-                );
-              })}
-            </div>
-            
+                {endpoints.map((route) => {
+                  return (
+                    <Link
+                      key={route}
+                      href={
+                        route !== "dashboard"
+                          ? `/customer/${route}`
+                          : "/customer/savings-purpose"
+                      }
+                      className={`rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}
+                    >
+                      {route === "make-payment"
+                        ? "Make Payment"
+                        : route === "savings-setup"
+                          ? "Savings Setup"
+                          : route === "savings-purpose"
+                            ? "Savings Purpose"
+                            : route === "savings-dashboard"
+                              ? "Savings Dashboard"
+                              : route}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
           <div className="pr-2 md:pl-11">
-      {/* <!-- Profile dropdown --> */}
-      <button
-        type="button"
-        className="flex items-center gap-x-2 rounded-full {`rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}"
-        onClick={() => setSavingsDashboardDropdownIsOpen(!savingsDashboardDropdownIsOpen)}
-      >
-        Savings Dashboard
-        <svg width="10" height="5" viewBox="0 0 12 7" fill="none">
-          <path
-            d="M1 1L6 6L11 1"
-            stroke="#BDBDBD"
-            strokeWidth="1"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <span className="sr-only">Open user menu</span>
-      </button>
-      {savingsDashboardDropdownIsOpen && (
-        <div className="absolute right-0 top-14 z-10 mt-2 w-48  rounded-md bg-white bg-opacity-20 py-1 shadow-lg">
-          {routeOptions.map((route, index) => {
-            
-              return (
-                <Link
-                  key={route}
-                  href={route === 'Savings Dashboard' ? '/customer/savings-dashboard' : route === "Purchase Items Report" ? "/customer/purpose-report" : `/customer/${route.toLowerCase()}`}
-                  className={`block px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
-                >
-                  {route === "bank-settings" ? 'Bank Settings' : route}
-                </Link>
-              );
-            }
-          )}
-        </div>
-      )}
-    </div>
-
-
-          
+            {/* <!-- Profile dropdown --> */}
+            <button
+              type="button"
+              className="{`rounded-lg focus:opacity-100`} flex items-center gap-x-2 rounded-full px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700"
+              onClick={() =>
+                setSavingsDashboardDropdownIsOpen(
+                  !savingsDashboardDropdownIsOpen,
+                )
+              }
+            >
+              Savings Dashboard
+              <svg width="10" height="5" viewBox="0 0 12 7" fill="none">
+                <path
+                  d="M1 1L6 6L11 1"
+                  stroke="#BDBDBD"
+                  strokeWidth="1"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="sr-only">Open user menu</span>
+            </button>
+            {savingsDashboardDropdownIsOpen && (
+              <div className="absolute right-0 top-14 z-10 mt-2 w-48  rounded-md bg-white bg-opacity-20 py-1 shadow-lg">
+                {routeOptions.map((route, index) => {
+                  return (
+                    <Link
+                      key={route}
+                      href={
+                        route === "Savings Dashboard"
+                          ? "/customer/savings-dashboard"
+                          : route === "Purchase Items Report"
+                            ? "/customer/purpose-report"
+                            : `/customer/${route.toLowerCase()}`
+                      }
+                      className={`block px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
+                    >
+                      {route === "bank-settings" ? "Bank Settings" : route}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           <AvatarDropdown
             avatarImg="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
@@ -232,7 +247,7 @@ export const Sidebar = ({
           userPermissions.includes(permissionsMap["view-users"])
         ? "users"
         : "",
-      
+
     user?.role === "organisation"
       ? "roles"
       : (user?.role === "staff" &&
@@ -241,7 +256,7 @@ export const Sidebar = ({
           userPermissions.includes(permissionsMap["view-role"])
         ? "roles"
         : "",
-        "account-statement"
+    "account-statement",
   ].filter(Boolean) as string[];
 
   const MenuBtn = ({
@@ -266,7 +281,7 @@ export const Sidebar = ({
   return (
     <aside>
       <div
-        className={`${toggleSidebar()}  fixed h-full w-44 space-y-10 border-r border-r-ajo_offWhite border-opacity-80 bg-ajo_darkBlue overflow-y-auto`}
+        className={`${toggleSidebar()}  fixed h-full w-44 space-y-10 overflow-y-auto border-r border-r-ajo_offWhite border-opacity-80 bg-ajo_darkBlue`}
       >
         <div className="flex w-full items-center justify-between px-6 py-6">
           <Link href="/" tabIndex={-1} className="outline-none">
@@ -309,7 +324,11 @@ export const Sidebar = ({
                   }
                   className="block cursor-pointer rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
                 >
-                  {route === "analytics" ? "General Report" : route === "account-statement" ? "Account Statement" : route}
+                  {route === "analytics"
+                    ? "General Report"
+                    : route === "account-statement"
+                      ? "Account Statement"
+                      : route}
                 </Link>
               );
             })}
@@ -330,7 +349,7 @@ export const Sidebar = ({
                   >
                     {label}
                   </Link>
-                ): label ===  "item/purpose" ?  (
+                ) : label === "item/purpose" ? (
                   <Link
                     href="/merchant/purpose"
                     onClick={(e) => {
@@ -340,7 +359,7 @@ export const Sidebar = ({
                   >
                     {label}
                   </Link>
-                ):(
+                ) : (
                   <span
                     onClick={() => {
                       SignOut();
@@ -358,7 +377,7 @@ export const Sidebar = ({
                     height={6}
                   />
                 )}
-                  {label === "item/purpose" && (
+                {label === "item/purpose" && (
                   <Image
                     src="/arrow_down.svg"
                     alt="arrow down"
@@ -484,10 +503,6 @@ export const Sidebar = ({
 
                 {label === "item/purpose" && purposeDropdownIsOpen && (
                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
-                   
-
-                    
-
                     <div
                       onClick={(e) => {
                         e.preventDefault();
@@ -496,9 +511,7 @@ export const Sidebar = ({
                       className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite  hover:text-ajo_darkBlue"
                     >
                       <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
-                        <span>
-                          Categories
-                        </span>
+                        <span>Categories</span>
 
                         <Image
                           className="mr-2"
@@ -540,8 +553,7 @@ export const Sidebar = ({
                       className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
                     >
                       <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
-                        <span>
-                         Purposes</span>
+                        <span>Purposes</span>
 
                         <Image
                           className="mr-2"
@@ -562,8 +574,6 @@ export const Sidebar = ({
                               purpose
                             </Link>
                           </div>
-
-                          
                         </>
                       )}
                     </div>
@@ -576,8 +586,7 @@ export const Sidebar = ({
                       className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
                     >
                       <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
-                        <span>
-                         Coupon</span>
+                        <span>Coupon</span>
 
                         <Image
                           className="mr-2"
@@ -598,8 +607,6 @@ export const Sidebar = ({
                               coupon
                             </Link>
                           </div>
-
-                          
                         </>
                       )}
                     </div>
@@ -613,7 +620,8 @@ export const Sidebar = ({
                     >
                       <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
                         <span>
-                         Purchased Item <br/> Report</span>
+                          Purchased Item <br /> Report
+                        </span>
 
                         <Image
                           className="mr-2"
@@ -631,11 +639,9 @@ export const Sidebar = ({
                               href="/merchant/purpose/item-report"
                               className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
                             >
-                               Purchased Item <br/> Report
+                              Purchased Item <br /> Report
                             </Link>
                           </div>
-
-                          
                         </>
                       )}
                     </div>
@@ -683,6 +689,7 @@ export const SuperAdminSidebar = ({
   const router = useRouter();
 
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
+  const [itemsDropdownIsOpen, setItemsDropdownIsOpen] = useState(false);
 
   const toggleSidebar = () => {
     return onShow ? "visible" : "invisible";
@@ -697,13 +704,14 @@ export const SuperAdminSidebar = ({
     "organisation",
     "customers",
     "group",
+    "services",
     "commission",
     "roles",
     "industry",
     "category",
     "users",
     "account-statement",
-    'superadminfee'
+    "superadminfee",
   ];
 
   const MenuBtn = ({
@@ -728,7 +736,7 @@ export const SuperAdminSidebar = ({
   return (
     <aside>
       <div
-        className={`${toggleSidebar()} overflow-y-auto fixed h-full w-44 space-y-10 border-r border-r-ajo_offWhite border-opacity-80 bg-ajo_darkBlue`}
+        className={`${toggleSidebar()} fixed h-full w-44 space-y-10 overflow-y-auto border-r border-r-ajo_offWhite border-opacity-80 bg-ajo_darkBlue`}
       >
         <div className="flex w-full items-center justify-between px-6 py-6">
           <Link href="/" tabIndex={-1} className="outline-none">
@@ -773,23 +781,33 @@ export const SuperAdminSidebar = ({
                   }
                   className="block cursor-pointer rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
                 >
-                  { route === "account-statement" ? "Account Statement" : route}
+                  {route === "account-statement" ? "Account Statement" : route}
                 </Link>
               );
             })}
           </div>
           <span className="w-full cursor-pointer">
-            {["settings", "sign out"].map((label) => (
+            {["item/purpose", "settings", "sign out"].map((label) => (
               <div
                 key={label}
                 className="relative flex w-full cursor-pointer items-center gap-x-4 rounded-lg px-4 py-2 text-start text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
               >
                 {label === "settings" ? (
                   <Link
-                    href="/merchant/settings"
+                    href="/superadmin/settings"
                     onClick={(e) => {
                       e.preventDefault();
                       setSettingsDropdownIsOpen(!settingsDropdownIsOpen);
+                    }}
+                  >
+                    {label}
+                  </Link>
+                ) : label === "item/purpose" ? (
+                  <Link
+                    href="/superadmin/item"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setItemsDropdownIsOpen(!settingsDropdownIsOpen);
                     }}
                   >
                     {label}
@@ -806,6 +824,15 @@ export const SuperAdminSidebar = ({
                 )}
 
                 {label === "settings" && (
+                  <Image
+                    src="/arrow_down.svg"
+                    alt="arrow down"
+                    width={8}
+                    height={6}
+                  />
+                )}
+
+                {label === "item/purpose" && (
                   <Image
                     src="/arrow_down.svg"
                     alt="arrow down"
@@ -835,6 +862,30 @@ export const SuperAdminSidebar = ({
                     >
                       Savings settings
                     </Link>
+                  </div>
+                )}
+
+                {label === "item/purpose" && itemsDropdownIsOpen && (
+                  <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+                    <Link
+                      href={`/superadmin/item`}
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      All purposes/items
+                    </Link>
+                    <Link
+                      href="/superadmin/item/report"
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      Purpose/item report
+                    </Link>
+
+                    {/* <Link
+                      href="/merchant/settings"
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      Savings settings
+                    </Link> */}
                   </div>
                 )}
               </div>

@@ -362,7 +362,7 @@ export default function SuperAdminCustomer() {
             filteredGroups.length === 0 ? (
               <tr className="h-[3rem]">
                 <p className="relative left-[80%] mt-3 text-center text-sm font-semibold text-ajo_offWhite md:left-[180%]">
-                  No Roles yet
+                  No Group yet
                 </p>
               </tr>
             ) : (
@@ -372,18 +372,7 @@ export default function SuperAdminCustomer() {
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {group.groupName}
                     </td>
-                    {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {group.account_name}
-                  </td> */}
-                    {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {group.account_number}
-                  </td> */}
-                    {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {group.bank_name} customers
-                  </td> */}
-                    {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {group.group_type}
-                  </td> */}
+
                     <td className="whitespace-nowrap px-6 py-4 text-sm ">
                       {group.organisations.length} Members
                     </td>
@@ -440,8 +429,8 @@ export default function SuperAdminCustomer() {
               </div>
             ) : (
               <ModalConfirmation
-                successTitle={`Role ${modalToShow === "create-group" ? "Creation" : "Editing"} Successful`}
-                errorTitle={`Role ${modalToShow === "create-group" ? "Creation" : "Editing"} Failed`}
+                successTitle={`Group ${modalToShow === "create-group" ? "Creation" : "Editing"} Successful`}
+                errorTitle={`Group ${modalToShow === "create-group" ? "Creation" : "Editing"} Failed`}
                 status={isGroupCreated || isGroupEdited ? "success" : "failed"}
                 responseMessage={mutationResponse}
               />

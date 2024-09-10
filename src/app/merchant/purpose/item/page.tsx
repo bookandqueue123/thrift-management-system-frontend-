@@ -87,6 +87,8 @@ const Purpose = () => {
     staleTime: 5000,
   });
 
+  console.log(allPurpose);
+
   const {
     data: allRoles,
     isLoading: isLoadingAllRoles,
