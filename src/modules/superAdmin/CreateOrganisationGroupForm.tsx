@@ -38,6 +38,7 @@ const CreateOranisationGroupForm = ({
     frequency: "",
     // group:
   });
+  console.log(saveDetails);
 
   const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target as
@@ -182,12 +183,12 @@ const CreateOranisationGroupForm = ({
     let processedValue = value;
 
     // If the input field is 'description', remove commas and convert it to a number
-    if (name === "description") {
-      // Remove commas from the value using a regular expression
-      const unformattedValue = value.replace(/,/g, "");
-      // Parse the string to a floating point number
-      processedValue = parseFloat(unformattedValue).toString();
-    }
+    // if (name === "description") {
+    //   // Remove commas from the value using a regular expression
+    //   const unformattedValue = value.replace(/,/g, "");
+    //   // Parse the string to a floating point number
+    //   processedValue = parseFloat(unformattedValue).toString();
+    // }
 
     // Update the state 'saveDetails' with the new value, keeping previous state intact
     setSaveDetails((prev) => ({ ...prev, [name]: processedValue }));
@@ -436,26 +437,7 @@ const CreateOranisationGroupForm = ({
                 placeholder="describe..."
                 type="text"
                 className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                onChange={(event) => {
-                  const { name, value } = event.target;
-                  setFormValues({ ...formValues, [name]: value });
-                  setFormErrors({
-                    ...formErrors,
-                    [name]: validateField(
-                      name,
-                      value,
-                      // saveDetails.savingsType as
-                      //   | "named group"
-                      //   | "nameless group",
-                    ),
-                  });
-                  const input = event.target.value.replace(/\D/g, "");
-                  const formatted = Number(input).toLocaleString();
-                  setSaveDetails((prev) => ({
-                    ...prev,
-                    ["description"]: input,
-                  }));
-                }}
+                onChange={handleInputChange}
                 onFocus={handleInputFocus}
                 required
               />
