@@ -704,6 +704,7 @@ export const SuperAdminSidebar = ({
     "organisation",
     "customers",
     "group",
+    "services",
     "commission",
     "roles",
     "industry",
