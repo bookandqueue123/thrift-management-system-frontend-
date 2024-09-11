@@ -87,8 +87,6 @@ const Purpose = () => {
     staleTime: 5000,
   });
 
-  console.log(allPurpose);
-
   const {
     data: allRoles,
     isLoading: isLoadingAllRoles,
@@ -524,6 +522,7 @@ const MutateUser = ({
     },
     staleTime: 5000,
   });
+  console.log(singlePurpose);
 
   // const initialValues:PurposeProps = actionToTake === 'edit-purpose' ? {
   //   purposeName: singlePurpose?.purposeName ?? "",
@@ -600,7 +599,7 @@ const MutateUser = ({
           description: singlePurpose?.description ?? "",
           category: singlePurpose?.category ?? "",
           uniqueCode: singlePurpose?.uniqueCode ?? "",
-          amount: singlePurpose?.amount ?? 0,
+          amount: Number(singlePurpose?.amount) ?? 0,
           quantity: singlePurpose?.quantity ?? "Nill",
           startDate: extractDate(singlePurpose?.startDate) ?? "",
           startTime: singlePurpose?.startTime ?? "",
@@ -615,7 +614,7 @@ const MutateUser = ({
           visibility: singlePurpose?.visibility ?? "",
           visibilityStartDate:
             extractDate(singlePurpose?.visibilityStartDate) ?? "",
-          visibilityStartTime: singlePurpose?.visibiltyStartTime ?? "",
+          visibilityStartTime: singlePurpose?.visibilityStartTime ?? "",
           visibilityEndDate:
             extractDate(singlePurpose?.visibilityEndDate) ?? "",
           visibilityEndTime: singlePurpose?.visibilityEndTime ?? "",
@@ -625,7 +624,7 @@ const MutateUser = ({
           SelectorAll: singlePurpose?.SelectorAll ?? "",
           selectorCategory: singlePurpose?.selectorCategory ?? "",
           organisation: organizationId,
-          amountWithoutCharge: singlePurpose?.amountWithoutCharge ?? "",
+          amountWithoutCharge: Number(singlePurpose?.amountWithoutCharge) ?? "",
         }
       : {
           purposeName: "",
@@ -738,27 +737,9 @@ const MutateUser = ({
     selectorCategory: Yup.string().required("This field is required"),
     assignedCustomers: Yup.array().optional(),
 
-    imageUrl: Yup.mixed()
+    // imageUrl: Yup.mixed().required("Image is required"),
 
-      .required()
-      .test(
-        "fileSize",
-        "File size must be less than or equal to 5MB",
-        (value) => {
-          if (value instanceof FileList && value.length > 0) {
-            return value[0].size <= 5242880; // 5MB limit
-          }
-          return true; // No file provided, so validation passes
-        },
-      )
-      .test("fileType", "Only .jpg, .png files are allowed", (value) => {
-        if (value instanceof FileList && value.length > 0) {
-          const fileType = value[0].type;
-          return fileType === "image/jpeg" || fileType === "image/png"; // Only .jpg or .png allowed
-        }
-        return true; // No file provided, so validation passes
-      }),
-    //  digitalItem: Yup.string().optional()
+    // digitalItem: Yup.string().optional(),
   });
 
   const formik = useFormik({
@@ -766,12 +747,14 @@ const MutateUser = ({
     validationSchema,
     enableReinitialize: true,
     onSubmit: (values, { setSubmitting }) => {
+      console.log(values, "123456");
       setTimeout(() => {
         if (actionToTake === "create-purpose") {
           console.log("creating user.....................");
 
           createPurpose(values);
         } else {
+          console.log(values, "6");
           console.log("editing user.....................");
           editPurpose(values);
         }
@@ -952,7 +935,7 @@ const MutateUser = ({
       setTimeout(() => {
         setCloseModal(false);
         setModalContent("form");
-        router.push("/merchant/users");
+        router.push("/merchant/purpose/item");
       }, 1000);
     },
 
@@ -1758,8 +1741,11 @@ const MutateUser = ({
               name="imageUrl"
               id="imageUrl"
               className="hidden w-full"
-              onChange={(e) => {
-                formik.setFieldValue("imageUrl", e.target.files);
+              onChange={(event) => {
+                const file = event.target.files;
+                if (file && file.length > 0) {
+                  formik.setFieldValue("imageUrl", file); // Handle file input
+                }
               }}
               accept="application/pdf, .jpg, .png"
             />
@@ -1778,9 +1764,7 @@ const MutateUser = ({
           </label>
           {formik.values.imageUrl &&
             formik.values.imageUrl[0] &&
-            ((formik.values.imageUrl[0] as unknown as File).type.includes(
-              "image",
-            ) ? (
+            ((formik.values.imageUrl[0] as File).type.includes("image") ? (
               <Image
                 src={URL.createObjectURL(formik.values.imageUrl[0])}
                 alt="imageUrl"
@@ -1810,14 +1794,14 @@ const MutateUser = ({
         <div className="mb-8">
           <div className="mb-4 ">
             <label
-              htmlFor="image"
+              htmlFor="imageUrl"
               className="mb-8  text-xs font-medium text-white"
             >
               Picture (max-size - 5MB)
             </label>
             {formik.values.imageUrl &&
-            (formik.values.imageUrl as string).length > 0 &&
-            formik.values.imageUrl ? (
+            (formik.values.imageUrl as string[]).length > 0 &&
+            formik.values.imageUrl[0] ? (
               <Image
                 src={URL.createObjectURL(formik.values.imageUrl[0])} // Display placeholder image or actual image URL
                 alt="photo"
@@ -1920,10 +1904,10 @@ const MutateUser = ({
                 title="Thumbnail Image"
               ></iframe>
             ))}
-          {formik.errors.imageUrl &&
-            formik.touched.imageUrl &&
-            typeof formik.errors.imageUrl === "string" && (
-              <div className="text-red-500">{formik.errors.imageUrl}</div>
+          {formik.errors.digitalItem &&
+            formik.touched.digitalItem &&
+            typeof formik.errors.digitalItem === "string" && (
+              <div className="text-red-500">{formik.errors.digitalItem}</div>
             )}
 
           {/* <div className="text-xs text-red-600">
