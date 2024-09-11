@@ -393,7 +393,7 @@ const Purpose = () => {
               setModalState={setModalState}
               title={
                 modalToShow === "edit-purpose"
-                  ? "Edit User"
+                  ? "Edit Purpose"
                   : modalToShow === "create-purpose"
                     ? "Create a Purpose"
                     : modalToShow === "view-purpose"
