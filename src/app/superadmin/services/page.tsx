@@ -15,6 +15,7 @@ import {
   customer,
   mutateUserProps,
   roleResponse,
+  servicePackageProps,
   staffResponse,
 } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -477,47 +478,9 @@ const MutateUser = ({
     },
   });
 
-  const { mutate: createUser, isPending: isCreatingRole } = useMutation({
-    mutationFn: async (values: mutateUserProps) => {
-      const formData = new FormData();
-      formData.append("firstName", values.firstName);
-      formData.append("lastName", values.lastName);
-      formData.append("phoneNumber", values.phone);
-      formData.append("organisation", organizationId);
-      formData.append("homeAddress", values.homeAddress);
-      formData.append("email", values.email);
-
-      formData.append("guarantor1.fullName", values.guarantor1Name);
-      formData.append("guarantor1.homeAddress", values.guarantor1Address);
-      formData.append("guarantor1.email", values.guarantor1Email);
-      formData.append("guarantor1.phoneNumber", values.guarantor1Phone);
-
-      formData.append("guarantor2.fullName", values.guarantor2Name);
-      formData.append("guarantor2.homeAddress", values.guarantor2Address);
-      formData.append("guarantor2.email", values.guarantor2Email);
-      formData.append("guarantor2.phoneNumber", values.guarantor2Phone);
-
-      formData.append("roles", values.roles);
-      // formData.append("assignedUser", values.assignedCustomers)
-      formData.append("meansOfID", values.idType);
-      formData.append;
-      if (values.userPicture) {
-        formData.append("photo", values.userPicture[0]);
-      }
-      if (values.guarantorForm) {
-        formData.append("guarantorForm", values.guarantorForm[0]);
-      }
-      if (values.guarantorForm2) {
-        formData.append("guarantorForm2", values.guarantorForm2[0]);
-      }
-      if (values.meansOfIDPhoto) {
-        formData.append("meansOfIDPhoto", values.meansOfIDPhoto[0]);
-      }
-      values.assignedCustomers.forEach((item: string | Blob) =>
-        formData.append("assignedUser[]", item),
-      );
-
-      return client.post(`/api/user/create-staff`, formData);
+  const { mutate: createPackage, isPending: isCreatingRole } = useMutation({
+    mutationFn: async (values: servicePackageProps) => {
+      return client.post(`/api/service-package`, values);
     },
 
     onSuccess(response) {
@@ -546,64 +509,7 @@ const MutateUser = ({
   const { mutate: editUser, isPending: isEditingRole } = useMutation({
     mutationKey: ["edit user"],
     mutationFn: async (values: mutateUserProps) => {
-      if (Array.isArray(values.roles)) {
-        if (values.roles.length > 0 && values.roles[0]._id) {
-          values.roles = values.roles[0]._id;
-        }
-      }
-
-      // const socials = {
-      //   facebook: values.facebook,
-      //   twitter: values.instagram,
-      //   instagram: values.linkedIn,
-      //   linkedIn: values.twitter,
-      //   pintrest: values.pinterest,
-      // };
-
-      const formData = new FormData();
-
-      formData.append("firstName", values.firstName);
-      formData.append("lastName", values.lastName);
-      formData.append("phoneNumber", values.phone);
-      formData.append("organisation", organizationId);
-      formData.append("homeAddress", values.homeAddress);
-      formData.append("email", values.email);
-
-      formData.append("guarantor1.fullName", values.guarantor1Name);
-      formData.append("guarantor1.homeAddress", values.guarantor1Address);
-      formData.append("guarantor1.email", values.guarantor1Email);
-      formData.append("guarantor1.phoneNumber", values.guarantor1Phone);
-
-      formData.append("guarantor2.fullName", values.guarantor2Name);
-      formData.append("guarantor2.homeAddress", values.guarantor2Address);
-      formData.append("guarantor2.email", values.guarantor2Email);
-      formData.append("guarantor2.phoneNumber", values.guarantor2Phone);
-
-      formData.append("roles", values.roles);
-      // formData.append("assignedUser", JSON.stringify(assignedCustomerIds))
-      formData.append("meansOfID", values.idType);
-      formData.append;
-      if (values.userPicture) {
-        formData.append("photo", values.userPicture[0]);
-      }
-      if (values.guarantorForm) {
-        formData.append("guarantorForm", values.guarantorForm[0]);
-      }
-      if (values.guarantorForm2) {
-        formData.append("guarantorForm2", values.guarantorForm2[0]);
-      }
-      if (values.meansOfIDPhoto) {
-        formData.append("meansOfIDPhoto", values.meansOfIDPhoto[0]);
-      }
-      assignedCustomerIds.forEach((item) =>
-        formData.append("assignedUser[]", item),
-      );
-
-      // const assignedUser = assignedCustomerIds
-      // const combinedData = { ...formData, assignedUser };
-      // console.log(combinedData)
-      // return client.put(`/api/user/${userId}`, formData);
-      return client.put(`/api/user/${userToBeEdited}`, formData);
+      return client.put(`/api/user/${userToBeEdited}`);
     },
 
     onSuccess(response) {
@@ -627,31 +533,13 @@ const MutateUser = ({
     },
   });
 
-  const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
-    const selectedOption = allCustomers?.find(
-      (option) => option._id === selectedId,
-    );
-    if (
-      !selectedOptions.some((option) => option?._id === selectedOption?._id)
-    ) {
-      setSelectedOptions([...selectedOptions, selectedOption!]);
-    }
-  };
-
-  const handleRemoveOption = (index: number) => {
-    const updatedOptions = [...selectedOptions];
-    updatedOptions.splice(index, 1);
-    setSelectedOptions(updatedOptions);
-  };
-
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
 
   const [promoCode, setPromoCode] = useState("");
 
   const servicesOptions = ["savings", "purpose"];
 
-  const initialValues = {
+  const initialValues: servicePackageProps = {
     groupName: "",
     description: "",
     service: [],
@@ -664,11 +552,14 @@ const MutateUser = ({
     totalMonthly: 0,
     totalQuarterly: 0,
     totalYearly: 0,
-    discount: "",
+    discount: 2,
     actualFee: "",
     promoCode: "",
     promoStartDate: "",
     promoEndDate: "",
+    actualMonthlyFee: 0,
+    actualQuarterlyFee: 0,
+    actualYearlyFee: 0,
   };
 
   const validationSchema = Yup.object({
@@ -677,9 +568,9 @@ const MutateUser = ({
     discount: Yup.number()
       .required("Discount is required")
       .min(0, "Cannot be negative"),
-    actualFee: Yup.number()
-      .required("Actual Fee is required")
-      .min(0, "Cannot be negative"),
+    // actualFee: Yup.number()
+    //   .required("Actual Fee is required")
+    //   .min(0, "Cannot be negative"),
   });
 
   const handleServiceSelection = (service: any) => {
@@ -696,6 +587,72 @@ const MutateUser = ({
     const code = nanoid(6);
     setPromoCode(code);
   };
+  const MyEffectComponent = ({
+    formikValues,
+    setFieldValue,
+  }: {
+    formikValues: any;
+    setFieldValue: any;
+  }) => {
+    useEffect(() => {
+      const totalMonthly =
+        (formikValues.savingsMonthly
+          ? parseFloat(formikValues.savingsMonthly)
+          : 0) +
+        (formikValues.purposeMonthly
+          ? parseFloat(formikValues.purposeMonthly)
+          : 0);
+
+      const totalQuarterly =
+        (formikValues.savingsQuarterly
+          ? parseFloat(formikValues.savingsQuarterly)
+          : 0) +
+        (formikValues.purposeQuarterly
+          ? parseFloat(formikValues.purposeQuarterly)
+          : 0);
+
+      const totalYearly =
+        (formikValues.savingsYearly
+          ? parseFloat(formikValues.savingsYearly)
+          : 0) +
+        (formikValues.purposeYearly
+          ? parseFloat(formikValues.purposeYearly)
+          : 0);
+
+      const actualMonthlyGroupFee =
+        formikValues.totalMonthly -
+        (formikValues.discount / 100) * formikValues.totalMonthly;
+      const actualQuarterlyGroupFee =
+        formikValues.totalQuarterly -
+        (formikValues.discount / 100) * formikValues.totalQuarterly;
+      const actualYearlyGroupFee =
+        formikValues.totalYearly -
+        (formikValues.discount / 100) * formikValues.totalYearly;
+      setFieldValue("service", selectedServices);
+      setFieldValue("promoCode", promoCode);
+      setFieldValue("totalMonthly", totalMonthly);
+      setFieldValue("totalQuarterly", totalQuarterly);
+      setFieldValue("totalYearly", totalYearly);
+      setFieldValue("actualMonthlyFee", actualMonthlyGroupFee);
+      setFieldValue("actualQuarterlyFee", Number(actualQuarterlyGroupFee));
+      setFieldValue("actualYearlyFee", actualYearlyGroupFee);
+    }, [
+      formikValues.savingsMonthly,
+      formikValues.purposeMonthly,
+      formikValues.purposeQuarterly,
+      formikValues.purposeYearly,
+      formikValues.savingsQuarterly,
+      formikValues.savingsYearly,
+      formikValues.discount,
+      formikValues.totalMonthly,
+      formikValues.values?.discount,
+      formikValues.totalYearly,
+      formikValues.totalQuarterly,
+      setFieldValue,
+    ]);
+
+    return null; // Since this is a utility component, it doesn't render anything
+  };
 
   return (
     <div>
@@ -703,23 +660,29 @@ const MutateUser = ({
         initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={(values) => {
-          console.log(values);
+          createPackage(values);
         }}
       >
         {({ values, setFieldValue }) => {
           // Calculate totals
-          const totalMonthly =
-            (values.savingsMonthly ? parseFloat(values.savingsMonthly) : 0) +
-            (values.purposeMonthly ? parseFloat(values.purposeMonthly) : 0);
-          const totalQuarterly =
-            (values.savingsQuarterly
-              ? parseFloat(values.savingsQuarterly)
-              : 0) +
-            (values.purposeQuarterly ? parseFloat(values.purposeQuarterly) : 0);
-          const totalYearly =
-            (values.savingsYearly ? parseFloat(values.savingsYearly) : 0) +
-            (values.purposeYearly ? parseFloat(values.purposeYearly) : 0);
-
+          // const totalMonthly =
+          //   (values.savingsMonthly ? parseFloat(values.savingsMonthly) : 0) +
+          //   (values.purposeMonthly ? parseFloat(values.purposeMonthly) : 0);
+          // setFieldValue("totalMonthly", totalMonthly);
+          // const totalQuarterly =
+          //   (values.savingsQuarterly
+          //     ? parseFloat(values.savingsQuarterly)
+          //     : 0) +
+          //   (values.purposeQuarterly ? parseFloat(values.purposeQuarterly) : 0);
+          // const totalYearly =
+          //   (values.savingsYearly ? parseFloat(values.savingsYearly) : 0) +
+          //   (values.purposeYearly ? parseFloat(values.purposeYearly) : 0);
+          // const actualMonthlyGroupFee =
+          //   totalMonthly - (values.discount / 100) * totalMonthly;
+          // const actualQuarterlyGroupFee =
+          //   totalQuarterly - (values.discount / 100) * totalQuarterly;
+          // const actualYearlyGroupFee =
+          //   totalYearly - (values.discount / 100) * totalYearly;
           return (
             <Form>
               {/* Group Name */}
@@ -882,7 +845,7 @@ const MutateUser = ({
                     name="totalMonthly"
                     type="number"
                     readOnly
-                    value={totalMonthly}
+                    // value={totalMonthly}
                     className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
                   />
                 </div>
@@ -894,7 +857,7 @@ const MutateUser = ({
                     name="totalQuarterly"
                     type="number"
                     readOnly
-                    value={totalQuarterly}
+                    // value={totalQuarterly}
                     className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
                   />
                 </div>
@@ -906,7 +869,7 @@ const MutateUser = ({
                     name="totalYearly"
                     type="number"
                     readOnly
-                    value={totalYearly}
+                    // value={totalYearly}
                     className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
                   />
                 </div>
@@ -927,6 +890,40 @@ const MutateUser = ({
               {/* Actual Group's Fee */}
               <div className="mb-4">
                 <label className="m-0 text-xs font-medium text-white">
+                  Actual Monthly Fee
+                </label>
+                <Field
+                  // value={actualMonthlyGroupFee}
+                  name="actualMonthlyFee"
+                  type="number"
+                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="m-0 text-xs font-medium text-white">
+                  Actual Quaterly Fee
+                </label>
+                <Field
+                  // value={actualQuarterlyGroupFee}
+                  name="actualQuarterlyFee"
+                  type="number"
+                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="m-0 text-xs font-medium text-white">
+                  Actual Yearly Fee
+                </label>
+                <Field
+                  // value={actualYearlyGroupFee}
+                  name="actualYearlyFee"
+                  type="number"
+                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                />
+              </div>
+              {/* <div className="mb-4">
+                <label className="m-0 text-xs font-medium text-white">
                   Actual Group&apos;s Fee
                 </label>
                 <Field
@@ -934,7 +931,7 @@ const MutateUser = ({
                   type="number"
                   className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
                 />
-              </div>
+              </div> */}
 
               {/* Promo Code */}
               <div className="mb-4 ">
@@ -989,6 +986,10 @@ const MutateUser = ({
               >
                 Submit
               </button>
+              <MyEffectComponent
+                formikValues={values}
+                setFieldValue={setFieldValue}
+              />
             </Form>
           );
         }}
