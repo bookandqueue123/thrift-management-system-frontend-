@@ -13,11 +13,11 @@ import {
 } from "@/slices/OrganizationIdSlice";
 import {
   customer,
-  mutateUserProps,
   roleResponse,
   servicePackageProps,
   staffResponse,
 } from "@/types";
+import { extractDate } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
@@ -69,17 +69,14 @@ const Users = () => {
   const [userToBeEdited, setUserToBeEdited] = useState("");
 
   const {
-    data: allUsers,
-    isLoading: isLoadingAllUsers,
+    data: allServicePackages,
+    isLoading: isLoadingallServicePackages,
     refetch,
   } = useQuery({
-    queryKey: ["allUsers"],
+    queryKey: ["allServicePackages"],
     queryFn: async () => {
       return client
-        .get(
-          `/api/user?role=staff&organisation=${organisationId}&userType=individual`,
-          {},
-        )
+        .get(`/api/service-package`, {})
         .then((response: AxiosResponse<customer[], any>) => {
           setFilteredUsers(response.data);
 
@@ -131,8 +128,8 @@ const Users = () => {
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
 
-    if (allUsers) {
-      const filtered = allUsers.filter((item) =>
+    if (allServicePackages) {
+      const filtered = allServicePackages.filter((item) =>
         String(item.firstName || item.lastName).includes(
           String(e.target.value),
         ),
@@ -143,8 +140,8 @@ const Users = () => {
   };
   // const handleDateFilter = () => {
   //   // Filter the data based on the date range
-  //   if (allUsers) {
-  //     const filtered = allUsers.filter((item) => {
+  //   if (allServicePackages) {
+  //     const filtered = allServicePackages.filter((item) => {
   //       const itemDate = new Date(item.createdAt); // Convert item date to Date object
   //       const startDateObj = new Date(fromDate);
   //       const endDateObj = new Date(toDate);
@@ -162,8 +159,8 @@ const Users = () => {
     currentPage * PAGE_SIZE,
   );
   let totalPages = 0;
-  if (allUsers) {
-    totalPages = Math.ceil(allUsers.length / PAGE_SIZE);
+  if (allServicePackages) {
+    totalPages = Math.ceil(allServicePackages.length / PAGE_SIZE);
   }
 
   useEffect(() => {
@@ -245,9 +242,10 @@ const Users = () => {
           <TransactionsTable
             headers={[
               "S/N",
-              "Service",
+              "Package name",
+              "Services",
               "Monthly Subscription",
-              "Quaterly SUbscription",
+              "Quaterly Subscription",
               "Yearly Subscription",
               "Setup Date",
               "Updated date",
@@ -261,16 +259,45 @@ const Users = () => {
                   </p>
                 </tr>
               ) : (
-                paginatedRoles?.map((user, index) => (
+                paginatedRoles?.map((packages, index) => (
                   <tr className="" key={index + 1}>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm"></td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {index + 1}
+                    </td>
 
-                    <td className="whitespace-nowrap px-6 py-4 text-sm"></td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm"></td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm"></td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm"></td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm"></td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {packages.groupName}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      <ul>
+                        {packages.service.map(
+                          (
+                            service: string,
 
+                            index: number,
+                          ) => (
+                            <li key={index}>{service}</li>
+                          ),
+                        )}
+                      </ul>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {packages.totals.totalMonthly}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {" "}
+                      {packages.totals.totalQuarterly}
+                    </td>
+
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {packages.totals.totalYearly}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {extractDate(packages.createdAt)}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {extractDate(packages.updatedAt) || "---"}
+                    </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       <StatusIndicator
                         label={`Actions`}
@@ -285,7 +312,7 @@ const Users = () => {
                         dropdownEnabled
                         dropdownContents={{
                           labels: [
-                            viewUser ? "View User" : "",
+                            viewUser ? "View User" : "View Package",
                             // (user?.role === "organisation" ||
                             //   (user?.role === "staff" &&
                             //     userPermissions.includes(
@@ -293,7 +320,7 @@ const Users = () => {
                             //     ))) &&
                             //   "View User",
 
-                            editUser ? "Edit User" : "",
+                            editUser ? "Edit User" : "Edit Package",
                             // (user?.role === "organisation" ||
                             //   (user?.role === "staff" &&
                             //     userPermissions.includes(
@@ -313,7 +340,7 @@ const Users = () => {
                               {
                                 setModalState(true);
                                 setModalToShow("view-user");
-                                setUserToBeEdited(user._id);
+                                setUserToBeEdited(packages._id);
                                 setIsUserEdited(false);
                               }
                             },
@@ -328,7 +355,7 @@ const Users = () => {
                               {
                                 setModalToShow("edit-user");
                                 setModalState(true);
-                                setUserToBeEdited(user._id);
+                                setUserToBeEdited(packages._id);
                                 setIsUserEdited(false);
                               }
                             },
@@ -418,44 +445,12 @@ const MutateUser = ({
   const [selectedOptions, setSelectedOptions] = useState<
     (customer | undefined)[]
   >([]);
-  const { data: userInfo, isLoading: isLoadingUserInfo } = useQuery({
-    queryKey: ["userInfo"],
+  const { data: packageInfo, isLoading: isLoadingPackageInfo } = useQuery({
+    queryKey: ["packageInfo"],
     queryFn: async () => {
       return client
-        .get(`/api/user/${userToBeEdited}`)
-        .then((response: AxiosResponse<staffResponse, any>) => {
-          return response.data;
-        })
-        .catch((error: AxiosError<any, any>) => {
-          throw error;
-        });
-    },
-  });
-
-  const [assignedCustomerIds, setAssignedCustomerIds] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (actionToTake === "edit-user") {
-      if (userInfo?.assignedUser) {
-        const customerIds = userInfo?.assignedUser?.map(
-          (customer: { _id: any }) => customer._id,
-        );
-        setAssignedCustomerIds(customerIds || []);
-      }
-    } else {
-      setAssignedCustomerIds([]);
-    }
-  }, [userInfo, actionToTake]);
-
-  const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
-    queryKey: ["allCustomers"],
-    queryFn: async () => {
-      return client
-        .get(
-          `/api/user?role=customer&organisation=${organizationId}&userType=individual`,
-          {},
-        )
-        .then((response: AxiosResponse<customer[], any>) => {
+        .get(`/api/service-package/${userToBeEdited}`)
+        .then((response) => {
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -478,7 +473,7 @@ const MutateUser = ({
     },
   });
 
-  const { mutate: createPackage, isPending: isCreatingRole } = useMutation({
+  const { mutate: createPackage, isPending: isCreatingPackages } = useMutation({
     mutationFn: async (values: servicePackageProps) => {
       return client.post(`/api/service-package`, values);
     },
@@ -506,10 +501,10 @@ const MutateUser = ({
     },
   });
 
-  const { mutate: editUser, isPending: isEditingRole } = useMutation({
+  const { mutate: editUser, isPending: isEditingPackages } = useMutation({
     mutationKey: ["edit user"],
-    mutationFn: async (values: mutateUserProps) => {
-      return client.put(`/api/user/${userToBeEdited}`);
+    mutationFn: async (values: servicePackageProps) => {
+      return client.put(`/api/service-package/${userToBeEdited}`, values);
     },
 
     onSuccess(response) {
@@ -539,28 +534,53 @@ const MutateUser = ({
 
   const servicesOptions = ["savings", "purpose"];
 
-  const initialValues: servicePackageProps = {
-    groupName: "",
-    description: "",
-    service: [],
-    savingsMonthly: "",
-    savingsQuarterly: "",
-    savingsYearly: "",
-    purposeMonthly: "",
-    purposeQuarterly: "",
-    purposeYearly: "",
-    totalMonthly: 0,
-    totalQuarterly: 0,
-    totalYearly: 0,
-    discount: 2,
-    actualFee: "",
-    promoCode: "",
-    promoStartDate: "",
-    promoEndDate: "",
-    actualMonthlyFee: 0,
-    actualQuarterlyFee: 0,
-    actualYearlyFee: 0,
-  };
+  console.log(packageInfo);
+  const initialValues: servicePackageProps =
+    actionToTake === "edit-user"
+      ? {
+          groupName: packageInfo?.groupName ?? "",
+          description: packageInfo?.description ?? "",
+          service: packageInfo?.service ?? "",
+          savingsMonthly: packageInfo?.savings.monthly ?? "",
+          savingsQuarterly: packageInfo?.savings.quarterly ?? "",
+          savingsYearly: packageInfo?.savings.yearly ?? "",
+          purposeMonthly: packageInfo?.purpose.monthly ?? "",
+          purposeQuarterly: packageInfo?.purpose.quarterly ?? "",
+          purposeYearly: packageInfo?.purpose.yearly ?? "",
+          totalMonthly: packageInfo?.totals.monthly ?? 0,
+          totalQuarterly: packageInfo?.totals.quarterly ?? 0,
+          totalYearly: packageInfo?.totals.yearly ?? 0,
+          discount: packageInfo?.discount,
+          actualFee: "",
+          promoCode: packageInfo?.promoCode ?? "",
+          promoStartDate: extractDate(packageInfo?.promoDates.start) ?? "",
+          promoEndDate: extractDate(packageInfo?.promoDates.end) ?? "",
+          actualMonthlyFee: packageInfo?.actualMonthlyFee ?? 0,
+          actualQuarterlyFee: packageInfo?.actualQuarterlyFee ?? 0,
+          actualYearlyFee: packageInfo?.actualYearlyFee ?? 0,
+        }
+      : {
+          groupName: "",
+          description: "",
+          service: [],
+          savingsMonthly: "",
+          savingsQuarterly: "",
+          savingsYearly: "",
+          purposeMonthly: "",
+          purposeQuarterly: "",
+          purposeYearly: "",
+          totalMonthly: 0,
+          totalQuarterly: 0,
+          totalYearly: 0,
+          discount: 2,
+          actualFee: "",
+          promoCode: "",
+          promoStartDate: "",
+          promoEndDate: "",
+          actualMonthlyFee: 0,
+          actualQuarterlyFee: 0,
+          actualYearlyFee: 0,
+        };
 
   const validationSchema = Yup.object({
     groupName: Yup.string().required("Group Name is required"),
@@ -572,7 +592,16 @@ const MutateUser = ({
     //   .required("Actual Fee is required")
     //   .min(0, "Cannot be negative"),
   });
-
+  useEffect(() => {
+    if (actionToTake === "edit-user") {
+      if (packageInfo?.service) {
+        const services = packageInfo?.service?.map((service: any) => service);
+        setSelectedServices(services || []);
+      }
+    } else {
+      setSelectedServices([]);
+    }
+  }, [packageInfo, actionToTake]);
   const handleServiceSelection = (service: any) => {
     if (!selectedServices.includes(service)) {
       setSelectedServices([...selectedServices, service]);
@@ -660,10 +689,15 @@ const MutateUser = ({
         initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={(values) => {
-          createPackage(values);
+          console.log(values);
+          if (actionToTake === "create-user") {
+            createPackage(values);
+          } else {
+            editUser(values);
+          }
         }}
       >
-        {({ values, setFieldValue }) => {
+        {({ values, setFieldValue, isSubmitting }) => {
           // Calculate totals
           // const totalMonthly =
           //   (values.savingsMonthly ? parseFloat(values.savingsMonthly) : 0) +
@@ -942,7 +976,7 @@ const MutateUser = ({
                   <Field
                     name="promoCode"
                     type="text"
-                    value={promoCode}
+                    // value={promoCode}
                     className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
                   />
                   <button
@@ -984,7 +1018,17 @@ const MutateUser = ({
                 type="submit"
                 className="rounded-md bg-green-500 px-4 py-2 text-white"
               >
-                Submit
+                {isSubmitting || isCreatingPackages || isEditingPackages ? (
+                  <Image
+                    src="/loadingSpinner.svg"
+                    alt="loading spinner"
+                    className="relative left-1/2"
+                    width={25}
+                    height={25}
+                  />
+                ) : (
+                  "Submit"
+                )}
               </button>
               <MyEffectComponent
                 formikValues={values}
