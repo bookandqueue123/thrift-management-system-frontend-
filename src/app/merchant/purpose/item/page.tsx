@@ -624,7 +624,7 @@ const MutateUser = ({
           SelectorAll: singlePurpose?.SelectorAll ?? "",
           selectorCategory: singlePurpose?.selectorCategory ?? "",
           organisation: organizationId,
-          amountWithoutCharge: Number(singlePurpose?.amountWithoutCharge) ?? "",
+          amountWithoutCharge: Number(singlePurpose?.amountWithoutCharge) ?? 0,
         }
       : {
           purposeName: "",
