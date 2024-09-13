@@ -54,7 +54,7 @@ export default function SuperAdminCustomer() {
     isError: getGroupError,
     refetch,
   } = useQuery({
-    queryKey: ["allOrganizationsGroup"],
+    queryKey: ["all Organizations"],
     queryFn: async () => {
       return client
         .get(`/api/user?role=organisation`, {})
