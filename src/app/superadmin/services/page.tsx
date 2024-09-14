@@ -248,6 +248,8 @@ const Users = () => {
               "Quaterly Subscription",
               "Yearly Subscription",
               "Setup Date",
+              "Promo Start Date",
+              "Promo End Date",
               "Updated date",
               "Action",
             ]}
@@ -294,6 +296,12 @@ const Users = () => {
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {extractDate(packages.createdAt)}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {extractDate(packages.promoDates.start)}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {extractDate(packages.promoDates.end)}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {extractDate(packages.updatedAt) || "---"}
