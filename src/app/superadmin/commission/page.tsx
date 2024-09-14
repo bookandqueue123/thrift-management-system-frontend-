@@ -295,9 +295,7 @@ export default function SuperAdminCustomer() {
                     }}
                     dropdownEnabled
                     dropdownContents={{
-                      labels: ["View Package", "Edit Package"].filter(
-                        Boolean,
-                      ) as string[],
+                      labels: ["Edit Commission"].filter(Boolean) as string[],
                       actions: [
                         () => {
                           {
@@ -691,7 +689,7 @@ const MutateUser = ({
                   {organizations?.map(
                     (organization: getOrganizationProps, index: number) => (
                       <option key={organization._id} value={organization._id}>
-                        {organization.organisationName}22
+                        {organization.organisationName}
                       </option>
                     ),
                   )}
