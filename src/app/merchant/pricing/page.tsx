@@ -1,0 +1,208 @@
+"use client";
+import { useAuth } from "@/api/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import {
+  JSXElementConstructor,
+  Key,
+  PromiseLikeOfReactNode,
+  ReactElement,
+  ReactNode,
+  ReactPortal,
+} from "react";
+
+export default function Pricing() {
+  const { client } = useAuth();
+  const {
+    data: packages,
+    isLoading: isUserLoading,
+    isError: getGroupError,
+    refetch,
+  } = useQuery({
+    queryKey: ["all Packages"],
+    queryFn: async () => {
+      return client
+        .get(`/api/service-package`, {})
+        .then((response) => {
+          return response.data;
+        })
+        .catch((error) => {
+          throw error;
+        });
+    },
+  });
+  console.log(packages);
+  return (
+    <section className="bg-white dark:bg-gray-900">
+      <div className="mx-auto max-w-screen-xl px-4 py-8 lg:px-6 lg:py-16">
+        <div className="mx-auto mb-8 max-w-screen-md text-center lg:mb-12">
+          <h2 className="mb-4 text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+            Designed for businesses like yours
+          </h2>
+          {/* <p className="mb-5 font-light text-gray-500 sm:text-xl dark:text-gray-400">
+            Here at Flowbite we focus on markets where technology, innovation,
+            and capital can unlock long-term value and drive economic growth.
+          </p> */}
+        </div>
+
+        {packages?.map(
+          (servicePackage: {
+            _id: Key | null | undefined;
+            groupName:
+              | string
+              | number
+              | boolean
+              | ReactElement<any, string | JSXElementConstructor<any>>
+              | Iterable<ReactNode>
+              | ReactPortal
+              | PromiseLikeOfReactNode
+              | null
+              | undefined;
+            service: any[];
+            actualFee: {
+              actualMonthlyFee: any;
+              actualQuarterlyFee: any;
+              actualYearlyFee: any;
+            };
+            totals: {
+              totalMonthly: any;
+              totalQuarterly: any;
+              totalYearly: any;
+            };
+          }) => (
+            <div key={servicePackage._id} className="my-4">
+              {" "}
+              <p className="my-2 ml-8 text-5xl font-extrabold">
+                {servicePackage.groupName}
+              </p>
+              <div className="space-y-8 sm:gap-6 lg:grid lg:grid-cols-3 lg:space-y-0 xl:gap-10">
+                <div className="mx-auto flex max-w-lg flex-col rounded-lg border border-gray-100 bg-white p-6 text-center text-gray-900 shadow xl:p-8 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+                  <h3 className="mb-4 text-2xl font-semibold">Monthly</h3>
+                  {servicePackage.service.map((service: string) => (
+                    <ul
+                      role="list"
+                      className="mb-8 space-y-4 text-left"
+                      key={service}
+                    >
+                      <li className="flex items-center space-x-3">
+                        <svg
+                          className="h-5 w-5 flex-shrink-0 text-green-500 dark:text-green-400"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clip-rule="evenodd"
+                          ></path>
+                        </svg>
+                        <span>{service}</span>
+                      </li>
+                    </ul>
+                  ))}
+
+                  <div className="my-8 flex items-baseline justify-center">
+                    <span className="mr-2 text-5xl font-extrabold">{`N${servicePackage.actualFee.actualMonthlyFee}`}</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      /month
+                    </span>
+                    <span className="mr-2 text-2xl font-normal line-through">{`N${servicePackage.totals.totalMonthly}`}</span>
+                  </div>
+
+                  <a
+                    href="#"
+                    className="rounded-lg bg-blue-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 dark:text-white  dark:focus:ring-blue-900"
+                  >
+                    Get started
+                  </a>
+                </div>
+
+                <div className="mx-auto flex max-w-lg flex-col rounded-lg border border-gray-100 bg-white p-6 text-center text-gray-900 shadow xl:p-8 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+                  <h3 className="mb-4 text-2xl font-semibold">Quartely</h3>
+                  {servicePackage.service.map((service: string) => (
+                    <ul
+                      role="list"
+                      className="mb-8 space-y-4 text-left"
+                      key={service}
+                    >
+                      <li className="flex items-center space-x-3">
+                        <svg
+                          className="h-5 w-5 flex-shrink-0 text-green-500 dark:text-green-400"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clip-rule="evenodd"
+                          ></path>
+                        </svg>
+                        <span>{service}</span>
+                      </li>
+                    </ul>
+                  ))}
+                  <div className="my-8 flex items-baseline justify-center">
+                    <span className="mr-2 text-5xl font-extrabold">{`N${servicePackage.actualFee.actualQuarterlyFee}`}</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      /6 Month
+                    </span>
+                    <span className="mr-2 text-2xl font-normal line-through">{`N${servicePackage.totals.totalQuarterly}`}</span>
+                  </div>
+
+                  <a
+                    href="#"
+                    className="rounded-lg bg-blue-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 dark:text-white  dark:focus:ring-blue-900"
+                  >
+                    Get started
+                  </a>
+                </div>
+
+                <div className="mx-auto flex max-w-lg flex-col rounded-lg border border-gray-100 bg-white p-6 text-center text-gray-900 shadow xl:p-8 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
+                  <h3 className="mb-4 text-2xl font-semibold">Yearly</h3>
+                  {servicePackage.service.map((service: string) => (
+                    <ul
+                      role="list"
+                      className="mb-8 space-y-4 text-left"
+                      key={service}
+                    >
+                      <li className="flex items-center space-x-3">
+                        <svg
+                          className="h-5 w-5 flex-shrink-0 text-green-500 dark:text-green-400"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clip-rule="evenodd"
+                          ></path>
+                        </svg>
+                        <span>{service}</span>
+                      </li>
+                    </ul>
+                  ))}
+                  <div className="my-8 flex items-baseline justify-center">
+                    <span className="mr-2 text-5xl font-extrabold">{`N${servicePackage.actualFee.actualYearlyFee}`}</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      /year
+                    </span>
+                    <span className="mr-2 text-2xl font-normal line-through">{`N${servicePackage.totals.totalYearly}`}</span>
+                  </div>
+
+                  <a
+                    href="#"
+                    className="rounded-lg bg-blue-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 dark:text-white  dark:focus:ring-blue-900"
+                  >
+                    Get started
+                  </a>
+                </div>
+              </div>
+            </div>
+          ),
+        )}
+      </div>
+    </section>
+  );
+}
