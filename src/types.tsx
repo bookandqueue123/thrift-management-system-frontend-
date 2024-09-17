@@ -838,7 +838,14 @@ export interface servicePackageProps {
   promoCode: string;
   promoStartDate: string;
   promoEndDate: string;
+  promoStartTime: string;
+  promoEndTime: string;
   actualMonthlyFee: 0;
   actualQuarterlyFee: 0;
   actualYearlyFee: 0;
+  applyToOrganisations: string;
+  appliedUserId: string;
+  selectedCustomerGroup: string;
+  selectedIndividualCustomer: string;
+  userType: string,
 }

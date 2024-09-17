@@ -68,13 +68,15 @@ export default function SuperAdminCustomer() {
   });
   useEffect(() => {
     refetch();
-  }, [isCommissionEdited, refetch]);
-
+  }, [isCommissionEdited, isCommissionCreated, refetch]);
+  // console.log(isCommissionCreated);
   return (
     <div>
       {showModal ? (
         <Modal setModalState={setShowModal} title="Commission">
-          <CreateCommissionForm />
+          <CreateCommissionForm
+            setIsCommissionCreated={setIsCommissionCreated}
+          />
         </Modal>
       ) : (
         ""
@@ -297,14 +299,14 @@ export default function SuperAdminCustomer() {
                     dropdownContents={{
                       labels: ["Edit Commission"].filter(Boolean) as string[],
                       actions: [
-                        () => {
-                          {
-                            setModalState(true);
-                            setModalToShow("view-commission");
-                            setCommissionToBeEdited(organisation._id);
-                            setIsCommissionEdited(false);
-                          }
-                        },
+                        // () => {
+                        //   {
+                        //     setModalState(true);
+                        //     setModalToShow("view-commission");
+                        //     setCommissionToBeEdited(organisation._id);
+                        //     setIsCommissionEdited(false);
+                        //   }
+                        // },
                         () => {
                           {
                             SetServiceTobeEditedIndex(index);
