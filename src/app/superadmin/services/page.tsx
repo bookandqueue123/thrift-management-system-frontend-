@@ -298,10 +298,15 @@ const Users = () => {
                       {extractDate(packages.createdAt)}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {extractDate(packages.promoDates.start)}
+                      {extractDate(
+                        packages.promoCode?.startDate ||
+                          packages.promoDates.start,
+                      )}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {extractDate(packages.promoDates.end)}
+                      {extractDate(
+                        packages.promoCode?.endDate || packages.promoDates.end,
+                      )}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {extractDate(packages.updatedAt) || "---"}
@@ -320,7 +325,7 @@ const Users = () => {
                         dropdownEnabled
                         dropdownContents={{
                           labels: [
-                            viewUser ? "View User" : "View Package",
+                            // viewUser ? "View User" : "View Package",
                             // (user?.role === "organisation" ||
                             //   (user?.role === "staff" &&
                             //     userPermissions.includes(
@@ -337,21 +342,21 @@ const Users = () => {
                             //   "Edit User",
                           ].filter(Boolean) as string[],
                           actions: [
-                            () => {
-                              // if (
-                              //   user?.role === "organisation" ||
-                              //   (user?.role === "staff" &&
-                              //     userPermissions.includes(
-                              //       permissionsMap["view-users"],
-                              //     ))
-                              // )
-                              {
-                                setModalState(true);
-                                setModalToShow("view-user");
-                                setUserToBeEdited(packages._id);
-                                setIsUserEdited(false);
-                              }
-                            },
+                            // () => {
+                            // if (
+                            //   user?.role === "organisation" ||
+                            //   (user?.role === "staff" &&
+                            //     userPermissions.includes(
+                            //       permissionsMap["view-users"],
+                            //     ))
+                            // )
+                            // {
+                            //   setModalState(true);
+                            //   setModalToShow("view-user");
+                            //   setUserToBeEdited(packages._id);
+                            //   setIsUserEdited(false);
+                            // }
+                            // },
                             () => {
                               // if (
                               //   user?.role === "organisation" ||
@@ -453,8 +458,14 @@ const MutateUser = ({
   const [selectedOptions, setSelectedOptions] = useState<
     (customer | undefined)[]
   >([]);
+  const [showGroupCustomerSelect, setShowGroupCustomerSelect] = useState(false);
+  const [showIndividualCustomerSelect, setShowIndividualCustomerSelect] =
+    useState(false);
+  const [organizations, setOrganizations] = useState([]);
+  const [organizationsGroups, setOrganizationsGroups] = useState([]);
+
   const { data: packageInfo, isLoading: isLoadingPackageInfo } = useQuery({
-    queryKey: ["packageInfo"],
+    queryKey: ["packageInfo", userToBeEdited],
     queryFn: async () => {
       return client
         .get(`/api/service-package/${userToBeEdited}`)
@@ -494,7 +505,7 @@ const MutateUser = ({
       setTimeout(() => {
         setCloseModal(false);
         setModalContent("form");
-        router.push("/merchant/users");
+        // router.push("/merchant/users");
       }, 1000);
     },
 
@@ -538,7 +549,9 @@ const MutateUser = ({
 
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
 
-  const [promoCode, setPromoCode] = useState("");
+  const [promoCode, setPromoCode] = useState(
+    packageInfo?.promoCode?.code || "",
+  );
 
   const servicesOptions = ["savings", "purpose"];
 
@@ -560,12 +573,19 @@ const MutateUser = ({
           totalYearly: packageInfo?.totals.yearly ?? 0,
           discount: packageInfo?.discount,
           actualFee: "",
-          promoCode: packageInfo?.promoCode ?? "",
-          promoStartDate: extractDate(packageInfo?.promoDates.start) ?? "",
-          promoEndDate: extractDate(packageInfo?.promoDates.end) ?? "",
+          promoCode: packageInfo?.promoCode?.code ?? "",
+          promoStartDate: extractDate(packageInfo?.promoCode?.startDate) ?? "",
+          promoEndDate: extractDate(packageInfo?.promoCode?.endDate) ?? "",
+          promoStartTime: packageInfo?.promoCode?.startTime ?? "",
+          promoEndTime: packageInfo?.promoCode?.endTime ?? "",
           actualMonthlyFee: packageInfo?.actualMonthlyFee ?? 0,
           actualQuarterlyFee: packageInfo?.actualQuarterlyFee ?? 0,
           actualYearlyFee: packageInfo?.actualYearlyFee ?? 0,
+          applyToOrganisations: packageInfo?.applyToOrganisations ?? "",
+          appliedUserId: "",
+          selectedCustomerGroup: "",
+          selectedIndividualCustomer: "",
+          userType: "organisation",
         }
       : {
           groupName: "",
@@ -585,9 +605,16 @@ const MutateUser = ({
           promoCode: "",
           promoStartDate: "",
           promoEndDate: "",
+          promoStartTime: "",
+          promoEndTime: "",
           actualMonthlyFee: 0,
           actualQuarterlyFee: 0,
           actualYearlyFee: 0,
+          applyToOrganisations: "all-organisations",
+          appliedUserId: "",
+          selectedCustomerGroup: "",
+          selectedIndividualCustomer: "",
+          userType: "organisation",
         };
 
   const validationSchema = Yup.object({
@@ -691,14 +718,47 @@ const MutateUser = ({
     return null; // Since this is a utility component, it doesn't render anything
   };
 
+  const {
+    data: Allorganisations,
+    isLoading: isUserLoading,
+    isError: getGroupError,
+  } = useQuery({
+    queryKey: ["allOrganisations"],
+    queryFn: async () => {
+      return client
+        .get(`/api/user`, {})
+        .then((response) => {
+          return response.data;
+        })
+        .catch((error) => {
+          throw error;
+        });
+    },
+  });
+
+  useEffect(() => {
+    setOrganizations(
+      Allorganisations?.filter(
+        (organisation: { role: string }) =>
+          organisation?.role === "organisation",
+      ),
+    );
+    setOrganizationsGroups(
+      Allorganisations?.filter(
+        (organisation: { userType: string }) =>
+          organisation?.userType === "group",
+      ),
+    );
+  }, [Allorganisations]);
+
   return (
     <div>
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={(values) => {
-          console.log(values);
           if (actionToTake === "create-user") {
+            // console.log(values);
             createPackage(values);
           } else {
             editUser(values);
@@ -706,27 +766,34 @@ const MutateUser = ({
         }}
       >
         {({ values, setFieldValue, isSubmitting }) => {
-          // Calculate totals
-          // const totalMonthly =
-          //   (values.savingsMonthly ? parseFloat(values.savingsMonthly) : 0) +
-          //   (values.purposeMonthly ? parseFloat(values.purposeMonthly) : 0);
-          // setFieldValue("totalMonthly", totalMonthly);
-          // const totalQuarterly =
-          //   (values.savingsQuarterly
-          //     ? parseFloat(values.savingsQuarterly)
-          //     : 0) +
-          //   (values.purposeQuarterly ? parseFloat(values.purposeQuarterly) : 0);
-          // const totalYearly =
-          //   (values.savingsYearly ? parseFloat(values.savingsYearly) : 0) +
-          //   (values.purposeYearly ? parseFloat(values.purposeYearly) : 0);
-          // const actualMonthlyGroupFee =
-          //   totalMonthly - (values.discount / 100) * totalMonthly;
-          // const actualQuarterlyGroupFee =
-          //   totalQuarterly - (values.discount / 100) * totalQuarterly;
-          // const actualYearlyGroupFee =
-          //   totalYearly - (values.discount / 100) * totalYearly;
           return (
             <Form>
+              <div role="group" className="flex-col-3 flex justify-between">
+                <label className="block text-white">
+                  <Field
+                    type="radio"
+                    name="userType"
+                    value="organisation"
+                    // onClick={() => {
+                    //   setShowGroupCustomerSelect(false);
+                    //   setShowIndividualCustomerSelect(false);
+                    // }}
+                  />
+                  <span className="ml-2">All organisation</span>
+                </label>
+                <label className="block text-white">
+                  <Field
+                    type="radio"
+                    name="userType"
+                    value="customer"
+                    // onClick={() => {
+                    //   setShowGroupCustomerSelect(true);
+                    //   setShowIndividualCustomerSelect(false);
+                    // }}
+                  />
+                  <span className="ml-2">Customer</span>
+                </label>
+              </div>
               {/* Group Name */}
               <div className="mb-4">
                 <label className="m-0 text-xs font-medium text-white">
@@ -1022,6 +1089,120 @@ const MutateUser = ({
                   />{" "}
                 </div>{" "}
               </div>
+
+              <div className="mb-4 grid grid-cols-2 gap-4">
+                {" "}
+                <div>
+                  {" "}
+                  <label className="m-0 text-xs font-medium text-white">
+                    Promo Code Start Time
+                  </label>{" "}
+                  <Field
+                    name="promoStartTime"
+                    type="time"
+                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                  />{" "}
+                </div>{" "}
+                <div>
+                  {" "}
+                  <label className="m-0 text-xs font-medium text-white">
+                    Promo Code End Time
+                  </label>{" "}
+                  <Field
+                    name="promoEndTime"
+                    type="time"
+                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                  />{" "}
+                </div>{" "}
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-white">
+                  Apply to Organisation
+                </label>
+                <div role="group" className="flex-col-3 flex justify-between">
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToOrganisations"
+                      value="all-organisations"
+                      onClick={() => {
+                        setShowGroupCustomerSelect(false);
+                        setShowIndividualCustomerSelect(false);
+                      }}
+                    />
+                    <span className="ml-2">All organisation</span>
+                  </label>
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToOrganisations"
+                      value="group-of-organisations"
+                      onClick={() => {
+                        setShowGroupCustomerSelect(true);
+                        setShowIndividualCustomerSelect(false);
+                      }}
+                    />
+                    <span className="ml-2">Group of Organisation</span>
+                  </label>
+
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToOrganisations"
+                      value="individual-organisation"
+                      onClick={() => {
+                        setShowGroupCustomerSelect(false);
+                        setShowIndividualCustomerSelect(true);
+                      }}
+                    />
+                    <span className="ml-2">Individual Organisation</span>
+                  </label>
+                </div>
+                {showGroupCustomerSelect && (
+                  <div className="mt-2">
+                    <Field
+                      name="selectedCustomerGroup"
+                      as="select"
+                      className="block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+                    >
+                      <option value="">Select group</option>
+                      {organizationsGroups.map(
+                        (group: { _id: string; groupName: string }) => (
+                          <option key={group._id} value={group._id}>
+                            {group.groupName}
+                          </option>
+                        ),
+                      )}
+                    </Field>
+                  </div>
+                )}
+                {showIndividualCustomerSelect && (
+                  <div className="mt-2">
+                    <Field
+                      name="selectedIndividualCustomer"
+                      as="select"
+                      className="block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+                    >
+                      <option value="">Select a customer</option>
+                      {organizations.map(
+                        (IndividualCustomer: {
+                          _id: string;
+                          organisationName: string;
+                        }) => (
+                          <option
+                            key={IndividualCustomer._id}
+                            value={IndividualCustomer._id}
+                          >
+                            {IndividualCustomer.organisationName}
+                          </option>
+                        ),
+                      )}
+                    </Field>
+                  </div>
+                )}
+              </div>
+
               <button
                 type="submit"
                 className="rounded-md bg-green-500 px-4 py-2 text-white"

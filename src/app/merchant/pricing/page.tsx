@@ -1,14 +1,7 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import {
-  JSXElementConstructor,
-  Key,
-  PromiseLikeOfReactNode,
-  ReactElement,
-  ReactNode,
-  ReactPortal,
-} from "react";
+import { Key } from "react";
 
 export default function Pricing() {
   const { client } = useAuth();
@@ -47,16 +40,8 @@ export default function Pricing() {
         {packages?.map(
           (servicePackage: {
             _id: Key | null | undefined;
-            groupName:
-              | string
-              | number
-              | boolean
-              | ReactElement<any, string | JSXElementConstructor<any>>
-              | Iterable<ReactNode>
-              | ReactPortal
-              | PromiseLikeOfReactNode
-              | null
-              | undefined;
+            groupName: string;
+
             service: any[];
             actualFee: {
               actualMonthlyFee: any;

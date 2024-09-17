@@ -45,6 +45,7 @@ export default function Page() {
     const today = new Date();
     const end = new Date(endDate);
     const timeDiff = Number(end) - Number(today);
+
     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
     return daysDiff;
   };
@@ -176,7 +177,9 @@ export default function Page() {
                   </div>
                   <p className="text-xl font-semibold">How many days left?</p>
                   <p className="text-black">
-                    {daysLeft(SinglePurpose.endDate)} days left
+                    {!SinglePurpose.endDate
+                      ? "---"
+                      : daysLeft(SinglePurpose.endDate) + " " + "days left"}
                   </p>
                   <div>
                     <h2 className="mt-4 text-sm font-semibold">

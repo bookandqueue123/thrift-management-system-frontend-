@@ -12,6 +12,7 @@ import { PurposeProps } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { ScrollMenu, VisibilityContext } from "react-horizontal-scrolling-menu";
@@ -316,86 +317,88 @@ const ProductCard = ({
   };
 
   return (
-    <div className="">
-      <input
-        className="ml-4"
-        type="checkbox"
-        checked={isChecked}
-        onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
-      />
-      <div className="product-card">
-        <div className="checkbox-container" style={{ marginLeft: "8px" }}>
-          {/* <input
+    <Link href={`/customer/savings-purpose/${product._id}`}>
+      <div className="">
+        <input
+          className="ml-4"
+          type="checkbox"
+          checked={isChecked}
+          onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
+        />
+        <div className="product-card">
+          <div className="checkbox-container" style={{ marginLeft: "8px" }}>
+            {/* <input
             type="checkbox"
             checked={isChecked}
             onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
           /> */}
-        </div>
-        <div className="image-section h-[40%]">
-          <Image
-            height={100}
-            width={150}
-            src={product.imageUrl}
-            alt={product.purposeName}
-            className="product-image p-4"
-          />
-          <div
-            className="icon-container"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <FaShareAlt className="icon" />
-            <FaBookmark className="icon" />
           </div>
-        </div>
-        <div className="info-section bg-ajo_orange text-black">
-          <h3 className="product-name">{product.purposeName}</h3>
-          <div
-            className="product-price-row"
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <p className="product-price">
-              NGN{AmountFormatter(product.amount)}
-            </p>
+          <div className="image-section h-[40%]">
+            <Image
+              height={100}
+              width={150}
+              src={product.imageUrl}
+              alt={product.purposeName}
+              className="product-image p-4"
+            />
             <div
+              className="icon-container"
               style={{
                 display: "flex",
-                flexDirection: "column",
-                marginLeft: "auto",
+                alignItems: "center",
+                justifyContent: "space-between",
               }}
             >
-              <label
-                htmlFor={`quantity-${product._id}`}
-                style={{ fontSize: "0.9rem", marginBottom: "4px" }}
-              >
-                Qty
-              </label>
-              {product.merchantQuantity}
-              {/* <select id={`quantity-${product._id}`} className="quantity-dropdown">
-              {renderQuantityOptions()}
-            </select> */}
+              <FaShareAlt className="icon" />
+              <FaBookmark className="icon" />
             </div>
           </div>
+          <div className="info-section bg-ajo_orange text-black">
+            <h3 className="product-name">{product.purposeName}</h3>
+            <div
+              className="product-price-row"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <p className="product-price">
+                NGN{AmountFormatter(product.amount)}
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  marginLeft: "auto",
+                }}
+              >
+                <label
+                  htmlFor={`quantity-${product._id}`}
+                  style={{ fontSize: "0.9rem", marginBottom: "4px" }}
+                >
+                  Qty
+                </label>
+                {product.merchantQuantity}
+                {/* <select id={`quantity-${product._id}`} className="quantity-dropdown">
+              {renderQuantityOptions()}
+            </select> */}
+              </div>
+            </div>
 
-          <p className="product-description">
-            {truncateDescription(product.description, 15)}
-          </p>
-          <a
-            href={`/customer/savings-purpose/${product._id}`}
-            className="read-more"
-          >
-            Read more
-          </a>
+            <p className="product-description">
+              {truncateDescription(product.description, 15)}
+            </p>
+            <a
+              href={`/customer/savings-purpose/${product._id}`}
+              className="read-more"
+            >
+              Read more
+            </a>
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
