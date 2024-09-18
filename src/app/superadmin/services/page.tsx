@@ -257,7 +257,7 @@ const Users = () => {
               filteredUsers.length === 0 ? (
                 <tr className="h-[3rem]">
                   <p className="relative left-[80%] mt-3 text-center text-sm font-semibold text-ajo_offWhite md:left-[180%]">
-                    No Users yet
+                    No packages yet
                   </p>
                 </tr>
               ) : (
@@ -585,7 +585,7 @@ const MutateUser = ({
           appliedUserId: "",
           selectedCustomerGroup: "",
           selectedIndividualCustomer: "",
-          userType: "organisation",
+          userType: packageInfo?.userType ?? "",
         }
       : {
           groupName: "",
