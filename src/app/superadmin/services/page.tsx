@@ -298,20 +298,18 @@ const Users = () => {
                       {extractDate(packages.createdAt)}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {/* {extractDate(
+                      {extractDate(
                         packages?.promoCode?.startDate ||
                           packages?.promoDates?.start ||
                           "",
-                      )} */}{" "}
-                      start
+                      )}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {/* {extractDate(
+                      {extractDate(
                         packages?.promoCode?.endDate ||
                           packages?.promoDates?.end ||
                           "",
-                      )} */}{" "}
-                      end
+                      )}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {extractDate(packages.updatedAt) || "---"}
