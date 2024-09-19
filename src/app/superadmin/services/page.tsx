@@ -300,12 +300,15 @@ const Users = () => {
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {extractDate(
                         packages.promoCode?.startDate ||
-                          packages.promoDates.start,
+                          packages.promoDates.start ||
+                          "",
                       )}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {extractDate(
-                        packages.promoCode?.endDate || packages.promoDates.end,
+                        packages.promoCode?.endDate ||
+                          packages.promoDates.end ||
+                          "",
                       )}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
