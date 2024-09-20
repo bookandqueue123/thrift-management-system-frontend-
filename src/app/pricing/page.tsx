@@ -1,26 +1,39 @@
 "use client";
 import { apiUrl, useAuth } from "@/api/hooks/useAuth";
 import { CustomButton } from "@/components/Buttons";
+import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import {
   selectToken,
   selectUser,
   selectUserId,
 } from "@/slices/OrganizationIdSlice";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import { useRouter } from "next/navigation";
+
 import { Key, SetStateAction, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
+
+interface initialValuesProps {
+  promoCode: string;
+}
 export default function Pricing() {
   const { client } = useAuth();
   const token = useSelector(selectToken);
 
   const user = useSelector(selectUser);
+
+  const router = useRouter();
+
   const userId = useSelector(selectUserId);
   const [selectedOption, setSelectedOption] = useState("price");
   const [showModal, setShowModal] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
 
+  const [errorMessage, setErrormessage] = useState("");
   const [host, setHost] = useState("");
   const [environmentName, setEnvironmentName] = useState("");
   useEffect(() => {
@@ -63,19 +76,45 @@ export default function Pricing() {
   };
 
   const validationSchema = Yup.object({
-    promoCode: Yup.string()
-      .required("Promo code is required")
-      .matches(
-        /^[A-Za-z0-9]{6,10}$/,
-        "Promo code must be 6-10 alphanumeric characters",
-      ),
+    promoCode: Yup.string().required("Promo code is required"),
   });
 
   // Form submission
-  const handleSubmit = (values: { promoCode: string }) => {
-    console.log("Submitted Promo Code:", values.promoCode);
-    // Submit the promo code to the backend or process it further
-  };
+  // const handleSubmit = (values: { promoCode: string }) => {
+  //   console.log("Submitted Promo Code:", values.promoCode);
+  //   // Submit the promo code to the backend or process it further
+  // };
+
+  const { mutate: handleSubmit, isPending: isSubmittingCode } = useMutation({
+    mutationKey: ["create role"],
+    mutationFn: async (values: initialValuesProps) => {
+      console.log(values);
+      return client.post(`/api/service-package/apply-promocode`, {
+        promoCode: values.promoCode,
+        userId,
+      });
+    },
+    onSuccess(response) {
+      setShowSuccessToast(true);
+      if (user.role === "organisation") {
+        router.replace("/merchant");
+      } else {
+        router.replace("/customer");
+      }
+      // setTimeout(() => {
+      //   setCloseModal(false);
+      // }, 5000);
+    },
+
+    onError(error: any) {
+      console.log(error);
+      setErrormessage(error.response.data.message);
+      setShowErrorToast(true);
+      // setRoleCreated(false);
+      // setModalContent("status");
+    },
+  });
+  console.log(errorMessage);
   const handlePricing = async (
     servicePackage: {
       _id: Key | null | undefined;
@@ -90,8 +129,6 @@ export default function Pricing() {
     },
     duration: string,
   ) => {
-    console.log(servicePackage);
-    console.log(duration);
     setShowModal(true);
     try {
       const packageId = servicePackage._id;
@@ -111,7 +148,7 @@ export default function Pricing() {
       } else {
         amount = servicePackage.actualFee.actualYearlyFee;
       }
-      console.log(amount);
+
       const response = await axios.post(
         `${apiUrl}api/pay/flw/subscription-payment`,
 
@@ -152,8 +189,11 @@ export default function Pricing() {
         });
     },
   });
+  const initialValues: initialValuesProps = {
+    promoCode: "",
+  };
   return (
-    <div>
+    <div className="min-h-screen w-full bg-ajo_darkBlue  px-4 py-12 md:px-16">
       <div className="mb-4">
         <label className="mr-4 text-white">
           <input
@@ -173,7 +213,7 @@ export default function Pricing() {
             onChange={handleOptionChange}
             className="mr-2"
           />
-          Promo
+          Promo Code
         </label>
       </div>
       {selectedOption === "price" && (
@@ -374,9 +414,12 @@ export default function Pricing() {
               Enter Promo Code
             </h2>
             <Formik
-              initialValues={{ promoCode: "" }}
+              initialValues={initialValues}
               validationSchema={validationSchema}
-              onSubmit={handleSubmit}
+              onSubmit={(values, { setSubmitting }) => {
+                handleSubmit(values);
+                setSubmitting(false);
+              }}
             >
               {({ isSubmitting }) => (
                 <Form className="space-y-4">
@@ -408,6 +451,18 @@ export default function Pricing() {
                   >
                     {isSubmitting ? "Submitting..." : "Submit"}
                   </button>
+
+                  {showSuccessToast && (
+                    <SuccessToaster message={"Subscription successful!"} />
+                  )}
+
+                  {showErrorToast && errorMessage && errorMessage && (
+                    <ErrorToaster
+                      message={
+                        errorMessage ? errorMessage : "Error subscribing"
+                      }
+                    />
+                  )}
                 </Form>
               )}
             </Formik>
