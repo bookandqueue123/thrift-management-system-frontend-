@@ -7,7 +7,7 @@ import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { destroyCookie, parseCookies, setCookie } from "nookies";
+import { parseCookies } from "nookies";
 import { useEffect, useState } from "react";
 import * as Yup from "yup";
 
@@ -15,7 +15,7 @@ import { setAuthData } from "@/slices/OrganizationIdSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectUser } from "@/slices/OrganizationIdSlice";
-import { decryptPassword, encryptPassword } from "@/utils/Encryptpassword";
+import { decryptPassword } from "@/utils/Encryptpassword";
 import Image from "next/image";
 
 const SignInForm = () => {
@@ -73,20 +73,40 @@ const SignInForm = () => {
 
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
-      
+
       if (response.data.role === "customer") {
         if (user) {
-          router.replace(`/customer/savings-purpose`);
+          const hasActiveSubscription = response.data.subscriptions?.some(
+            (subscription: any) => subscription.isActive,
+          );
+
+          if (hasActiveSubscription) {
+            // If active subscription exists, redirect to savings-purpose
+            router.replace(`/customer/savings-purpose`);
+          } else {
+            // If no active subscription, redirect to pricing
+            router.replace(`/pricing`);
+          }
         }
       } else if (response.data.role === "superadmin") {
         router.replace("/superadmin");
       } else if (response.data.role === "superuser") {
         router.replace("/superadmin");
-      }else if (response.data.role === "staff") {
+      } else if (response.data.role === "staff") {
         router.replace("/merchant");
       } else if (response.data.role === "organisation") {
         if (response.data.kycVerified) {
-          router.replace("/merchant");
+          const hasActiveSubscription = response.data.subscriptions?.some(
+            (subscription: any) => subscription.isActive,
+          );
+
+          if (hasActiveSubscription) {
+            // If active subscription exists, redirect to savings-purpose
+            router.replace("/merchant");
+          } else {
+            // If no active subscription, redirect to pricing
+            router.replace(`/pricing`);
+          }
         } else {
           router.replace("/welcome");
         }
@@ -125,13 +145,10 @@ const SignInForm = () => {
       // setErrorMessage(error.data)
 
       setTimeout(() => {
-        setShowErrorToast(false)
-      }, 5000)
+        setShowErrorToast(false);
+      }, 5000);
     },
   });
-
-  
-
 
   return (
     <Formik
@@ -162,7 +179,7 @@ const SignInForm = () => {
 
         //   // console.log("rememberedPassword: ", cookies.rememberedPassword);
         //   // console.log("rememberedEmail: ", cookies.rememberedEmail);
-          //}
+        //}
 
         UserSignIn(values);
         setTimeout(() => {

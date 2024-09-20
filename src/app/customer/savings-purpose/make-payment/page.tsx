@@ -20,6 +20,7 @@ import {
   ReactElement,
   ReactNode,
   ReactPortal,
+  useEffect,
   useState,
 } from "react";
 import { useSelector } from "react-redux";
@@ -52,6 +53,22 @@ export default function MakePayment() {
 
   const [paymentDetails, setPaymentDetails] = useState<any>({});
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [host, setHost] = useState("");
+  const [environmentName, setEnvironmentName] = useState("");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      setHost(url.host);
+    }
+
+    if (host === "www.finkia.com.ng") {
+      setEnvironmentName("production");
+    } else if (host === "www.staging.finkia.com.ng") {
+      setEnvironmentName("staging");
+    } else {
+      setEnvironmentName("localhost");
+    }
+  }, [host]);
 
   const { data: allGateways, isLoading: isLoadingAllGateways } = useQuery({
     queryKey: ["all gateways"],
@@ -93,7 +110,6 @@ export default function MakePayment() {
         });
     },
   });
-  console.log(allPurpose);
 
   const filteredPurposes = allPurpose?.filter((purpose: { _id: Key }) =>
     selectedProducts.includes(purpose._id),
@@ -182,6 +198,8 @@ export default function MakePayment() {
         Number(getTotalCommission()) + decideCharge(fixedFee, percentageFee);
       const amount = Number(getTotal()) + decideCharge(fixedFee, percentageFee);
       const email = user.email;
+      const environment = environmentName;
+      const paymentFor = "purpose";
       const phoneNumber = user.phoneNumber;
       const customerName = user.firstName + user.lastName;
       const accountNumber = user.accountNumber;
@@ -191,6 +209,8 @@ export default function MakePayment() {
         `${apiUrl}api/pay/flw`,
 
         {
+          environment,
+          paymentFor,
           amount,
           redirectURL,
           email,
