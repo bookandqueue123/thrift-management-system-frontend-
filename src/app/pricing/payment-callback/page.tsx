@@ -16,7 +16,7 @@ const PaymentCallback = () => {
   const [paymentStatus, setPaymentStatus] = useState("");
   const hasFetched = useRef(false); // Track if the effect has already run
   const user = useSelector(selectUser);
-  console.log(user);
+  const userRole = user?.role || "";
   useEffect(() => {
     if (transaction_id && !hasFetched.current) {
       verifyPayment();
@@ -40,7 +40,7 @@ const PaymentCallback = () => {
         setPaymentStatus("success");
         console.log(user);
         setTimeout(() => {
-          if (user.role === "organisation") {
+          if (userRole === "organisation") {
             router.replace("/merchant");
           } else {
             router.replace("/customer/savings-purpose");
