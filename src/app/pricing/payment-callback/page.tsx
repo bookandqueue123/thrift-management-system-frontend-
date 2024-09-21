@@ -16,14 +16,15 @@ const PaymentCallback = () => {
   const [paymentStatus, setPaymentStatus] = useState("");
   const hasFetched = useRef(false); // Track if the effect has already run
   const user = useSelector(selectUser);
+  console.log(user);
   useEffect(() => {
     if (transaction_id && !hasFetched.current) {
       verifyPayment();
       hasFetched.current = true; // Mark the effect as having run
     }
   }, [transaction_id]);
-
-  console.log(user.role);
+  console.log(user, "");
+  console.log(user?.role);
   const verifyPayment = async () => {
     try {
       const response = await axios.get(
@@ -57,16 +58,18 @@ const PaymentCallback = () => {
   };
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center">
-      {processing ? (
-        <div className="h-20 w-20 animate-spin rounded-full border-b-4 border-gray-900"></div> // Tailwind CSS spinner
-      ) : paymentStatus === "success" ? (
-        <h1 className="text-4xl font-bold text-white">Payment Successful!</h1>
-      ) : (
-        <h1 className="text-4xl font-bold text-red-600">
-          Payment Failed. Please try again.
-        </h1>
-      )}
+    <div className="min-h-screen w-full bg-ajo_darkBlue  px-4 py-12 md:px-16">
+      <div className="flex h-screen flex-col items-center justify-center">
+        {processing ? (
+          <div className="h-20 w-20 animate-spin rounded-full border-b-4 border-gray-900"></div> // Tailwind CSS spinner
+        ) : paymentStatus === "success" ? (
+          <h1 className="text-4xl font-bold text-white">Payment Successful!</h1>
+        ) : (
+          <h1 className="text-4xl font-bold text-red-600">
+            Payment Failed. Please try again.
+          </h1>
+        )}
+      </div>
     </div>
   );
 };
