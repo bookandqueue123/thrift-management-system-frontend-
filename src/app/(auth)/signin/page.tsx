@@ -75,19 +75,19 @@ const SignInForm = () => {
       setShowSuccessToast(true);
 
       if (response.data.role === "customer") {
-        if (user) {
-          const hasActiveSubscription = response.data.subscriptions?.some(
-            (subscription: any) => subscription.isActive,
-          );
+        // if (user) {
+        const hasActiveSubscription = response.data.subscriptions?.some(
+          (subscription: any) => subscription.isActive,
+        );
 
-          if (hasActiveSubscription) {
-            // If active subscription exists, redirect to savings-purpose
-            router.replace(`/customer/savings-purpose`);
-          } else {
-            // If no active subscription, redirect to pricing
-            router.replace(`/pricing`);
-          }
+        if (hasActiveSubscription) {
+          // If active subscription exists, redirect to savings-purpose
+          router.replace(`/customer/savings-purpose`);
+        } else {
+          // If no active subscription, redirect to pricing
+          router.replace(`/pricing`);
         }
+        // }
       } else if (response.data.role === "superadmin") {
         router.replace("/superadmin");
       } else if (response.data.role === "superuser") {
@@ -95,21 +95,47 @@ const SignInForm = () => {
       } else if (response.data.role === "staff") {
         router.replace("/merchant");
       } else if (response.data.role === "organisation") {
-        if (response.data.kycVerified) {
-          const hasActiveSubscription = response.data.subscriptions?.some(
-            (subscription: any) => subscription.isActive,
-          );
+        // if (user) {
+        const hasSubscriptions =
+          response.data.subscriptions &&
+          Array.isArray(response.data.subscriptions);
+        const hasActiveSubscription = hasSubscriptions
+          ? response.data.subscriptions.some(
+              (subscription: any) => subscription.isActive,
+            )
+          : false;
 
-          if (hasActiveSubscription) {
-            // If active subscription exists, redirect to savings-purpose
+        if (hasActiveSubscription) {
+          if (response.data.kycVerified) {
             router.replace("/merchant");
           } else {
-            // If no active subscription, redirect to pricing
-            router.replace(`/pricing`);
+            router.replace("/welcome");
           }
         } else {
-          router.replace("/welcome");
+          // If no active subscription or no subscriptions at all, redirect to pricing
+          router.replace(`/pricing`);
         }
+        // }
+        // else {
+
+        //   router.replace("/welcome");
+        // }
+
+        // if (response.data.kycVerified) {
+        //   const hasActiveSubscription = response.data.subscriptions?.some(
+        //     (subscription: any) => subscription.isActive,
+        //   );
+
+        //   if (hasActiveSubscription) {
+        //     // If active subscription exists, redirect to savings-purpose
+        //     router.replace("/merchant");
+        //   } else {
+        //     // If no active subscription, redirect to pricing
+        //     router.replace(`/pricing`);
+        //   }
+        // } else {
+        //   router.replace("/welcome");
+        // }
       }
 
       if (response.data.role === "customer" || response.data.role === "staff") {
