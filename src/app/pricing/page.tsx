@@ -139,7 +139,7 @@ export default function Pricing() {
       const phoneNumber = user.phoneNumber;
       const customerName = user.firstName + user.lastName;
       const accountNumber = user.accountNumber;
-      const redirectURL = "/pricing/payment-callback";
+      const redirectURL = `/pricing/payment-callback?role=${user.role}`;
       let amount;
       if (duration === "monthly") {
         amount = servicePackage.actualFee.actualMonthlyFee;
@@ -221,9 +221,9 @@ export default function Pricing() {
           <div className="mx-auto max-w-screen-xl px-4 py-8 lg:px-6 lg:py-16">
             <div className="mx-auto mb-8 max-w-screen-md text-center lg:mb-12">
               <h2 className="mb-4 text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-                Designed for businesses like yours
+                Pay for What You Use Only
               </h2>
-              {/* <p className="mb-5 font-light text-gray-500 sm:text-xl dark:text-gray-400">
+              {/* <p className="mb-5 font-light text-gray-500 sm:text-xl dark:text-gray-400 whitespace-nowrap">
             Here at Flowbite we focus on markets where technology, innovation,
             and capital can unlock long-term value and drive economic growth.
           </p> */}
@@ -248,7 +248,7 @@ export default function Pricing() {
               }) => (
                 <div key={servicePackage._id} className="my-4">
                   {" "}
-                  <p className="my-2 ml-8 text-5xl font-extrabold">
+                  <p className="my-2 ml-8 whitespace-nowrap text-5xl font-extrabold">
                     {servicePackage.groupName}
                   </p>
                   <div className="space-y-8 sm:gap-6 lg:grid lg:grid-cols-3 lg:space-y-0 xl:gap-10">
@@ -273,17 +273,23 @@ export default function Pricing() {
                                 clip-rule="evenodd"
                               ></path>
                             </svg>
-                            <span>{service}</span>
+                            <span>
+                              {service === "savings"
+                                ? "Savings(Ajo/Esusu/Adache"
+                                : service === "purpose"
+                                  ? "Sell and Buy Products(Via purposeful savings)"
+                                  : service}
+                            </span>
                           </li>
                         </ul>
                       ))}
 
-                      <div className="my-8 flex items-baseline justify-center">
-                        <span className="mr-2 text-5xl font-extrabold">{`N${servicePackage.actualFee.actualMonthlyFee}`}</span>
-                        <span className="text-gray-500 dark:text-gray-400">
+                      <div className="my-8 flex items-center justify-center">
+                        <span className="mr-2 whitespace-nowrap text-5xl font-extrabold">{`N${servicePackage.actualFee.actualMonthlyFee}`}</span>
+                        <span className="whitespace-nowrap text-gray-500 dark:text-gray-400">
                           /month
                         </span>
-                        <span className="mr-2 text-2xl font-normal line-through">{`N${servicePackage.totals.totalMonthly}`}</span>
+                        <span className="mr-2 whitespace-nowrap text-2xl font-normal line-through">{`N${servicePackage.totals.totalMonthly}`}</span>
                       </div>
 
                       <CustomButton
@@ -304,7 +310,7 @@ export default function Pricing() {
                     </div>
 
                     <div className="mx-auto flex max-w-lg flex-col rounded-lg border border-gray-100 bg-white p-6 text-center text-gray-900 shadow xl:p-8 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
-                      <h3 className="mb-4 text-2xl font-semibold">Quartely</h3>
+                      <h3 className="mb-4 text-2xl font-semibold">Quarterly</h3>
                       {servicePackage.service.map((service: string) => (
                         <ul
                           role="list"
@@ -324,16 +330,23 @@ export default function Pricing() {
                                 clip-rule="evenodd"
                               ></path>
                             </svg>
-                            <span>{service}</span>
+                            <span>
+                              {" "}
+                              {service === "savings"
+                                ? "Savings(Ajo/Esusu/Adache"
+                                : service === "purpose"
+                                  ? "Sell and Buy Products(Via purposeful savings)"
+                                  : service}
+                            </span>
                           </li>
                         </ul>
                       ))}
-                      <div className="my-8 flex items-baseline justify-center">
-                        <span className="mr-2 text-5xl font-extrabold">{`N${servicePackage.actualFee.actualQuarterlyFee}`}</span>
-                        <span className="text-gray-500 dark:text-gray-400">
-                          /6 Month
+                      <div className="my-8 flex items-center justify-center">
+                        <span className="mr-2 whitespace-nowrap text-5xl font-extrabold">{`N${servicePackage.actualFee.actualQuarterlyFee}`}</span>
+                        <span className="whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          /3 Month
                         </span>
-                        <span className="mr-2 text-2xl font-normal line-through">{`N${servicePackage.totals.totalQuarterly}`}</span>
+                        <span className="mr-2 whitespace-nowrap text-2xl font-normal line-through">{`N${servicePackage.totals.totalQuarterly}`}</span>
                       </div>
 
                       {/* <a
@@ -373,16 +386,23 @@ export default function Pricing() {
                                 clip-rule="evenodd"
                               ></path>
                             </svg>
-                            <span>{service}</span>
+                            <span>
+                              {" "}
+                              {service === "savings"
+                                ? "Savings(Ajo/Esusu/Adache"
+                                : service === "purpose"
+                                  ? "Sell and Buy Products(Via purposeful savings)"
+                                  : service}
+                            </span>
                           </li>
                         </ul>
                       ))}
-                      <div className="my-8 flex items-baseline justify-center">
-                        <span className="mr-2 text-5xl font-extrabold">{`N${servicePackage.actualFee.actualYearlyFee}`}</span>
-                        <span className="text-gray-500 dark:text-gray-400">
-                          /year
+                      <div className="my-8 flex items-center justify-center">
+                        <span className="mr-2 whitespace-nowrap text-5xl font-extrabold">{`N${servicePackage.actualFee.actualYearlyFee}`}</span>
+                        <span className="whitespace-nowrap text-gray-500 dark:text-gray-400">
+                          yearly
                         </span>
-                        <span className="mr-2 text-2xl font-normal line-through">{`N${servicePackage.totals.totalYearly}`}</span>
+                        <span className="mr-2 whitespace-nowrap text-2xl font-normal line-through">{`N${servicePackage.totals.totalYearly}`}</span>
                       </div>
 
                       {/* <a

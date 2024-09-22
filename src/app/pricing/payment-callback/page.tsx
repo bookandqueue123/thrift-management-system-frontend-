@@ -12,6 +12,8 @@ const PaymentCallback = () => {
   const token = useSelector(selectToken);
   const searchParams = useSearchParams();
   const transaction_id = searchParams.get("transaction_id");
+  const clientRole = searchParams.get("role");
+
   const [processing, setProcessing] = useState(true);
   const [paymentStatus, setPaymentStatus] = useState("");
   const hasFetched = useRef(false); // Track if the effect has already run
@@ -23,8 +25,7 @@ const PaymentCallback = () => {
       hasFetched.current = true; // Mark the effect as having run
     }
   }, [transaction_id]);
-  console.log(user, "");
-  console.log(user?.role);
+
   const verifyPayment = async () => {
     try {
       const response = await axios.get(
@@ -40,7 +41,7 @@ const PaymentCallback = () => {
         setPaymentStatus("success");
         console.log(user);
         setTimeout(() => {
-          if (userRole === "organisation") {
+          if (clientRole === "organisation") {
             router.replace("/merchant");
           } else {
             router.replace("/customer/savings-purpose");
