@@ -7,7 +7,13 @@ import { apiUrl, useAuth } from "@/api/hooks/useAuth";
 import { usePermissions } from "@/api/hooks/usePermissions";
 import DateRangeComponent from "@/components/DateArrayFile";
 import Modal from "@/components/Modal";
-import { selectOrganizationId, selectToken, selectUser } from "@/slices/OrganizationIdSlice";
+import PaginationBar from "@/components/Pagination";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import {
+  selectOrganizationId,
+  selectToken,
+  selectUser,
+} from "@/slices/OrganizationIdSlice";
 import {
   FormErrors,
   FormValues,
@@ -33,9 +39,7 @@ import {
   useState,
 } from "react";
 import { CiExport } from "react-icons/ci";
-import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { useSelector } from "react-redux";
-import PaginationBar from "@/components/Pagination";
 
 const Posting = () => {
   const router = useRouter();
@@ -158,272 +162,285 @@ const Posting = () => {
   }
 
   const handleExport = async () => {
-    const user = organizationId
-    const organisation = organizationId
+    const user = organizationId;
+    const organisation = organizationId;
     try {
-      const response = await axios.get(`${apiUrl}api/saving/export-savings-postings`, {
-        params: {
-          organisation,
-          user,
+      const response = await axios.get(
+        `${apiUrl}api/saving/export-savings-postings`,
+        {
+          params: {
+            organisation,
+            user,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the headers
+          },
+          responseType: "blob", // Important for handling binary data
         },
-        headers: {
-          Authorization: `Bearer ${token}`, // Include the token in the headers
-        },
-        responseType: 'blob', // Important for handling binary data
-      });
+      );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', 'postings.csv');
+      link.setAttribute("download", "postings.csv");
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (error) {
-      console.error('Error exporting savings:', error);
-      alert('Failed to export savings. Please try again.');
+      console.error("Error exporting savings:", error);
+      alert("Failed to export savings. Please try again.");
     }
   };
 
   const handleExcelExport = async () => {
-    const user = organizationId
-    const organisation = organizationId
+    const user = organizationId;
+    const organisation = organizationId;
     try {
-      const response = await axios.get(`${apiUrl}api/saving/export-savings-excel-postings`, {
-        params: {
-          organisation,
-          
+      const response = await axios.get(
+        `${apiUrl}api/saving/export-savings-excel-postings`,
+        {
+          params: {
+            organisation,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the headers
+          },
+          responseType: "blob",
         },
-        headers: {
-          Authorization: `Bearer ${token}`, // Include the token in the headers
-        },
-        responseType: 'blob',
-      });
+      );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', 'postings.xlsx');
+      link.setAttribute("download", "postings.xlsx");
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (error) {
-      console.error('Error exporting savings:', error);
-      alert('Failed to export savings. Please try again.');
+      console.error("Error exporting savings:", error);
+      alert("Failed to export savings. Please try again.");
     }
   };
 
   return (
     <>
-      <div className="mb-4 space-y-2">
-        <p className="text-base font-bold text-ajo_offWhite text-opacity-60">
-          Posting
-        </p>
-      </div>
-      <div className="mb-4">
-        <p className="text-xl text-white">Customer List</p>
-      </div>
-      <section>
-        <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <span className="flex items-center gap-3">
-            <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
-              <input
-                onChange={handleSearch}
-                type="search"
-                placeholder="Search"
-                className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
-              />
-              <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-                <circle
-                  cx="8.60996"
-                  cy="8.10312"
-                  r="7.10312"
-                  stroke="#EAEAFF"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M13.4121 13.4121L16.9997 16.9997"
-                  stroke="#EAEAFF"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </form>
-            <FilterDropdown
-              options={[
-                "Timestamp",
-                "Name",
-                "Email",
-                "Phone",
-                "Channel",
-                "Amount",
-                "Status",
-              ]}
-            />
-          </span>
-
-          {(user?.role === "organisation" ||
-            (user?.role === "staff" &&
-              userPermissions.includes(permissionsMap["post-saving"]))) && (
-            <CustomButton
-              type="button"
-              label="Post Payment"
-              style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-              onButtonClick={() => {
-                setModalState(true);
-                setModalContent("form");
-              }}
-            />
-          )}
-
-          {modalState && (
-            <Modal
-              setModalState={setModalState}
-              title={modalContent === "confirmation" ? "" : "Post Payment"}
-            >
-              {modalContent === "confirmation" ? (
-                <PostConfirmation
-                  postingResponse={postingResponse}
-                  status={postingResponse?.status}
-                  customerAcctNo={customerAcctNumber}
-                />
-              ) : (
-                <PostingForm
-                  onSubmit={setModalContent}
-                  Savings={allSavings}
-                  setPostingResponse={setPostingResponse}
-                  setCustomerAcctNo={setCustomerAcctNumber}
-                />
-              )}
-            </Modal>
-          )}
+      <ProtectedRoute requireSavings>
+        <div className="mb-4 space-y-2">
+          <p className="text-base font-bold text-ajo_offWhite text-opacity-60">
+            Posting
+          </p>
         </div>
-        <div className="my-8 justify-between md:flex">
-          <div className="flex items-center">
-            <label htmlFor="from" className="font-lg mr-2 text-white">
-              Select range from:
-            </label>
-            <input
-              id="from"
-              type="date"
-              value={fromDate}
-              onChange={handleFromDateChange}
-              className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
-            />
+        <div className="mb-4">
+          <p className="text-xl text-white">Customer List</p>
+        </div>
+        <section>
+          <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <span className="flex items-center gap-3">
+              <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
+                <input
+                  onChange={handleSearch}
+                  type="search"
+                  placeholder="Search"
+                  className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
+                />
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                  <circle
+                    cx="8.60996"
+                    cy="8.10312"
+                    r="7.10312"
+                    stroke="#EAEAFF"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M13.4121 13.4121L16.9997 16.9997"
+                    stroke="#EAEAFF"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </form>
+              <FilterDropdown
+                options={[
+                  "Timestamp",
+                  "Name",
+                  "Email",
+                  "Phone",
+                  "Channel",
+                  "Amount",
+                  "Status",
+                ]}
+              />
+            </span>
 
-            <label htmlFor="to" className="mx-2 text-white">
-              to
-            </label>
-            <input
-              id="to"
-              type="date"
-              value={toDate}
-              onChange={handleToDateChange}
-              className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
-            />
+            {(user?.role === "organisation" ||
+              (user?.role === "staff" &&
+                userPermissions.includes(permissionsMap["post-saving"]))) && (
+              <CustomButton
+                type="button"
+                label="Post Payment"
+                style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+                onButtonClick={() => {
+                  setModalState(true);
+                  setModalContent("form");
+                }}
+              />
+            )}
+
+            {modalState && (
+              <Modal
+                setModalState={setModalState}
+                title={modalContent === "confirmation" ? "" : "Post Payment"}
+              >
+                {modalContent === "confirmation" ? (
+                  <PostConfirmation
+                    postingResponse={postingResponse}
+                    status={postingResponse?.status}
+                    customerAcctNo={customerAcctNumber}
+                  />
+                ) : (
+                  <PostingForm
+                    onSubmit={setModalContent}
+                    Savings={allSavings}
+                    setPostingResponse={setPostingResponse}
+                    setCustomerAcctNo={setCustomerAcctNumber}
+                  />
+                )}
+              </Modal>
+            )}
+          </div>
+          <div className="my-8 justify-between md:flex">
+            <div className="flex items-center">
+              <label htmlFor="from" className="font-lg mr-2 text-white">
+                Select range from:
+              </label>
+              <input
+                id="from"
+                type="date"
+                value={fromDate}
+                onChange={handleFromDateChange}
+                className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+              />
+
+              <label htmlFor="to" className="mx-2 text-white">
+                to
+              </label>
+              <input
+                id="to"
+                type="date"
+                value={toDate}
+                onChange={handleToDateChange}
+                className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+
+            {(user?.role === "organisation" ||
+              (user?.role === "staff" &&
+                userPermissions.includes(permissionsMap["export-saving"]))) && (
+              <div className="mt-4 flex">
+                <button
+                  onClick={handleExport}
+                  className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white"
+                >
+                  Export as CSV{" "}
+                  <span className="ml-2 mt-1">
+                    <CiExport />
+                  </span>
+                </button>
+                <button
+                  onClick={handleExcelExport}
+                  className="relative rounded-md border-none bg-transparent px-4 py-2 text-white"
+                >
+                  <u>Export as Excel</u>
+                </button>
+              </div>
+            )}
           </div>
 
-          {(user?.role === "organisation" ||
-            (user?.role === "staff" &&
-              userPermissions.includes(permissionsMap["export-saving"]))) && (
-            <div className="mt-4 flex">
-              <button onClick={handleExport} className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
-                Export as CSV{" "}
-                <span className="ml-2 mt-1">
-                  <CiExport />
-                </span>
-              </button>
-              <button onClick={handleExcelExport} className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
-                <u>Export as Excel</u>
-              </button>
-            </div>
-          )}
-        </div>
+          <div>
+            <TransactionsTable
+              headers={[
+                "Customer Name",
+                "Account Number",
+                "Transaction ID",
+                "Purpose",
+                "Email Address",
+                "Phone Number",
+                "Time",
+                "State",
+                "Local Govt Area",
+                "Posted By",
+                "Payment Mode",
+                "Status",
+                "Start Date",
+                "End Date",
+                "Action",
+              ]}
+              content={paginatedSavings?.map((savings, index) => (
+                <tr className="" key={index}>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {savings.user.groupName ??
+                      savings.user.firstName + " " + savings.user.lastName ??
+                      "----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {savings.user.accountNumber ?? "----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {savings._id ?? "-----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {savings.purposeName ?? "-----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {savings.user.email ?? "----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {savings.user.phoneNumber ?? "----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {extractTime(savings.updatedAt ?? "-----")}
+                  </td>
 
-        <div>
-          <TransactionsTable
-            headers={[
-              "Customer Name",
-              "Account Number",
-              "Transaction ID",
-              "Purpose",
-              "Email Address",
-              "Phone Number",
-              "Time",
-              "State",
-              "Local Govt Area",
-              "Posted By",
-              "Payment Mode",
-              "Status",
-              "Start Date",
-              "End Date",
-              "Action",
-            ]}
-            content={paginatedSavings?.map((savings, index) => (
-              <tr className="" key={index}>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.groupName ??
-                    savings.user.firstName + " " + savings.user.lastName ??
-                    "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.accountNumber ?? "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings._id ?? "-----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.purposeName ?? "-----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.email ?? "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.phoneNumber ?? "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {extractTime(savings.updatedAt ?? "-----")}
-                </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {savings.user.state ?? "----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {savings.user.lga ?? "----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {user.role === "organisation" ? "Admin" : ""}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    Payment Mode
+                  </td>
 
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.state ?? "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.user.lga ?? "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {user.role === 'organisation' ? 'Admin': ''}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  Payment Mode
-                </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {savings.isPaid ?? "----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {extractDate(savings.startDate) ?? "----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {extractDate(savings.endDate) ?? "----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    <StatusIndicator label={"View Details"} />
+                  </td>
+                </tr>
+              ))}
+            />
 
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {savings.isPaid ?? "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {extractDate(savings.startDate) ?? "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  {extractDate(savings.endDate) ?? "----"}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                  <StatusIndicator label={"View Details"} />
-                </td>
-              </tr>
-            ))}
-          />
-
-          <PaginationBar
-            setCurrentPage={setCurrentPage}
-            currentPage={currentPage}
-            totalPages={totalPages}
-          />
-        </div>
-      </section>
+            <PaginationBar
+              setCurrentPage={setCurrentPage}
+              currentPage={currentPage}
+              totalPages={totalPages}
+            />
+          </div>
+        </section>
+      </ProtectedRoute>
     </>
   );
 };
@@ -675,7 +692,10 @@ const PostingForm = ({
           {},
         )
         .then((response) => {
-          if (user?.role === "staff" && postDetails.postingType === 'individual') {
+          if (
+            user?.role === "staff" &&
+            postDetails.postingType === "individual"
+          ) {
             return assignedCustomers;
           } else {
             return response.data;
@@ -703,7 +723,8 @@ const PostingForm = ({
       },
       enabled: !!postDetails.customerId,
     });
-    const postedby = user.role === 'organisation' ? 'Admin': (user.firstName + user.lastName)
+  const postedby =
+    user.role === "organisation" ? "Admin" : user.firstName + user.lastName;
 
   const { mutate: postSavings, isPending: isPostingSavings } = useMutation({
     mutationFn: async () => {
@@ -721,7 +742,6 @@ const PostingForm = ({
             ? singleDay
             : datesInRange;
 
-      
       const endpoint =
         postDetails.postingType === "individual"
           ? `/api/saving/post-savings?userId=${postDetails.customerId}&savingId=${postDetails.savingId}`
@@ -733,8 +753,11 @@ const PostingForm = ({
         },
         paymentMode: postDetails.paymentMode,
         narration: postDetails.narrative,
-        dayOfCollection: new Date,
-        postedBy: user.role === 'organisation' ? 'Admin': (user.firstName + user.lastName)
+        dayOfCollection: new Date(),
+        postedBy:
+          user.role === "organisation"
+            ? "Admin"
+            : user.firstName + user.lastName,
         // purposeName: postDetails.purposeName,
         // startDate: postDetails.startDate,
         // endDate: postDetails.endDate,
@@ -742,7 +765,7 @@ const PostingForm = ({
     },
     onSuccess(response: AxiosResponse<postSavingsResponse, any>) {
       setPostingResponse(response.data);
-      
+
       setPostingResponse(
         (prev) =>
           ({

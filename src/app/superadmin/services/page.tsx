@@ -623,9 +623,7 @@ const MutateUser = ({
   const validationSchema = Yup.object({
     groupName: Yup.string().required("Group Name is required"),
     description: Yup.string().required("Description is required"),
-    discount: Yup.number()
-      .required("Discount is required")
-      .min(0, "Cannot be negative"),
+    discount: Yup.number().optional(),
     // actualFee: Yup.number()
     //   .required("Actual Fee is required")
     //   .min(0, "Cannot be negative"),
