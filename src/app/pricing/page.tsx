@@ -139,7 +139,7 @@ export default function Pricing() {
       const phoneNumber = user.phoneNumber;
       const customerName = user.firstName + user.lastName;
       const accountNumber = user.accountNumber;
-      const redirectURL = `/pricing/payment-callback?role=${user.role}`;
+      const redirectURL = `pricing/payment-callback?role=${user.role}`;
       let amount;
       if (duration === "monthly") {
         amount = servicePackage.actualFee.actualMonthlyFee;
