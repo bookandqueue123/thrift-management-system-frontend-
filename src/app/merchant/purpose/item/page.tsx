@@ -522,7 +522,6 @@ const MutateUser = ({
     },
     staleTime: 5000,
   });
-  console.log(singlePurpose);
 
   // const initialValues:PurposeProps = actionToTake === 'edit-purpose' ? {
   //   purposeName: singlePurpose?.purposeName ?? "",

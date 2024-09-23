@@ -4,6 +4,7 @@ import { usePermissions } from "@/api/hooks/usePermissions";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import Modal, { ModalConfirmation } from "@/components/Modal";
 import PaginationBar from "@/components/Pagination";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
 import { ICouponProps, permissionObject } from "@/types";
@@ -461,369 +462,373 @@ const MutateCategory = ({
     useState(false);
 
   return (
-    <div>
-      {/* <h1 className="text-2xl font-bold mb-6">Create Coupon</h1> */}
-      <Formik
-        initialValues={initialValues}
-        validationSchema={CouponFormSchema}
-        onSubmit={(values) => {
-          CreateCoupon(values);
-        }}
-      >
-        {({ values, isSubmitting }) => (
-          <Form>
-            <div className="mb-4">
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-white"
-              >
-                Name
-              </label>
-              <Field
-                name="name"
-                type="text"
-                className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
-              />
-              <ErrorMessage
-                name="name"
-                component="div"
-                className="text-sm text-red-500"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium text-white"
-              >
-                Description
-              </label>
-              <Field
-                name="description"
-                as="textarea"
-                className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
-              />
-              <ErrorMessage
-                name="description"
-                component="div"
-                className="text-sm text-red-500"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label
-                htmlFor="amount"
-                className="block text-sm font-medium text-white"
-              >
-                Amount
-              </label>
-              <Field
-                name="amount"
-                type="number"
-                className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
-              />
-              <ErrorMessage
-                name="amount"
-                component="div"
-                className="text-sm text-red-500"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-white">
-                Apply to Purpose
-              </label>
-              <div role="group" className="flex-col-3 flex justify-between ">
-                <label className="block text-white">
-                  <Field
-                    type="radio"
-                    name="applyToPurpose"
-                    value="all-purpose"
-                    onClick={() => {
-                      setShowCategorySelect(false);
-                      setShowIndividualPurposeSelect(false);
-                    }}
-                  />
-                  <span className="ml-2">All purpose</span>
-                </label>
-                <label className="block text-white">
-                  <Field
-                    type="radio"
-                    name="applyToPurpose"
-                    value="select-category"
-                    onClick={() => {
-                      setShowCategorySelect(true);
-                      setShowIndividualPurposeSelect(false);
-                    }}
-                  />
-                  <span className="ml-2">Select category of purpose/item</span>
-                </label>
-
-                <label className="block text-white">
-                  <Field
-                    type="radio"
-                    name="applyToPurpose"
-                    value="select-individual"
-                    onClick={() => {
-                      setShowCategorySelect(false);
-                      setShowIndividualPurposeSelect(true);
-                    }}
-                  />
-                  <span className="ml-2">Select individual purpose/item</span>
-                </label>
-              </div>
-              {showCategorySelect && (
-                <div className="mt-2">
-                  <Field
-                    name="selectedCategories"
-                    as="select"
-                    className="block w-full rounded-md border border-gray-300 p-2 shadow-sm"
-                  >
-                    <option value="">Select Category</option>
-                    {categories.map(
-                      (category: {
-                        _id: string | number;
-                        name: string | number;
-                      }) => (
-                        <option key={category._id} value={category._id}>
-                          {category.name}
-                        </option>
-                      ),
-                    )}
-                  </Field>
-                </div>
-              )}
-              {showIndividualPurposeSelect && (
-                <div className="mt-2">
-                  <Field
-                    name="selectedIndividualPurpose"
-                    as="select"
-                    className="block w-full rounded-md border border-gray-300 p-2 shadow-sm"
-                  >
-                    <option value="">Select all purpose</option>
-                    {allPurpose.map(
-                      (purpose: {
-                        _id: string | number;
-                        purposeName: string | number;
-                      }) => (
-                        <option key={purpose._id} value={purpose._id}>
-                          {purpose.purposeName}
-                        </option>
-                      ),
-                    )}
-                  </Field>
-                </div>
-              )}
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-white">
-                Apply to Customers
-              </label>
-              <div role="group" className="flex-col-3 flex justify-between">
-                <label className="block text-white">
-                  <Field
-                    type="radio"
-                    name="applyToCustomers"
-                    value="all-customers"
-                    onClick={() => {
-                      setShowGroupCustomerSelect(false);
-                      setShowIndividualCustomerSelect(false);
-                    }}
-                  />
-                  <span className="ml-2">All customers</span>
-                </label>
-                <label className="block text-white">
-                  <Field
-                    type="radio"
-                    name="applyToCustomers"
-                    value="group-of-customers"
-                    onClick={() => {
-                      setShowGroupCustomerSelect(true);
-                      setShowIndividualCustomerSelect(false);
-                    }}
-                  />
-                  <span className="ml-2">Group of customers</span>
-                </label>
-
-                <label className="block text-white">
-                  <Field
-                    type="radio"
-                    name="applyToCustomers"
-                    value="individual-customer"
-                    onClick={() => {
-                      setShowGroupCustomerSelect(false);
-                      setShowIndividualCustomerSelect(true);
-                    }}
-                  />
-                  <span className="ml-2">Individual customer</span>
-                </label>
-              </div>
-              {showGroupCustomerSelect && (
-                <div className="mt-2">
-                  <Field
-                    name="selectedCustomerGroup"
-                    as="select"
-                    className="block w-full rounded-md border border-gray-300 p-2 shadow-sm"
-                  >
-                    <option value="">Select group</option>
-                    {GroupCustomers.map(
-                      (group: { _id: string; groupName: string }) => (
-                        <option key={group._id} value={group._id}>
-                          {group.groupName}
-                        </option>
-                      ),
-                    )}
-                  </Field>
-                </div>
-              )}
-              {showIndividualCustomerSelect && (
-                <div className="mt-2">
-                  <Field
-                    name="selectedIndividualCustomer"
-                    as="select"
-                    className="block w-full rounded-md border border-gray-300 p-2 shadow-sm"
-                  >
-                    <option value="">Select a customer</option>
-                    {IndividualCustomers.map(
-                      (IndividualCustomer: {
-                        firstName: any;
-                        lastName: any;
-                      }) => (
-                        <option key={IndividualCustomer.firstName} value="">
-                          {IndividualCustomer.firstName +
-                            IndividualCustomer.lastName}
-                        </option>
-                      ),
-                    )}
-                  </Field>
-                </div>
-              )}
-            </div>
-
-            <div className="mb-4 grid grid-cols-2 gap-4">
-              <div>
+    <ProtectedRoute requirePurpose>
+      <div>
+        {/* <h1 className="text-2xl font-bold mb-6">Create Coupon</h1> */}
+        <Formik
+          initialValues={initialValues}
+          validationSchema={CouponFormSchema}
+          onSubmit={(values) => {
+            CreateCoupon(values);
+          }}
+        >
+          {({ values, isSubmitting }) => (
+            <Form>
+              <div className="mb-4">
                 <label
-                  htmlFor="startTime"
+                  htmlFor="name"
                   className="block text-sm font-medium text-white"
                 >
-                  Start Time
+                  Name
                 </label>
                 <Field
-                  name="startTime"
-                  type="time"
+                  name="name"
+                  type="text"
                   className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
                 />
                 <ErrorMessage
-                  name="startTime"
+                  name="name"
                   component="div"
                   className="text-sm text-red-500"
                 />
               </div>
-              <div>
-                <label
-                  htmlFor="startDate"
-                  className="block text-sm font-medium text-white"
-                >
-                  Start Date
-                </label>
-                <Field
-                  name="startDate"
-                  type="date"
-                  className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
-                />
-                <ErrorMessage
-                  name="startDate"
-                  component="div"
-                  className="text-sm text-red-500"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="endTime"
-                  className="block text-sm font-medium text-white"
-                >
-                  End Time
-                </label>
-                <Field
-                  name="endTime"
-                  type="time"
-                  className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
-                />
-                <ErrorMessage
-                  name="endTime"
-                  component="div"
-                  className="text-sm text-red-500"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="endDate"
-                  className="block text-sm font-medium text-white"
-                >
-                  End Date
-                </label>
-                <Field
-                  name="endDate"
-                  type="date"
-                  className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
-                />
-                <ErrorMessage
-                  name="endDate"
-                  component="div"
-                  className="text-sm text-red-500"
-                />
-              </div>
-            </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-white">
-                Notifications
-              </label>
-              <div role="group" className="flex-col-3 flex ">
-                <label className="block text-white">
-                  <Field type="checkbox" name="notifications" value="email" />
-                  <span className="ml-2">Email</span>
+              <div className="mb-4">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-white"
+                >
+                  Description
                 </label>
-                <label className="block px-4 text-white">
-                  <Field type="checkbox" name="notifications" value="sms" />
-                  <span className="ml-2">SMS</span>
-                </label>
-                <label className="block text-white">
-                  <Field
-                    type="checkbox"
-                    name="notifications"
-                    value="whatsapp"
-                  />
-                  <span className="ml-2">WhatsApp</span>
-                </label>
+                <Field
+                  name="description"
+                  as="textarea"
+                  className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                />
+                <ErrorMessage
+                  name="description"
+                  component="div"
+                  className="text-sm text-red-500"
+                />
               </div>
-            </div>
 
-            <div className="text-center">
-              <button
-                type="submit"
-                className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
-                // onClick={() => submitForm()}
-                disabled={isSubmitting || isCreatingCoupon}
-              >
-                {isSubmitting || isCreatingCoupon ? (
-                  <Image
-                    src="/loadingSpinner.svg"
-                    alt="loading spinner"
-                    className="relative left-1/2"
-                    width={25}
-                    height={25}
-                  />
-                ) : (
-                  "Submit"
+              <div className="mb-4">
+                <label
+                  htmlFor="amount"
+                  className="block text-sm font-medium text-white"
+                >
+                  Amount
+                </label>
+                <Field
+                  name="amount"
+                  type="number"
+                  className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                />
+                <ErrorMessage
+                  name="amount"
+                  component="div"
+                  className="text-sm text-red-500"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-white">
+                  Apply to Purpose
+                </label>
+                <div role="group" className="flex-col-3 flex justify-between ">
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToPurpose"
+                      value="all-purpose"
+                      onClick={() => {
+                        setShowCategorySelect(false);
+                        setShowIndividualPurposeSelect(false);
+                      }}
+                    />
+                    <span className="ml-2">All purpose</span>
+                  </label>
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToPurpose"
+                      value="select-category"
+                      onClick={() => {
+                        setShowCategorySelect(true);
+                        setShowIndividualPurposeSelect(false);
+                      }}
+                    />
+                    <span className="ml-2">
+                      Select category of purpose/item
+                    </span>
+                  </label>
+
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToPurpose"
+                      value="select-individual"
+                      onClick={() => {
+                        setShowCategorySelect(false);
+                        setShowIndividualPurposeSelect(true);
+                      }}
+                    />
+                    <span className="ml-2">Select individual purpose/item</span>
+                  </label>
+                </div>
+                {showCategorySelect && (
+                  <div className="mt-2">
+                    <Field
+                      name="selectedCategories"
+                      as="select"
+                      className="block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map(
+                        (category: {
+                          _id: string | number;
+                          name: string | number;
+                        }) => (
+                          <option key={category._id} value={category._id}>
+                            {category.name}
+                          </option>
+                        ),
+                      )}
+                    </Field>
+                  </div>
                 )}
-              </button>
-            </div>
-          </Form>
-        )}
-      </Formik>
-    </div>
+                {showIndividualPurposeSelect && (
+                  <div className="mt-2">
+                    <Field
+                      name="selectedIndividualPurpose"
+                      as="select"
+                      className="block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+                    >
+                      <option value="">Select all purpose</option>
+                      {allPurpose.map(
+                        (purpose: {
+                          _id: string | number;
+                          purposeName: string | number;
+                        }) => (
+                          <option key={purpose._id} value={purpose._id}>
+                            {purpose.purposeName}
+                          </option>
+                        ),
+                      )}
+                    </Field>
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-white">
+                  Apply to Customers
+                </label>
+                <div role="group" className="flex-col-3 flex justify-between">
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToCustomers"
+                      value="all-customers"
+                      onClick={() => {
+                        setShowGroupCustomerSelect(false);
+                        setShowIndividualCustomerSelect(false);
+                      }}
+                    />
+                    <span className="ml-2">All customers</span>
+                  </label>
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToCustomers"
+                      value="group-of-customers"
+                      onClick={() => {
+                        setShowGroupCustomerSelect(true);
+                        setShowIndividualCustomerSelect(false);
+                      }}
+                    />
+                    <span className="ml-2">Group of customers</span>
+                  </label>
+
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToCustomers"
+                      value="individual-customer"
+                      onClick={() => {
+                        setShowGroupCustomerSelect(false);
+                        setShowIndividualCustomerSelect(true);
+                      }}
+                    />
+                    <span className="ml-2">Individual customer</span>
+                  </label>
+                </div>
+                {showGroupCustomerSelect && (
+                  <div className="mt-2">
+                    <Field
+                      name="selectedCustomerGroup"
+                      as="select"
+                      className="block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+                    >
+                      <option value="">Select group</option>
+                      {GroupCustomers.map(
+                        (group: { _id: string; groupName: string }) => (
+                          <option key={group._id} value={group._id}>
+                            {group.groupName}
+                          </option>
+                        ),
+                      )}
+                    </Field>
+                  </div>
+                )}
+                {showIndividualCustomerSelect && (
+                  <div className="mt-2">
+                    <Field
+                      name="selectedIndividualCustomer"
+                      as="select"
+                      className="block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+                    >
+                      <option value="">Select a customer</option>
+                      {IndividualCustomers.map(
+                        (IndividualCustomer: {
+                          firstName: any;
+                          lastName: any;
+                        }) => (
+                          <option key={IndividualCustomer.firstName} value="">
+                            {IndividualCustomer.firstName +
+                              IndividualCustomer.lastName}
+                          </option>
+                        ),
+                      )}
+                    </Field>
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-4 grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="startTime"
+                    className="block text-sm font-medium text-white"
+                  >
+                    Start Time
+                  </label>
+                  <Field
+                    name="startTime"
+                    type="time"
+                    className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                  />
+                  <ErrorMessage
+                    name="startTime"
+                    component="div"
+                    className="text-sm text-red-500"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="startDate"
+                    className="block text-sm font-medium text-white"
+                  >
+                    Start Date
+                  </label>
+                  <Field
+                    name="startDate"
+                    type="date"
+                    className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                  />
+                  <ErrorMessage
+                    name="startDate"
+                    component="div"
+                    className="text-sm text-red-500"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="endTime"
+                    className="block text-sm font-medium text-white"
+                  >
+                    End Time
+                  </label>
+                  <Field
+                    name="endTime"
+                    type="time"
+                    className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                  />
+                  <ErrorMessage
+                    name="endTime"
+                    component="div"
+                    className="text-sm text-red-500"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="endDate"
+                    className="block text-sm font-medium text-white"
+                  >
+                    End Date
+                  </label>
+                  <Field
+                    name="endDate"
+                    type="date"
+                    className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                  />
+                  <ErrorMessage
+                    name="endDate"
+                    component="div"
+                    className="text-sm text-red-500"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-white">
+                  Notifications
+                </label>
+                <div role="group" className="flex-col-3 flex ">
+                  <label className="block text-white">
+                    <Field type="checkbox" name="notifications" value="email" />
+                    <span className="ml-2">Email</span>
+                  </label>
+                  <label className="block px-4 text-white">
+                    <Field type="checkbox" name="notifications" value="sms" />
+                    <span className="ml-2">SMS</span>
+                  </label>
+                  <label className="block text-white">
+                    <Field
+                      type="checkbox"
+                      name="notifications"
+                      value="whatsapp"
+                    />
+                    <span className="ml-2">WhatsApp</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <button
+                  type="submit"
+                  className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
+                  // onClick={() => submitForm()}
+                  disabled={isSubmitting || isCreatingCoupon}
+                >
+                  {isSubmitting || isCreatingCoupon ? (
+                    <Image
+                      src="/loadingSpinner.svg"
+                      alt="loading spinner"
+                      className="relative left-1/2"
+                      width={25}
+                      height={25}
+                    />
+                  ) : (
+                    "Submit"
+                  )}
+                </button>
+              </div>
+            </Form>
+          )}
+        </Formik>
+      </div>
+    </ProtectedRoute>
   );
 };
 

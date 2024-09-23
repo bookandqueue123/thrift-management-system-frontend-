@@ -3,8 +3,9 @@ import { useAuth } from "@/api/hooks/useAuth";
 import { usePermissions } from "@/api/hooks/usePermissions";
 import { CustomButton } from "@/components/Buttons";
 import Modal from "@/components/Modal";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
-import { AssignedUser, FormErrors, FormValues, customer } from "@/types";
+import { AssignedUser, FormErrors, FormValues } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosResponse } from "axios";
 import Image from "next/image";
@@ -18,48 +19,54 @@ const Settings = () => {
   );
 
   return (
-    <div className="">
-      <div className="mb-4 space-y-2 ">
-        <p className="text-2xl font-bold text-ajo_offWhite text-opacity-60">
-          Settings
-        </p>
-        <p className="text-sm font-bold text-ajo_offWhite">Savings settings</p>
-      </div>
-      <div className="mx-auto mt-[20%] flex h-screen w-[80%] flex-col items-center gap-8 md:mt-[10%] md:w-[40%]">
-        <Image
-          src="/receive-money.svg"
-          alt="hand with coins in it"
-          width={120}
-          height={120}
-          className="w-[5rem] md:w-[7.5rem]"
-        />
-        <p className="text-center text-sm text-ajo_offWhite">
-          Create a savings group make all the necessary edits and changes. Use
-          the button below to get started!
-        </p>
-
-        {/* <Link href="/merchant/settings/savings"> */}
-        <CustomButton
-          type="button"
-          label="Savings SetUp"
-          style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-          onButtonClick={() => setModalState(true)}
-        />
-        {/* </Link> */}
-      </div>
-      {modalState && (
-        <Modal
-          setModalState={setModalState}
-          title={modalContent === "confirmation" ? "" : "Set Up Savings"}
-        >
-          <SetUpSavingsForm
-            setContent={setModalContent}
-            content={modalContent === "confirmation" ? "confirmation" : "form"}
-            closeModal={setModalState}
+    <ProtectedRoute requireSavings>
+      <div className="">
+        <div className="mb-4 space-y-2 ">
+          <p className="text-2xl font-bold text-ajo_offWhite text-opacity-60">
+            Settings
+          </p>
+          <p className="text-sm font-bold text-ajo_offWhite">
+            Savings settings
+          </p>
+        </div>
+        <div className="mx-auto mt-[20%] flex h-screen w-[80%] flex-col items-center gap-8 md:mt-[10%] md:w-[40%]">
+          <Image
+            src="/receive-money.svg"
+            alt="hand with coins in it"
+            width={120}
+            height={120}
+            className="w-[5rem] md:w-[7.5rem]"
           />
-        </Modal>
-      )}
-    </div>
+          <p className="text-center text-sm text-ajo_offWhite">
+            Create a savings group make all the necessary edits and changes. Use
+            the button below to get started!
+          </p>
+
+          {/* <Link href="/merchant/settings/savings"> */}
+          <CustomButton
+            type="button"
+            label="Savings SetUp"
+            style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+            onButtonClick={() => setModalState(true)}
+          />
+          {/* </Link> */}
+        </div>
+        {modalState && (
+          <Modal
+            setModalState={setModalState}
+            title={modalContent === "confirmation" ? "" : "Set Up Savings"}
+          >
+            <SetUpSavingsForm
+              setContent={setModalContent}
+              content={
+                modalContent === "confirmation" ? "confirmation" : "form"
+              }
+              closeModal={setModalState}
+            />
+          </Modal>
+        )}
+      </div>
+    </ProtectedRoute>
   );
 };
 
@@ -405,7 +412,6 @@ const SetUpSavingsForm = ({
                       ...prev,
                       ["savingsType"]: "named group",
                     }));
-
                   }}
                   checked={saveDetails.savingsType === "named group"}
                   required

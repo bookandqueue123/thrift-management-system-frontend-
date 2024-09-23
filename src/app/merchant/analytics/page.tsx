@@ -1,16 +1,20 @@
 "use client";
 import { apiUrl, useAuth } from "@/api/hooks/useAuth";
 import { usePermissions } from "@/api/hooks/usePermissions";
-import { CustomButton, FilterDropdown } from "@/components/Buttons";
+import { FilterDropdown } from "@/components/Buttons";
 import PaginationBar from "@/components/Pagination";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import TransactionsTable from "@/components/Tables";
-import { selectOrganizationId, selectToken, selectUser } from "@/slices/OrganizationIdSlice";
-import { SavingsInterface, allSavingsResponse, savings } from "@/types";
+import {
+  selectOrganizationId,
+  selectToken,
+  selectUser,
+} from "@/slices/OrganizationIdSlice";
+import { SavingsInterface, savings } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { useQuery } from "@tanstack/react-query";
 import axios, { AxiosError, AxiosResponse } from "axios";
-import { useRouter } from "next/navigation";
-import React, { ChangeEvent, SetStateAction, useEffect, useState } from "react";
+import { ChangeEvent, SetStateAction, useState } from "react";
 import { CiExport } from "react-icons/ci";
 import { useSelector } from "react-redux";
 
@@ -24,7 +28,7 @@ export default function Analytics() {
     userPermissions,
 
     permissionsMap,
-    assignedCustomers
+    assignedCustomers,
   } = usePermissions();
   const monthOptions: monthOptionsProps[] = [
     { name: "January", value: 1 },
@@ -52,8 +56,8 @@ export default function Analytics() {
 
   const organizationId = useSelector(selectOrganizationId);
   const user = useSelector(selectUser);
-  const organisationId = useSelector(selectOrganizationId)
-  
+  const organisationId = useSelector(selectOrganizationId);
+
   const { client } = useAuth();
   const [selectedYear, setSelectedYear] = useState<{
     name: string;
@@ -105,7 +109,6 @@ export default function Analytics() {
       return client
         .get(`/api/saving/get-savings?organisation=${organizationId}`)
         .then((response: AxiosResponse<SavingsInterface, any>) => {
-        
           if (user?.role === "staff") {
             let assignedUsersSavings = response.data.savings.filter((saving) =>
               assignedCustomers.find(
@@ -127,29 +130,22 @@ export default function Analytics() {
     },
   });
 
-
-
-  const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } = useQuery({
+  const {
+    data: customerOrganisation,
+    isLoading: isLoadingCustomerOrganisation,
+  } = useQuery({
     queryKey: ["organisation"],
     queryFn: async () => {
       return client
-        .get(
-          `/api/user/${organisationId}`,
-          {},
-        ) //populate this based onthee org
+        .get(`/api/user/${organisationId}`, {}) //populate this based onthee org
         .then((response) => {
-          
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-      
           throw error;
         });
     },
   });
-
-
-
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     if (allTransactions) {
@@ -196,7 +192,6 @@ export default function Analytics() {
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
-  
 
   // useEffect(() => {
   //   // Filter dates for April (target month: 4)
@@ -248,217 +243,230 @@ export default function Analytics() {
   // }
 
   const handleExport = async () => {
-    const user = organizationId
-    const organisation = organizationId
+    const user = organizationId;
+    const organisation = organizationId;
     try {
-      const response = await axios.get(`${apiUrl}api/saving/export-savings-general-report?organisation=${organizationId}`, {
-        
-        headers: {
-          Authorization: `Bearer ${token}`, // Include the token in the headers
+      const response = await axios.get(
+        `${apiUrl}api/saving/export-savings-general-report?organisation=${organizationId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the token in the headers
+          },
+          responseType: "blob", // Important for handling binary data
         },
-        responseType: 'blob', // Important for handling binary data
-      });
+      );
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', 'general-report.csv');
+      link.setAttribute("download", "general-report.csv");
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (error) {
-      console.error('Error exporting savings:', error);
-      alert('Failed to export savings. Please try again.');
+      console.error("Error exporting savings:", error);
+      alert("Failed to export savings. Please try again.");
     }
   };
 
   const handleExcelExport = async () => {
     try {
-      const organisation = organizationId; 
-      const response = await fetch(`${apiUrl}api/saving/export-savings-excel-general-report?organisation=${organizationId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+      const organisation = organizationId;
+      const response = await fetch(
+        `${apiUrl}api/saving/export-savings-excel-general-report?organisation=${organizationId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
-      
+      );
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = 'report.xlsx';
+        a.download = "report.xlsx";
         document.body.appendChild(a);
         a.click();
         a.remove();
       } else {
-        console.error('Failed to export users:', response.statusText);
+        console.error("Failed to export users:", response.statusText);
       }
     } catch (error) {
-      console.error('An error occurred while exporting users:', error);
+      console.error("An error occurred while exporting users:", error);
     }
   };
 
   return (
-    <div>
-      <div className="mb-4 space-y-2">
-        <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
-          General Report
-        </p>
-      </div>
+    <ProtectedRoute requireSavings>
+      <div>
+        <div className="mb-4 space-y-2">
+          <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
+            General Report
+          </p>
+        </div>
 
-      <section>
-        <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <span className="flex items-center gap-3">
-            <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
-              <input
-                onChange={handleSearch}
-                type="search"
-                placeholder="Search"
-                className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
+        <section>
+          <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <span className="flex items-center gap-3">
+              <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
+                <input
+                  onChange={handleSearch}
+                  type="search"
+                  placeholder="Search"
+                  className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
+                />
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                  <circle
+                    cx="8.60996"
+                    cy="8.10312"
+                    r="7.10312"
+                    stroke="#EAEAFF"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M13.4121 13.4121L16.9997 16.9997"
+                    stroke="#EAEAFF"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </form>
+              <FilterDropdown
+                options={[
+                  "Timestamp",
+                  "Name",
+                  "Email",
+                  "Phone",
+                  "Channel",
+                  "Amount",
+                  "Status",
+                ]}
               />
-              <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-                <circle
-                  cx="8.60996"
-                  cy="8.10312"
-                  r="7.10312"
-                  stroke="#EAEAFF"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M13.4121 13.4121L16.9997 16.9997"
-                  stroke="#EAEAFF"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </form>
-            <FilterDropdown
-              options={[
-                "Timestamp",
-                "Name",
-                "Email",
-                "Phone",
-                "Channel",
-                "Amount",
-                "Status",
-              ]}
-            />
-          </span>
-        </div>
-
-        <div className="my-8 justify-between md:flex">
-          <div className="items-center md:flex">
-            <div className="mb-2 flex items-center">
-              <p className="font-lg mr-2 text-white">Select Year:</p>
-              <select
-                title="select a year"
-                className="w-48 appearance-none rounded-md border-0 border-gray-300 bg-[#F3F4F6] bg-dropdown-icon bg-[position:92%_center] bg-no-repeat px-4 py-2 focus:border-blue-500 focus:outline-none"
-                id="yearSelect"
-                value={selectedYear.value}
-                onChange={handleYearChange}
-              >
-                {yearsOption.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="mb-2 flex items-center md:ml-2">
-              <p className="font-lg mr-2 text-white">Select Month:</p>
-              <select
-                title="select a month"
-                className="w-48 appearance-none rounded-md border-0 border-gray-300 bg-[#F3F4F6] bg-dropdown-icon bg-[position:92%_center] bg-no-repeat px-4 py-2 focus:border-blue-500 focus:outline-none"
-                id="monthSelect"
-                value={selectedMonth.value}
-                onChange={handleMonthChange}
-              >
-                {monthOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            </span>
           </div>
-          {(user?.role === "organisation" ||
-            (user?.role === "staff" &&
-              userPermissions.includes(permissionsMap["export-saving"]))) && (
-            <div className="mt-4 flex">
-              <button onClick={handleExport} className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite">
-                Export as CSV{" "}
-                <span className="ml-2 mt-1">
-                  <CiExport />
-                </span>
-              </button>
-              <button onClick={handleExcelExport} className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
-                <u>Export as Excel</u>
-              </button>
-            </div>
-          )}
-        </div>
 
-        {/* <div className="mb-4">
+          <div className="my-8 justify-between md:flex">
+            <div className="items-center md:flex">
+              <div className="mb-2 flex items-center">
+                <p className="font-lg mr-2 text-white">Select Year:</p>
+                <select
+                  title="select a year"
+                  className="w-48 appearance-none rounded-md border-0 border-gray-300 bg-[#F3F4F6] bg-dropdown-icon bg-[position:92%_center] bg-no-repeat px-4 py-2 focus:border-blue-500 focus:outline-none"
+                  id="yearSelect"
+                  value={selectedYear.value}
+                  onChange={handleYearChange}
+                >
+                  {yearsOption.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-2 flex items-center md:ml-2">
+                <p className="font-lg mr-2 text-white">Select Month:</p>
+                <select
+                  title="select a month"
+                  className="w-48 appearance-none rounded-md border-0 border-gray-300 bg-[#F3F4F6] bg-dropdown-icon bg-[position:92%_center] bg-no-repeat px-4 py-2 focus:border-blue-500 focus:outline-none"
+                  id="monthSelect"
+                  value={selectedMonth.value}
+                  onChange={handleMonthChange}
+                >
+                  {monthOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {(user?.role === "organisation" ||
+              (user?.role === "staff" &&
+                userPermissions.includes(permissionsMap["export-saving"]))) && (
+              <div className="mt-4 flex">
+                <button
+                  onClick={handleExport}
+                  className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite"
+                >
+                  Export as CSV{" "}
+                  <span className="ml-2 mt-1">
+                    <CiExport />
+                  </span>
+                </button>
+                <button
+                  onClick={handleExcelExport}
+                  className="relative rounded-md border-none bg-transparent px-4 py-2 text-white"
+                >
+                  <u>Export as Excel</u>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* <div className="mb-4">
           <p className="text-xl text-white"></p>
         </div> */}
 
-        <TransactionsTable
-          headers={[
-            "S/N",
-            "Name",
-            "Purpose Name",
-            "Account No",
-            // "General % ",
-            // "General % Fee",
-            // "General Savings Amount",
-            "General/Individual %",
-            "General/individual Applied % Fee",
-            "General/individual Admin Fee(savings amount)",
-            "Service Charge",
-            "Applied Service Charge %",
+          <TransactionsTable
+            headers={[
+              "S/N",
+              "Name",
+              "Purpose Name",
+              "Account No",
+              // "General % ",
+              // "General % Fee",
+              // "General Savings Amount",
+              "General/Individual %",
+              "General/individual Applied % Fee",
+              "General/individual Admin Fee(savings amount)",
+              "Service Charge",
+              "Applied Service Charge %",
 
-            ...Array.from({ length: 31 }, (_, i) => i + 1).map(
-              (day) => `${selectedMonth.name} ${day}`,
-            ),
-            "Total",
-            "Total Amount Payable",
-            "Margin",
-            "Action",
-          ]}
-          content={
-            filteredTransactions?.length === 0 ? (
-              <tr>
-                <p className="relative left-[80%] text-center text-sm font-semibold text-ajo_offWhite md:left-[700%] ">
-                  {!permissionError
-                    ? "No Transactions yet"
-                    : permissionError + ", contact your admin for permissions"}
-                </p>
-              </tr>
-            ) : (
-              paginatedTransactions.map((transaction, index) => (
-                <tr className="" key={index}>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {index + 1}
-                  </td>
+              ...Array.from({ length: 31 }, (_, i) => i + 1).map(
+                (day) => `${selectedMonth.name} ${day}`,
+              ),
+              "Total",
+              "Total Amount Payable",
+              "Margin",
+              "Action",
+            ]}
+            content={
+              filteredTransactions?.length === 0 ? (
+                <tr>
+                  <p className="relative left-[80%] text-center text-sm font-semibold text-ajo_offWhite md:left-[700%] ">
+                    {!permissionError
+                      ? "No Transactions yet"
+                      : permissionError +
+                        ", contact your admin for permissions"}
+                  </p>
+                </tr>
+              ) : (
+                paginatedTransactions.map((transaction, index) => (
+                  <tr className="" key={index}>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {index + 1}
+                    </td>
 
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {transaction.user.firstName} {transaction.user.lastName}{" "}
-                    {transaction.user.groupName}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {transaction.purposeName}
-                  </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {transaction.user.firstName} {transaction.user.lastName}{" "}
+                      {transaction.user.groupName}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {transaction.purposeName}
+                    </td>
 
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {transaction.user.accountNumber || "---"}
-                  </td>
-                  {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {transaction.user.accountNumber || "---"}
+                    </td>
+                    {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {transaction.adminFee ? 0 : customerOrganisation?.adminFee}
                   </td>
                   
@@ -470,82 +478,87 @@ export default function Analytics() {
                     {transaction.amount}
                   </td> */}
 
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {transaction.appliedPercentage}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {((transaction.appliedPercentage/100) * (transaction.totalexpectedSavings)).toFixed(2)}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {AmountFormatter(transaction.adminFee)}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {AmountFormatter(transaction.serviceCharge)}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {transaction.appliedServiceCharge}
-                  </td>
-
-                  {days.map((day) => (
-                    <td
-                      key={day}
-                      className="whitespace-nowrap px-6 py-4 text-sm"
-                    >
-                      {transaction.calculatedPaidDays.some(
-                        (paidDay: { datePaid: string | number | Date }) => {
-                          const date = new Date(paidDay.datePaid);
-                          return (
-                            date.getFullYear() === selectedYear.value &&
-                            date.getMonth() + 1 === selectedMonth.value &&
-                            date.getDate() === day
-                          );
-                        },
-                      )
-                        ? AmountFormatter(
-                            transaction?.calculatedPaidDays?.find(
-                              (paidDay: {
-                                datePaid: string | number | Date;
-                              }) => {
-                                const date = new Date(paidDay.datePaid);
-                                return (
-                                  date.getFullYear() === selectedYear.value &&
-                                  date.getMonth() + 1 === selectedMonth.value &&
-                                  date.getDate() === day
-                                );
-                              },
-                            )?.amountPerDay ?? 0,
-                          )
-                        : "---"}
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {transaction.appliedPercentage}
                     </td>
-                  ))}
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {(
+                        (transaction.appliedPercentage / 100) *
+                        transaction.totalexpectedSavings
+                      ).toFixed(2)}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {AmountFormatter(transaction.adminFee)}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {AmountFormatter(transaction.serviceCharge)}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {transaction.appliedServiceCharge}
+                    </td>
 
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {transaction.totalAmountSaved}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {transaction.amountPayable}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {transaction.adminMargin}
-                  </td>
+                    {days.map((day) => (
+                      <td
+                        key={day}
+                        className="whitespace-nowrap px-6 py-4 text-sm"
+                      >
+                        {transaction.calculatedPaidDays.some(
+                          (paidDay: { datePaid: string | number | Date }) => {
+                            const date = new Date(paidDay.datePaid);
+                            return (
+                              date.getFullYear() === selectedYear.value &&
+                              date.getMonth() + 1 === selectedMonth.value &&
+                              date.getDate() === day
+                            );
+                          },
+                        )
+                          ? AmountFormatter(
+                              transaction?.calculatedPaidDays?.find(
+                                (paidDay: {
+                                  datePaid: string | number | Date;
+                                }) => {
+                                  const date = new Date(paidDay.datePaid);
+                                  return (
+                                    date.getFullYear() === selectedYear.value &&
+                                    date.getMonth() + 1 ===
+                                      selectedMonth.value &&
+                                    date.getDate() === day
+                                  );
+                                },
+                              )?.amountPerDay ?? 0,
+                            )
+                          : "---"}
+                      </td>
+                    ))}
 
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    Action
-                  </td>
-                </tr>
-              ))
-            )
-          }
-        />
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {transaction.totalAmountSaved}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {transaction.amountPayable}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {transaction.adminMargin}
+                    </td>
 
-        <div className="flex justify-center">
-          <PaginationBar
-            setCurrentPage={setCurrentPage}
-            currentPage={currentPage}
-            totalPages={totalPages}
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      Action
+                    </td>
+                  </tr>
+                ))
+              )
+            }
           />
-        </div>
-      </section>
-    </div>
+
+          <div className="flex justify-center">
+            <PaginationBar
+              setCurrentPage={setCurrentPage}
+              currentPage={currentPage}
+              totalPages={totalPages}
+            />
+          </div>
+        </section>
+      </div>
+    </ProtectedRoute>
   );
 }
