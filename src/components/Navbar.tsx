@@ -15,18 +15,25 @@ const CustomerNavbar = () => {
   const [DropdownMenuIsOpen, setDropdownMenuIsOpen] = useState(false);
   const [savingsDashboardDropdownIsOpen, setSavingsDashboardDropdownIsOpen] =
     useState(false);
+  const { checkPermission } = useServiceCheckPermission();
+  const { savings, purpose } = checkPermission;
+  console.log(checkPermission);
   const endpoints = [
     "dashboard",
-    "make-payment",
-    "withdrawals",
-    "transactions",
-    "savings-setup",
-    "savings-purpose",
+    savings ? "make-payment" : "",
+
+    savings ? "withdrawals" : "",
+    savings ? "transactions" : "",
+    savings ? "savings-setup" : "",
+    purpose ? "savings-purpose" : "",
     // "savings-dashboard",
-    "coupon",
+    purpose ? "coupon" : "",
   ];
   const { SignOut } = useAuth();
-  const routeOptions = ["Savings Dashboard", "Purchase Items Report"];
+  const routeOptions = [
+    "Savings Dashboard",
+    purpose ? "Purchased Items Report" : "",
+  ];
   return (
     <nav className="border-ajo_offWhite border-opacity-40 md:border-b">
       <div className="mx-auto max-w-7xl px-2 md:px-6 lg:px-8">
@@ -217,8 +224,10 @@ export const Sidebar = ({
     return onShow ? "visible" : "invisible";
   };
 
-  const { savings, purpose } = useServiceCheckPermission();
-
+  const { checkPermission } = useServiceCheckPermission();
+  const { savings, purpose } = checkPermission;
+  console.log(savings);
+  console.log(purpose);
   const toggleLeftPadding = () => {
     return onShow && "pl-4 md:pl-12";
   };
