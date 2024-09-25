@@ -275,9 +275,9 @@ export default function Pricing() {
                             </svg>
                             <span>
                               {service === "savings"
-                                ? "Savings(Ajo/Esusu/Adache"
+                                ? "Savings(Ajo/Esusu/Adashe)"
                                 : service === "purpose"
-                                  ? "Sell and Buy Products(Via purposeful savings)"
+                                  ? "Sell and Buy Products(via purposeful savings)"
                                   : service}
                             </span>
                           </li>
@@ -333,9 +333,9 @@ export default function Pricing() {
                             <span>
                               {" "}
                               {service === "savings"
-                                ? "Savings(Ajo/Esusu/Adache"
+                                ? "Savings(Ajo/Esusu/Adashe)"
                                 : service === "purpose"
-                                  ? "Sell and Buy Products(Via purposeful savings)"
+                                  ? "Sell and Buy Products(via purposeful savings)"
                                   : service}
                             </span>
                           </li>
@@ -389,9 +389,9 @@ export default function Pricing() {
                             <span>
                               {" "}
                               {service === "savings"
-                                ? "Savings(Ajo/Esusu/Adache"
+                                ? "Savings(Ajo/Esusu/Adashe)"
                                 : service === "purpose"
-                                  ? "Sell and Buy Products(Via purposeful savings)"
+                                  ? "Sell and Buy Products(via purposeful savings)"
                                   : service}
                             </span>
                           </li>

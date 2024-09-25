@@ -17,23 +17,25 @@ const CustomerNavbar = () => {
     useState(false);
   const { checkPermission } = useServiceCheckPermission();
   const { savings, purpose } = checkPermission;
-  console.log(checkPermission);
+
   const endpoints = [
     "dashboard",
     savings ? "make-payment" : "",
-
     savings ? "withdrawals" : "",
     savings ? "transactions" : "",
     savings ? "savings-setup" : "",
     purpose ? "savings-purpose" : "",
-    // "savings-dashboard",
     purpose ? "coupon" : "",
   ];
+
+  // Filter out empty strings before mapping
+  const filteredEndpoints = endpoints.filter(Boolean);
   const { SignOut } = useAuth();
   const routeOptions = [
     "Savings Dashboard",
     purpose ? "Purchased Items Report" : "",
   ];
+  const filteredrouteOptions = routeOptions.filter(Boolean);
   return (
     <nav className="border-ajo_offWhite border-opacity-40 md:border-b">
       <div className="mx-auto max-w-7xl px-2 md:px-6 lg:px-8">
@@ -93,7 +95,7 @@ const CustomerNavbar = () => {
             </div>
             <div className="hidden items-center gap-x-2 md:flex">
               <div>
-                {endpoints.map((route) => {
+                {filteredEndpoints.map((route) => {
                   return (
                     <Link
                       key={route}
@@ -145,14 +147,14 @@ const CustomerNavbar = () => {
             </button>
             {savingsDashboardDropdownIsOpen && (
               <div className="absolute right-0 top-14 z-10 mt-2 w-48  rounded-md bg-white bg-opacity-20 py-1 shadow-lg">
-                {routeOptions.map((route, index) => {
+                {filteredrouteOptions.map((route, index) => {
                   return (
                     <Link
                       key={route}
                       href={
                         route === "Savings Dashboard"
                           ? "/customer/savings-dashboard"
-                          : route === "Purchase Items Report"
+                          : route === "Purchased Items Report"
                             ? "/customer/purpose-report"
                             : `/customer/${route.toLowerCase()}`
                       }
@@ -226,8 +228,7 @@ export const Sidebar = ({
 
   const { checkPermission } = useServiceCheckPermission();
   const { savings, purpose } = checkPermission;
-  console.log(savings);
-  console.log(purpose);
+  
   const toggleLeftPadding = () => {
     return onShow && "pl-4 md:pl-12";
   };
@@ -236,8 +237,8 @@ export const Sidebar = ({
     "dashboard",
     "customers",
     savings ? "posting" : "",
-    "location",
-    "history",
+    // "location",
+    // "history",
     savings
       ? user?.role === "organisation"
         ? "analytics"
@@ -272,7 +273,7 @@ export const Sidebar = ({
           userPermissions.includes(permissionsMap["view-role"])
         ? "roles"
         : "",
-    "account-statement",
+    // "account-statement",
   ].filter(Boolean) as string[];
 
   const MenuBtn = ({
