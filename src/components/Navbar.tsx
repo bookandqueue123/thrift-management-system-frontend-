@@ -228,7 +228,7 @@ export const Sidebar = ({
 
   const { checkPermission } = useServiceCheckPermission();
   const { savings, purpose } = checkPermission;
-  
+
   const toggleLeftPadding = () => {
     return onShow && "pl-4 md:pl-12";
   };
@@ -716,7 +716,8 @@ export const SuperAdminSidebar = ({
 
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
   const [itemsDropdownIsOpen, setItemsDropdownIsOpen] = useState(false);
-
+  const [subscriptionDropdownIsOpen, setSubscriptionDropdownIsOpen] =
+    useState(false);
   const toggleSidebar = () => {
     return onShow ? "visible" : "invisible";
   };
@@ -817,7 +818,12 @@ export const SuperAdminSidebar = ({
             })}
           </div>
           <span className="w-full cursor-pointer">
-            {["item/purpose", "settings", "sign out"].map((label) => (
+            {[
+              "subscription-report",
+              "item/purpose",
+              "settings",
+              "sign out",
+            ].map((label) => (
               <div
                 key={label}
                 className="relative flex w-full cursor-pointer items-center gap-x-4 rounded-lg px-4 py-2 text-start text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
@@ -837,7 +843,19 @@ export const SuperAdminSidebar = ({
                     href="/superadmin/item"
                     onClick={(e) => {
                       e.preventDefault();
-                      setItemsDropdownIsOpen(!settingsDropdownIsOpen);
+                      setItemsDropdownIsOpen(!itemsDropdownIsOpen);
+                    }}
+                  >
+                    {label}
+                  </Link>
+                ) : label === "subscription-report" ? (
+                  <Link
+                    href=""
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSubscriptionDropdownIsOpen(
+                        !subscriptionDropdownIsOpen,
+                      );
                     }}
                   >
                     {label}
@@ -851,6 +869,15 @@ export const SuperAdminSidebar = ({
                   >
                     {label}
                   </span>
+                )}
+
+                {label === "subscription-report" && (
+                  <Image
+                    src="/arrow_down.svg"
+                    alt="arrow down"
+                    width={8}
+                    height={6}
+                  />
                 )}
 
                 {label === "settings" && (
@@ -918,6 +945,31 @@ export const SuperAdminSidebar = ({
                     </Link> */}
                   </div>
                 )}
+
+                {label === "subscription-report" &&
+                  subscriptionDropdownIsOpen && (
+                    <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+                      <Link
+                        href={`/superadmin/subscription-report/merchant`}
+                        className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                      >
+                        Merchants <br /> Subscription
+                      </Link>
+                      <Link
+                        href="/superadmin/subscription-report/customer"
+                        className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                      >
+                        Purpose/item report
+                      </Link>
+
+                      {/* <Link
+                      href="/merchant/settings"
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      Savings settings
+                    </Link> */}
+                    </div>
+                  )}
               </div>
             ))}
           </span>

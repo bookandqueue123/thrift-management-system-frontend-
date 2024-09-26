@@ -28,6 +28,7 @@ export default function Pricing() {
   const router = useRouter();
 
   const userId = useSelector(selectUserId);
+
   const [selectedOption, setSelectedOption] = useState("price");
   const [showModal, setShowModal] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
@@ -50,6 +51,7 @@ export default function Pricing() {
       setEnvironmentName("localhost");
     }
   }, [host]);
+
   const {
     data: packages,
     isLoading: isUserLoading,
@@ -59,7 +61,7 @@ export default function Pricing() {
     queryKey: ["all Packages"],
     queryFn: async () => {
       return client
-        .get(`/api/service-package`, {})
+        .get(`/api/service-package?userType=${user?.role}`, {})
         .then((response) => {
           return response.data;
         })
@@ -68,6 +70,7 @@ export default function Pricing() {
         });
     },
   });
+  console.log(packages);
 
   const handleOptionChange = (event: {
     target: { value: SetStateAction<string> };
@@ -193,7 +196,7 @@ export default function Pricing() {
     promoCode: "",
   };
   return (
-    <div className="min-h-screen w-full bg-ajo_darkBlue  px-4 py-12 md:px-16">
+    <div className="min-h-screen w-full border border-red-500 bg-ajo_darkBlue  px-4 py-12 md:px-16">
       <div className="mb-4">
         <label className="mr-4 text-white">
           <input
@@ -231,6 +234,7 @@ export default function Pricing() {
 
             {packages?.map(
               (servicePackage: {
+                description: string;
                 _id: Key | null | undefined;
                 groupName: string;
 
@@ -283,8 +287,9 @@ export default function Pricing() {
                           </li>
                         </ul>
                       ))}
+                      <p>{servicePackage.description}</p>
 
-                      <div className="my-8 flex items-center justify-center">
+                      <div className="my-4 flex items-center justify-center">
                         <span className="mr-2 whitespace-nowrap text-5xl font-extrabold">{`N${servicePackage.actualFee.actualMonthlyFee}`}</span>
                         <span className="whitespace-nowrap text-gray-500 dark:text-gray-400">
                           /month
@@ -341,7 +346,9 @@ export default function Pricing() {
                           </li>
                         </ul>
                       ))}
-                      <div className="my-8 flex items-center justify-center">
+                      <p>{servicePackage.description}</p>
+
+                      <div className="my-4 flex items-center justify-center">
                         <span className="mr-2 whitespace-nowrap text-5xl font-extrabold">{`N${servicePackage.actualFee.actualQuarterlyFee}`}</span>
                         <span className="whitespace-nowrap text-gray-500 dark:text-gray-400">
                           /3 Month
@@ -397,7 +404,9 @@ export default function Pricing() {
                           </li>
                         </ul>
                       ))}
-                      <div className="my-8 flex items-center justify-center">
+                      <p>{servicePackage.description}</p>
+
+                      <div className="my-4 flex items-center justify-center">
                         <span className="mr-2 whitespace-nowrap text-5xl font-extrabold">{`N${servicePackage.actualFee.actualYearlyFee}`}</span>
                         <span className="whitespace-nowrap text-gray-500 dark:text-gray-400">
                           yearly
