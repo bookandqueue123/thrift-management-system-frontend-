@@ -4,22 +4,18 @@ import { usePermissions } from "@/api/hooks/usePermissions";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import Modal, { ModalConfirmation } from "@/components/Modal";
 import PaginationBar from "@/components/Pagination";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
-import { CategoryFormValuesProps, permissionObject, ICouponProps } from "@/types";
+import { ICouponProps, permissionObject } from "@/types";
 import { extractDate } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Image from "next/image";
-import {    
+import {
   ChangeEvent,
   Dispatch,
-  JSXElementConstructor,
-  PromiseLikeOfReactNode,
-  ReactElement,
-  ReactNode,
-  ReactPortal,
   SetStateAction,
   useEffect,
   useState,
@@ -38,7 +34,6 @@ const Categories = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  
 
   const { client } = useAuth();
   const user = useSelector(selectUser);
@@ -62,19 +57,15 @@ const Categories = () => {
       return client
         .get(`/api/coupon?organisation=${organisationId}`, {})
         .then((response: AxiosResponse<ICouponProps[], any>) => {
-    
           setFilteredCoupons(response.data);
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-
           throw error;
         });
     },
     staleTime: 5000,
   });
-
- 
 
   const { data: allPermissions } = useQuery({
     queryKey: ["allPermissions"],
@@ -91,10 +82,9 @@ const Categories = () => {
   });
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     if (allCoupons) {
-
       const searchQuery = e.target.value.trim().toLowerCase();
       const filtered = allCoupons.filter((item) =>
-        item.name.toLowerCase().includes(searchQuery)
+        item.name.toLowerCase().includes(searchQuery),
       );
       setFilteredCoupons(filtered);
     }
@@ -205,7 +195,7 @@ const Categories = () => {
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {extractDate(role.endDate || "----")}
                     </td>
-                    
+
                     <td className="flex gap-2 whitespace-nowrap px-6 py-4 text-sm">
                       {(user?.role === "organisation" ||
                         (user?.role === "staff" &&
@@ -220,7 +210,7 @@ const Categories = () => {
                           onClick={() => {
                             setModalToShow("edit-coupon");
                             setModalState(true);
-                             setCategoryToBeEdited(role._id);
+                            setCategoryToBeEdited(role._id);
                             setModalContent("form");
                             setIsCategoryEdited(false);
                           }}
@@ -275,7 +265,9 @@ const Categories = () => {
                 <ModalConfirmation
                   successTitle={`Coupon ${modalToShow === "create-coupon" ? "Creation" : "Editing"} Successful, Check your mail to verify the coupon`}
                   errorTitle={`Coupon ${modalToShow === "create-coupon" ? "Creation" : "Editing"} Failed`}
-                  status={isCouponCreated || isCategoryEdited ? "success" : "failed"}
+                  status={
+                    isCouponCreated || isCategoryEdited ? "success" : "failed"
+                  }
                   responseMessage=""
                 />
               )}
@@ -300,7 +292,7 @@ const MutateCategory = ({
   setModalContent,
   categoryToBeEdited,
 }: {
-  categoryToBeEdited: string
+  categoryToBeEdited: string;
   actionToTake: "create-coupon" | "edit-coupon" | "";
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   setCategoryCreated: Dispatch<SetStateAction<boolean>>;
@@ -310,58 +302,49 @@ const MutateCategory = ({
   const { client } = useAuth();
   const organisationId = useSelector(selectOrganizationId);
   const [assignedPermissions, setAssignedPermissions] = useState<string[]>([]);
-  
+
   const initialValues: ICouponProps = {
-    name: '',
-    description: '',
-    amount: '',
-    applyToPurpose: 'all-purpose',
+    name: "",
+    description: "",
+    amount: "",
+    applyToPurpose: "all-purpose",
     selectedCategories: [],
-    selectedIndividualPurpose: '',
-    applyToCustomers: 'all-customers',
-    selectedCustomerGroup: '',
-    selectedIndividualCustomer: '',
-    startTime: '',
-    startDate: '',
-    endTime: '',
-    endDate: '',
+    selectedIndividualPurpose: "",
+    applyToCustomers: "all-customers",
+    selectedCustomerGroup: "",
+    selectedIndividualCustomer: "",
+    startTime: "",
+    startDate: "",
+    endTime: "",
+    endDate: "",
     notifications: [],
     organisation: organisationId,
     _id: function (_id: any): string {
       throw new Error("Function not implemented.");
-    }
-  }
-  
-  const { data: categories, isLoading: isLoadingCategory } = useQuery(
-    {
-      queryKey: ["category"],
-      queryFn: async () => {
-        return client
-          .get(`api/categories`)
-          .then((response) => {
-            return response.data;
-          })
-          .catch((error) => {
-            throw error;
-          });
-      },
     },
-  );
+  };
 
-
- 
-
-
-
- 
+  const { data: categories, isLoading: isLoadingCategory } = useQuery({
+    queryKey: ["category"],
+    queryFn: async () => {
+      return client
+        .get(`api/categories`)
+        .then((response) => {
+          return response.data;
+        })
+        .catch((error) => {
+          throw error;
+        });
+    },
+  });
 
   const validationSchema = Yup.object({
     name: Yup.string()
-      .max(50, 'Name must be 50 characters or less')
-      .required('Name is required'),
+      .max(50, "Name must be 50 characters or less")
+      .required("Name is required"),
     description: Yup.string()
-      .max(200, 'Description must be 200 characters or less')
-      .required('Description is required'),
+      .max(200, "Description must be 200 characters or less")
+      .required("Description is required"),
   });
   const { data: allPermissions, isLoading: isLoadingAllPermissions } = useQuery(
     {
@@ -379,8 +362,6 @@ const MutateCategory = ({
     },
   );
 
-  
-
   const { mutate: CreateCoupon, isPending: isCreatingCoupon } = useMutation({
     mutationKey: ["create Coupon"],
     mutationFn: async (values: ICouponProps) => {
@@ -388,7 +369,6 @@ const MutateCategory = ({
     },
 
     onSuccess(response) {
-      
       setCategoryCreated(true);
       setModalContent("status");
       setTimeout(() => {
@@ -399,7 +379,6 @@ const MutateCategory = ({
     onError(error: AxiosError<any, any>) {
       setCategoryCreated(false);
       setModalContent("status");
-      
     },
   });
 
@@ -411,16 +390,11 @@ const MutateCategory = ({
     queryKey: ["allpurpose"],
     queryFn: async () => {
       return client
-        .get(
-          `/api/purpose?organisation=${organisationId}`,
-          {},
-        )
+        .get(`/api/purpose?organisation=${organisationId}`, {})
         .then((response) => {
-          
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-     
           throw error;
         });
     },
@@ -432,253 +406,429 @@ const MutateCategory = ({
     isLoading: isGroupLoading,
     isError: isGroupError,
   } = useQuery({
-    queryKey: ["groupCustomers", ],
+    queryKey: ["groupCustomers"],
     queryFn: async () => {
       return client
-        .get(
-          `/api/user?organisation=${organisationId}&userType=group`,
-          {},
-        )
+        .get(`/api/user?organisation=${organisationId}&userType=group`, {})
         .then((response) => {
-          
-            return response.data;
-        
+          return response.data;
         })
         .catch((error) => {
-            console.log(error)
+          console.log(error);
           throw error;
         });
     },
   });
-  
+
   const {
     data: IndividualCustomers,
     isLoading: isUserLoading,
     isError,
   } = useQuery({
-    queryKey: ["Individual Customers", ],
+    queryKey: ["Individual Customers"],
     queryFn: async () => {
       return client
-        .get(
-          `/api/user?organisation=${organisationId}`,
-          {},
-        )
+        .get(`/api/user?organisation=${organisationId}`, {})
         .then((response) => {
-          
-            return response.data;
-        
+          return response.data;
         })
         .catch((error) => {
-            console.log(error)
+          console.log(error);
           throw error;
         });
     },
   });
 
-
-
   const CouponFormSchema = Yup.object().shape({
-    name: Yup.string().required('Name is required'),
-    description: Yup.string().required('Description is required'),
-    amount: Yup.number().required('Amount is required').min(0, 'Amount must be positive'),
-    applyToPurpose: Yup.string().required('Selection is required'),
-    applyToCustomers: Yup.string().required('Selection is required'),
-    startTime: Yup.string().required('Start time is required'),
-    startDate: Yup.date().required('Start date is required').nullable(),
-    endTime: Yup.string().required('End time is required'),
-    endDate: Yup.date().required('End date is required').nullable(),
-    notifications: Yup.array().of(Yup.string())
+    name: Yup.string().required("Name is required"),
+    description: Yup.string().required("Description is required"),
+    amount: Yup.number()
+      .required("Amount is required")
+      .min(0, "Amount must be positive"),
+    applyToPurpose: Yup.string().required("Selection is required"),
+    applyToCustomers: Yup.string().required("Selection is required"),
+    startTime: Yup.string().required("Start time is required"),
+    startDate: Yup.date().required("Start date is required").nullable(),
+    endTime: Yup.string().required("End time is required"),
+    endDate: Yup.date().required("End date is required").nullable(),
+    notifications: Yup.array().of(Yup.string()),
   });
 
-
   const [showCategorySelect, setShowCategorySelect] = useState(false);
-  const [showIndividualPurposeSelect, setShowIndividualPurposeSelect] = useState(false);
+  const [showIndividualPurposeSelect, setShowIndividualPurposeSelect] =
+    useState(false);
   const [showGroupCustomerSelect, setShowGroupCustomerSelect] = useState(false);
-  const [showIndividualCustomerSelect, setShowIndividualCustomerSelect] = useState(false);
-
+  const [showIndividualCustomerSelect, setShowIndividualCustomerSelect] =
+    useState(false);
 
   return (
-    <div >
-      {/* <h1 className="text-2xl font-bold mb-6">Create Coupon</h1> */}
-      <Formik
-        initialValues={initialValues}
-        validationSchema={CouponFormSchema}
-        onSubmit={(values) => {
-       
-       CreateCoupon(values)
-        }}
-      >
-        {({ values, isSubmitting }) => (
-          <Form>
-            <div className="mb-4">
-              <label htmlFor="name" className="block text-sm font-medium text-white">Name</label>
-              <Field name="name" type="text" className="bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white" />
-              <ErrorMessage name="name" component="div" className="text-red-500 text-sm" />
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="description" className="block text-sm font-medium text-white">Description</label>
-              <Field name="description" as="textarea" className="bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white" />
-              <ErrorMessage name="description" component="div" className="text-red-500 text-sm" />
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="amount" className="block text-sm font-medium text-white">Amount</label>
-              <Field name="amount" type="number" className="bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white" />
-              <ErrorMessage name="amount" component="div" className="text-red-500 text-sm" />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-white">Apply to Purpose</label>
-              <div role="group" className="flex flex-col-3 justify-between ">
-                <label className="block text-white">
-                  <Field type="radio" name="applyToPurpose" value="all-purpose" onClick={() => { setShowCategorySelect(false); setShowIndividualPurposeSelect(false); }} />
-                  <span className="ml-2">All purpose</span>
+    <ProtectedRoute requirePurpose>
+      <div>
+        {/* <h1 className="text-2xl font-bold mb-6">Create Coupon</h1> */}
+        <Formik
+          initialValues={initialValues}
+          validationSchema={CouponFormSchema}
+          onSubmit={(values) => {
+            CreateCoupon(values);
+          }}
+        >
+          {({ values, isSubmitting }) => (
+            <Form>
+              <div className="mb-4">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-white"
+                >
+                  Name
                 </label>
-                <label className="block text-white">
-                  <Field type="radio" name="applyToPurpose" value="select-category" onClick={() => { setShowCategorySelect(true); setShowIndividualPurposeSelect(false); }} />
-                  <span className="ml-2">Select category of purpose/item</span>
-                </label>
-                
-                <label className="block text-white">
-                  <Field type="radio" name="applyToPurpose" value="select-individual" onClick={() => { setShowCategorySelect(false); setShowIndividualPurposeSelect(true); }} />
-                  <span className="ml-2">Select individual purpose/item</span>
-                </label>
-                
+                <Field
+                  name="name"
+                  type="text"
+                  className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                />
+                <ErrorMessage
+                  name="name"
+                  component="div"
+                  className="text-sm text-red-500"
+                />
               </div>
-              {showCategorySelect && (
+
+              <div className="mb-4">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-white"
+                >
+                  Description
+                </label>
+                <Field
+                  name="description"
+                  as="textarea"
+                  className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                />
+                <ErrorMessage
+                  name="description"
+                  component="div"
+                  className="text-sm text-red-500"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label
+                  htmlFor="amount"
+                  className="block text-sm font-medium text-white"
+                >
+                  Amount
+                </label>
+                <Field
+                  name="amount"
+                  type="number"
+                  className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                />
+                <ErrorMessage
+                  name="amount"
+                  component="div"
+                  className="text-sm text-red-500"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-white">
+                  Apply to Purpose
+                </label>
+                <div role="group" className="flex-col-3 flex justify-between ">
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToPurpose"
+                      value="all-purpose"
+                      onClick={() => {
+                        setShowCategorySelect(false);
+                        setShowIndividualPurposeSelect(false);
+                      }}
+                    />
+                    <span className="ml-2">All purpose</span>
+                  </label>
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToPurpose"
+                      value="select-category"
+                      onClick={() => {
+                        setShowCategorySelect(true);
+                        setShowIndividualPurposeSelect(false);
+                      }}
+                    />
+                    <span className="ml-2">
+                      Select category of purpose/item
+                    </span>
+                  </label>
+
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToPurpose"
+                      value="select-individual"
+                      onClick={() => {
+                        setShowCategorySelect(false);
+                        setShowIndividualPurposeSelect(true);
+                      }}
+                    />
+                    <span className="ml-2">Select individual purpose/item</span>
+                  </label>
+                </div>
+                {showCategorySelect && (
                   <div className="mt-2">
-                    <Field name="selectedCategories" as="select" className="block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                    <Field
+                      name="selectedCategories"
+                      as="select"
+                      className="block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+                    >
                       <option value="">Select Category</option>
-                      {categories.map((category: { _id: string | number; name: string | number }) => (
-                        <option key={category._id} value={category._id}>{category.name}</option>
-                      ))}
-                     
+                      {categories.map(
+                        (category: {
+                          _id: string | number;
+                          name: string | number;
+                        }) => (
+                          <option key={category._id} value={category._id}>
+                            {category.name}
+                          </option>
+                        ),
+                      )}
                     </Field>
                   </div>
                 )}
                 {showIndividualPurposeSelect && (
                   <div className="mt-2">
-                    <Field name="selectedIndividualPurpose" as="select" className="block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                    <Field
+                      name="selectedIndividualPurpose"
+                      as="select"
+                      className="block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+                    >
                       <option value="">Select all purpose</option>
-                      {allPurpose.map((purpose: { _id: string | number; purposeName: string | number}) => (
-                        <option key={purpose._id} value={purpose._id}>{purpose.purposeName}</option>
-                      ))}
-                      
-                      
+                      {allPurpose.map(
+                        (purpose: {
+                          _id: string | number;
+                          purposeName: string | number;
+                        }) => (
+                          <option key={purpose._id} value={purpose._id}>
+                            {purpose.purposeName}
+                          </option>
+                        ),
+                      )}
                     </Field>
                   </div>
                 )}
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-white">Apply to Customers</label>
-              <div role="group" className="flex flex-col-3 justify-between">
-                <label className="block text-white">
-                  <Field type="radio" name="applyToCustomers" value="all-customers" onClick={() => { setShowGroupCustomerSelect(false); setShowIndividualCustomerSelect(false); }} />
-                  <span className="ml-2">All customers</span>
-                </label>
-                <label className="block text-white">
-                  <Field type="radio" name="applyToCustomers" value="group-of-customers" onClick={() => { setShowGroupCustomerSelect(true); setShowIndividualCustomerSelect(false); }} />
-                  <span className="ml-2">Group of customers</span>
-                </label>
-                
-                <label className="block text-white">
-                  <Field type="radio" name="applyToCustomers" value="individual-customer" onClick={() => { setShowGroupCustomerSelect(false); setShowIndividualCustomerSelect(true); }} />
-                  <span className="ml-2">Individual customer</span>
-                </label>
-                
               </div>
-              {showGroupCustomerSelect && (
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-white">
+                  Apply to Customers
+                </label>
+                <div role="group" className="flex-col-3 flex justify-between">
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToCustomers"
+                      value="all-customers"
+                      onClick={() => {
+                        setShowGroupCustomerSelect(false);
+                        setShowIndividualCustomerSelect(false);
+                      }}
+                    />
+                    <span className="ml-2">All customers</span>
+                  </label>
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToCustomers"
+                      value="group-of-customers"
+                      onClick={() => {
+                        setShowGroupCustomerSelect(true);
+                        setShowIndividualCustomerSelect(false);
+                      }}
+                    />
+                    <span className="ml-2">Group of customers</span>
+                  </label>
+
+                  <label className="block text-white">
+                    <Field
+                      type="radio"
+                      name="applyToCustomers"
+                      value="individual-customer"
+                      onClick={() => {
+                        setShowGroupCustomerSelect(false);
+                        setShowIndividualCustomerSelect(true);
+                      }}
+                    />
+                    <span className="ml-2">Individual customer</span>
+                  </label>
+                </div>
+                {showGroupCustomerSelect && (
                   <div className="mt-2">
-                    <Field name="selectedCustomerGroup" as="select" className="block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                    <Field
+                      name="selectedCustomerGroup"
+                      as="select"
+                      className="block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+                    >
                       <option value="">Select group</option>
-                      {GroupCustomers.map((group: { _id: string, groupName: string }) => (
-                        <option key={group._id} value={group._id}>{group.groupName}</option>
-                      ))}
-      
-          
+                      {GroupCustomers.map(
+                        (group: { _id: string; groupName: string }) => (
+                          <option key={group._id} value={group._id}>
+                            {group.groupName}
+                          </option>
+                        ),
+                      )}
                     </Field>
                   </div>
                 )}
                 {showIndividualCustomerSelect && (
                   <div className="mt-2">
-                    <Field name="selectedIndividualCustomer" as="select" className="block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                    <Field
+                      name="selectedIndividualCustomer"
+                      as="select"
+                      className="block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+                    >
                       <option value="">Select a customer</option>
-                      {IndividualCustomers.map((IndividualCustomer: { firstName: any; lastName: any; }) => (
-                        <option key={IndividualCustomer.firstName} value="">{IndividualCustomer.firstName + IndividualCustomer.lastName}</option>
-                      ))}
-                      
+                      {IndividualCustomers.map(
+                        (IndividualCustomer: {
+                          firstName: any;
+                          lastName: any;
+                        }) => (
+                          <option key={IndividualCustomer.firstName} value="">
+                            {IndividualCustomer.firstName +
+                              IndividualCustomer.lastName}
+                          </option>
+                        ),
+                      )}
                     </Field>
                   </div>
                 )}
-            </div>
+              </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <label htmlFor="startTime" className="block text-sm font-medium text-white">Start Time</label>
-                <Field name="startTime" type="time" className="bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white" />
-                <ErrorMessage name="startTime" component="div" className="text-red-500 text-sm" />
+              <div className="mb-4 grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="startTime"
+                    className="block text-sm font-medium text-white"
+                  >
+                    Start Time
+                  </label>
+                  <Field
+                    name="startTime"
+                    type="time"
+                    className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                  />
+                  <ErrorMessage
+                    name="startTime"
+                    component="div"
+                    className="text-sm text-red-500"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="startDate"
+                    className="block text-sm font-medium text-white"
+                  >
+                    Start Date
+                  </label>
+                  <Field
+                    name="startDate"
+                    type="date"
+                    className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                  />
+                  <ErrorMessage
+                    name="startDate"
+                    component="div"
+                    className="text-sm text-red-500"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="endTime"
+                    className="block text-sm font-medium text-white"
+                  >
+                    End Time
+                  </label>
+                  <Field
+                    name="endTime"
+                    type="time"
+                    className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                  />
+                  <ErrorMessage
+                    name="endTime"
+                    component="div"
+                    className="text-sm text-red-500"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="endDate"
+                    className="block text-sm font-medium text-white"
+                  >
+                    End Date
+                  </label>
+                  <Field
+                    name="endDate"
+                    type="date"
+                    className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                  />
+                  <ErrorMessage
+                    name="endDate"
+                    component="div"
+                    className="text-sm text-red-500"
+                  />
+                </div>
               </div>
-              <div>
-                <label htmlFor="startDate" className="block text-sm font-medium text-white">Start Date</label>
-                <Field name="startDate" type="date" className="bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white" />
-                <ErrorMessage name="startDate" component="div" className="text-red-500 text-sm" />
-              </div>
-              <div>
-                <label htmlFor="endTime" className="block text-sm font-medium text-white">End Time</label>
-                <Field name="endTime" type="time" className="bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white" />
-                <ErrorMessage name="endTime" component="div" className="text-red-500 text-sm" />
-              </div>
-              <div>
-                <label htmlFor="endDate" className="block text-sm font-medium text-white">End Date</label>
-                <Field name="endDate" type="date" className="bg-gray-50  border text-black text-sm rounded-md block w-full p-3 dark:bg-gray-700  dark:placeholder-black dark:text-white" />
-                <ErrorMessage name="endDate" component="div" className="text-red-500 text-sm" />
-              </div>
-            </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-white">Notifications</label>
-              <div role="group" className="flex flex-col-3 ">
-                <label className="block text-white">
-                  <Field type="checkbox" name="notifications" value="email" />
-                  <span className="ml-2">Email</span>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-white">
+                  Notifications
                 </label>
-                <label className="block text-white px-4">
-                  <Field type="checkbox" name="notifications" value="sms" />
-                  <span className="ml-2">SMS</span>
-                </label>
-                <label className="block text-white">
-                  <Field type="checkbox" name="notifications" value="whatsapp" />
-                  <span className="ml-2">WhatsApp</span>
-                </label>
+                <div role="group" className="flex-col-3 flex ">
+                  <label className="block text-white">
+                    <Field type="checkbox" name="notifications" value="email" />
+                    <span className="ml-2">Email</span>
+                  </label>
+                  <label className="block px-4 text-white">
+                    <Field type="checkbox" name="notifications" value="sms" />
+                    <span className="ml-2">SMS</span>
+                  </label>
+                  <label className="block text-white">
+                    <Field
+                      type="checkbox"
+                      name="notifications"
+                      value="whatsapp"
+                    />
+                    <span className="ml-2">WhatsApp</span>
+                  </label>
+                </div>
               </div>
-            </div>
 
-            <div className="text-center">
-            <button
-            type="submit"
-            className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
-            // onClick={() => submitForm()}
-            disabled={isSubmitting || isCreatingCoupon}
-          >
-            {isSubmitting || isCreatingCoupon  ? (
-              <Image
-                src="/loadingSpinner.svg"
-                alt="loading spinner"
-                className="relative left-1/2"
-                width={25}
-                height={25}
-              />
-            ) : (
-              "Submit"
-            )}
-          </button>
-            </div>
-          </Form>
-        )}
-      </Formik>
-    </div>
+              <div className="text-center">
+                <button
+                  type="submit"
+                  className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
+                  // onClick={() => submitForm()}
+                  disabled={isSubmitting || isCreatingCoupon}
+                >
+                  {isSubmitting || isCreatingCoupon ? (
+                    <Image
+                      src="/loadingSpinner.svg"
+                      alt="loading spinner"
+                      className="relative left-1/2"
+                      width={25}
+                      height={25}
+                    />
+                  ) : (
+                    "Submit"
+                  )}
+                </button>
+              </div>
+            </Form>
+          )}
+        </Formik>
+      </div>
+    </ProtectedRoute>
   );
 };
 

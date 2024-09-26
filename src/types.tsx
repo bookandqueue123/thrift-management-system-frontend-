@@ -819,3 +819,33 @@ export interface createGatewayProps {
   fixedFee: string;
   percentageFee: string;
 }
+
+export interface servicePackageProps {
+  groupName: string;
+  description: string;
+  service: [];
+  savingsMonthly: string;
+  savingsQuarterly: string;
+  savingsYearly: string;
+  purposeMonthly: string;
+  purposeQuarterly: string;
+  purposeYearly: string;
+  totalMonthly: 0;
+  totalQuarterly: 0;
+  totalYearly: 0;
+  discount: 2;
+  actualFee: string;
+  promoCode: string;
+  promoStartDate: string;
+  promoEndDate: string;
+  promoStartTime: string;
+  promoEndTime: string;
+  actualMonthlyFee: 0;
+  actualQuarterlyFee: 0;
+  actualYearlyFee: 0;
+  applyToOrganisations: string;
+  appliedUserId: string;
+  selectedCustomerGroup: string;
+  selectedIndividualCustomer: string;
+  userType: string,
+}

@@ -1,20 +1,21 @@
 'use client'
 
 import { useAuth } from "@/api/hooks/useAuth";
+import { usePermissions } from "@/api/hooks/usePermissions";
 import { CustomButton } from "@/components/Buttons";
 import ErrorModal from "@/components/ErrorModal";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import SuccessModal from "@/components/SuccessModal";
 import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { allSavingsResponse, customer, setUpSavingsProps } from "@/types";
+import { extractDate } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { AxiosError, AxiosResponse } from 'axios';
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { IoMdSearch } from "react-icons/io";
 import { useSelector } from "react-redux";
-import { AxiosError, AxiosResponse } from 'axios';
-import { allSavingsResponse, customer, setUpSavingsProps } from "@/types";
-import { extractDate } from "@/utils/TimeStampFormatter";
-import { usePermissions } from "@/api/hooks/usePermissions";
 export default function UpdateSavingsSetup(){
     const [modalState, setModalState] = useState(false);
     const user = useSelector(selectUser)
@@ -24,6 +25,9 @@ export default function UpdateSavingsSetup(){
       return <div className="text-center text-3xl text-white mt-12">You are unauthorized</div>;
     }
     return(
+      <ProtectedRoute requireSavings>
+
+      
         <div className="">
 
       <div className="mb-4 space-y-2 ">
@@ -64,6 +68,7 @@ export default function UpdateSavingsSetup(){
         }
         
     </div>
+    </ProtectedRoute>
     )
 }
 

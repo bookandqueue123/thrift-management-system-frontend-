@@ -3,9 +3,13 @@ import ErrorModal from "@/components/ErrorModal";
 import SuccessModal from "@/components/SuccessModal";
 import { OrganisationGroupsProps, getOrganizationProps } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
-const CreateCommissionForm: React.FC = () => {
+const CreateCommissionForm = ({
+  setIsCommissionCreated,
+}: {
+  setIsCommissionCreated: Dispatch<SetStateAction<boolean>>;
+}) => {
   const { client } = useAuth();
   const [errorMessage, setErrorMessage] = useState("");
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -177,6 +181,7 @@ const CreateCommissionForm: React.FC = () => {
       return client.post(`/api/saving/set-commission`, payload);
     },
     onSuccess: (response) => {
+      setIsCommissionCreated(true);
       setFormValues({
         organisationType: "groupOfOrganisation",
         group: "",

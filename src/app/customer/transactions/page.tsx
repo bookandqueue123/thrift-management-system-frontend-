@@ -2,6 +2,7 @@
 import { FilterDropdown } from "@/components/Buttons";
 
 import { useAuth } from "@/api/hooks/useAuth";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import TransactionsTable from "@/components/Tables";
 import { selectUserId } from "@/slices/OrganizationIdSlice";
 import { allSavingsResponse } from "@/types";
@@ -107,6 +108,7 @@ const Transactions = () => {
     return <div>Loading...</div>;
   }
   return (
+    <ProtectedRoute requireSavings>
     <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
       <section>
         <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -297,6 +299,7 @@ const Transactions = () => {
         </div>
       </section>
     </div>
+    </ProtectedRoute>
   );
 };
 

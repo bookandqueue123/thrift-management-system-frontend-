@@ -1,6 +1,7 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
 import { usePermissions } from "@/api/hooks/usePermissions";
+import useServiceCheckPermission from "@/api/hooks/useServicePermission";
 import { selectUser } from "@/slices/OrganizationIdSlice";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,18 +15,27 @@ const CustomerNavbar = () => {
   const [DropdownMenuIsOpen, setDropdownMenuIsOpen] = useState(false);
   const [savingsDashboardDropdownIsOpen, setSavingsDashboardDropdownIsOpen] =
     useState(false);
+  const { checkPermission } = useServiceCheckPermission();
+  const { savings, purpose } = checkPermission;
+
   const endpoints = [
     "dashboard",
-    "make-payment",
-    "withdrawals",
-    "transactions",
-    "savings-setup",
-    "savings-purpose",
-    // "savings-dashboard",
-    "coupon",
+    savings ? "make-payment" : "",
+    savings ? "withdrawals" : "",
+    savings ? "transactions" : "",
+    savings ? "savings-setup" : "",
+    purpose ? "savings-purpose" : "",
+    purpose ? "coupon" : "",
   ];
+
+  // Filter out empty strings before mapping
+  const filteredEndpoints = endpoints.filter(Boolean);
   const { SignOut } = useAuth();
-  const routeOptions = ["Savings Dashboard", "Purchase Items Report"];
+  const routeOptions = [
+    "Savings Dashboard",
+    purpose ? "Purchased Items Report" : "",
+  ];
+  const filteredrouteOptions = routeOptions.filter(Boolean);
   return (
     <nav className="border-ajo_offWhite border-opacity-40 md:border-b">
       <div className="mx-auto max-w-7xl px-2 md:px-6 lg:px-8">
@@ -85,7 +95,7 @@ const CustomerNavbar = () => {
             </div>
             <div className="hidden items-center gap-x-2 md:flex">
               <div>
-                {endpoints.map((route) => {
+                {filteredEndpoints.map((route) => {
                   return (
                     <Link
                       key={route}
@@ -137,14 +147,14 @@ const CustomerNavbar = () => {
             </button>
             {savingsDashboardDropdownIsOpen && (
               <div className="absolute right-0 top-14 z-10 mt-2 w-48  rounded-md bg-white bg-opacity-20 py-1 shadow-lg">
-                {routeOptions.map((route, index) => {
+                {filteredrouteOptions.map((route, index) => {
                   return (
                     <Link
                       key={route}
                       href={
                         route === "Savings Dashboard"
                           ? "/customer/savings-dashboard"
-                          : route === "Purchase Items Report"
+                          : route === "Purchased Items Report"
                             ? "/customer/purpose-report"
                             : `/customer/${route.toLowerCase()}`
                       }
@@ -204,7 +214,7 @@ export const Sidebar = ({
   const { SignOut } = useAuth();
   const { userPermissions, permissionsMap } = usePermissions();
   const user = useSelector(selectUser);
-
+  const { client } = useAuth();
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
   const [setupdropdownOpen, setSetupDropdownOpen] = useState(false);
   const [generalAdminFeeOpen, setGeneralAdminFeeOpen] = useState(false);
@@ -216,6 +226,9 @@ export const Sidebar = ({
     return onShow ? "visible" : "invisible";
   };
 
+  const { checkPermission } = useServiceCheckPermission();
+  const { savings, purpose } = checkPermission;
+  
   const toggleLeftPadding = () => {
     return onShow && "pl-4 md:pl-12";
   };
@@ -223,22 +236,26 @@ export const Sidebar = ({
   const merchantRoutes = [
     "dashboard",
     "customers",
-    "posting",
-    "location",
-    "history",
-    user?.role === "organisation"
-      ? "analytics"
-      : user?.role === "staff" &&
-          userPermissions.includes(permissionsMap["view-savings"])
+    savings ? "posting" : "",
+    // "location",
+    // "history",
+    savings
+      ? user?.role === "organisation"
         ? "analytics"
-        : "",
-    user?.role === "organisation"
-      ? "withdrawals"
-      : user?.role === "staff" &&
-          (userPermissions.includes(permissionsMap["export-withdrawal"]) ||
-            userPermissions.includes(permissionsMap["view-withdrawals"]))
+        : user?.role === "staff" &&
+            userPermissions.includes(permissionsMap["view-savings"])
+          ? "analytics"
+          : ""
+      : "",
+    savings
+      ? user?.role === "organisation"
         ? "withdrawals"
-        : "",
+        : user?.role === "staff" &&
+            (userPermissions.includes(permissionsMap["export-withdrawal"]) ||
+              userPermissions.includes(permissionsMap["view-withdrawals"]))
+          ? "withdrawals"
+          : ""
+      : "",
     user?.role === "organisation"
       ? "users"
       : (user?.role === "staff" &&
@@ -256,7 +273,7 @@ export const Sidebar = ({
           userPermissions.includes(permissionsMap["view-role"])
         ? "roles"
         : "",
-    "account-statement",
+    // "account-statement",
   ].filter(Boolean) as string[];
 
   const MenuBtn = ({
@@ -334,206 +351,214 @@ export const Sidebar = ({
             })}
           </div>
           <span className="w-full cursor-pointer">
-            {["item/purpose", "settings", "sign out"].map((label) => (
-              <div
-                key={label}
-                className="relative flex w-full cursor-pointer items-center gap-x-4 rounded-lg px-4 py-2 text-start text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
-              >
-                {label === "settings" ? (
-                  <Link
-                    href="/merchant/settings"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setSettingsDropdownIsOpen(!settingsDropdownIsOpen);
-                    }}
-                  >
-                    {label}
-                  </Link>
-                ) : label === "item/purpose" ? (
-                  <Link
-                    href="/merchant/purpose"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setpurposeDropdownIsOpen(!purposeDropdownIsOpen);
-                    }}
-                  >
-                    {label}
-                  </Link>
-                ) : (
-                  <span
-                    onClick={() => {
-                      SignOut();
-                    }}
-                  >
-                    {label}
-                  </span>
-                )}
-
-                {label === "settings" && (
-                  <Image
-                    src="/arrow_down.svg"
-                    alt="arrow down"
-                    width={8}
-                    height={6}
-                  />
-                )}
-                {label === "item/purpose" && (
-                  <Image
-                    src="/arrow_down.svg"
-                    alt="arrow down"
-                    width={8}
-                    height={6}
-                  />
-                )}
-
-                {label === "settings" && settingsDropdownIsOpen && (
-                  <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+            {[purpose ? "item/purpose" : "", "settings", "sign out"].map(
+              (label) => (
+                <div
+                  key={label}
+                  className="relative flex w-full cursor-pointer items-center gap-x-4 rounded-lg px-4 py-2 text-start text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
+                >
+                  {label === "settings" ? (
                     <Link
-                      href={`/merchant/settings/location`}
-                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                      href="/merchant/settings"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setSettingsDropdownIsOpen(!settingsDropdownIsOpen);
+                      }}
                     >
-                      location settings
+                      {label}
                     </Link>
+                  ) : label === "item/purpose" ? (
                     <Link
-                      href="/merchant/settings/group"
-                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                      href="/merchant/purpose"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setpurposeDropdownIsOpen(!purposeDropdownIsOpen);
+                      }}
                     >
-                      group settings
+                      {label}
                     </Link>
+                  ) : (
+                    <span
+                      onClick={() => {
+                        SignOut();
+                      }}
+                    >
+                      {label}
+                    </span>
+                  )}
 
-                    <Link
+                  {label === "settings" && (
+                    <Image
+                      src="/arrow_down.svg"
+                      alt="arrow down"
+                      width={8}
+                      height={6}
+                    />
+                  )}
+                  {label === "item/purpose" && (
+                    <Image
+                      src="/arrow_down.svg"
+                      alt="arrow down"
+                      width={8}
+                      height={6}
+                    />
+                  )}
+
+                  {label === "settings" && settingsDropdownIsOpen && (
+                    <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+                      <Link
+                        href={`/merchant/settings/location`}
+                        className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                      >
+                        location settings
+                      </Link>
+                      <Link
+                        href="/merchant/settings/group"
+                        className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                      >
+                        group settings
+                      </Link>
+
+                      {/* <Link
                       href="/merchant/settings"
                       className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
                     >
                       Savings settings
-                    </Link>
+                    </Link> */}
+                      {savings ? (
+                        <div
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setSetupDropdownOpen(!setupdropdownOpen);
+                          }}
+                          className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite  hover:text-ajo_darkBlue"
+                        >
+                          <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
+                            <span>
+                              Savings Setup <br />
+                              and Admin Fee
+                            </span>
 
-                    <div
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setSetupDropdownOpen(!setupdropdownOpen);
-                      }}
-                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite  hover:text-ajo_darkBlue"
-                    >
-                      <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
-                        <span>
-                          Savings Setup <br />
-                          and Admin Fee
-                        </span>
-
-                        <Image
-                          className="mr-2"
-                          src="/arrow_down.svg"
-                          alt="arrow down"
-                          width={12}
-                          height={12}
-                        />
-                      </div>
-
-                      {setupdropdownOpen && (
-                        <>
-                          <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
-                            <Link
-                              href="/merchant/settings/setup-adminfee"
-                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                            >
-                              Setup Saving <br /> and Admin fee
-                            </Link>
+                            <Image
+                              className="mr-2"
+                              src="/arrow_down.svg"
+                              alt="arrow down"
+                              width={12}
+                              height={12}
+                            />
                           </div>
 
-                          <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
-                            <Link
-                              href="/merchant/settings/update-savings-set-up"
-                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                            >
-                              Update Admin <br /> Settings
-                            </Link>
+                          {setupdropdownOpen && (
+                            <>
+                              <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
+                                <Link
+                                  href="/merchant/settings/setup-adminfee"
+                                  className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                                >
+                                  Setup Saving <br /> and Admin fee
+                                </Link>
+                              </div>
+
+                              <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
+                                <Link
+                                  href="/merchant/settings/update-savings-set-up"
+                                  className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                                >
+                                  Update Admin <br /> Settings
+                                </Link>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        ""
+                      )}
+
+                      {savings ? (
+                        <div
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setGeneralAdminFeeOpen(!generalAdminFeeOpen);
+                          }}
+                          className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
+                        >
+                          <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
+                            <span>
+                              General Admin Fee <br />
+                              and Set up
+                            </span>
+
+                            <Image
+                              className="mr-2"
+                              src="/arrow_down.svg"
+                              alt="arrow down"
+                              width={12}
+                              height={12}
+                            />
                           </div>
-                        </>
+
+                          {generalAdminFeeOpen && (
+                            <>
+                              <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
+                                <Link
+                                  href="/merchant/settings/general-admin-fee-set-up"
+                                  className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                                >
+                                  General Admin fee
+                                </Link>
+                              </div>
+
+                              <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
+                                <Link
+                                  href="/merchant/settings/general-admin-fee-set-up/update-general-adminfee"
+                                  className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                                >
+                                  Update General <br />
+                                  Admin Fee
+                                </Link>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        ""
                       )}
                     </div>
+                  )}
 
-                    <div
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setGeneralAdminFeeOpen(!generalAdminFeeOpen);
-                      }}
-                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
-                    >
-                      <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
-                        <span>
-                          General Admin Fee <br />
-                          and Set up
-                        </span>
+                  {label === "item/purpose" && purposeDropdownIsOpen && (
+                    <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+                      <div
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCategoriesDropdownOpen(!categoriesdropdownOpen);
+                        }}
+                        className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite  hover:text-ajo_darkBlue"
+                      >
+                        <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
+                          <span>Categories</span>
 
-                        <Image
-                          className="mr-2"
-                          src="/arrow_down.svg"
-                          alt="arrow down"
-                          width={12}
-                          height={12}
-                        />
-                      </div>
+                          <Image
+                            className="mr-2"
+                            src="/arrow_down.svg"
+                            alt="arrow down"
+                            width={12}
+                            height={12}
+                          />
+                        </div>
 
-                      {generalAdminFeeOpen && (
-                        <>
-                          <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
-                            <Link
-                              href="/merchant/settings/general-admin-fee-set-up"
-                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                            >
-                              General Admin fee
-                            </Link>
-                          </div>
+                        {categoriesdropdownOpen && (
+                          <>
+                            <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
+                              <Link
+                                href="/merchant/purpose/category"
+                                className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                              >
+                                categories
+                              </Link>
+                            </div>
 
-                          <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
-                            <Link
-                              href="/merchant/settings/general-admin-fee-set-up/update-general-adminfee"
-                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                            >
-                              Update General <br />
-                              Admin Fee
-                            </Link>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {label === "item/purpose" && purposeDropdownIsOpen && (
-                  <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
-                    <div
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setCategoriesDropdownOpen(!categoriesdropdownOpen);
-                      }}
-                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite  hover:text-ajo_darkBlue"
-                    >
-                      <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
-                        <span>Categories</span>
-
-                        <Image
-                          className="mr-2"
-                          src="/arrow_down.svg"
-                          alt="arrow down"
-                          width={12}
-                          height={12}
-                        />
-                      </div>
-
-                      {categoriesdropdownOpen && (
-                        <>
-                          <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
-                            <Link
-                              href="/merchant/purpose/category"
-                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                            >
-                              categories
-                            </Link>
-                          </div>
-
-                          {/* <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
+                            {/* <div className="left-0 z-20 w-full rounded-md   py-1 shadow-lg">
                             <Link
                               href="/merchant/purpose/category"
                               className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
@@ -541,114 +566,115 @@ export const Sidebar = ({
                               View Categories
                             </Link>
                           </div> */}
-                        </>
-                      )}
-                    </div>
-
-                    <div
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setItemOpen(!itemOpen);
-                      }}
-                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
-                    >
-                      <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
-                        <span>Purposes</span>
-
-                        <Image
-                          className="mr-2"
-                          src="/arrow_down.svg"
-                          alt="arrow down"
-                          width={12}
-                          height={12}
-                        />
+                          </>
+                        )}
                       </div>
 
-                      {itemOpen && (
-                        <>
-                          <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
-                            <Link
-                              href="/merchant/purpose/item"
-                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                            >
-                              purpose
-                            </Link>
-                          </div>
-                        </>
-                      )}
-                    </div>
+                      <div
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setItemOpen(!itemOpen);
+                        }}
+                        className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
+                      >
+                        <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
+                          <span>Purposes</span>
 
-                    <div
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setItemOpen(!itemOpen);
-                      }}
-                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
-                    >
-                      <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
-                        <span>Coupon</span>
+                          <Image
+                            className="mr-2"
+                            src="/arrow_down.svg"
+                            alt="arrow down"
+                            width={12}
+                            height={12}
+                          />
+                        </div>
 
-                        <Image
-                          className="mr-2"
-                          src="/arrow_down.svg"
-                          alt="arrow down"
-                          width={12}
-                          height={12}
-                        />
+                        {itemOpen && (
+                          <>
+                            <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
+                              <Link
+                                href="/merchant/purpose/item"
+                                className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                              >
+                                purpose
+                              </Link>
+                            </div>
+                          </>
+                        )}
                       </div>
 
-                      {itemOpen && (
-                        <>
-                          <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
-                            <Link
-                              href="/merchant/purpose/coupon"
-                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                            >
-                              coupon
-                            </Link>
-                          </div>
-                        </>
-                      )}
-                    </div>
+                      <div
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setItemOpen(!itemOpen);
+                        }}
+                        className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
+                      >
+                        <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
+                          <span>Coupon</span>
 
-                    <div
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setItemOpen(!itemOpen);
-                      }}
-                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
-                    >
-                      <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
-                        <span>
-                          Purchased Item <br /> Report
-                        </span>
+                          <Image
+                            className="mr-2"
+                            src="/arrow_down.svg"
+                            alt="arrow down"
+                            width={12}
+                            height={12}
+                          />
+                        </div>
 
-                        <Image
-                          className="mr-2"
-                          src="/arrow_down.svg"
-                          alt="arrow down"
-                          width={12}
-                          height={12}
-                        />
+                        {itemOpen && (
+                          <>
+                            <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
+                              <Link
+                                href="/merchant/purpose/coupon"
+                                className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                              >
+                                coupon
+                              </Link>
+                            </div>
+                          </>
+                        )}
                       </div>
 
-                      {itemOpen && (
-                        <>
-                          <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
-                            <Link
-                              href="/merchant/purpose/item-report"
-                              className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                            >
-                              Purchased Item <br /> Report
-                            </Link>
-                          </div>
-                        </>
-                      )}
+                      <div
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setItemOpen(!itemOpen);
+                        }}
+                        className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite   hover:text-ajo_darkBlue"
+                      >
+                        <div className="flex justify-between text-gray-200 hover:bg-ajo_offWhite hover:p-1 hover:text-black">
+                          <span>
+                            Purchased Item <br /> Report
+                          </span>
+
+                          <Image
+                            className="mr-2"
+                            src="/arrow_down.svg"
+                            alt="arrow down"
+                            width={12}
+                            height={12}
+                          />
+                        </div>
+
+                        {itemOpen && (
+                          <>
+                            <div className="left-0 z-20 my-1 w-full  rounded-md  py-1 shadow-lg">
+                              <Link
+                                href="/merchant/purpose/item-report"
+                                className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                              >
+                                Purchased Item <br /> Report
+                              </Link>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              ),
+            )}
           </span>
         </nav>
       </div>
@@ -781,7 +807,11 @@ export const SuperAdminSidebar = ({
                   }
                   className="block cursor-pointer rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
                 >
-                  {route === "account-statement" ? "Account Statement" : route}
+                  {route === "account-statement"
+                    ? "Account Statement"
+                    : route === "superadminfee"
+                      ? "Superadmin Fee"
+                      : route}
                 </Link>
               );
             })}
