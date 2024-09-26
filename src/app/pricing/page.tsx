@@ -135,7 +135,7 @@ export default function Pricing() {
       const paymentPlan = duration;
       const email = user.email;
       const environment = environmentName;
-      const paymentFor = "purpose";
+      const paymentFor = "pricing";
       const phoneNumber = user.phoneNumber;
       const customerName = user.firstName + user.lastName;
       const accountNumber = user.accountNumber;
