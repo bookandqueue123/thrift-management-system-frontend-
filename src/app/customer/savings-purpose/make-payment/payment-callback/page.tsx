@@ -40,7 +40,7 @@ const PaymentCallback = () => {
     }
   }, [transaction_id]);
 
-  let verificationUrl;
+  let verificationUrl = "";
   if (environmentName === "production") {
     verificationUrl = `${apiUrl}api/pay/flw/verify-prod-payment?transaction_id=${transaction_id}`;
   } else {
