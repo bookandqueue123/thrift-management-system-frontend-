@@ -19,6 +19,24 @@ const PaymentCallback = () => {
   const hasFetched = useRef(false); // Track if the effect has already run
   const user = useSelector(selectUser);
   const userRole = user?.role || "";
+
+  const [host, setHost] = useState("");
+  const [environmentName, setEnvironmentName] = useState("");
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      setHost(url.host);
+    }
+
+    if (host === "www.finkia.com.ng") {
+      setEnvironmentName("production");
+    } else if (host === "www.staging.finkia.com.ng") {
+      setEnvironmentName("staging");
+    } else {
+      setEnvironmentName("localhost");
+    }
+  }, [host]);
+
   useEffect(() => {
     if (transaction_id && !hasFetched.current) {
       verifyPayment();
@@ -26,16 +44,20 @@ const PaymentCallback = () => {
     }
   }, [transaction_id]);
 
+  let verificationUrl;
+  if (environmentName === "production") {
+    verificationUrl = `${apiUrl}api/pay/flw/verify-prod-payment?transaction_id=${transaction_id}`;
+  } else {
+    verificationUrl = `${apiUrl}api/pay/flw/verify-subscription-payment?transaction_id=${transaction_id}`;
+  }
+
   const verifyPayment = async () => {
     try {
-      const response = await axios.get(
-        `${apiUrl}api/pay/flw/verify-subscription-payment?transaction_id=${transaction_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await axios.get(verificationUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       if (response.status === 200) {
         setPaymentStatus("success");
@@ -44,7 +66,7 @@ const PaymentCallback = () => {
           if (clientRole === "organisation") {
             router.replace("/merchant");
           } else {
-            router.replace("/customer/savings-purpose");
+            router.replace("/customer");
           }
         }, 2000);
       } else {
