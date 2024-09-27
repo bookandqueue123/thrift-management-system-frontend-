@@ -1,12 +1,14 @@
 "use client";
 import { apiUrl, useAuth } from "@/api/hooks/useAuth";
 import { CustomButton } from "@/components/Buttons";
+import Modal from "@/components/Modal";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import {
   selectToken,
   selectUser,
   selectUserId,
 } from "@/slices/OrganizationIdSlice";
+import AmountFormatter from "@/utils/AmountFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
@@ -19,6 +21,7 @@ import * as Yup from "yup";
 interface initialValuesProps {
   promoCode: string;
 }
+
 export default function Pricing() {
   const { client } = useAuth();
   const token = useSelector(selectToken);
@@ -37,6 +40,15 @@ export default function Pricing() {
   const [errorMessage, setErrormessage] = useState("");
   const [host, setHost] = useState("");
   const [environmentName, setEnvironmentName] = useState("");
+  const [goToPayment, setGoToPayment] = useState(false);
+  const [referralName, setReferralName] = useState(""); // Initialize the state for referralName
+  const [servicePackage, setServicePackage] = useState<any>({});
+  const [duration, setDuration] = useState("");
+  // Handle the input value change
+  const handleChange = (e: { target: { value: SetStateAction<string> } }) => {
+    setReferralName(e.target.value); // Update the state when the input value changes
+  };
+  console.log(referralName);
   useEffect(() => {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
@@ -70,7 +82,6 @@ export default function Pricing() {
         });
     },
   });
-  console.log(packages);
 
   const handleOptionChange = (event: {
     target: { value: SetStateAction<string> };
@@ -117,8 +128,7 @@ export default function Pricing() {
       // setModalContent("status");
     },
   });
-  console.log(errorMessage);
-  const handlePricing = async (
+  const gotoReferralModal = async (
     servicePackage: {
       _id: Key | null | undefined;
       groupName: string;
@@ -132,51 +142,70 @@ export default function Pricing() {
     },
     duration: string,
   ) => {
+    setServicePackage(servicePackage);
+    setDuration(duration);
     setShowModal(true);
-    try {
-      const packageId = servicePackage._id;
-      const paymentPlan = duration;
-      const email = user.email;
-      const environment = environmentName;
-      const paymentFor = "pricing";
-      const phoneNumber = user.phoneNumber;
-      const customerName = user.firstName + user.lastName;
-      const accountNumber = user.accountNumber;
-      const redirectURL = `pricing/payment-callback?role=${user.role}`;
-      let amount;
-      if (duration === "monthly") {
-        amount = servicePackage.actualFee.actualMonthlyFee;
-      } else if (duration === "quarterly") {
-        amount = servicePackage.actualFee.actualQuarterlyFee;
-      } else {
-        amount = servicePackage.actualFee.actualYearlyFee;
-      }
-
-      const response = await axios.post(
-        `${apiUrl}api/pay/flw/subscription-payment`,
-
-        {
-          redirectURL,
-          environment,
-          paymentFor,
-          userId,
-          packageId,
-          paymentPlan,
-          amount,
-          phoneNumber,
-          email,
-          customerName,
-        },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-
-      if (response.data.status === "success") {
-        window.location.href = response.data.data.link;
-      }
-    } catch (error) {
-      console.error(error);
-    }
   };
+  const handlePricing = async () =>
+    // servicePackage: {
+    //   _id: Key | null | undefined;
+    //   groupName: string;
+    //   service: any[];
+    //   actualFee: {
+    //     actualMonthlyFee: any;
+    //     actualQuarterlyFee: any;
+    //     actualYearlyFee: any;
+    //   };
+    //   totals: { totalMonthly: any; totalQuarterly: any; totalYearly: any };
+    // },
+    // duration: string,
+    {
+      console.log(referralName);
+      try {
+        const packageId = servicePackage._id;
+        const paymentPlan = duration;
+        const email = user.email;
+        const environment = environmentName;
+        const paymentFor = "pricing";
+        const phoneNumber = user.phoneNumber;
+        const customerName = user.firstName + user.lastName;
+        const accountNumber = user.accountNumber;
+        const redirectURL = `pricing/payment-callback?role=${user.role}`;
+        let amount;
+        if (duration === "monthly") {
+          amount = AmountFormatter(servicePackage.actualFee.actualMonthlyFee);
+        } else if (duration === "quarterly") {
+          amount = servicePackage.actualFee.actualQuarterlyFee;
+        } else {
+          amount = servicePackage.actualFee.actualYearlyFee;
+        }
+
+        const response = await axios.post(
+          `${apiUrl}api/pay/flw/subscription-payment`,
+
+          {
+            referralName,
+            redirectURL,
+            environment,
+            paymentFor,
+            userId,
+            packageId,
+            paymentPlan,
+            amount,
+            phoneNumber,
+            email,
+            customerName,
+          },
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+
+        if (response.data.status === "success") {
+          window.location.href = response.data.data.link;
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
   const { data: allGateways, isLoading: isLoadingAllGateways } = useQuery({
     queryKey: ["all gateways"],
@@ -197,6 +226,55 @@ export default function Pricing() {
   };
   return (
     <div className="min-h-screen w-full border border-red-500 bg-ajo_darkBlue  px-4 py-12 md:px-16">
+      {showModal ? (
+        <Modal title="Choose Payment Gateway" setModalState={setShowModal}>
+          <div className="mx-auto w-full max-w-md">
+            <label
+              htmlFor="referralName"
+              className="block text-sm font-medium text-white"
+            >
+              Referral Name
+            </label>
+            <input
+              type="text"
+              id="referralName"
+              name="referralName"
+              value={referralName} // Bind input value to referralName state
+              onChange={handleChange} // Call handleChange on user input
+              placeholder="Enter referral name"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-[#EAAB40] focus:outline-none focus:ring-[#EAAB40] sm:text-sm"
+            />
+
+            <div className="mt-4 flex justify-center space-x-4">
+              {/* Back Button */}
+              <button
+                className="rounded-md bg-gray-300 px-4 py-2 font-semibold text-gray-800 hover:bg-gray-400"
+                onClick={() => setShowModal(false)}
+              >
+                Back
+              </button>
+
+              {/* Skip Button */}
+              <button
+                className="rounded-md bg-yellow-400 px-4 py-2 font-semibold text-white hover:bg-yellow-500"
+                onClick={handlePricing}
+              >
+                Skip
+              </button>
+
+              {/* Proceed Button */}
+              <button
+                className="rounded-md bg-green-500 px-4 py-2 font-semibold text-white hover:bg-green-600"
+                onClick={handlePricing}
+              >
+                Proceed
+              </button>
+            </div>
+          </div>
+        </Modal>
+      ) : (
+        ""
+      )}
       <div className="mb-4">
         <label className="mr-4 text-white">
           <input
@@ -252,7 +330,7 @@ export default function Pricing() {
               }) => (
                 <div key={servicePackage._id} className="my-4">
                   {" "}
-                  <p className="my-2 ml-8 whitespace-nowrap pt-4 text-3xl font-extrabold capitalize text-[#EAAB40]">
+                  <p className="my-2 w-full whitespace-normal break-words pt-4 text-xl font-bold capitalize text-[#EAAB40] md:ml-8 md:text-3xl">
                     {servicePackage.groupName}
                   </p>
                   <div className="space-y-8 sm:gap-6 lg:grid lg:grid-cols-3 lg:space-y-0 xl:gap-10">
@@ -290,11 +368,11 @@ export default function Pricing() {
                       <p>{servicePackage.description}</p>
 
                       <div className="my-4 flex items-center justify-center">
-                        <span className="mr-2 whitespace-nowrap text-5xl font-extrabold">{`N${servicePackage.actualFee.actualMonthlyFee}`}</span>
+                        <span className="mr-2 whitespace-nowrap text-2xl font-bold">{`N${AmountFormatter(servicePackage.actualFee.actualMonthlyFee)}`}</span>
                         <span className="whitespace-nowrap text-gray-500 dark:text-gray-400">
                           /month
                         </span>
-                        <span className="mr-2 whitespace-nowrap text-2xl font-normal line-through">{`N${servicePackage.totals.totalMonthly}`}</span>
+                        <span className="text-md ml-1 whitespace-nowrap font-normal line-through">{`N${servicePackage.totals.totalMonthly}`}</span>
                       </div>
 
                       <CustomButton
@@ -302,7 +380,7 @@ export default function Pricing() {
                         label="Get Started"
                         style="rounded-lg bg-blue-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 dark:text-white  dark:focus:ring-blue-900"
                         onButtonClick={() =>
-                          handlePricing(servicePackage, "monthly")
+                          gotoReferralModal(servicePackage, "monthly")
                         }
                       />
 
@@ -349,11 +427,11 @@ export default function Pricing() {
                       <p>{servicePackage.description}</p>
 
                       <div className="my-4 flex items-center justify-center">
-                        <span className="mr-2 whitespace-nowrap text-5xl font-extrabold">{`N${servicePackage.actualFee.actualQuarterlyFee}`}</span>
+                        <span className="mr-2 whitespace-nowrap text-2xl font-bold">{`N${servicePackage.actualFee.actualQuarterlyFee}`}</span>
                         <span className="whitespace-nowrap text-gray-500 dark:text-gray-400">
                           /3 Month
                         </span>
-                        <span className="mr-2 whitespace-nowrap text-2xl font-normal line-through">{`N${servicePackage.totals.totalQuarterly}`}</span>
+                        <span className="text-md ml-1 whitespace-nowrap font-normal line-through">{`N${servicePackage.totals.totalQuarterly}`}</span>
                       </div>
 
                       {/* <a
@@ -367,7 +445,7 @@ export default function Pricing() {
                         label="Get Started"
                         style="rounded-lg bg-blue-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 dark:text-white  dark:focus:ring-blue-900"
                         onButtonClick={() =>
-                          handlePricing(servicePackage, "quarterly")
+                          gotoReferralModal(servicePackage, "quarterly")
                         }
                       />
                     </div>
@@ -407,11 +485,11 @@ export default function Pricing() {
                       <p>{servicePackage.description}</p>
 
                       <div className="my-4 flex items-center justify-center">
-                        <span className="mr-2 whitespace-nowrap text-5xl font-extrabold">{`N${servicePackage.actualFee.actualYearlyFee}`}</span>
+                        <span className="mr-2 whitespace-nowrap text-2xl font-bold">{`N${servicePackage.actualFee.actualYearlyFee}`}</span>
                         <span className="whitespace-nowrap text-gray-500 dark:text-gray-400">
                           yearly
                         </span>
-                        <span className="mr-2 whitespace-nowrap text-2xl font-normal line-through">{`N${servicePackage.totals.totalYearly}`}</span>
+                        <span className="text-md ml-1 whitespace-nowrap font-normal line-through">{`N${servicePackage.totals.totalYearly}`}</span>
                       </div>
 
                       {/* <a
@@ -425,7 +503,7 @@ export default function Pricing() {
                         label="Get Started"
                         style="rounded-lg bg-blue-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 dark:text-white  dark:focus:ring-blue-900"
                         onButtonClick={() =>
-                          handlePricing(servicePackage, "yearly")
+                          gotoReferralModal(servicePackage, "yearly")
                         }
                       />
                     </div>

@@ -7,7 +7,7 @@ import AmountFormatter from "@/utils/AmountFormatter";
 import { extractDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { ChangeEvent, Key, useEffect, useState } from "react";
+import { Key, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 function formatDate(date: Date) {
