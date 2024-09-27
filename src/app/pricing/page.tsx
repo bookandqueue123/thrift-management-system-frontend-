@@ -227,7 +227,7 @@ export default function Pricing() {
   return (
     <div className="min-h-screen w-full border border-red-500 bg-ajo_darkBlue  px-4 py-12 md:px-16">
       {showModal ? (
-        <Modal title="Choose Payment Gateway" setModalState={setShowModal}>
+        <Modal title="Referral Name" setModalState={setShowModal}>
           <div className="mx-auto w-full max-w-md">
             <label
               htmlFor="referralName"
@@ -248,7 +248,7 @@ export default function Pricing() {
             <div className="mt-4 flex justify-center space-x-4">
               {/* Back Button */}
               <button
-                className="rounded-md bg-gray-300 px-4 py-2 font-semibold text-gray-800 hover:bg-gray-400"
+                className="rounded-md bg-ajo_blue px-4 py-2 font-semibold text-gray-800 hover:bg-gray-400"
                 onClick={() => setShowModal(false)}
               >
                 Back
@@ -256,7 +256,7 @@ export default function Pricing() {
 
               {/* Skip Button */}
               <button
-                className="rounded-md bg-yellow-400 px-4 py-2 font-semibold text-white hover:bg-yellow-500"
+                className="rounded-md bg-ajo_blue px-4 py-2 font-semibold text-white hover:bg-yellow-500"
                 onClick={handlePricing}
               >
                 Skip
@@ -264,7 +264,7 @@ export default function Pricing() {
 
               {/* Proceed Button */}
               <button
-                className="rounded-md bg-green-500 px-4 py-2 font-semibold text-white hover:bg-green-600"
+                className="rounded-md bg-ajo_blue px-4 py-2 font-semibold text-white hover:bg-green-600"
                 onClick={handlePricing}
               >
                 Proceed
@@ -427,7 +427,7 @@ export default function Pricing() {
                       <p>{servicePackage.description}</p>
 
                       <div className="my-4 flex items-center justify-center">
-                        <span className="mr-2 whitespace-nowrap text-2xl font-bold">{`N${servicePackage.actualFee.actualQuarterlyFee}`}</span>
+                        <span className="mr-2 whitespace-nowrap text-2xl font-bold">{`N${AmountFormatter(servicePackage.actualFee.actualQuarterlyFee)}`}</span>
                         <span className="whitespace-nowrap text-gray-500 dark:text-gray-400">
                           /3 Month
                         </span>
@@ -485,7 +485,7 @@ export default function Pricing() {
                       <p>{servicePackage.description}</p>
 
                       <div className="my-4 flex items-center justify-center">
-                        <span className="mr-2 whitespace-nowrap text-2xl font-bold">{`N${servicePackage.actualFee.actualYearlyFee}`}</span>
+                        <span className="mr-2 whitespace-nowrap text-2xl font-bold">{`N${AmountFormatter(servicePackage.actualFee.actualYearlyFee)}`}</span>
                         <span className="whitespace-nowrap text-gray-500 dark:text-gray-400">
                           yearly
                         </span>
