@@ -69,9 +69,9 @@ const SubscriptionReport = () => {
 
     if (allUsers) {
       const filtered = allUsers.filter((item) =>
-        String(item.firstName || item.lastName).includes(
-          String(e.target.value),
-        ),
+        String(item.organisationName)
+          .toLowerCase()
+          .includes(String(e.target.value).toLowerCase()),
       );
       // Update the filtered data state
       setFilteredUsers(filtered);
@@ -217,7 +217,14 @@ const SubscriptionReport = () => {
                       {user.subscriptions.find(
                         (subscription: { isActive: any }) =>
                           subscription.isActive,
-                      )?.subscriptionType || "---"}
+                      )?.subscriptionType === "price"
+                        ? "Paid"
+                        : user.subscriptions.find(
+                              (subscription: { isActive: any }) =>
+                                subscription.isActive,
+                            )?.subscriptionType === "promo-code"
+                          ? "Promo"
+                          : "No Active Subscription"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {extractDate(
