@@ -1,12 +1,13 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
-import { CustomButton, FilterDropdown } from "@/components/Buttons";
+import { FilterDropdown } from "@/components/Buttons";
 import Modal from "@/components/Modal";
 import PaginationBar from "@/components/Pagination";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 import { customer } from "@/types";
+import { extractDate, extractTime } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ChangeEvent, useState } from "react";
@@ -26,7 +27,7 @@ const SubscriptionReport = () => {
 
   const [modalState, setModalState] = useState(false);
   const [modalToShow, setModalToShow] = useState<
-    "edit-user" | "create-user" | "view-user" | ""
+    "edit-user" | "create-user" | "view-details" | ""
   >("");
   const [isUserCreated, setIsUserCreated] = useState(false);
 
@@ -62,7 +63,6 @@ const SubscriptionReport = () => {
     },
     staleTime: 5000,
   });
-  console.log(allUsers);
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
@@ -141,7 +141,7 @@ const SubscriptionReport = () => {
               </svg>
             </form>
           </span>
-          <CustomButton
+          {/* <CustomButton
             type="button"
             label="Create User"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
@@ -151,11 +151,11 @@ const SubscriptionReport = () => {
               setModalContent("form");
               setIsUserCreated(false);
             }}
-          />
+          /> */}
         </div>
 
         <div className="mb-5 flex items-center justify-between">
-          <p className="mb-2 text-base font-medium text-white">Super Users</p>
+          <p className="mb-2 text-base font-medium text-white">Report</p>
 
           <button className="flex rounded border border-white bg-transparent px-4 py-2 text-sm font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white">
             Export as CSV{" "}
@@ -172,9 +172,12 @@ const SubscriptionReport = () => {
               "Merchant",
               "Account Number",
               "Subscription Package",
-              "Phone Number",
-              "Address",
-              "No of Assigned Org",
+              "Current Subscription",
+              "Nature of subscription",
+              "Start time and date",
+              "End time and date",
+              "Subscription amount",
+              "Referral Name",
               "Action",
             ]}
             content={
@@ -196,25 +199,71 @@ const SubscriptionReport = () => {
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {user.accountNumber || "----"}
                     </td>
+
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {user.subscriptions.find(
-                        (subscription: { isActive: boolean }) =>
-                          subscription.isActive === true,
-                      )?.name || "No active subscription"}
+                        (subscription: { isActive: any }) =>
+                          subscription.isActive,
+                      )?.servicePackage?.groupName || "No active subscription"}
                     </td>
 
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {user.phoneNumber || "----"}
+                      {user.subscriptions.find(
+                        (subscription: { isActive: any }) =>
+                          subscription.isActive,
+                      )?.paymentPlan || "---"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {user.homeAddress || "----"}
+                      {user.subscriptions.find(
+                        (subscription: { isActive: any }) =>
+                          subscription.isActive,
+                      )?.subscriptionType || "---"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {user.assignedUser.length}
+                      {extractDate(
+                        user.subscriptions.find(
+                          (subscription: { isActive: any }) =>
+                            subscription.isActive,
+                        )?.startDate,
+                      ) || "---"}{" "}
+                      {extractTime(
+                        user.subscriptions.find(
+                          (subscription: { isActive: any }) =>
+                            subscription.isActive,
+                        )?.startDate,
+                      ) || "---"}
                     </td>
-                    {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {user.assignedOrgName || "----"}
-                    </td> */}
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {extractDate(
+                        user.subscriptions.find(
+                          (subscription: { isActive: any }) =>
+                            subscription.isActive,
+                        )?.subscriptionExpiry,
+                      ) || "---"}{" "}
+                      {extractTime(
+                        user.subscriptions.find(
+                          (subscription: { isActive: any }) =>
+                            subscription.isActive,
+                        )?.subscriptionExpiry,
+                      ) || "---"}
+                    </td>
+
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {
+                        user.subscriptions.find(
+                          (subscription: { isActive: any }) =>
+                            subscription.isActive,
+                        )?.amount
+                      }
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {
+                        user.subscriptions.find(
+                          (subscription: { isActive: any }) =>
+                            subscription.isActive,
+                        )?.referralName
+                      }
+                    </td>
 
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       <StatusIndicator
@@ -229,15 +278,11 @@ const SubscriptionReport = () => {
                         }}
                         dropdownEnabled
                         dropdownContents={{
-                          labels: ["View User", "Edit User"],
+                          labels: ["View details"],
                           actions: [
                             () => {
                               setModalState(true);
-                              setModalToShow("view-user");
-                            },
-                            () => {
-                              setModalToShow("edit-user");
-                              setModalState(true);
+                              setModalToShow("view-details");
                             },
                           ],
                         }}
@@ -259,15 +304,15 @@ const SubscriptionReport = () => {
                   ? "Edit User"
                   : modalToShow === "create-user"
                     ? "Create Super User"
-                    : modalToShow === "view-user"
-                      ? "View Super User"
+                    : modalToShow === "view-details"
+                      ? "View details"
                       : ""
               }
             >
               {modalContent === "form" ? (
                 <div className="px-[10%]">
                   {
-                    modalToShow === "view-user"
+                    modalToShow === "view-details"
                       ? "a"
                       : // <ViewUser userId={userToBeEdited} />
                         ""

@@ -847,5 +847,5 @@ export interface servicePackageProps {
   appliedUserId: string;
   selectedCustomerGroup: string;
   selectedIndividualCustomer: string;
-  userType: string,
+  userType: string;
 }
