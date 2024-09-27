@@ -481,6 +481,7 @@ const MutateUser = ({
     },
   });
 
+  console.log(packageInfo);
   const { data: allRoles, isLoading: isLoadingAllRoles } = useQuery({
     queryKey: ["allRoles"],
     queryFn: async () => {
@@ -558,7 +559,6 @@ const MutateUser = ({
 
   const servicesOptions = ["savings", "purpose"];
 
-  console.log(packageInfo);
   const initialValues: servicePackageProps =
     actionToTake === "edit-user"
       ? {
@@ -757,6 +757,7 @@ const MutateUser = ({
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
+        enableReinitialize={true}
         onSubmit={(values) => {
           if (actionToTake === "create-user") {
             // console.log(values);
