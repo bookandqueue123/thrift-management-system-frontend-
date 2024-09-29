@@ -1,5 +1,5 @@
 "use client";
-import { apiUrl, useAuth } from "@/api/hooks/useAuth";
+import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton } from "@/components/Buttons";
 import Modal from "@/components/Modal";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
@@ -10,7 +10,6 @@ import {
 } from "@/slices/OrganizationIdSlice";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { useRouter } from "next/navigation";
 
@@ -160,7 +159,6 @@ export default function Pricing() {
     // },
     // duration: string,
     {
-      console.log(referralName);
       try {
         const packageId = servicePackage._id;
         const paymentPlan = duration;
@@ -173,35 +171,35 @@ export default function Pricing() {
         const redirectURL = `pricing/payment-callback?role=${user.role}`;
         let amount;
         if (duration === "monthly") {
-          amount = AmountFormatter(servicePackage.actualFee.actualMonthlyFee);
+          amount = servicePackage.actualFee.actualMonthlyFee;
         } else if (duration === "quarterly") {
           amount = servicePackage.actualFee.actualQuarterlyFee;
         } else {
           amount = servicePackage.actualFee.actualYearlyFee;
         }
 
-        const response = await axios.post(
-          `${apiUrl}api/pay/flw/subscription-payment`,
+        // const response = await axios.post(
+        //   `${apiUrl}api/pay/flw/subscription-payment`,
 
-          {
-            referralName,
-            redirectURL,
-            environment,
-            paymentFor,
-            userId,
-            packageId,
-            paymentPlan,
-            amount,
-            phoneNumber,
-            email,
-            customerName,
-          },
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
+        //   {
+        //     referralName,
+        //     redirectURL,
+        //     environment,
+        //     paymentFor,
+        //     userId,
+        //     packageId,
+        //     paymentPlan,
+        //     amount,
+        //     phoneNumber,
+        //     email,
+        //     customerName,
+        //   },
+        //   { headers: { Authorization: `Bearer ${token}` } },
+        // );
 
-        if (response.data.status === "success") {
-          window.location.href = response.data.data.link;
-        }
+        // if (response.data.status === "success") {
+        //   window.location.href = response.data.data.link;
+        // }
       } catch (error) {
         console.error(error);
       }

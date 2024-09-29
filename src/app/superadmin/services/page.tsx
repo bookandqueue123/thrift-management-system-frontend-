@@ -481,7 +481,6 @@ const MutateUser = ({
     },
   });
 
-  console.log(packageInfo);
   const { data: allRoles, isLoading: isLoadingAllRoles } = useQuery({
     queryKey: ["allRoles"],
     queryFn: async () => {
