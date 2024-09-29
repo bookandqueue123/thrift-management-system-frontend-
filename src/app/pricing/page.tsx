@@ -160,7 +160,6 @@ export default function Pricing() {
     // },
     // duration: string,
     {
-      console.log(referralName);
       try {
         const packageId = servicePackage._id;
         const paymentPlan = duration;
@@ -173,7 +172,7 @@ export default function Pricing() {
         const redirectURL = `pricing/payment-callback?role=${user.role}`;
         let amount;
         if (duration === "monthly") {
-          amount = AmountFormatter(servicePackage.actualFee.actualMonthlyFee);
+          amount = servicePackage.actualFee.actualMonthlyFee;
         } else if (duration === "quarterly") {
           amount = servicePackage.actualFee.actualQuarterlyFee;
         } else {
