@@ -316,8 +316,27 @@ const ProductCard = ({
     ));
   };
 
+  const handleShare = () => {
+    console.log(123);
+    if (navigator.share) {
+      navigator
+        .share({
+          title: product.purposeName,
+          text: product.description,
+          url: `${window.location.origin}/customer/savings-purpose/${product._id}`,
+        })
+        .then(() => console.log("Successful share"))
+        .catch((error) => console.log("Error sharing", error));
+    } else {
+      // Fallback for desktop
+      alert(
+        "Web Share API is not supported on this browser. Please use the manual share buttons.",
+      );
+    }
+  };
+
   return (
-    <Link href={`/customer/savings-purpose/${product._id}`}>
+    <Link href={``}>
       <div className="">
         <input
           className="ml-4"
@@ -349,7 +368,10 @@ const ProductCard = ({
                 justifyContent: "space-between",
               }}
             >
-              <FaShareAlt className="icon" />
+              <div>
+                <FaShareAlt className="icon" onClick={handleShare} />
+              </div>
+
               <FaBookmark className="icon" />
             </div>
           </div>
