@@ -11,6 +11,7 @@ import {
 import { PurposeProps } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { useQuery } from "@tanstack/react-query";
+import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -337,6 +338,23 @@ const ProductCard = ({
 
   return (
     <Link href={``}>
+      <Head>
+        {/* Open Graph Meta Tags for Link Preview */}
+        <meta property="og:title" content={product.purposeName} />
+        <meta property="og:description" content={product.description} />
+        <meta property="og:image" content={product.imageUrl} />
+        <meta
+          property="og:url"
+          content={`${window.location.origin}/customer/savings-purpose/${product._id}`}
+        />
+        <meta property="og:type" content="website" />
+
+        {/* Twitter Meta Tags for Link Preview */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={product.purposeName} />
+        <meta name="twitter:description" content={product.description} />
+        <meta name="twitter:image" content={product.imageUrl} />
+      </Head>
       <div className="">
         <input
           className="ml-4"
