@@ -27,6 +27,8 @@ import {
   LinkedinShareButton,
   TwitterIcon,
   TwitterShareButton,
+  WhatsappIcon,
+  WhatsappShareButton,
 } from "react-share";
 // import './App.css';
 
@@ -439,22 +441,26 @@ const ProductCard = ({
 
   // URL for sharing
   const shareUrl = `${window.location.origin}/customer/savings-purpose/${product._id}`;
-
+  console.log(product.imageUrl);
   return (
     <>
       <Head>
+        {/* Dynamic Title and Meta Tags for Open Graph */}
         <title>{product.purposeName}</title>
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={`${window.location.href}`} />
         <meta property="og:title" content={product.purposeName} />
-        <meta
-          property="og:description"
-          content={truncateDescription(product.description, 15)}
-        />
+        <meta property="og:description" content={product.description} />
         <meta property="og:image" content={product.imageUrl} />
-        <meta
-          property="og:url"
-          content={`/customer/savings-purpose/${product._id}`}
-        />
-        <meta property="og:type" content="product" />
+        <meta property="og:image:alt" content={product.purposeName} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={product.purposeName} />
+        <meta name="twitter:description" content={product.description} />
+        <meta name="twitter:image" content={product.imageUrl} />
       </Head>
       <Link href={shareUrl}>
         <div className="">
@@ -473,31 +479,20 @@ const ProductCard = ({
                 alt={product.purposeName}
                 className="product-image p-4"
               />
-              <div
-                className="icon-container"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <FacebookShareButton
-                  url={shareUrl}
-                  // quote={`${product.purposeName}: ${truncateDescription(product.description, 15)}`}
-                >
+              <div className="social-share-container mt-4">
+                <FacebookShareButton url={shareUrl} hashtag="#ProductShare">
                   <FacebookIcon size={32} round />
                 </FacebookShareButton>
-                <TwitterShareButton
-                  url={shareUrl}
-                  title={`${product.purposeName}: ${truncateDescription(product.description, 15)}`}
-                >
+                <TwitterShareButton url={shareUrl} title={product.purposeName}>
                   <TwitterIcon size={32} round />
                 </TwitterShareButton>
+                <WhatsappShareButton url={shareUrl} title={product.purposeName}>
+                  <WhatsappIcon size={32} round />
+                </WhatsappShareButton>
                 <LinkedinShareButton
                   url={shareUrl}
                   title={product.purposeName}
-                  summary={truncateDescription(product.description, 15)}
-                  source={shareUrl}
+                  summary={product.description}
                 >
                   <LinkedinIcon size={32} round />
                 </LinkedinShareButton>
@@ -596,7 +591,6 @@ const App = ({ categoryToshow, merchantNumber }: categoryToSHowProps) => {
   const filteredPurposes =
     categoryToshow === "general" ? generalPurpose : inhousePurpose;
 
-  console.log(filteredPurposes);
   // const handleSearch = useCallback(() => {
   //   if (allPurpose && merchantNumber) {
   //     const filtered = allPurpose.filter((item) =>
