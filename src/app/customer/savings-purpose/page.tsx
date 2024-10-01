@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/api/hooks/useAuth";
+
 import { FilterDropdown } from "@/components/Buttons";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PurposeCarousel from "@/modules/merchant/SavingPurposeCarousel";
@@ -9,12 +10,12 @@ import {
   updateSelectedProducts,
 } from "@/slices/OrganizationIdSlice";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 export default function Page() {
   const dispatch = useDispatch();
   const organisationId = useSelector(selectOrganizationId);
+  const [mercantNumber, setMerchantNumber] = useState("");
   const { client } = useAuth();
   const {
     data: organisation,
@@ -58,6 +59,10 @@ export default function Page() {
     dispatch(updateSelectedProducts([]));
   };
 
+  const handleSearch = (e: { target: { value: SetStateAction<string> } }) => {
+    setMerchantNumber(e.target.value);
+  };
+
   return (
     <ProtectedRoute requirePurpose>
       <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
@@ -77,7 +82,7 @@ export default function Page() {
           <span className="flex items-center gap-3">
             <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
               <input
-                //   onChange={handleSearch}
+                onChange={handleSearch}
                 type="search"
                 placeholder="Search"
                 className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
@@ -158,7 +163,10 @@ export default function Page() {
         </div>
 
         <div>
-          <PurposeCarousel categoryToshow={selectedCategory} />
+          <PurposeCarousel
+            merchantNumber={mercantNumber}
+            categoryToshow={selectedCategory}
+          />
         </div>
       </div>
     </ProtectedRoute>

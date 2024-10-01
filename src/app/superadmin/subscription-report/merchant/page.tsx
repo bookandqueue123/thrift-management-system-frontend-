@@ -77,6 +77,7 @@ const SubscriptionReport = () => {
       setFilteredUsers(filtered);
     }
   };
+  
   const handleDateFilter = () => {
     // Filter the data based on the date range
     if (allUsers) {

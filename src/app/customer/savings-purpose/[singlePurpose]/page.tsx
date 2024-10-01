@@ -118,10 +118,10 @@ export default function Page() {
                 Savings Purpose
               </h2>
             </div>
-            <div className="relative z-10 mx-6 mt-12 rounded-lg bg-purposeBg shadow-md">
+            <div className="relative z-10 mx-1 mt-12 rounded-lg bg-purposeBg shadow-md">
               <div className="grid grid-cols-1 p-6 md:grid-cols-3">
                 <div className="mb-4">
-                  <h2 className="text-2xl font-bold capitalize">
+                  <h2 className="text-xl font-semibold capitalize md:text-2xl md:font-bold">
                     {SinglePurpose.purposeName}
                   </h2>
                   <h2 className="my-2 text-xs font-semibold text-black">

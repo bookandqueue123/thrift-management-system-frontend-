@@ -1,7 +1,7 @@
 "use client";
 import useRedirect from "@/api/hooks/useRedirect";
 import AvatarDropdown from "@/components/Dropdowns";
-import { Sidebar, SuperAdminSidebar } from "@/components/Navbar";
+import { SuperAdminSidebar } from "@/components/Navbar";
 import { useState } from "react";
 
 // export const metadata: Metadata = {
@@ -13,8 +13,8 @@ export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-  }) {
-  useRedirect()
+}) {
+  useRedirect();
   const [ShowSidebar, setShowSidebar] = useState(false);
 
   const toggleLeftPadding = () => {

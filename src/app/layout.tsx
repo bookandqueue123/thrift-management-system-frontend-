@@ -1,4 +1,5 @@
 "use client";
+import { PermissionsProvider } from "@/api/hooks/usePermissions";
 import { PreferredUrlProvider } from "@/api/hooks/useUrl";
 import "@/styles/globals.css";
 import { Montserrat } from "next/font/google";
@@ -7,7 +8,6 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import TanstackProvider from "../../providers/TanstackProvider";
 import { store } from "../../store/store";
-import { PermissionsProvider } from "@/api/hooks/usePermissions";
 const montserrat = Montserrat({ subsets: ["latin"] });
 
 // export const metadata: Metadata = {
