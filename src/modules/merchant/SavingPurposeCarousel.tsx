@@ -11,19 +11,23 @@ import {
 import { PurposeProps } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { useQuery } from "@tanstack/react-query";
+import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { ScrollMenu, VisibilityContext } from "react-horizontal-scrolling-menu";
 import "react-horizontal-scrolling-menu/dist/styles.css";
-import {
-  FaBookmark,
-  FaChevronLeft,
-  FaChevronRight,
-  FaShareAlt,
-} from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
+import {
+  FacebookIcon,
+  FacebookShareButton,
+  LinkedinIcon,
+  LinkedinShareButton,
+  TwitterIcon,
+  TwitterShareButton,
+} from "react-share";
 // import './App.css';
 
 const LeftArrow = () => {
@@ -154,28 +158,6 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
     dispatch(updateSelectedProducts(updatedProducts));
   };
 
-  // Add mandatory products to selectedProducts on initial load
-  // useEffect(() => {
-  //   if (!products) return; // Check if products is defined and not null
-
-  //   Object.keys(products).forEach((categoryName) => {
-  //     const categoryProducts = products[categoryName];
-  //     categoryProducts.forEach((product: any) => {
-  //       if (
-  //         (product.SelectorAll === 'selectorAllMandatory' ||
-  //           (product.selectorCategory === 'selectorCategoryMandatory' &&
-  //             categoryProducts.some(
-  //               (p: any) =>
-  //                 p._id !== product._id &&
-  //                 (p.SelectorAll === 'selectorAllMandatory' || selectedProducts.includes(p._id))
-  //             ))) &&
-  //         !selectedProducts.includes(product._id)
-  //       ) {
-  //         dispatch(addSelectedProduct(product._id));
-  //       }
-  //     });
-  //   });
-  // }, [products, selectedProducts, dispatch]);
   useEffect(() => {
     if (!products) return;
 
@@ -287,6 +269,144 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
   );
 };
 
+// const ProductCard = ({
+//   product,
+//   onCheckboxChange,
+//   isChecked,
+// }: {
+//   product: any;
+//   onCheckboxChange: (id: React.Key, isChecked: boolean) => void;
+//   isChecked: boolean;
+// }) => {
+//   const router = useRouter();
+//   const truncateDescription = (description: string, wordLimit: number) => {
+//     const words = description.split(" ");
+//     return (
+//       words.slice(0, wordLimit).join(" ") +
+//       (words.length > wordLimit ? "..." : "")
+//     );
+//   };
+
+//   const renderQuantityOptions = () => {
+//     if (product.quantity === "Nill") {
+//       return <option value="Nill">Nill</option>;
+//     }
+//     return Array.from({ length: product.quantity }, (_, i) => (
+//       <option key={i + 1} value={i + 1}>
+//         {i + 1}
+//       </option>
+//     ));
+//   };
+
+//   const handleShare = () => {
+//     console.log(123);
+//     if (navigator.share) {
+//       navigator
+//         .share({
+//           files: product.imageUrl,
+//           title: product.purposeName,
+//           text: product.description,
+//           url: `${window.location.origin}/customer/savings-purpose/${product._id}`,
+//         })
+//         .then(() => console.log("Successful share"))
+//         .catch((error) => console.log("Error sharing", error));
+//     } else {
+//       // Fallback for desktop
+//       alert(
+//         "Web Share API is not supported on this browser. Please use the manual share buttons.",
+//       );
+//     }
+//   };
+
+//   return (
+//     <Link href={`/customer/savings-purpose/${product._id}`}>
+//       <div className="">
+//         <input
+//           className="ml-4"
+//           type="checkbox"
+//           checked={isChecked}
+//           onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
+//         />
+//         <div className="product-card">
+//           <div className="checkbox-container" style={{ marginLeft: "8px" }}>
+//             {/* <input
+//             type="checkbox"
+//             checked={isChecked}
+//             onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
+//           /> */}
+//           </div>
+//           <div className="image-section h-[40%]">
+//             <Image
+//               height={100}
+//               width={150}
+//               src={product.imageUrl}
+//               alt={product.purposeName}
+//               className="product-image p-4"
+//             />
+//             <div
+//               className="icon-container"
+//               style={{
+//                 display: "flex",
+//                 alignItems: "center",
+//                 justifyContent: "space-between",
+//               }}
+//             >
+//               <div>
+//                 <FaShareAlt className="icon" onClick={handleShare} />
+//               </div>
+
+//               <FaBookmark className="icon" />
+//             </div>
+//           </div>
+//           <div className="info-section bg-ajo_orange text-black">
+//             <h3 className="product-name">{product.purposeName}</h3>
+//             <div
+//               className="product-price-row"
+//               style={{
+//                 display: "flex",
+//                 justifyContent: "space-between",
+//                 alignItems: "center",
+//               }}
+//             >
+//               <p className="product-price">
+//                 NGN{AmountFormatter(product.amount)}
+//               </p>
+//               <div
+//                 style={{
+//                   display: "flex",
+//                   flexDirection: "column",
+//                   marginLeft: "auto",
+//                 }}
+//               >
+//                 <label
+//                   htmlFor={`quantity-${product._id}`}
+//                   style={{ fontSize: "0.9rem", marginBottom: "4px" }}
+//                 >
+//                   Qty
+//                 </label>
+//                 {product.merchantQuantity}
+//                 {/* <select id={`quantity-${product._id}`} className="quantity-dropdown">
+//               {renderQuantityOptions()}
+//             </select> */}
+//               </div>
+//             </div>
+
+//             <p className="product-description">
+//               {truncateDescription(product.description, 15)}
+//             </p>
+//             <a
+//               href={`/customer/savings-purpose/${product._id}`}
+//               className="read-more"
+//             >
+//               Read more
+//             </a>
+//           </div>
+//         </div>
+//       </div>
+//     </Link>
+//   );
+// };
+
 const ProductCard = ({
   product,
   onCheckboxChange,
@@ -297,6 +417,7 @@ const ProductCard = ({
   isChecked: boolean;
 }) => {
   const router = useRouter();
+
   const truncateDescription = (description: string, wordLimit: number) => {
     const words = description.split(" ");
     return (
@@ -316,143 +437,131 @@ const ProductCard = ({
     ));
   };
 
-  const handleShare = () => {
-    console.log(123);
-    if (navigator.share) {
-      navigator
-        .share({
-          files: product.imageUrl,
-          title: product.purposeName,
-          text: product.description,
-          url: `${window.location.origin}/customer/savings-purpose/${product._id}`,
-        })
-        .then(() => console.log("Successful share"))
-        .catch((error) => console.log("Error sharing", error));
-    } else {
-      // Fallback for desktop
-      alert(
-        "Web Share API is not supported on this browser. Please use the manual share buttons.",
-      );
-    }
-  };
+  // URL for sharing
+  const shareUrl = `${window.location.origin}/customer/savings-purpose/${product._id}`;
 
   return (
-    <Link href={``}>
-      <div className="">
-        <input
-          className="ml-4"
-          type="checkbox"
-          checked={isChecked}
-          onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
+    <>
+      <Head>
+        <title>{product.purposeName}</title>
+        <meta property="og:title" content={product.purposeName} />
+        <meta
+          property="og:description"
+          content={truncateDescription(product.description, 15)}
         />
-        <div className="product-card">
-          <div className="checkbox-container" style={{ marginLeft: "8px" }}>
-            {/* <input
+        <meta property="og:image" content={product.imageUrl} />
+        <meta
+          property="og:url"
+          content={`/customer/savings-purpose/${product._id}`}
+        />
+        <meta property="og:type" content="product" />
+      </Head>
+      <Link href={shareUrl}>
+        <div className="">
+          <input
+            className="ml-4"
             type="checkbox"
             checked={isChecked}
             onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
-          /> */}
-          </div>
-          <div className="image-section h-[40%]">
-            <Image
-              height={100}
-              width={150}
-              src={product.imageUrl}
-              alt={product.purposeName}
-              className="product-image p-4"
-            />
-            <div
-              className="icon-container"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <div>
-                <FaShareAlt className="icon" onClick={handleShare} />
-              </div>
-
-              <FaBookmark className="icon" />
-            </div>
-          </div>
-          <div className="info-section bg-ajo_orange text-black">
-            <h3 className="product-name">{product.purposeName}</h3>
-            <div
-              className="product-price-row"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <p className="product-price">
-                NGN{AmountFormatter(product.amount)}
-              </p>
+          />
+          <div className="product-card">
+            <div className="image-section h-[40%]">
+              <Image
+                height={100}
+                width={150}
+                src={product.imageUrl}
+                alt={product.purposeName}
+                className="product-image p-4"
+              />
               <div
+                className="icon-container"
                 style={{
                   display: "flex",
-                  flexDirection: "column",
-                  marginLeft: "auto",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
-                <label
-                  htmlFor={`quantity-${product._id}`}
-                  style={{ fontSize: "0.9rem", marginBottom: "4px" }}
+                <FacebookShareButton
+                  url={shareUrl}
+                  // quote={`${product.purposeName}: ${truncateDescription(product.description, 15)}`}
                 >
-                  Qty
-                </label>
-                {product.merchantQuantity}
-                {/* <select id={`quantity-${product._id}`} className="quantity-dropdown">
-              {renderQuantityOptions()}
-            </select> */}
+                  <FacebookIcon size={32} round />
+                </FacebookShareButton>
+                <TwitterShareButton
+                  url={shareUrl}
+                  title={`${product.purposeName}: ${truncateDescription(product.description, 15)}`}
+                >
+                  <TwitterIcon size={32} round />
+                </TwitterShareButton>
+                <LinkedinShareButton
+                  url={shareUrl}
+                  title={product.purposeName}
+                  summary={truncateDescription(product.description, 15)}
+                  source={shareUrl}
+                >
+                  <LinkedinIcon size={32} round />
+                </LinkedinShareButton>
               </div>
             </div>
+            <div className="info-section bg-ajo_orange text-black">
+              <h3 className="product-name">{product.purposeName}</h3>
+              <div
+                className="product-price-row"
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <p className="product-price">
+                  NGN{AmountFormatter(product.amount)}
+                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    marginLeft: "auto",
+                  }}
+                >
+                  <label
+                    htmlFor={`quantity-${product._id}`}
+                    style={{ fontSize: "0.9rem", marginBottom: "4px" }}
+                  >
+                    Qty
+                  </label>
+                  {product.merchantQuantity}
+                </div>
+              </div>
 
-            <p className="product-description">
-              {truncateDescription(product.description, 15)}
-            </p>
-            <a
-              href={`/customer/savings-purpose/${product._id}`}
-              className="read-more"
-            >
-              Read more
-            </a>
+              <p className="product-description">
+                {truncateDescription(product.description, 15)}
+              </p>
+              <a
+                href={`/customer/savings-purpose/${product._id}`}
+                className="read-more"
+              >
+                Read more
+              </a>
+            </div>
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </>
   );
 };
 
 interface categoryToSHowProps {
   categoryToshow: string;
+  merchantNumber: string;
 }
 
-const App = ({ categoryToshow }: categoryToSHowProps) => {
+const App = ({ categoryToshow, merchantNumber }: categoryToSHowProps) => {
   const organisationId = useSelector(selectOrganizationId);
   const user = useSelector(selectUser);
+  // const [filteredPurposes, setFilteredPurposes] = useState([]);
 
   const { client } = useAuth();
 
-  // const {
-  //   data: allPurposeInhouse,
-  //   isLoading: isLoadingAllPurposeInhouse,
-  //   refetch,
-  // } = useQuery({
-  //   queryKey: ["allPurpose"],
-  //   queryFn: async () => {
-  //     return client
-  //       .get(`/api/purpose?organisation=${organisationId}`, {})
-  //       .then((response) => {
-  //         return response.data;
-  //       })
-  //       .catch((error) => {
-  //         throw error;
-  //       });
-  //   },
-  //   staleTime: 5000,
-  // });
   const {
     data: allPurpose,
     isLoading: isLoadingAllPurpose,
@@ -472,6 +581,7 @@ const App = ({ categoryToshow }: categoryToSHowProps) => {
     staleTime: 5000,
   });
 
+  console.log(allPurpose);
   // console.log(allPurposeInhouse, "inhouse");
 
   const inhousePurpose = allPurpose?.filter(
@@ -486,6 +596,24 @@ const App = ({ categoryToshow }: categoryToSHowProps) => {
   const filteredPurposes =
     categoryToshow === "general" ? generalPurpose : inhousePurpose;
 
+  console.log(filteredPurposes);
+  // const handleSearch = useCallback(() => {
+  //   if (allPurpose && merchantNumber) {
+  //     const filtered = allPurpose.filter((item) =>
+  //       item.organisation.accountNumber.includes(merchantNumber),
+  //     );
+
+  //     // Only update the state if filtered results are different
+  //     if (JSON.stringify(filtered) !== JSON.stringify(filteredPurposes)) {
+  //       setFilteredPurposes(filtered);
+  //     }
+  //   }
+  // }, [allPurpose, merchantNumber, filteredPurposes]);
+
+  // useEffect(() => {
+  //   handleSearch();
+  // }, [merchantNumber]);
+
   const groupedPurposes = filteredPurposes?.reduce(
     (acc: { [x: string]: any[] }, purpose: { category: { name: any } }) => {
       const categoryName = purpose.category.name;
@@ -498,8 +626,6 @@ const App = ({ categoryToshow }: categoryToSHowProps) => {
     {} as Record<string, PurposeProps[]>,
   );
 
-  // const automobileCategoryPurpose = filteredPurposes?.filter((purpose: { category: { name: string | string[]; }; }) => purpose.category.name.includes("Automobile"));
-  // console.log(automobileCategoryPurpose);
   return (
     <div className="App">
       <ProductHorizontalScroll products={groupedPurposes} />

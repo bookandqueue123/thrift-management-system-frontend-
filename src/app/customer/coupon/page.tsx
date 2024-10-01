@@ -1,6 +1,7 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
 import { usePermissions } from "@/api/hooks/usePermissions";
+import useRedirect from "@/api/hooks/useRedirect";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import PaginationBar from "@/components/Pagination";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -13,8 +14,8 @@ import { AxiosError, AxiosResponse } from "axios";
 import Image from "next/image";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-
 const Coupon = () => {
+  useRedirect();
   const PAGE_SIZE = 10;
   const organisationId = useSelector(selectOrganizationId);
   const { userPermissions, permissionsMap } = usePermissions();

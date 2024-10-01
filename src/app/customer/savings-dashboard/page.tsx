@@ -1,23 +1,26 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
+import useRedirect from "@/api/hooks/useRedirect";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
 import { DashboardCard } from "@/components/Cards";
 import Modal from "@/components/Modal";
 import TransactionsTable from "@/components/Tables";
-import { selectSelectedProducts, selectUserId } from "@/slices/OrganizationIdSlice";
+import {
+  selectSelectedProducts,
+  selectUserId,
+} from "@/slices/OrganizationIdSlice";
 import { allSavingsResponse } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { extractDate, extractTime } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, Suspense, useEffect, useState } from "react";
 import { CiExport } from "react-icons/ci";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { useSelector } from "react-redux";
-
 const CustomerDashboard = () => {
+  useRedirect();
   const selectedProducts = useSelector(selectSelectedProducts);
 
   const PAGE_SIZE = 5;
@@ -83,7 +86,6 @@ const CustomerDashboard = () => {
       return client
         .get(`/api/saving/get-savings?user=${id}`)
         .then((response) => {
-          
           // setFilteredSavings(response.data.savings)
           return response.data.currentSavingsBalance;
         })
@@ -191,18 +193,17 @@ const CustomerDashboard = () => {
           Ensure Uninterrupted Service by Uploading Your KYC
         </p>
 
-       
-       
         <CustomButton
           type="button"
           label="Upload KYC document"
           style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
-          onButtonClick={() => router.push(`../../signup/customer/kyc?id=${id}`)}
+          onButtonClick={() =>
+            router.push(`../../signup/customer/kyc?id=${id}`)
+          }
         />
       </div>
     );
   };
-
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
@@ -218,7 +219,6 @@ const CustomerDashboard = () => {
 
       {LoggedInUser && (
         <>
-       
           <div className="mb-4 space-y-2">
             <h6 className="text-base font-bold text-ajo_offWhite opacity-60">
               Dashboard
