@@ -451,7 +451,7 @@ const ProductCard = ({
         <meta property="og:url" content={`${window.location.href}`} />
         <meta property="og:title" content={product.purposeName} />
         <meta property="og:description" content={product.description} />
-        <meta property="og:image" content={product.imageUrl} />
+        <meta property="og:image" content={`https://res.cloudinary.com/dgoeed5be/image/upload/v1726058163/thrift/i04saferxaf5yuvpjahv.png`} />
         <meta property="og:image:alt" content={product.purposeName} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
@@ -460,7 +460,7 @@ const ProductCard = ({
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={product.purposeName} />
         <meta name="twitter:description" content={product.description} />
-        <meta name="twitter:image" content={product.imageUrl} />
+        <meta name="twitter:image" content={`https://res.cloudinary.com/dgoeed5be/image/upload/v1726058163/thrift/i04saferxaf5yuvpjahv.png`} />
       </Head>
       <Link href={shareUrl}>
         <div className="">
