@@ -1,10 +1,11 @@
 "use client";
+import useRedirect from "@/api/hooks/useRedirect";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import WithdrawalForm from "@/modules/Withdrawal/Withdrawal";
 import WithdrawalReport from "@/modules/Withdrawal/WithdrawalReport";
 import { useRouter } from "next/navigation";
-
 const Withdrawal = () => {
+  useRedirect();
   const router = useRouter();
   return (
     <ProtectedRoute requireSavings>

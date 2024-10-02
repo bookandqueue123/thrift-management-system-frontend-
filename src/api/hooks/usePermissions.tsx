@@ -1,3 +1,4 @@
+"use client";
 import { selectUser, selectUserId } from "@/slices/OrganizationIdSlice";
 import {
   AssignedUser,
@@ -37,7 +38,7 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
           const response: AxiosResponse<User, any> = await client.get(
             `api/user/${userId}`,
           );
-        
+
           const userPermissionsUpdate = response.data.roles.flatMap((role) =>
             role.permissions.map((permission) => permission._id),
           );
@@ -53,7 +54,7 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
         try {
           const response: AxiosResponse<permissionObject[], any> =
             await client.get("api/permission");
-           
+
           const permissionsMapUpdate = response.data.reduce(
             (acc, permission) => {
               acc[permission.title] = permission._id;
@@ -61,7 +62,7 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
             },
             {} as PermissionsMap,
           );
-      
+
           setPermissionsMap(permissionsMapUpdate);
         } catch (error) {
           console.error(error);

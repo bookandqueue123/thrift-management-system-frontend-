@@ -1,6 +1,7 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
 import { usePermissions } from "@/api/hooks/usePermissions";
+import useRedirect from "@/api/hooks/useRedirect";
 import { CustomButton } from "@/components/Buttons";
 import ErrorModal from "@/components/ErrorModal";
 import Modal from "@/components/Modal";
@@ -24,6 +25,7 @@ import { IoMdSearch } from "react-icons/io";
 import { useSelector } from "react-redux";
 
 export default function Page() {
+  useRedirect();
   const [successModal, setSuccessModal] = useState(false);
   const [modalState, setModalState] = useState(false);
   const { userPermissions, permissionsLoading, permissionsMap } =

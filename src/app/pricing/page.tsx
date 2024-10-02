@@ -178,7 +178,7 @@ export default function Pricing() {
         } else {
           amount = servicePackage.actualFee.actualYearlyFee;
         }
-
+        console.log(amount);
         const response = await axios.post(
           `${apiUrl}api/pay/flw/subscription-payment`,
 

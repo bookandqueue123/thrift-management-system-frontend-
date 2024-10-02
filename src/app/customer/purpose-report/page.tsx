@@ -1,5 +1,6 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
+import useRedirect from "@/api/hooks/useRedirect";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
@@ -16,6 +17,7 @@ import {
 import { useSelector } from "react-redux";
 
 export default function PurposeReport() {
+  useRedirect();
   const { client } = useAuth();
   const organisationId = useSelector(selectOrganizationId);
 
