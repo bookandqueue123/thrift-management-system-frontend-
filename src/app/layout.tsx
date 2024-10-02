@@ -6,6 +6,7 @@ import { Montserrat } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import TanstackProvider from "../../providers/TanstackProvider";
+
 const montserrat = Montserrat({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -20,9 +21,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head></head>
+      <head>
+      
+      </head>
 
       <body className={montserrat.className}>
+
         {/* <Provider store={store}> */}
         <TanstackProvider>
           <PreferredUrlProvider>
@@ -35,6 +39,7 @@ export default function RootLayout({
           </PreferredUrlProvider>
         </TanstackProvider>
         {/* </Provider> */}
+
       </body>
     </html>
   );
