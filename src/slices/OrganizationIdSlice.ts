@@ -1,5 +1,3 @@
-
-
 import { User } from "@/types";
 import { createSlice } from "@reduxjs/toolkit";
 
@@ -32,43 +30,47 @@ const initialState: initialStateProps = {
   token: isClient ? localStorage.getItem("token") || null : null,
   user: isClient ? parseUser(localStorage.getItem("user")) || null : null,
   userId: isClient ? localStorage.getItem("userId") || null : null,
-//  selectedProducts: isClient
-//      ? JSON.parse(localStorage.getItem("selectedProducts") || "[]")
-//      : [], // Initialize from localStorage or an empty array
+  //  selectedProducts: isClient
+  //      ? JSON.parse(localStorage.getItem("selectedProducts") || "[]")
+  //      : [], // Initialize from localStorage or an empty array
   // selectedProducts: isClient
   //   ? JSON.parse(localStorage.getItem("selectedProducts") || "[]")
   //   : [], // Initialize from localStorage or an empty array
 
-  selectedProducts: isClient ? (() => {
-   try { const storedProducts = localStorage.getItem("selectedProducts");
-   return storedProducts ? JSON.parse(storedProducts) : [];
-   } catch (error) {
-   console.error("Error parsing selectedProducts from localStorage", error);
-   return [];
-   }
-   })()
-  : [],
+  selectedProducts: isClient
+    ? (() => {
+        try {
+          const storedProducts = localStorage.getItem("selectedProducts");
+          return storedProducts ? JSON.parse(storedProducts) : [];
+        } catch (error) {
+          console.error(
+            "Error parsing selectedProducts from localStorage",
+            error,
+          );
+          return [];
+        }
+      })()
+    : [],
 };
-
 
 export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
     setAuthData: (state, action) => {
-      const { organizationId, token, user, userId, selectedProducts } = action.payload;
+      const { organizationId, token, user, userId, selectedProducts } =
+        action.payload;
       state.organizationId = organizationId;
       state.token = token;
       state.user = user;
       state.userId = userId;
-      state.selectedProducts = selectedProducts
+      state.selectedProducts = selectedProducts;
       if (isClient) {
         localStorage.setItem("organizationId", organizationId);
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
         localStorage.setItem("userId", userId);
-        localStorage.setItem("selectedProducts", selectedProducts)
-        
+        localStorage.setItem("selectedProducts", selectedProducts);
       }
     },
     clearAuthData: (state) => {
@@ -87,33 +89,44 @@ export const authSlice = createSlice({
     addSelectedProduct: (state, action) => {
       const productId = action.payload;
       if (!state.selectedProducts.includes(productId)) {
-        state.selectedProducts.push(productId); 
+        state.selectedProducts.push(productId);
         if (isClient) {
-          localStorage.setItem('selectedProducts', JSON.stringify(state.selectedProducts));
+          localStorage.setItem(
+            "selectedProducts",
+            JSON.stringify(state.selectedProducts),
+          );
         }
       }
     },
     removeSelectedProduct: (state, action) => {
       const productId = action.payload;
-      state.selectedProducts = state.selectedProducts.filter(id => id !== productId);
+      state.selectedProducts = state.selectedProducts.filter(
+        (id) => id !== productId,
+      );
       if (isClient) {
-        localStorage.setItem('selectedProducts', JSON.stringify(state.selectedProducts));
+        localStorage.setItem(
+          "selectedProducts",
+          JSON.stringify(state.selectedProducts),
+        );
       }
     },
     updateSelectedProducts: (state, action) => {
       const productIds = action.payload;
       state.selectedProducts = productIds;
       if (isClient) {
-        localStorage.setItem('selectedProducts', JSON.stringify(state.selectedProducts));
+        localStorage.setItem(
+          "selectedProducts",
+          JSON.stringify(state.selectedProducts),
+        );
       }
     },
     clearSelectedProducts: (state) => {
       state.selectedProducts = [];
       if (isClient) {
-        localStorage.removeItem('selectedProducts');
+        localStorage.removeItem("selectedProducts");
       }
-    }
-    
+    },
+
     // addSelectedProduct: (state, action) => {
     //   const productId = action.payload;
     //   if (!state.selectedProducts.includes(productId)) {
@@ -136,14 +149,13 @@ export const authSlice = createSlice({
   },
 });
 
-
 export const {
   setAuthData,
   clearAuthData,
   addSelectedProduct,
   removeSelectedProduct,
   clearSelectedProducts,
-  updateSelectedProducts
+  updateSelectedProducts,
 } = authSlice.actions;
 
 export const selectOrganizationId = (state: {
@@ -154,11 +166,11 @@ export const selectToken = (state: { auth: { token: string } }) =>
 export const selectUser = (state: { auth: { user: User } }) => state.auth.user;
 export const selectUserId = (state: { auth: { userId: string } }) =>
   state.auth.userId;
-export const selectSelectedProducts = (state: { auth: { selectedProducts: React.Key[] } }) =>
-  state.auth.selectedProducts; // Add selector for selectedProducts
+export const selectSelectedProducts = (state: {
+  auth: { selectedProducts: React.Key[] };
+}) => state.auth.selectedProducts; // Add selector for selectedProducts
 
 export default authSlice.reducer;
-
 
 // import { createSlice } from "@reduxjs/toolkit";
 // import { User } from "@/types";
