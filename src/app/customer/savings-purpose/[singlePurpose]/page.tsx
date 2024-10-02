@@ -4,6 +4,8 @@ import { FilterDropdown } from "@/components/Buttons";
 import {
   addSelectedProduct,
   selectSelectedProducts,
+  selectToken,
+  selectUser,
   selectUserId,
 } from "@/slices/OrganizationIdSlice";
 import AmountFormatter from "@/utils/AmountFormatter";
@@ -29,8 +31,10 @@ export default function Page() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useDispatch();
+  const user = useSelector(selectUser);
   const userId = useSelector(selectUserId);
   const { client } = useAuth();
+  const token = useSelector(selectToken);
   const selectedProducts = useSelector(selectSelectedProducts);
 
   const id = params.singlePurpose;
@@ -52,7 +56,6 @@ export default function Page() {
         });
     },
   });
-  console.log(SinglePurpose?.customerBalances[userId]);
 
   const daysLeft = (endDate: string | number | Date) => {
     const today = new Date();
@@ -64,14 +67,18 @@ export default function Page() {
   };
 
   const GoToPayment = () => {
-    if (typeof id === "string" && !selectedProducts.includes(id)) {
-      dispatch(addSelectedProduct(id));
-      // Use setTimeout to wait for the Redux state to update before navigating
-      setTimeout(() => {
-        router.push(`/customer/savings-purpose/make-payment`);
-      }, 0);
+    if (!token || user?.role !== "customer") {
+      router.replace("/signin");
     } else {
-      router.push(`/customer/savings-purpose/make-payment`);
+      if (typeof id === "string" && !selectedProducts.includes(id)) {
+        dispatch(addSelectedProduct(id));
+        // Use setTimeout to wait for the Redux state to update before navigating
+        setTimeout(() => {
+          router.push(`/customer/savings-purpose/make-payment`);
+        }, 0);
+      } else {
+        router.push(`/customer/savings-purpose/make-payment`);
+      }
     }
   };
 
