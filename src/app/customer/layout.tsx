@@ -1,6 +1,8 @@
 "use client";
 
 import CustomerNavbar from "@/components/Navbar";
+import { Provider } from "react-redux";
+import { store } from "../../../store/store";
 
 // export const metadata: Metadata = {
 //   title: "Customer | Ajo by Raoatech",
@@ -16,10 +18,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-ajo_darkBlue ">
-        <main className="bg-ajo_darkBlue ">
-          <CustomerNavbar />
-          {children}
-        </main>
+        <Provider store={store}>
+          <main className="bg-ajo_darkBlue ">
+            <CustomerNavbar />
+            {children}
+          </main>
+        </Provider>
       </body>
     </html>
   );

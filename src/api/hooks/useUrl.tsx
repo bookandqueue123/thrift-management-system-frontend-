@@ -1,4 +1,7 @@
+"use client";
 import React from "react";
+import { Provider } from "react-redux";
+import { store } from "../../../store/store";
 
 type UrlContextType = {
   preferredUrl: string;
@@ -15,11 +18,17 @@ export const useUrl = () => {
   return context;
 };
 
-export const PreferredUrlProvider = ({ children }: { children: React.ReactNode }) => {
+export const PreferredUrlProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [preferredUrl, setPreferredUrl] = React.useState<string>("");
   return (
-    <UrlContext.Provider value={{ preferredUrl, setPreferredUrl }}>
-      {children}
-    </UrlContext.Provider>
+    <Provider store={store}>
+      <UrlContext.Provider value={{ preferredUrl, setPreferredUrl }}>
+        {children}
+      </UrlContext.Provider>
+    </Provider>
   );
 };
