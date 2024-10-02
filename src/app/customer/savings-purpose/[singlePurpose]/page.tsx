@@ -1,8 +1,10 @@
+import { apiUrl } from "@/api/hooks/useAuth";
 import SinglePurposePage from "@/modules/customer/SinglePurposePage";
+import axios from "axios";
 import type { Metadata, ResolvingMetadata } from "next";
 
 type Props = {
-  params: { id: string };
+  params: { singlePurpose: string };
   searchParams: { [key: string]: string | string[] | undefined };
 };
 
@@ -11,21 +13,30 @@ export async function generateMetadata(
   parent: ResolvingMetadata,
 ): Promise<Metadata> {
   // read route params
-  const id = params.id;
+  const id = params.singlePurpose;
 
   // fetch data
-  // const product = await fetch(`https://.../${id}`).then((res) => res.json());
+  const product = await axios.get(
+    `${apiUrl}api/purpose/${params.singlePurpose}`,
+  );
 
   // optionally access and extend (rather than replace) parent metadata
   const previousImages = (await parent).openGraph?.images || [];
 
   return {
-    title: "Staging Title",
+    title: product.data.purposeName,
     openGraph: {
-      images: [
-        "https://res.cloudinary.com/dgoeed5be/image/upload/v1726058163/thrift/i04saferxaf5yuvpjahv.png",
-        ...previousImages,
-      ],
+      images: [product.data.imageUrl, ...previousImages],
+      description: product.data.description.substring(0, 200),
+      // url: ``,
+    },
+    twitter: {
+      card: "summary_large_image",
+      creator: "Finkia",
+      description: product.data.description.substring(0, 200),
+      images: [product.data.imageUrl],
+      title: product.data.purposeName,
+      site: "staging.finkia",
     },
   };
 }
