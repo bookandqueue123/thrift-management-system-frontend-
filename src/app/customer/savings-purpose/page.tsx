@@ -35,7 +35,7 @@ export default function Page() {
     },
     staleTime: 5000,
   });
-
+  const [selectedFilter, setSelectedFilter] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(
     organisation?.generalSpace === "Yes" ? "general" : "inhouse",
   );
@@ -61,6 +61,11 @@ export default function Page() {
 
   const handleSearch = (e: { target: { value: SetStateAction<string> } }) => {
     setMerchantNumber(e.target.value);
+  };
+
+  const handleFilterChange = (value: string) => {
+    setSelectedFilter(value); // Update the state with the selected option
+    console.log("Selected filter:", value); // You can use this value for sorting or other logic
   };
 
   return (
@@ -117,6 +122,7 @@ export default function Page() {
                 "Amount",
                 "Status",
               ]}
+              onChange={handleFilterChange} // Pass the handler as a prop
             />
           </span>
           <div role="group" className="flex-col-2 flex justify-between ">

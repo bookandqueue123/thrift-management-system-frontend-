@@ -11,25 +11,19 @@ import {
 import { PurposeProps } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { useQuery } from "@tanstack/react-query";
-import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { ScrollMenu, VisibilityContext } from "react-horizontal-scrolling-menu";
 import "react-horizontal-scrolling-menu/dist/styles.css";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
 import {
-  FacebookIcon,
-  FacebookShareButton,
-  LinkedinIcon,
-  LinkedinShareButton,
-  TwitterIcon,
-  TwitterShareButton,
-  WhatsappIcon,
-  WhatsappShareButton,
-} from "react-share";
+  FaBookmark,
+  FaChevronLeft,
+  FaChevronRight,
+  FaShareAlt,
+} from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
 // import './App.css';
 
 const LeftArrow = () => {
@@ -271,144 +265,6 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
   );
 };
 
-// const ProductCard = ({
-//   product,
-//   onCheckboxChange,
-//   isChecked,
-// }: {
-//   product: any;
-//   onCheckboxChange: (id: React.Key, isChecked: boolean) => void;
-//   isChecked: boolean;
-// }) => {
-//   const router = useRouter();
-//   const truncateDescription = (description: string, wordLimit: number) => {
-//     const words = description.split(" ");
-//     return (
-//       words.slice(0, wordLimit).join(" ") +
-//       (words.length > wordLimit ? "..." : "")
-//     );
-//   };
-
-//   const renderQuantityOptions = () => {
-//     if (product.quantity === "Nill") {
-//       return <option value="Nill">Nill</option>;
-//     }
-//     return Array.from({ length: product.quantity }, (_, i) => (
-//       <option key={i + 1} value={i + 1}>
-//         {i + 1}
-//       </option>
-//     ));
-//   };
-
-//   const handleShare = () => {
-//     console.log(123);
-//     if (navigator.share) {
-//       navigator
-//         .share({
-//           files: product.imageUrl,
-//           title: product.purposeName,
-//           text: product.description,
-//           url: `${window.location.origin}/customer/savings-purpose/${product._id}`,
-//         })
-//         .then(() => console.log("Successful share"))
-//         .catch((error) => console.log("Error sharing", error));
-//     } else {
-//       // Fallback for desktop
-//       alert(
-//         "Web Share API is not supported on this browser. Please use the manual share buttons.",
-//       );
-//     }
-//   };
-
-//   return (
-//     <Link href={`/customer/savings-purpose/${product._id}`}>
-//       <div className="">
-//         <input
-//           className="ml-4"
-//           type="checkbox"
-//           checked={isChecked}
-//           onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
-//         />
-//         <div className="product-card">
-//           <div className="checkbox-container" style={{ marginLeft: "8px" }}>
-//             {/* <input
-//             type="checkbox"
-//             checked={isChecked}
-//             onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
-//           /> */}
-//           </div>
-//           <div className="image-section h-[40%]">
-//             <Image
-//               height={100}
-//               width={150}
-//               src={product.imageUrl}
-//               alt={product.purposeName}
-//               className="product-image p-4"
-//             />
-//             <div
-//               className="icon-container"
-//               style={{
-//                 display: "flex",
-//                 alignItems: "center",
-//                 justifyContent: "space-between",
-//               }}
-//             >
-//               <div>
-//                 <FaShareAlt className="icon" onClick={handleShare} />
-//               </div>
-
-//               <FaBookmark className="icon" />
-//             </div>
-//           </div>
-//           <div className="info-section bg-ajo_orange text-black">
-//             <h3 className="product-name">{product.purposeName}</h3>
-//             <div
-//               className="product-price-row"
-//               style={{
-//                 display: "flex",
-//                 justifyContent: "space-between",
-//                 alignItems: "center",
-//               }}
-//             >
-//               <p className="product-price">
-//                 NGN{AmountFormatter(product.amount)}
-//               </p>
-//               <div
-//                 style={{
-//                   display: "flex",
-//                   flexDirection: "column",
-//                   marginLeft: "auto",
-//                 }}
-//               >
-//                 <label
-//                   htmlFor={`quantity-${product._id}`}
-//                   style={{ fontSize: "0.9rem", marginBottom: "4px" }}
-//                 >
-//                   Qty
-//                 </label>
-//                 {product.merchantQuantity}
-//                 {/* <select id={`quantity-${product._id}`} className="quantity-dropdown">
-//               {renderQuantityOptions()}
-//             </select> */}
-//               </div>
-//             </div>
-
-//             <p className="product-description">
-//               {truncateDescription(product.description, 15)}
-//             </p>
-//             <a
-//               href={`/customer/savings-purpose/${product._id}`}
-//               className="read-more"
-//             >
-//               Read more
-//             </a>
-//           </div>
-//         </div>
-//       </div>
-//     </Link>
-//   );
-// };
-
 const ProductCard = ({
   product,
   onCheckboxChange,
@@ -419,7 +275,6 @@ const ProductCard = ({
   isChecked: boolean;
 }) => {
   const router = useRouter();
-
   const truncateDescription = (description: string, wordLimit: number) => {
     const words = description.split(" ");
     return (
@@ -439,117 +294,255 @@ const ProductCard = ({
     ));
   };
 
-  // URL for sharing
-  const shareUrl = `${window.location.origin}/customer/savings-purpose/${product._id}`;
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator
+        .share({
+          // files: product.imageUrl,
+          title: product.purposeName,
+          text: product.description,
+          url: `${window.location.origin}/customer/savings-purpose/${product._id}`,
+        })
+        .then(() => console.log("Successful share"))
+        .catch((error) => console.log("Error sharing", error));
+    } else {
+      // Fallback for desktop
+      alert(
+        "Web Share API is not supported on this browser. Please use the manual share buttons.",
+      );
+    }
+  };
 
   return (
-    <>
-      <Head>
-        {/* Dynamic Title and Meta Tags for Open Graph */}
-        <title>{product.purposeName}</title>
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={`${window.location.href}`} />
-        <meta property="og:title" content={product.purposeName} />
-        <meta property="og:description" content={product.description} />
-        <meta
-          property="og:image"
-          content={`https://res.cloudinary.com/dgoeed5be/image/upload/v1726058163/thrift/i04saferxaf5yuvpjahv.png`}
+    <Link href={`/customer/savings-purpose/${product._id}`}>
+      <div className="">
+        <input
+          className="ml-4"
+          type="checkbox"
+          checked={isChecked}
+          onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
         />
-        <meta property="og:image:alt" content={product.purposeName} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-
-        {/* Twitter Card Meta Tags */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={product.purposeName} />
-        <meta name="twitter:description" content={product.description} />
-        <meta
-          name="twitter:image"
-          content={`https://res.cloudinary.com/dgoeed5be/image/upload/v1726058163/thrift/i04saferxaf5yuvpjahv.png`}
-        />
-      </Head>
-      <Link href={shareUrl}>
-        <div className="">
-          <input
-            className="ml-4"
+        <div className="product-card">
+          <div className="checkbox-container" style={{ marginLeft: "8px" }}>
+            {/* <input
             type="checkbox"
             checked={isChecked}
             onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
-          />
-          <div className="product-card">
-            <div className="image-section h-[40%]">
-              <Image
-                height={100}
-                width={150}
-                src={product.imageUrl}
-                alt={product.purposeName}
-                className="product-image p-4"
-              />
-              <div className="social-share-container mt-4">
-                <FacebookShareButton url={shareUrl} hashtag="#ProductShare">
-                  <FacebookIcon size={32} round />
-                </FacebookShareButton>
-                <TwitterShareButton url={shareUrl} title={product.purposeName}>
-                  <TwitterIcon size={32} round />
-                </TwitterShareButton>
-                <WhatsappShareButton url={shareUrl} title={product.purposeName}>
-                  <WhatsappIcon size={32} round />
-                </WhatsappShareButton>
-                <LinkedinShareButton
-                  url={shareUrl}
-                  title={product.purposeName}
-                  summary={product.description}
-                >
-                  <LinkedinIcon size={32} round />
-                </LinkedinShareButton>
-              </div>
-            </div>
-            <div className="info-section bg-ajo_orange text-black">
-              <h3 className="product-name">{product.purposeName}</h3>
-              <div
-                className="product-price-row"
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <p className="product-price">
-                  NGN{AmountFormatter(product.amount)}
-                </p>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    marginLeft: "auto",
-                  }}
-                >
-                  <label
-                    htmlFor={`quantity-${product._id}`}
-                    style={{ fontSize: "0.9rem", marginBottom: "4px" }}
-                  >
-                    Qty
-                  </label>
-                  {product.merchantQuantity}
-                </div>
+          /> */}
+          </div>
+          <div className="image-section h-[40%]">
+            <Image
+              height={100}
+              width={150}
+              src={product.imageUrl}
+              alt={product.purposeName}
+              className="product-image p-4"
+            />
+            <div
+              className="icon-container"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div>
+                <FaShareAlt className="icon" onClick={handleShare} />
               </div>
 
-              <p className="product-description">
-                {truncateDescription(product.description, 15)}
-              </p>
-              <a
-                href={`/customer/savings-purpose/${product._id}`}
-                className="read-more"
-              >
-                Read more
-              </a>
+              <FaBookmark className="icon" />
             </div>
           </div>
+          <div className="info-section bg-ajo_orange text-black">
+            <h3 className="product-name">{product.purposeName}</h3>
+            <div
+              className="product-price-row"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <p className="product-price">
+                NGN{AmountFormatter(product.amount)}
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  marginLeft: "auto",
+                }}
+              >
+                <label
+                  htmlFor={`quantity-${product._id}`}
+                  style={{ fontSize: "0.9rem", marginBottom: "4px" }}
+                >
+                  Qty
+                </label>
+                {product.merchantQuantity}
+                {/* <select id={`quantity-${product._id}`} className="quantity-dropdown">
+              {renderQuantityOptions()}
+            </select> */}
+              </div>
+            </div>
+
+            <p className="product-description">
+              {truncateDescription(product.description, 15)}
+            </p>
+            <a
+              href={`/customer/savings-purpose/${product._id}`}
+              className="read-more"
+            >
+              Read more
+            </a>
+          </div>
         </div>
-      </Link>
-    </>
+      </div>
+    </Link>
   );
 };
+
+// const ProductCard = ({
+//   product,
+//   onCheckboxChange,
+//   isChecked,
+// }: {
+//   product: any;
+//   onCheckboxChange: (id: React.Key, isChecked: boolean) => void;
+//   isChecked: boolean;
+// }) => {
+//   const router = useRouter();
+
+//   const truncateDescription = (description: string, wordLimit: number) => {
+//     const words = description.split(" ");
+//     return (
+//       words.slice(0, wordLimit).join(" ") +
+//       (words.length > wordLimit ? "..." : "")
+//     );
+//   };
+
+//   const renderQuantityOptions = () => {
+//     if (product.quantity === "Nill") {
+//       return <option value="Nill">Nill</option>;
+//     }
+//     return Array.from({ length: product.quantity }, (_, i) => (
+//       <option key={i + 1} value={i + 1}>
+//         {i + 1}
+//       </option>
+//     ));
+//   };
+
+//   // URL for sharing
+//   const shareUrl = `${window.location.origin}/customer/savings-purpose/${product._id}`;
+
+//   return (
+//     <>
+//       <Head>
+//         {/* Dynamic Title and Meta Tags for Open Graph */}
+//         <title>{product.purposeName}</title>
+//         <meta property="og:type" content="website" />
+//         <meta property="og:url" content={`${window.location.href}`} />
+//         <meta property="og:title" content={product.purposeName} />
+//         <meta property="og:description" content={product.description} />
+//         <meta
+//           property="og:image"
+//           content={`https://res.cloudinary.com/dgoeed5be/image/upload/v1726058163/thrift/i04saferxaf5yuvpjahv.png`}
+//         />
+//         <meta property="og:image:alt" content={product.purposeName} />
+//         <meta property="og:image:width" content="1200" />
+//         <meta property="og:image:height" content="630" />
+
+//         {/* Twitter Card Meta Tags */}
+//         <meta name="twitter:card" content="summary_large_image" />
+//         <meta name="twitter:title" content={product.purposeName} />
+//         <meta name="twitter:description" content={product.description} />
+//         <meta
+//           name="twitter:image"
+//           content={`https://res.cloudinary.com/dgoeed5be/image/upload/v1726058163/thrift/i04saferxaf5yuvpjahv.png`}
+//         />
+//       </Head>
+//       <Link href={shareUrl}>
+//         <div className="">
+//           <input
+//             className="ml-4"
+//             type="checkbox"
+//             checked={isChecked}
+//             onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
+//           />
+//           <div className="product-card">
+//             <div className="image-section h-[40%]">
+//               <Image
+//                 height={100}
+//                 width={150}
+//                 src={product.imageUrl}
+//                 alt={product.purposeName}
+//                 className="product-image p-4"
+//               />
+//               <div className="social-share-container mt-4">
+//                 <FacebookShareButton url={shareUrl} hashtag="#ProductShare">
+//                   <FacebookIcon size={32} round />
+//                 </FacebookShareButton>
+//                 <TwitterShareButton url={shareUrl} title={product.purposeName}>
+//                   <TwitterIcon size={32} round />
+//                 </TwitterShareButton>
+//                 <WhatsappShareButton url={shareUrl} title={product.purposeName}>
+//                   <WhatsappIcon size={32} round />
+//                 </WhatsappShareButton>
+//                 <LinkedinShareButton
+//                   url={shareUrl}
+//                   title={product.purposeName}
+//                   summary={product.description}
+//                 >
+//                   <LinkedinIcon size={32} round />
+//                 </LinkedinShareButton>
+//               </div>
+//             </div>
+//             <div className="info-section bg-ajo_orange text-black">
+//               <h3 className="product-name">{product.purposeName}</h3>
+//               <div
+//                 className="product-price-row"
+//                 style={{
+//                   display: "flex",
+//                   justifyContent: "space-between",
+//                   alignItems: "center",
+//                 }}
+//               >
+//                 <p className="product-price">
+//                   NGN{AmountFormatter(product.amount)}
+//                 </p>
+//                 <div
+//                   style={{
+//                     display: "flex",
+//                     flexDirection: "column",
+//                     marginLeft: "auto",
+//                   }}
+//                 >
+//                   <label
+//                     htmlFor={`quantity-${product._id}`}
+//                     style={{ fontSize: "0.9rem", marginBottom: "4px" }}
+//                   >
+//                     Qty
+//                   </label>
+//                   {product.merchantQuantity}
+//                 </div>
+//               </div>
+
+//               <p className="product-description">
+//                 {truncateDescription(product.description, 15)}
+//               </p>
+//               <a
+//                 href={`/customer/savings-purpose/${product._id}`}
+//                 className="read-more"
+//               >
+//                 Read more
+//               </a>
+//             </div>
+//           </div>
+//         </div>
+//       </Link>
+//     </>
+//   );
+// };
 
 interface categoryToSHowProps {
   categoryToshow: string;
@@ -568,7 +561,7 @@ const App = ({ categoryToshow, merchantNumber }: categoryToSHowProps) => {
     isLoading: isLoadingAllPurpose,
     refetch: refetchAllPurpose,
   } = useQuery({
-    queryKey: ["allPurpose"],
+    queryKey: ["allPurpose", categoryToshow],
     queryFn: async () => {
       return client
         .get(`/api/purpose`, {})
@@ -593,8 +586,25 @@ const App = ({ categoryToshow, merchantNumber }: categoryToSHowProps) => {
     (purpose: { visibility: string }) => purpose.visibility === "general",
   );
 
-  const filteredPurposes =
+  let filteredPurposes =
     categoryToshow === "general" ? generalPurpose : inhousePurpose;
+
+  // Apply search filter (merchantNumber) to filtered purposes
+  if (merchantNumber) {
+    filteredPurposes = filteredPurposes?.filter((purpose: any) => {
+      const accountNumberMatch =
+        purpose.organisation?.accountNumber?.includes(merchantNumber);
+
+      // Ensure purposeName exists and is a string, then convert it to lowercase
+      const purposeNameMatch =
+        typeof purpose.purposeName === "string" &&
+        purpose.purposeName
+          .toLowerCase()
+          .includes(merchantNumber.toLowerCase()); // Convert merchantNumber to lowercase too for case-insensitive match
+
+      return accountNumberMatch || purposeNameMatch;
+    });
+  }
 
   // const handleSearch = useCallback(() => {
   //   if (allPurpose && merchantNumber) {
