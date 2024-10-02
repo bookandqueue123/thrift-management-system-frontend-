@@ -1,11 +1,17 @@
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
 import { FilterDropdown } from "@/components/Buttons";
+import {
+  addSelectedProduct,
+  selectSelectedProducts,
+  selectUserId,
+} from "@/slices/OrganizationIdSlice";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { extractDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 
 const purpose = {
   name: "Annual Charity Marathon",
@@ -21,8 +27,14 @@ const purpose = {
 
 export default function Page() {
   const params = useParams();
-
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const userId = useSelector(selectUserId);
   const { client } = useAuth();
+  const selectedProducts = useSelector(selectSelectedProducts);
+
+  const id = params.singlePurpose;
+
   const {
     data: SinglePurpose,
     isLoading: isLoadingPurpose,
@@ -40,6 +52,7 @@ export default function Page() {
         });
     },
   });
+  console.log(SinglePurpose?.customerBalances[userId]);
 
   const daysLeft = (endDate: string | number | Date) => {
     const today = new Date();
@@ -48,6 +61,18 @@ export default function Page() {
 
     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
     return daysDiff;
+  };
+
+  const GoToPayment = () => {
+    if (typeof id === "string" && !selectedProducts.includes(id)) {
+      dispatch(addSelectedProduct(id));
+      // Use setTimeout to wait for the Redux state to update before navigating
+      setTimeout(() => {
+        router.push(`/customer/savings-purpose/make-payment`);
+      }, 0);
+    } else {
+      router.push(`/customer/savings-purpose/make-payment`);
+    }
   };
 
   return (
@@ -143,7 +168,7 @@ export default function Page() {
                         : extractDate(SinglePurpose.endDate)}
                     </p>
                   </div>
-                  <p className="text-xl font-semibold">
+                  <p className="text-md font-normal md:text-xl md:font-semibold">
                     No of participants: <br />{" "}
                     {SinglePurpose.assignedCustomers.length}
                   </p>
@@ -166,16 +191,20 @@ export default function Page() {
                 </div>
 
                 <div className="mb-4">
-                  <h2 className="mb-4 text-xl font-semibold">
+                  <h2 className="text-md mb-4 font-normal md:text-xl md:font-semibold">
                     Savings Progress
                   </h2>
                   <div className="relative mb-2 h-4 w-full overflow-hidden rounded-full bg-gray-300">
                     <div
                       className="absolute left-0 top-0 h-full bg-blue-500"
-                      style={{ width: `40%` }}
+                      style={{
+                        width: `${((SinglePurpose?.customerBalances[userId]?.total - SinglePurpose?.customerBalances[userId]?.balance) / SinglePurpose?.customerBalances[userId]?.total) * 100}%`,
+                      }}
                     ></div>
                   </div>
-                  <p className="text-xl font-semibold">How many days left?</p>
+                  <p className="text-md font-normal md:text-xl md:font-semibold">
+                    How many days left?
+                  </p>
                   <p className="text-black">
                     {!SinglePurpose.endDate
                       ? "---"
@@ -192,19 +221,25 @@ export default function Page() {
                     />
                   </div>
                   <div className="mb-2 mt-8 flex space-x-2">
-                    <button className="w-1/2 rounded-md bg-blue-500 p-2 text-white">
+                    <button
+                      onClick={GoToPayment}
+                      className="w-1/2 rounded-md bg-blue-500 p-2 text-white"
+                    >
                       Make Full Payment
                     </button>
-                    <button className="w-1/2 rounded-md border border-black bg-transparent p-2 text-black">
+                    <button
+                      onClick={GoToPayment}
+                      className="w-1/2 rounded-md border border-black bg-transparent p-2 text-black"
+                    >
                       Make Part Payment
                     </button>
                   </div>
                   <div className="mb-2 mt-8 flex justify-between space-x-2">
-                    <p className="text-xl font-semibold">
+                    <p className="text-md font-normal md:text-xl md:font-semibold">
                       No of participants: <br />{" "}
                       {SinglePurpose.assignedCustomers.length}
                     </p>
-                    <p className="mr-4 text-xl font-normal">
+                    <p className="text-md mr-4 font-normal md:text-xl md:font-semibold">
                       Merchant:
                       <br /> {SinglePurpose.organisation.accountNumber}
                     </p>

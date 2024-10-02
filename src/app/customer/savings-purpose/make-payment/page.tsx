@@ -19,7 +19,6 @@ import {
   PromiseLikeOfReactNode,
   ReactElement,
   ReactNode,
-  ReactPortal,
   useEffect,
   useState,
 } from "react";
@@ -294,19 +293,8 @@ export default function MakePayment() {
                         total: number;
                         quantity: number;
                         balance: any;
-                        purposeName:
-                          | string
-                          | number
-                          | boolean
-                          | ReactElement<
-                              any,
-                              string | JSXElementConstructor<any>
-                            >
-                          | Iterable<ReactNode>
-                          | ReactPortal
-                          | PromiseLikeOfReactNode
-                          | null
-                          | undefined;
+                        purposeName: string;
+
                         amount:
                           | string
                           | number
