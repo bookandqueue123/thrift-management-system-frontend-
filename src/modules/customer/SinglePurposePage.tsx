@@ -44,7 +44,6 @@ export default function SinglePurposePage() {
         });
     },
   });
-  console.log(SinglePurpose);
 
   const daysLeft = (endDate: string | number | Date) => {
     const today = new Date();
