@@ -433,7 +433,7 @@ const Form = ({
                   <input
                     type="number"
                     name="amountBased"
-                    value={formData.amountBased}
+                    value={formData.amount}
                     onChange={handleChange}
                     className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black "
                   />
