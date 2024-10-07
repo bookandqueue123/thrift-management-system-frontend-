@@ -58,6 +58,15 @@ export type setSavingsResponse = {
 };
 
 export interface postSavingsResponse {
+  customerName: ReactNode;
+  amount: ReactNode;
+  updatedAt: string | Date;
+  postedBy: ReactNode;
+  purposeName: ReactNode;
+  postStartDay: string | Date;
+  postEndDay: string | Date;
+  typeOfPosting: ReactNode;
+  narration: ReactNode;
   status: "failed" | "success" | undefined;
   message: string;
   updatedSaving: UpdatedSaving;
