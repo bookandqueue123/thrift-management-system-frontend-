@@ -48,6 +48,7 @@ const Posting = () => {
   const [toDate, setToDate] = useState("");
   const organizationId = useSelector(selectOrganizationId);
   const user = useSelector(selectUser);
+
   const token = useSelector(selectToken);
   const { client } = useAuth();
   const [modalState, setModalState] = useState(false);
@@ -757,13 +758,14 @@ const PostingForm = ({
         postedBy:
           user.role === "organisation"
             ? "Admin"
-            : user.firstName + user.lastName,
+            : user.firstName + " " + user.lastName,
         // purposeName: postDetails.purposeName,
         // startDate: postDetails.startDate,
         // endDate: postDetails.endDate,
       });
     },
     onSuccess(response: AxiosResponse<postSavingsResponse, any>) {
+      console.log(response.data);
       setPostingResponse(response.data);
 
       setPostingResponse(
@@ -1284,7 +1286,8 @@ const PostConfirmation = ({
   status: "success" | "failed" | undefined;
   customerAcctNo: string;
 }) => {
-  // console.log(postingResponse);
+  console.log(postingResponse);
+  const user = useSelector(selectUser);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
 
   useEffect(() => {
@@ -1379,31 +1382,21 @@ const PostConfirmation = ({
       <div className="space-y-4">
         <div className="mx-8 flex  ">
           <p className="text-sm font-semibold text-[#7D7D7D]">
-            Organisation Name:{" "}
-            {postingResponse.updatedSaving
-              ? postingResponse.updatedSaving.postedBy.organisationName
-              : ""}
+            Organisation Name: {user ? user.organisationName : ""}
           </p>
           <p className="ml-4 text-sm text-[#7D7D7D]"></p>
         </div>
 
         <div className="mx-8 flex  ">
           <p className="text-sm font-semibold text-[#7D7D7D]">
-            Customer Name:{" "}
-            {postingResponse.updatedSaving
-              ? postingResponse.updatedSaving.saving.user.firstName
-              : ""}{" "}
-            {postingResponse.updatedSaving
-              ? postingResponse.updatedSaving.saving.user.lastName
-              : ""}
+            Customer Name: {postingResponse ? postingResponse.customerName : ""}
           </p>
           <p className="ml-4 text-sm text-[#7D7D7D]"></p>
         </div>
 
         <div className="mx-8 flex  ">
           <p className="text-sm font-semibold text-[#7D7D7D]">
-            Customer Account Number:{" "}
-            {postingResponse.updatedSaving ? customerAcctNo : ""}
+            Customer Account Number: {postingResponse ? customerAcctNo : ""}
           </p>
           <p className="ml-4 text-sm text-[#7D7D7D]"></p>
         </div>
@@ -1411,37 +1404,31 @@ const PostConfirmation = ({
         <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Amount:</p>
           <p className="ml-4 text-sm text-[#7D7D7D]">
-            {postingResponse?.updatedSaving
+            {/* {postingResponse?.updatedSaving
               ? postingResponse?.updatedSaving.amountPaid
-              : ""}{" "}
-            NGN
+              : ""}{" "} */}
+            {postingResponse ? postingResponse?.amount : ""} NGN
           </p>
         </div>
 
         <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Time:</p>
           <p className="ml-4 text-sm text-[#7D7D7D]">
-            {postingResponse.updatedSaving
-              ? extractTime(postingResponse.updatedSaving.saving.updatedAt)
-              : ""}
+            {postingResponse ? extractTime(postingResponse.updatedAt) : ""}
           </p>
         </div>
 
         <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Posted by:</p>
           <p className="ml-4 text-sm text-[#7D7D7D]">
-            {postingResponse.updatedSaving
-              ? postingResponse.updatedSaving.postedBy.organisationName
-              : ""}
+            {postingResponse ? postingResponse.postedBy : ""}
           </p>
         </div>
 
         <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Purpose:</p>
           <p className="ml-4 text-sm capitalize text-[#7D7D7D]">
-            {postingResponse?.updatedSaving
-              ? postingResponse?.updatedSaving.saving.purposeName
-              : ""}
+            {postingResponse ? postingResponse.purposeName : ""}
           </p>
         </div>
 
@@ -1452,33 +1439,26 @@ const PostConfirmation = ({
         <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Start Date:</p>
           <p className="ml-4 text-sm text-[#7D7D7D]">
-            {postingResponse.updatedSaving
-              ? extractDate(postingResponse.updatedSaving.saving.startDate)
-              : ""}
+            {postingResponse ? extractDate(postingResponse.postStartDay) : ""}
           </p>
         </div>
 
         <div className="mx-8 flex">
           <p className="text-sm font-semibold text-[#7D7D7D]">End Date:</p>
           <p className="ml-4 text-sm text-[#7D7D7D]">
-            {postingResponse.updatedSaving
-              ? extractDate(postingResponse.updatedSaving.saving.endDate)
-              : ""}
+            {postingResponse ? extractDate(postingResponse.postEndDay) : ""}
           </p>
         </div>
         <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">
-            Payment Mode:{" "}
-            {postingResponse.updatedSaving
-              ? postingResponse.updatedSaving.paymentMode
-              : ""}
+            Payment Mode: {postingResponse ? postingResponse.typeOfPosting : ""}
           </p>
           <p className="ml-4 text-sm text-[#7D7D7D]"></p>
         </div>
         <div className="mx-8 flex ">
           <p className="text-sm font-semibold text-[#7D7D7D]">Narration:</p>
           <p className="ml-4 text-sm text-[#7D7D7D]">
-            {postingResponse?.message}
+            {postingResponse?.narration}
           </p>
         </div>
         <div className="mx-8 flex ">
