@@ -208,12 +208,12 @@ const Form = ({
   ): Partial<setUpSavingsProps> => {
     let errors: Partial<setUpSavingsProps> = {};
 
-    if (!data.percentageBased && !data.amountBased) {
-      errors.percentageBased =
-        "Either Percentage Based or Amount Based is required";
-      errors.amountBased =
-        "Either Percentage Based or Amount Based is required";
-    }
+    // if (!data.percentageBased && !data.amountBased) {
+    //   errors.percentageBased =
+    //     "Either Percentage Based or Amount Based is required";
+    //   errors.amountBased =
+    //     "Either Percentage Based or Amount Based is required";
+    // }
 
     if (!data.accountNumber) {
       errors.accountNumber = "Account Number is required";
