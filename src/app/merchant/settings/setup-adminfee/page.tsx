@@ -208,12 +208,12 @@ const Form = ({
   ): Partial<setUpSavingsProps> => {
     let errors: Partial<setUpSavingsProps> = {};
 
-    if (!data.percentageBased && !data.amountBased) {
-      errors.percentageBased =
-        "Either Percentage Based or Amount Based is required";
-      errors.amountBased =
-        "Either Percentage Based or Amount Based is required";
-    }
+    // if (!data.percentageBased && !data.amountBased) {
+    //   errors.percentageBased =
+    //     "Either Percentage Based or Amount Based is required";
+    //   errors.amountBased =
+    //     "Either Percentage Based or Amount Based is required";
+    // }
 
     if (!data.accountNumber) {
       errors.accountNumber = "Account Number is required";
@@ -415,7 +415,7 @@ const Form = ({
                     name="percentageBased"
                     value={formData.percentageBased}
                     onChange={handleChange}
-                    className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black "
+                    className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black "
                     placeholder="input percentage"
                     required
                   />
@@ -433,9 +433,9 @@ const Form = ({
                   <input
                     type="number"
                     name="amountBased"
-                    value={formData.amountBased}
+                    value={formData.amount}
                     onChange={handleChange}
-                    className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black "
+                    className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black "
                   />
                   {errors.amountBased && (
                     <p className="text-red-500">{errors.amountBased}</p>
@@ -497,7 +497,7 @@ const Form = ({
                       name="accountName"
                       value={formData.accountName}
                       onChange={handleChange}
-                      className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black "
+                      className="block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black "
                       readOnly // Prevents user from editing this field directly
                     />
                     {filterAccountNumbers?.length !== 0 ? (
@@ -531,7 +531,7 @@ const Form = ({
                     type="text"
                     value={formData.purpose}
                     onChange={handleChange}
-                    className="form-select block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                    className="form-select block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black"
                   />
 
                   {errors.purpose && (
@@ -549,7 +549,7 @@ const Form = ({
                       name="amount"
                       value={formData.amount}
                       onChange={handleChange}
-                      className="form-input block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                      className="form-input block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black"
                     />
                     {errors.amount && (
                       <p className="text-red-500">{errors.amount}</p>
@@ -564,7 +564,7 @@ const Form = ({
                       name="frequency"
                       value={formData.frequency}
                       onChange={handleChange}
-                      className="form-select block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                      className="form-select block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black"
                     >
                       <option value="">Select Frequency</option>
                       <option value="daily">Daily</option>
@@ -592,7 +592,7 @@ const Form = ({
                         name="startDate"
                         value={formData.startDate}
                         onChange={handleChange}
-                        className="form-input block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                        className="form-input block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black"
                       />
                       {errors.startDate && (
                         <p className="text-red-500">{errors.startDate}</p>
@@ -608,7 +608,7 @@ const Form = ({
                         name="endDate"
                         value={formData.endDate}
                         onChange={handleChange}
-                        className="form-input block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                        className="form-input block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black"
                       />
                       {errors.endDate && (
                         <p className="text-red-500">{errors.endDate}</p>
@@ -626,7 +626,7 @@ const Form = ({
                       type="text"
                       value={totalexpectedSavings}
                       // onChange={handleChange}
-                      className="form-select block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                      className="form-select block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black"
                     />
 
                     {/* {errors.totalexpectedSavings && <p className="text-red-500">{errors.totalexpectedSavings}</p>} */}
@@ -642,7 +642,7 @@ const Form = ({
                     name="collectionDate"
                     value={formData.collectionDate}
                     onChange={handleChange}
-                    className="form-input block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black dark:bg-gray-700  dark:text-white dark:placeholder-black"
+                    className="form-input block  w-full rounded-md border bg-gray-50 p-3 text-sm text-black"
                   />
                   {errors.collectionDate && (
                     <p className="text-red-500">{errors.collectionDate}</p>

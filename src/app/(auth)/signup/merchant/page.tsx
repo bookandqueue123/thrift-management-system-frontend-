@@ -44,7 +44,6 @@ const validationSchema = Yup.object().shape({
   // split_type: Yup.string().required("Account bank is required"),
   // split_value: Yup.string().required("Split value is required"),
   // bankAccountNumber: Yup.string().required("Bank Account Number is required"),
-
 });
 
 const MerchantForm = () => {
@@ -92,8 +91,8 @@ const MerchantForm = () => {
 
     onSuccess(response: AxiosResponse<any, any>) {
       setShowSuccessToast(true);
+
       router.replace("/signin");
-   
 
       setSuccessMessage((response as any).response.data.message);
 
@@ -292,10 +291,6 @@ const MerchantForm = () => {
                 className="text-xs text-red-500"
               />
             </div>
-
-            
-
-            
           </div>
           <button
             type="submit"
