@@ -192,7 +192,7 @@ const ImageUpload = () => {
             )}
           </div>
 
-          <div className="flex flex-col space-y-2">
+          {/* <div className="flex flex-col space-y-2">
             <label>
               Add Text:
               <input
@@ -223,7 +223,7 @@ const ImageUpload = () => {
                 className="ml-2 h-5 w-5"
               />
             </label>
-          </div>
+          </div> */}
 
           <button
             type="submit"
