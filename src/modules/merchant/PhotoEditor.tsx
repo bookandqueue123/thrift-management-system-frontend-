@@ -128,7 +128,7 @@ const ImageUpload = () => {
     <div>
       <div className="container mx-auto rounded-lg bg-gray-100 p-6 shadow-lg">
         <div className="mb-6 text-center">
-          <p className="text-4xl font-bold text-ajo_offWhite text-opacity-80">
+          <p className="text-dark text-4xl font-bold text-opacity-80">
             AI-Powered Image Editor
           </p>
         </div>
@@ -235,7 +235,7 @@ const ImageUpload = () => {
         </form>
 
         <div className="mt-8">
-          <h2 className="text-xl font-semibold">Uploaded Images:</h2>
+          <h2 className="text-xl font-semibold">Uploaded Image:</h2>
           {uploadedImages.foreground && (
             <div className="mt-4 flex flex-col items-center">
               <Image
@@ -245,7 +245,7 @@ const ImageUpload = () => {
                 height={200}
                 className="rounded-md shadow-md"
               />
-              <p>Foreground Image</p>
+              <p>Image</p>
 
               {/* Download and Share Buttons */}
               <div className="mt-2 flex space-x-4">
