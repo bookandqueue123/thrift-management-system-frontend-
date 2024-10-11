@@ -9,46 +9,65 @@ type ImagePreview = {
   preview: string;
 };
 type UploadedImages = {
-  [key: string]: string[]; // Each key is a string, and the value is an array of image URLs (strings)
+  foreground?: string;
+  background?: string | null;
 };
 
 const ImageUpload = () => {
   const [selectedImages, setSelectedImages] = useState<ImagePreview[]>([]);
   const [uploadedImages, setUploadedImages] = useState<UploadedImages>({});
+  const [bgImage, setBgImage] = useState<ImagePreview | null>(null);
+  const [text, setText] = useState<string>("");
+  const [shadow, setShadow] = useState<boolean>(false);
+  const [expand, setExpand] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Handle image selection
+  // Handle multiple image selection for normal images
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // Check if files are present
     if (!event.target.files) return;
-
-    // Convert FileList to an array of File objects
     const files: File[] = Array.from(event.target.files);
-
-    // Create previews for each file
     const imagePreviews = files.map((file) => ({
       file,
-      preview: URL.createObjectURL(file as File), // Assert file as File
+      preview: URL.createObjectURL(file),
     }));
-
-    // Update selected images state
     setSelectedImages((prev) => [...prev, ...imagePreviews]);
   };
 
-  // Remove selected image from preview
+  // Handle background image selection
+  const handleBgImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) return;
+    const file = event.target.files[0]; // Only one background image is allowed
+    const bgImagePreview = {
+      file,
+      preview: URL.createObjectURL(file),
+    };
+    setBgImage(bgImagePreview);
+  };
+
   const removeImage = (index: number) => {
     const newImages = selectedImages.filter((_, i) => i !== index);
     setSelectedImages(newImages);
   };
 
-  // Handle form submission to send images to backend
   const handleSubmit = async (event: { preventDefault: () => void }) => {
+    setIsLoading(true);
     event.preventDefault();
     const formData = new FormData();
 
-    // Append selected images to FormData
+    // Append normal images
     selectedImages.forEach(({ file }) => {
       formData.append("images", file);
     });
+
+    // Append background image if it exists
+    if (bgImage) {
+      formData.append("bgImage", bgImage.file);
+    }
+
+    // Append optional fields
+    if (text) formData.append("text", text);
+    formData.append("shadow", shadow ? "true" : "false");
+    formData.append("expand", expand ? "true" : "false");
 
     try {
       const response = await axios.post(`${apiUrl}api/image-editor`, formData, {
@@ -56,12 +75,20 @@ const ImageUpload = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-      // Store the processed images returned from the backend
-      setUploadedImages(response.data.images);
+
+      // Update the uploadedImages state with the foreground and background image URLs
+      setUploadedImages({
+        foreground: response.data.images, // Foreground image
+        background: response.data.background, // Background image (optional)
+      });
+      setIsLoading(false);
     } catch (error) {
+      setIsLoading(false);
       console.error("Error uploading images:", error);
     }
   };
+
+  console.log(uploadedImages);
 
   return (
     <div>
@@ -89,29 +116,92 @@ const ImageUpload = () => {
             </div>
           ))}
         </div>
-        <button type="submit">Send</button>
+
+        <div>
+          <label>
+            Upload Background Image:
+            <input
+              type="file"
+              name="bgImage"
+              accept="image/*"
+              onChange={handleBgImageSelect}
+            />
+          </label>
+          {bgImage && (
+            <div>
+              <Image
+                width={150}
+                height={150}
+                src={bgImage.preview}
+                alt="Background Preview"
+                className="bg-image-preview"
+              />
+            </div>
+          )}
+        </div>
+
+        <div>
+          <label>
+            Add Text:
+            <input
+              type="text"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Enter text"
+            />
+          </label>
+        </div>
+
+        <div>
+          <label>
+            Add Shadow:
+            <input
+              type="checkbox"
+              checked={shadow}
+              onChange={() => setShadow((prev) => !prev)}
+            />
+          </label>
+        </div>
+
+        <div>
+          <label>
+            Expand Photo:
+            <input
+              type="checkbox"
+              checked={expand}
+              onChange={() => setExpand((prev) => !prev)}
+            />
+          </label>
+        </div>
+
+        <button type="submit">{isLoading ? "Loading..." : "Upload"}</button>
       </form>
 
-      {/* Display uploaded images after processing */}
-      {Object.keys(uploadedImages).length > 0 && (
-        <div className="uploaded-images">
-          <h3>Processed Images:</h3>
-          {Object.keys(uploadedImages).map((field) => (
-            <div key={field}>
-              {uploadedImages[field].map((url: string, idx: number) => (
-                <Image
-                  width={150}
-                  height={150}
-                  key={idx}
-                  src={url}
-                  alt={`Processed ${field} ${idx}`}
-                  className="processed-img"
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
+      <div>
+        <h2>Uploaded Images:</h2>
+        {uploadedImages.foreground && (
+          <div>
+            <Image
+              src={uploadedImages.foreground}
+              alt="Foreground"
+              width={200}
+              height={200}
+            />
+            <p>Foreground Image</p>
+          </div>
+        )}
+        {uploadedImages.background && (
+          <div>
+            <Image
+              src={uploadedImages.background}
+              alt="Background"
+              width={200}
+              height={200}
+            />
+            <p>Background Image</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
