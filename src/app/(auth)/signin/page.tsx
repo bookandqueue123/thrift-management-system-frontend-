@@ -79,28 +79,13 @@ const SignInForm = () => {
         const hasActiveSubscription = response.data.subscriptions?.some(
           (subscription: any) => subscription.isActive,
         );
-        console.log(hasActiveSubscription);
-
-        console.log(hasActiveSubscription, 84);
-        const hasSubscriptionss =
-          response.data.subscriptions &&
-          Array.isArray(response.data.subscriptions);
-        const hasActiveSubscriptions = hasSubscriptionss
-          ? response.data.subscriptions.some(
-              (subscription: any) => subscription.isActive,
-            )
-          : false;
-
-        console.log(hasActiveSubscriptions, 93);
 
         if (hasActiveSubscription) {
-          console.log("has Active Subscription", 97);
           // If active subscription exists, redirect to savings-purpose
-          // router.replace(`/customer/savings-purpose`);
+          router.replace(`/customer/savings-purpose`);
         } else {
-          console.log("doesnt have 101");
           // If no active subscription, redirect to pricing
-          // router.replace(`/pricing`);
+          router.replace(`/pricing`);
         }
         // }
       } else if (response.data.role === "superadmin") {
