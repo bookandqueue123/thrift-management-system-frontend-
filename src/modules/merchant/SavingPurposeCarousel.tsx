@@ -334,7 +334,7 @@ const ProductCard = ({
             <Image
               height={100}
               width={150}
-              src={product.imageUrl}
+              src={product.imageUrl[0]}
               alt={product.purposeName}
               className="product-image p-4"
             />

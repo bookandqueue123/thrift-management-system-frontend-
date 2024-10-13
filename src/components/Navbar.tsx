@@ -27,6 +27,7 @@ const CustomerNavbar = () => {
     savings ? "savings-setup" : "",
     purpose ? "savings-purpose" : "",
     purpose ? "coupon" : "",
+    purpose || savings ? "photo-editor" : "",
   ];
 
   // Filter out empty strings before mapping
@@ -115,7 +116,9 @@ const CustomerNavbar = () => {
                             ? "Savings Purpose"
                             : route === "savings-dashboard"
                               ? "Savings Dashboard"
-                              : route}
+                              : route === "photo-editor"
+                                ? "AI photo Editor"
+                                : route}
                     </Link>
                   );
                 })}
@@ -242,6 +245,7 @@ export const Sidebar = ({
     "dashboard",
     "customers",
     savings ? "posting" : "",
+    savings || purpose ? "photo-editor" : "",
     // "location",
     // "history",
     savings
@@ -350,7 +354,9 @@ export const Sidebar = ({
                     ? "General Report"
                     : route === "account-statement"
                       ? "Account Statement"
-                      : route}
+                      : route === "photo-editor"
+                        ? "AI Photo editor"
+                        : route}
                 </Link>
               );
             })}
