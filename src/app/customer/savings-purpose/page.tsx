@@ -35,10 +35,18 @@ export default function Page() {
     },
     staleTime: 5000,
   });
+
   const [selectedFilter, setSelectedFilter] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(
     organisation?.generalSpace === "Yes" ? "general" : "inhouse",
   );
+  useEffect(() => {
+    if (organisation?.generalSpace === "Yes") {
+      setSelectedCategory("general");
+    } else {
+      setSelectedCategory("inhouse");
+    }
+  }, [organisation]);
 
   useEffect(() => {
     localStorage.removeItem("selectedProducts");
@@ -65,7 +73,6 @@ export default function Page() {
 
   const handleFilterChange = (value: string) => {
     setSelectedFilter(value); // Update the state with the selected option
-    console.log("Selected filter:", value); // You can use this value for sorting or other logic
   };
 
   return (

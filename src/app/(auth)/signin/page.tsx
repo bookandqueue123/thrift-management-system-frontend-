@@ -76,18 +76,31 @@ const SignInForm = () => {
 
       if (response.data.role === "customer") {
         // if (user) {
-        const hasActiveSubscription = response.data.subscriptions?.some(
+
+        const activeSubscription = response.data.subscriptions?.find(
           (subscription: any) => subscription.isActive,
         );
 
-        if (hasActiveSubscription) {
-          // If active subscription exists, redirect to savings-purpose
-          router.replace(`/customer/savings-purpose`);
+        if (activeSubscription) {
+          const serviceArray = activeSubscription.servicePackage.service;
+
+          if (serviceArray.includes("purpose")) {
+            // Redirect to /customer/savings-purpose if 'purpose' is present in the array
+            router.replace(`/customer/savings-purpose`);
+          } else if (
+            serviceArray.length === 1 &&
+            serviceArray.includes("savings")
+          ) {
+            // Redirect to /customer/savings-set-up if the array contains only 'savings'
+            router.replace(`/customer/savings-setup`);
+          } else {
+            // Redirect to pricing if no valid service is found
+            router.replace(`/pricing`);
+          }
         } else {
-          // If no active subscription, redirect to pricing
+          // Redirect to pricing if no active subscription
           router.replace(`/pricing`);
         }
-        // }
       } else if (response.data.role === "superadmin") {
         router.replace("/superadmin");
       } else if (response.data.role === "superuser") {
