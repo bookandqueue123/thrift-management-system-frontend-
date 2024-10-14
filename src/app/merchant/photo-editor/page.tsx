@@ -1,5 +1,13 @@
+"use client";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import PhotoEditor from "@/modules/merchant/PhotoEditor";
 
 export default function Page() {
-  return <PhotoEditor />;
+  return (
+    <>
+      <ProtectedRoute requireAIPhotoEditor>
+        <PhotoEditor />;
+      </ProtectedRoute>
+    </>
+  );
 }

@@ -16,7 +16,7 @@ const CustomerNavbar = () => {
   const [savingsDashboardDropdownIsOpen, setSavingsDashboardDropdownIsOpen] =
     useState(false);
   const { checkPermission } = useServiceCheckPermission();
-  const { savings, purpose } = checkPermission;
+  const { savings, purpose, aIPhotoEditor } = checkPermission;
   const user = useSelector(selectUser);
 
   const endpoints = [
@@ -27,7 +27,7 @@ const CustomerNavbar = () => {
     savings ? "savings-setup" : "",
     purpose ? "savings-purpose" : "",
     purpose ? "coupon" : "",
-    purpose || savings ? "photo-editor" : "",
+    aIPhotoEditor ? "photo-editor" : "",
   ];
 
   // Filter out empty strings before mapping
@@ -235,7 +235,7 @@ export const Sidebar = ({
   };
 
   const { checkPermission } = useServiceCheckPermission();
-  const { savings, purpose } = checkPermission;
+  const { savings, purpose, aIPhotoEditor } = checkPermission;
 
   const toggleLeftPadding = () => {
     return onShow && "pl-4 md:pl-12";
@@ -245,7 +245,7 @@ export const Sidebar = ({
     "dashboard",
     "customers",
     savings ? "posting" : "",
-    savings || purpose ? "photo-editor" : "",
+    aIPhotoEditor ? "photo-editor" : "",
     // "location",
     // "history",
     savings

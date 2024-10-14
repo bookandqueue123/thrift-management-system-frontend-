@@ -556,7 +556,7 @@ const MutateUser = ({
     packageInfo?.promoCode?.code || "",
   );
 
-  const servicesOptions = ["savings", "purpose"];
+  const servicesOptions = ["savings", "purpose", "AIPhotoEditor"];
 
   const initialValues: servicePackageProps =
     actionToTake === "edit-user"
@@ -588,6 +588,10 @@ const MutateUser = ({
           selectedCustomerGroup: "",
           selectedIndividualCustomer: "",
           userType: packageInfo?.userType ?? "",
+
+          aIPhotoEditorMonthly: packageInfo?.aIPhotoEditor.monthly ?? "",
+          aIPhotoEditorQuarterly: packageInfo?.aIPhotoEditor.quarterly ?? "",
+          aIPhotoEditorYearly: packageInfo?.aIPhotoEditor.yearly ?? "",
         }
       : {
           groupName: "",
@@ -617,6 +621,10 @@ const MutateUser = ({
           selectedCustomerGroup: "",
           selectedIndividualCustomer: "",
           userType: "organisation",
+
+          aIPhotoEditorMonthly: "",
+          aIPhotoEditorQuarterly: "",
+          aIPhotoEditorYearly: "",
         };
 
   const validationSchema = Yup.object({
@@ -665,6 +673,9 @@ const MutateUser = ({
           : 0) +
         (formikValues.purposeMonthly
           ? parseFloat(formikValues.purposeMonthly)
+          : 0) +
+        (formikValues.aIPhotoEditorMonthly
+          ? parseFloat(formikValues.aIPhotoEditorMonthly)
           : 0);
 
       const totalQuarterly =
@@ -673,6 +684,9 @@ const MutateUser = ({
           : 0) +
         (formikValues.purposeQuarterly
           ? parseFloat(formikValues.purposeQuarterly)
+          : 0) +
+        (formikValues.aIPhotoEditorQuarterly
+          ? parseFloat(formikValues.aIPhotoEditorQuarterly)
           : 0);
 
       const totalYearly =
@@ -681,6 +695,9 @@ const MutateUser = ({
           : 0) +
         (formikValues.purposeYearly
           ? parseFloat(formikValues.purposeYearly)
+          : 0) +
+        (formikValues.aIPhotoEditorYearly
+          ? parseFloat(formikValues.aIPhotoEditorYearly)
           : 0);
 
       const actualMonthlyGroupFee =
@@ -701,6 +718,9 @@ const MutateUser = ({
       setFieldValue("actualQuarterlyFee", Number(actualQuarterlyGroupFee));
       setFieldValue("actualYearlyFee", actualYearlyGroupFee);
     }, [
+      formikValues.aIPhotoEditorMonthly,
+      formikValues.aIPhotoEditorQuarterly,
+      formikValues.aIPhotoEditorYearly,
       formikValues.savingsMonthly,
       formikValues.purposeMonthly,
       formikValues.purposeQuarterly,
@@ -759,7 +779,7 @@ const MutateUser = ({
         enableReinitialize={true}
         onSubmit={(values) => {
           if (actionToTake === "create-user") {
-            // console.log(values);
+            //console.log(values);
             createPackage(values);
           } else {
             editUser(values);
@@ -938,6 +958,41 @@ const MutateUser = ({
                     </label>
                     <Field
                       name="purposeYearly"
+                      type="number"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedServices.includes("AIPhotoEditor") && (
+                <div className="mb-4 grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="m-0 text-xs font-medium text-white">
+                      AI Photo Editor Monthly
+                    </label>
+                    <Field
+                      name="aIPhotoEditorMonthly"
+                      type="number"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                    />
+                  </div>
+                  <div>
+                    <label className="m-0 text-xs font-medium text-white">
+                      AI Photo Editor Quarterly
+                    </label>
+                    <Field
+                      name="aIPhotoEditorQuarterly"
+                      type="number"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                    />
+                  </div>
+                  <div>
+                    <label className="m-0 text-xs font-medium text-white">
+                      AI Photo Editor Yearly
+                    </label>
+                    <Field
+                      name="aIPhotoEditorYearly"
                       type="number"
                       className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
                     />
