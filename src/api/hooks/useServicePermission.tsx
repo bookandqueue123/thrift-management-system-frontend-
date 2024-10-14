@@ -7,6 +7,7 @@ import { useAuth } from "./useAuth";
 interface PermissionState {
   savings: boolean;
   purpose: boolean;
+  aIPhotoEditor: boolean;
 }
 
 const useServiceCheckPermission = () => {
@@ -15,6 +16,7 @@ const useServiceCheckPermission = () => {
   const [checkPermission, setCheckPermission] = useState<PermissionState>({
     savings: false,
     purpose: false,
+    aIPhotoEditor: false,
   });
   const [isLoadingPermissions, setIsLoadingPermissions] = useState(true);
 
@@ -37,15 +39,17 @@ const useServiceCheckPermission = () => {
       );
 
       if (activeSubscription) {
-        const services = activeSubscription.servicePackage.service || [];
+        const services = activeSubscription.servicePackage?.service || [];
         setCheckPermission({
           savings: services.includes("savings"),
           purpose: services.includes("purpose"),
+          aIPhotoEditor: services.includes("AIPhotoEditor"),
         });
       } else {
         setCheckPermission({
           savings: false,
           purpose: false,
+          aIPhotoEditor: false,
         });
       }
 
