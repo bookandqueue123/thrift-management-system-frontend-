@@ -49,11 +49,14 @@ const PaymentCallback = () => {
 
   const verifyPayment = async () => {
     try {
-      const response = await axios.get(verificationUrl, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await axios.get(
+        `${apiUrl}api/pay/flw/verify-purpose-payment?transaction_id=${transaction_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       if (response.status === 200) {
         setPaymentStatus("success");

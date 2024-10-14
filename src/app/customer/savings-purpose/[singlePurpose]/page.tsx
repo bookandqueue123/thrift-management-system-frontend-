@@ -26,7 +26,7 @@ export async function generateMetadata(
   return {
     title: product.data.purposeName,
     openGraph: {
-      images: [product.data.imageUrl, ...previousImages],
+      images: [product.data.imageUrl[0], ...previousImages],
       description: product.data.description.substring(0, 200),
       // url: ``,
     },
@@ -34,7 +34,7 @@ export async function generateMetadata(
       card: "summary_large_image",
       creator: "Finkia",
       description: product.data.description.substring(0, 200),
-      images: [product.data.imageUrl],
+      images: [product.data.imageUrl[0]],
       title: product.data.purposeName,
       site: "staging.finkia",
     },
