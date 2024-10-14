@@ -172,7 +172,7 @@ export default function SinglePurposePage() {
                   <div className="flex w-full justify-center">
                     <div className="flex  aspect-square w-full items-center justify-center rounded-full bg-gray-300">
                       <Image
-                        src={SinglePurpose.imageUrl}
+                        src={SinglePurpose.imageUrl[0]}
                         alt={SinglePurpose.purposeName}
                         width={200}
                         height={200}
