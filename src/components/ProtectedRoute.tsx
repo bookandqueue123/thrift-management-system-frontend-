@@ -7,12 +7,14 @@ interface ProtectedRouteProps {
   children: ReactNode;
   requireSavings?: boolean;
   requirePurpose?: boolean;
+  requireAIPhotoEditor?: boolean;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requireSavings = false,
   requirePurpose = false,
+  requireAIPhotoEditor = false,
 }) => {
   const { checkPermission, isLoadingPermissions } = useServiceCheckPermission();
   const router = useRouter();
@@ -24,9 +26,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         router.push("/pricing");
       } else if (requirePurpose && !checkPermission?.purpose) {
         router.push("/pricing");
+      } else if (requireAIPhotoEditor && !checkPermission?.aIPhotoEditor) {
+        router.push("/pricing");
       }
     }
   }, [
+    requireAIPhotoEditor,
     checkPermission,
     isLoadingPermissions,
     requireSavings,

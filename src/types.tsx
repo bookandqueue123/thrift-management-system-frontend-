@@ -857,4 +857,8 @@ export interface servicePackageProps {
   selectedCustomerGroup: string;
   selectedIndividualCustomer: string;
   userType: string;
+
+  aIPhotoEditorMonthly: string;
+  aIPhotoEditorQuarterly: string;
+  aIPhotoEditorYearly: string;
 }
