@@ -1,277 +1,206 @@
-// "use client";
-// import { apiUrl } from "@/api/hooks/useAuth";
-// import axios from "axios";
-// import Image from "next/image";
-// import { useState } from "react";
+"use client";
+// import { useRef, useState } from "react";
+// import styles from "../../../../styles/selfie-generator.module.css";
+// export default function SelfieGenerator() {
+//   const [apiKey, setApiKey] = useState("");
+//   const [overlayText, setOverlayText] = useState("");
+//   const [scaleFactor, setScaleFactor] = useState(1);
+//   const [rotationDegrees, setRotationDegrees] = useState(0);
+//   const [userOffsetX, setUserOffsetX] = useState(0);
+//   const [userOffsetY, setUserOffsetY] = useState(0);
+//   const [segmentedPhoto, setSegmentedPhoto] = useState(null);
 
-// type ImagePreview = {
-//   file: File;
-//   preview: string;
-// };
-// type UploadedImages = {
-//   foreground?: string;
-//   background?: string | null;
-// };
+//   const imageInputRef = useRef(null);
+//   const resultCanvasRef = useRef(null);
 
-// const ImageUpload = () => {
-//   const [selectedImages, setSelectedImages] = useState<ImagePreview[]>([]);
-//   const [uploadedImages, setUploadedImages] = useState<UploadedImages>({});
-//   const [bgImage, setBgImage] = useState<ImagePreview | null>(null);
-//   const [text, setText] = useState<string>("");
-//   const [shadow, setShadow] = useState<boolean>(false);
-//   const [expand, setExpand] = useState<boolean>(false);
-//   const [isLoading, setIsLoading] = useState<boolean>(false);
+//   const moveStep = 10;
 
-//   // Handle multiple image selection for normal images
-//   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-//     if (!event.target.files) return;
-//     const files: File[] = Array.from(event.target.files);
-//     const imagePreviews = files.map((file) => ({
-//       file,
-//       preview: URL.createObjectURL(file),
-//     }));
-//     setSelectedImages((prev) => [...prev, ...imagePreviews]);
-//   };
-
-//   // Handle background image selection
-//   const handleBgImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-//     if (!event.target.files) return;
-//     const file = event.target.files[0]; // Only one background image is allowed
-//     const bgImagePreview = {
-//       file,
-//       preview: URL.createObjectURL(file),
-//     };
-//     setBgImage(bgImagePreview);
-//   };
-
-//   const removeImage = (index: number) => {
-//     const newImages = selectedImages.filter((_, i) => i !== index);
-//     setSelectedImages(newImages);
-//   };
-
-//   const handleSubmit = async (event: { preventDefault: () => void }) => {
-//     setIsLoading(true);
+//   const handleImageUpload = async (event) => {
 //     event.preventDefault();
-//     const formData = new FormData();
+//     if (!imageInputRef.current.files[0]) return;
 
-//     // Append normal images
-//     selectedImages.forEach(({ file }) => {
-//       formData.append("images", file);
+//     const image = await removeBackground();
+//     setSegmentedPhoto(image);
+//     updateImage(image);
+//   };
+
+//   const removeBackground = async () => {
+//     const formData = new FormData();
+//     formData.append("image_file", imageInputRef.current.files[0]);
+//     formData.append("format", "png");
+
+//     const response = await fetch("https://sdk.photoroom.com/v1/segment", {
+//       method: "POST",
+//       headers: {
+//         "X-Api-Key": apiKey,
+//       },
+//       body: formData,
 //     });
 
-//     // Append background image if it exists
-//     if (bgImage) {
-//       formData.append("bgImage", bgImage.file);
-//     }
+//     if (!response.ok) throw new Error("Failed to remove background");
 
-//     // Append optional fields
-//     if (text) formData.append("text", text);
-//     formData.append("shadow", shadow ? "true" : "false");
-//     formData.append("expand", expand ? "true" : "false");
-
-//     try {
-//       const response = await axios.post(`${apiUrl}api/image-editor`, formData, {
-//         headers: {
-//           "Content-Type": "multipart/form-data",
-//         },
-//       });
-
-//       // Update the uploadedImages state with the foreground and background image URLs
-//       setUploadedImages({
-//         foreground: response.data.images, // Foreground image
-//         background: response.data.background, // Background image (optional)
-//       });
-//       setIsLoading(false);
-//     } catch (error) {
-//       setIsLoading(false);
-//       console.error("Error uploading images:", error);
-//     }
+//     const blob = await response.blob();
+//     return await loadImage(blob);
 //   };
 
-//   const shareImage = (url: any) => {
-//     if (navigator.share) {
-//       navigator
-//         .share({
-//           title: "Check out this image!",
-//           url: url,
-//         })
-//         .then(() => console.log("Share successful"))
-//         .catch((error) => console.error("Error sharing:", error));
-//     } else {
-//       // Fallback for browsers that don't support the Web Share API
-//       navigator.clipboard
-//         .writeText(url)
-//         .then(() => {
-//           alert("Image URL copied to clipboard!");
-//         })
-//         .catch((err) => {
-//           console.error("Could not copy URL: ", err);
-//         });
-//     }
+//   const loadImage = (file) => {
+//     return new Promise((resolve) => {
+//       const reader = new FileReader();
+//       reader.onload = (event) => {
+//         const img = new Image();
+//         img.src = event.target.result;
+//         img.onload = () => resolve(img);
+//       };
+//       reader.readAsDataURL(file);
+//     });
 //   };
-//   const downloadImage = async (imageUrl: any) => {
-//     try {
-//       const response = await fetch(imageUrl);
-//       const blob = await response.blob();
-//       const link = document.createElement("a");
-//       link.href = URL.createObjectURL(blob);
-//       link.download = "downloaded-image.jpg"; // You can set a custom filename with an extension
-//       document.body.appendChild(link);
-//       link.click();
-//       document.body.removeChild(link); // Clean up the DOM
-//     } catch (error) {
-//       console.error("Image download failed", error);
-//     }
+
+//   const updateImage = async (image) => {
+//     if (!image) return;
+//     const canvas = resultCanvasRef.current;
+//     const ctx = canvas.getContext("2d");
+//     const finalImage = await drawImageWithOverlay(image);
+
+//     canvas.width = finalImage.width;
+//     canvas.height = finalImage.height;
+//     ctx.drawImage(finalImage, 0, 0);
+//   };
+
+//   const drawImageWithOverlay = async (image) => {
+//     // Add your overlay image logic here
+//     const canvas = document.createElement("canvas");
+//     const canvasHeight = 1920;
+//     const canvasWidth = 1080;
+
+//     const ctx = canvas.getContext("2d");
+//     canvas.width = canvasWidth;
+//     canvas.height = canvasHeight;
+
+//     // Draw the background and overlay image logic here
+//     const scale = Math.min(
+//       canvasWidth / image.width,
+//       canvasHeight / image.height,
+//     );
+//     const newScaledWidth = image.width * scale * scaleFactor;
+//     const newScaledHeight = image.height * scale * scaleFactor;
+
+//     const offsetX = (canvasWidth - newScaledWidth) / 2 + userOffsetX;
+//     const offsetY = (canvasHeight - newScaledHeight) / 2 + userOffsetY;
+
+//     ctx.save();
+//     ctx.translate(canvasWidth / 2, canvasHeight / 2);
+//     ctx.rotate(rotationDegrees * (Math.PI / 180));
+//     ctx.translate(-canvasWidth / 2, -canvasHeight / 2);
+//     ctx.drawImage(image, offsetX, offsetY, newScaledWidth, newScaledHeight);
+//     ctx.restore();
+
+//     return canvas;
 //   };
 
 //   return (
-//     <div>
-//       <div className="container mx-auto rounded-lg bg-gray-100 p-6 shadow-lg">
-//         <div className="mb-6 text-center">
-//           <p className="text-dark text-4xl font-bold text-opacity-80">
-//             AI-Powered Image Editor
-//           </p>
-//         </div>
+//     <div className={styles.body}>
+//       <h1 className={styles.h1}>Selfie Generator</h1>
+//       <form onSubmit={handleImageUpload} className="upload-form">
+//         <input
+//           className="input"
+//           type="text"
+//           placeholder="Enter your PhotoRoom API key here..."
+//           value={apiKey}
+//           onChange={(e) => setApiKey(e.target.value)}
+//         />
+//         <br />
 
-//         <form onSubmit={handleSubmit} className="space-y-6">
-//           <div className="flex flex-col space-y-4">
-//             <input
-//               type="file"
-//               name="images"
-//               multiple
-//               accept="image/*"
-//               onChange={handleImageSelect}
-//               className="w-full rounded-md border border-gray-300 p-2"
-//             />
-//             <div className="image-previews flex flex-wrap gap-4">
-//               {selectedImages.map((image, index) => (
-//                 <div
-//                   key={index}
-//                   className="relative h-36 w-36 overflow-hidden rounded-md bg-white shadow-md"
-//                 >
-//                   <Image
-//                     width={150}
-//                     height={150}
-//                     src={image.preview}
-//                     alt={`Preview ${index}`}
-//                     className="h-full w-full object-cover"
-//                   />
-//                   <button
-//                     type="button"
-//                     onClick={() => removeImage(index)}
-//                     className="absolute right-1 top-1 rounded-full bg-red-500 p-1 text-white transition duration-200 hover:bg-red-600"
-//                   >
-//                     X
-//                   </button>
-//                 </div>
-//               ))}
+//         <input
+//           className="input"
+//           type="file"
+//           accept="image/*"
+//           ref={imageInputRef}
+//         />
+//         <br />
+//         <label>This person is</label>
+//         <br />
+//         <input
+//           type="text"
+//           placeholder="Enter text overlay here..."
+//           maxLength={46}
+//           value={overlayText}
+//           onChange={(e) => setOverlayText(e.target.value)}
+//         />
+//         <br />
+//         <label>Scale</label>
+//         <br />
+//         <input
+//           type="range"
+//           min="0.1"
+//           max="3"
+//           step="0.01"
+//           value={scaleFactor}
+//           onChange={(e) => setScaleFactor(parseFloat(e.target.value))}
+//         />
+//         <br />
+//         <label>Rotation (degrees)</label>
+//         <br />
+//         <input
+//           type="range"
+//           min="-180"
+//           max="180"
+//           step="1"
+//           value={rotationDegrees}
+//           onChange={(e) => setRotationDegrees(parseFloat(e.target.value))}
+//         />
+//         <br />
+//         <div className={styles.arrow_buttons}>
+//           <div className={styles.arrow_buttons_container}>
+//             <div className={styles.arrow_up_container}>
+//               <button
+//                 className={styles.arrow_button}
+//                 type="button"
+//                 onClick={() => setUserOffsetY(userOffsetY - moveStep)}
+//               >
+//                 &uarr;
+//               </button>
+//             </div>
+//             <div className={styles.arrow_middle_container}>
+//               <button
+//                 className={styles.arrow_button}
+//                 type="button"
+//                 onClick={() => setUserOffsetX(userOffsetX - moveStep)}
+//               >
+//                 &larr;
+//               </button>
+//               <button
+//                 className={styles.arrow_button}
+//                 type="button"
+//                 onClick={() => setUserOffsetY(userOffsetY + moveStep)}
+//               >
+//                 &darr;
+//               </button>
+//               <button
+//                 className={styles.arrow_button}
+//                 type="button"
+//                 onClick={() => setUserOffsetX(userOffsetX + moveStep)}
+//               >
+//                 &rarr;
+//               </button>
 //             </div>
 //           </div>
-
-//           <div className="flex flex-col space-y-4">
-//             <label className="flex items-center justify-between">
-//               Upload Background Image:
-//               <input
-//                 type="file"
-//                 name="bgImage"
-//                 accept="image/*"
-//                 onChange={handleBgImageSelect}
-//                 className="w-full rounded-md border border-gray-300 p-2"
-//               />
-//             </label>
-//             {bgImage && (
-//               <div className="relative h-36 w-36 overflow-hidden rounded-md bg-white shadow-md">
-//                 <Image
-//                   width={150}
-//                   height={150}
-//                   src={bgImage.preview}
-//                   alt="Background Preview"
-//                   className="h-full w-full object-cover"
-//                 />
-//               </div>
-//             )}
-//           </div>
-
-//           <button
-//             type="submit"
-//             className={`w-full rounded-md bg-blue-600 p-3 text-white transition duration-200 hover:bg-blue-700 ${isLoading ? "cursor-not-allowed opacity-50" : ""}`}
-//             disabled={isLoading}
-//           >
-//             {isLoading ? "Loading..." : "Upload"}
-//           </button>
-//         </form>
-
-//         <div className="mt-8">
-//           <h2 className="text-xl font-semibold">Uploaded Image:</h2>
-//           {uploadedImages.foreground && (
-//             <div className="mt-4 flex flex-col items-center">
-//               <Image
-//                 src={uploadedImages.foreground}
-//                 alt="Foreground"
-//                 width={200}
-//                 height={200}
-//                 className="rounded-md shadow-md"
-//               />
-//               <p>Image</p>
-
-//               {/* Download and Share Buttons */}
-//               <div className="mt-2 flex space-x-4">
-//                 <button
-//                   onClick={() => downloadImage(uploadedImages.foreground)}
-//                   className="rounded-md bg-green-500 p-2 text-white transition duration-200 hover:bg-green-600"
-//                 >
-//                   Download
-//                 </button>
-//                 <button
-//                   onClick={() => shareImage(uploadedImages.foreground)}
-//                   className="rounded-md bg-blue-500 p-2 text-white transition duration-200 hover:bg-blue-600"
-//                 >
-//                   Share
-//                 </button>
-//               </div>
-//             </div>
-//           )}
-
-//           {uploadedImages.background && (
-//             <div className="mt-4 flex flex-col items-center">
-//               <Image
-//                 src={uploadedImages.background}
-//                 alt="Background"
-//                 width={200}
-//                 height={200}
-//                 className="rounded-md shadow-md"
-//               />
-//               <p>Background Image</p>
-
-//               {/* Download and Share Buttons */}
-//               <div className="mt-2 flex space-x-4">
-//                 <button
-//                   onClick={() => downloadImage(uploadedImages.foreground)}
-//                   className="rounded-md bg-green-500 p-2 text-white transition duration-200 hover:bg-green-600"
-//                 >
-//                   Download
-//                 </button>
-
-//                 <button
-//                   onClick={() => shareImage(uploadedImages.background)}
-//                   className="duration=200 rounded-md bg-blue-500 p-2 text-white transition hover:bg-blue-600"
-//                 >
-//                   Share
-//                 </button>
-//               </div>
-//             </div>
-//           )}
 //         </div>
-//       </div>
+//         <button className={styles.button_submit} type="submit">
+//           Upload
+//         </button>
+//       </form>
+
+//       <canvas ref={resultCanvasRef}></canvas>
+//       {/* <div id="result-container" className={styles.result_container}>
+//         <canvas className={styles.result_canvas} ref={resultCanvasRef}></canvas>
+//       </div> */}
 //     </div>
 //   );
-// };
-
-// export default ImageUpload;
+// }
 "use client";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import styles from "../../styles/selfie-generator.module.css";
+import styles from "../../../../styles/selfie-generator.module.css";
 
 export default function SelfieGenerator() {
   const [apiKey, setApiKey] = useState(
