@@ -1811,7 +1811,11 @@ const MutateUser = ({
               />
             ) : (
               <Image
-                src={singlePurpose ? singlePurpose?.imageUrl : ""} // Display placeholder image or actual image URL
+                src={
+                  singlePurpose
+                    ? singlePurpose?.imageUrl[0] || singlePurpose?.imageUrl
+                    : ""
+                } // Display placeholder image or actual image URL
                 alt="photo"
                 className="h-auto w-full"
                 style={{ maxWidth: "100%" }}
@@ -1889,7 +1893,9 @@ const MutateUser = ({
               "image",
             ) ? (
               <Image
-                src={URL.createObjectURL(formik.values.digitalItem[0])}
+                src={URL.createObjectURL(
+                  formik.values.digitalItem[0] || formik.values.digitalItem,
+                )}
                 alt="digitalItem"
                 className="mt-4 max-w-full rounded-md"
                 style={{ maxWidth: "100%" }}
@@ -1924,7 +1930,7 @@ const MutateUser = ({
               htmlFor="image"
               className="mb-8  text-xs font-medium text-white"
             >
-              Picture (max-size - 5MB)
+              Digital Item (max-size - 5MB)
             </label>
             {formik.values.digitalItem &&
             (formik.values.digitalItem as string).length > 0 &&

@@ -3,14 +3,14 @@ import { useAuth } from "@/api/hooks/useAuth";
 import StatesAndLGAs from "@/api/statesAndLGAs.json";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { selectUserId } from "@/slices/OrganizationIdSlice";
-import { MyFileList, StateProps, UpdateMerchantKycProps } from "@/types";
+import { StateProps, UpdateMerchantKycProps } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
 import type {} from "ldrs";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { JSXElementConstructor, Key, PromiseLikeOfReactNode, ReactElement, ReactNode, Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
 
@@ -37,42 +37,35 @@ const Kyc = () => {
   );
   const [selectedState, setSelectedState] = useState("");
   const [selectedLGAArray, setSelectesLGAArray] = useState<string[]>([]);
-  const [selectedIndustry, setSelectedIndustry] = useState<string>("")
-  const [selectedNatureOfBusiness, setSelectedNatureOfBusiness] = useState<string[]>([]);
- 
-  const {
-    data: allIndustries,
-    isLoading: isLoadingAllIndustry,
-  
-  } = useQuery({
+  const [selectedIndustry, setSelectedIndustry] = useState<string>("");
+  const [selectedNatureOfBusiness, setSelectedNatureOfBusiness] = useState<
+    string[]
+  >([]);
+
+  const { data: allIndustries, isLoading: isLoadingAllIndustry } = useQuery({
     queryKey: ["all Industries"],
     queryFn: async () => {
       return client
         .get(`/api/industry`, {})
         .then((response) => {
-    
-          
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-
           throw error;
         });
     },
     staleTime: 5000,
   });
 
- 
   const MyEffectComponent = ({ formikValues }: { formikValues: any }) => {
     useEffect(() => {
       setSelectedCountry(formikValues.country);
       setSelectedState(formikValues.state);
-      setSelectedIndustry(formikValues.industry)
+      setSelectedIndustry(formikValues.industry);
     }, [formikValues]);
 
     return null;
   };
- 
 
   useEffect(() => {
     const filteredStates =
@@ -83,11 +76,11 @@ const Kyc = () => {
   }, [selectedCountry]);
 
   useEffect(() => {
-    const filteredIndustry =
-      allIndustries?.find((industry: { name: string; }) => industry.name === selectedIndustry)
-        
-    setSelectedNatureOfBusiness(filteredIndustry?.natureOfBusiness
-    )
+    const filteredIndustry = allIndustries?.find(
+      (industry: { name: string }) => industry.name === selectedIndustry,
+    );
+
+    setSelectedNatureOfBusiness(filteredIndustry?.natureOfBusiness);
     // setselectedStateArray(filteredStates);
   }, [selectedIndustry, allIndustries]);
 
@@ -151,7 +144,6 @@ const Kyc = () => {
       // formData.append("account_bank", values.account_bank);
       // formData.append("split_type", values.split_type);
       // formData.append("split_value", values.split_value);
-      
 
       if (values.organisationLogo) {
         formData.append("businessLogo", values.organisationLogo[0]);
@@ -173,6 +165,12 @@ const Kyc = () => {
       }
       if (values.contactPhoto) {
         formData.append("contactPersonID", values.contactPhoto[0]);
+      }
+      if (values.CertOfBusinessName) {
+        formData.append("certOfBusinessName", values.CertOfBusinessName[0]);
+      }
+      if (values.FormCacBn) {
+        formData.append("formCacBn", values.FormCacBn[0]);
       }
       return client.put(`/api/user/${userId}`, formData);
     },
@@ -206,7 +204,6 @@ const Kyc = () => {
         });
     },
   });
-  
 
   let initialValues: UpdateMerchantKycProps = {
     country: userData?.country,
@@ -251,7 +248,6 @@ const Kyc = () => {
     // account_bank: '044',
     // split_type: 'percentage',
     // split_value: '90',
-
   };
 
   const [allSections, setAllSections] = useState({
@@ -356,15 +352,13 @@ const Kyc = () => {
               "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
             )
             .optional(),
-            businessPhoneNumber: Yup.string()
+          businessPhoneNumber: Yup.string()
             .matches(
               /^(?:\+234\d{10}|\d{11})$/,
               "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
             )
             .required("required"),
-          contactEmail: Yup.string()
-            .email("Invalid email format")
-            .optional(),
+          contactEmail: Yup.string().email("Invalid email format").optional(),
           contactDOB: Yup.date().optional(),
           OrgRole: Yup.string().optional(),
           contactNationality: Yup.string().optional(),
@@ -393,29 +387,25 @@ const Kyc = () => {
           lga: Yup.string().required("required"),
           officeAddress: Yup.string().required("required"),
           organisationLogo: Yup.mixed()
-          .nullable()
-          .optional()
-          .test(
-            "fileSize",
-            "File size must be less than or equal to 5MB",
-            (value) => {
-              if (value instanceof FileList && value.length > 0) {
-                return value[0].size <=  5242880; // 5MB limit
-              }
-              return true; // No file provided, so validation passes
-            }
-          )
-          .test(
-            "fileType",
-            "Only .jpg, .png files are allowed",
-            (value) => {
+            .nullable()
+            .optional()
+            .test(
+              "fileSize",
+              "File size must be less than or equal to 5MB",
+              (value) => {
+                if (value instanceof FileList && value.length > 0) {
+                  return value[0].size <= 5242880; // 5MB limit
+                }
+                return true; // No file provided, so validation passes
+              },
+            )
+            .test("fileType", "Only .jpg, .png files are allowed", (value) => {
               if (value instanceof FileList && value.length > 0) {
                 const fileType = value[0].type;
                 return fileType === "image/jpeg" || fileType === "image/png"; // Only .jpg or .png allowed
               }
               return true; // No file provided, so validation passes
-            }
-          ),
+            }),
 
           description: Yup.string().optional(),
           phoneNumber: Yup.string()
@@ -437,7 +427,7 @@ const Kyc = () => {
               "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <=  5242880;
+                  return value[0].size <= 5242880;
                 }
                 return true;
               },
@@ -459,14 +449,14 @@ const Kyc = () => {
               },
             ),
           contactPhoto: Yup.mixed()
-          .nullable()
+            .nullable()
             .optional()
             .test(
               "fileSize",
               "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <=  5242880;
+                  return value[0].size <= 5242880;
                 }
                 return true;
               },
@@ -495,7 +485,7 @@ const Kyc = () => {
               "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <=  5242880;
+                  return value[0].size <= 5242880;
                 }
                 return true;
               },
@@ -517,14 +507,14 @@ const Kyc = () => {
               },
             ),
           FormCacBn: Yup.mixed()
-          .nullable()
+            .nullable()
             .optional()
             .test(
               "fileSize",
               "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <=  5242880;
+                  return value[0].size <= 5242880;
                 }
                 return true;
               },
@@ -546,14 +536,14 @@ const Kyc = () => {
               },
             ),
           CourtAffidavit: Yup.mixed()
-          .nullable()
+            .nullable()
             .optional()
             .test(
               "fileSize",
               "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <=  5242880;
+                  return value[0].size <= 5242880;
                 }
                 return true;
               },
@@ -574,7 +564,7 @@ const Kyc = () => {
                 return true;
               },
             ),
-            CommunityRecommendation: Yup.mixed()
+          CommunityRecommendation: Yup.mixed()
             .nullable()
             .optional()
             .test(
@@ -582,7 +572,7 @@ const Kyc = () => {
               "File size must be less than or equal to 5MB",
               (value) => {
                 if (value instanceof FileList && value.length > 0) {
-                  return value[0].size <=  5242880;
+                  return value[0].size <= 5242880;
                 }
                 return true;
               },
@@ -633,9 +623,7 @@ const Kyc = () => {
           //   ),
         })}
         onSubmit={(values, { setSubmitting }) => {
-          console.log(values, 123)
           setTimeout(() => {
-           
             kycUpdate(values);
 
             setSubmitting(false);
@@ -756,12 +744,14 @@ const Kyc = () => {
                     className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                   >
                     <option>Select Industry</option>
-                      {allIndustries &&
-                        allIndustries.map((industry: { id:string; name: string }) => (
+                    {allIndustries &&
+                      allIndustries.map(
+                        (industry: { id: string; name: string }) => (
                           <option key={industry.id} value={industry.name}>
-                          {industry.name}
-                        </option>
-                      ))}
+                            {industry.name}
+                          </option>
+                        ),
+                      )}
                   </Field>
                   <ErrorMessage
                     name="industry"
@@ -770,39 +760,41 @@ const Kyc = () => {
                   />
                 </div>
 
-                
                 <div className="mb-4">
-                        <label
-                          htmlFor="natureOfBusiness"
-                          className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%]"
-                        >
-                          Nature of Business
-                        </label>
-                        <div>
-                          <Field
-                            as="select"
-                            id="natureOfBusiness"
-                            name="natureOfBusiness"
-                            // type="text"
-                            className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                          >
-                            <option>Select nature Of Business</option>
+                  <label
+                    htmlFor="natureOfBusiness"
+                    className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%]"
+                  >
+                    Nature of Business
+                  </label>
+                  <div>
+                    <Field
+                      as="select"
+                      id="natureOfBusiness"
+                      name="natureOfBusiness"
+                      // type="text"
+                      className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                    >
+                      <option>Select nature Of Business</option>
 
-                            {selectedNatureOfBusiness &&
-                              selectedNatureOfBusiness.map((natureOfBusinesses) => (
-                                <option key={natureOfBusinesses} value={natureOfBusinesses}>
-                                  {natureOfBusinesses}
-                                </option>
-                              ))}
-                          </Field>{" "}
-                        </div>
-                        <ErrorMessage
-                          name="natureOfBusiness"
-                          component="div"
-                          className="text-xs text-red-500"
-                        />
-                      </div>
-                
+                      {selectedNatureOfBusiness &&
+                        selectedNatureOfBusiness.map((natureOfBusinesses) => (
+                          <option
+                            key={natureOfBusinesses}
+                            value={natureOfBusinesses}
+                          >
+                            {natureOfBusinesses}
+                          </option>
+                        ))}
+                    </Field>{" "}
+                  </div>
+                  <ErrorMessage
+                    name="natureOfBusiness"
+                    component="div"
+                    className="text-xs text-red-500"
+                  />
+                </div>
+
                 <div className="mt-4">
                   <label
                     htmlFor="organisationLogo"
@@ -1667,24 +1659,24 @@ const Kyc = () => {
                   </span>
                 </p>
 
-                <div className="mb-4"> 
-                    <label
-                      htmlFor="businessPhoneNumber"
-                      className="m-0 text-xs font-medium text-white"
-                    >
-                      Contact’s Person Telephone Number
-                    </label>
-                    <Field
-                      name="businessPhoneNumber"
-                      type="tel"
-                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                    />
-                    <ErrorMessage
-                      name="businessPhoneNumber"
-                      component="div"
-                      className="text-xs text-red-500"
-                    />
-                  </div>
+                <div className="mb-4">
+                  <label
+                    htmlFor="businessPhoneNumber"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Contact’s Person Telephone Number
+                  </label>
+                  <Field
+                    name="businessPhoneNumber"
+                    type="tel"
+                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                  <ErrorMessage
+                    name="businessPhoneNumber"
+                    component="div"
+                    className="text-xs text-red-500"
+                  />
+                </div>
 
                 <div className="mb-4">
                   <label
@@ -1705,7 +1697,6 @@ const Kyc = () => {
                   />
                 </div>
 
-                
                 <p className="mt-4 text-base font-semibold text-ajo_offWhite">
                   Kindly upload documents that are:
                 </p>
@@ -2086,8 +2077,6 @@ const Kyc = () => {
                   type="button"
                   className=" text-ajo_offWhite hover:text-ajo_orange"
                   onClick={() => {
-                    
-
                     if (activeSection === "verify" && allSections.verify) {
                       SetActiveSection("identification");
                       setAllSections((prev) => ({

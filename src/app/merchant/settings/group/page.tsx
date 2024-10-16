@@ -1,14 +1,10 @@
 "use client";
+import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton } from "@/components/Buttons";
 import Modal from "@/components/Modal";
-import PaginationBar from "@/components/Pagination";
-import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
-import AmountFormatter from "@/utils/AmountFormatter";
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import DummyGroups from "@/api/dummyGroups.json";
-import Image from "next/image";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
+import { AssignedUser, postSavingsResponse } from "@/types";
 import {
   QueryObserverResult,
   RefetchOptions,
@@ -16,16 +12,16 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useAuth } from "@/api/hooks/useAuth";
-import { AssignedUser, customer, postSavingsResponse } from "@/types";
 import { AxiosError, AxiosResponse } from "axios";
+import Image from "next/image";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
-import { useSelector } from "react-redux";
-import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
-import { usePathname, useRouter } from "next/navigation";
 import { usePermissions } from "@/api/hooks/usePermissions";
+import { selectOrganizationId, selectUser } from "@/slices/OrganizationIdSlice";
+import { ErrorMessage, Field, Form, Formik } from "formik";
+import { usePathname, useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import * as Yup from "yup";
 
 const GroupSettings = () => {
   const [modalState, setModalState] = useState(false);
@@ -69,7 +65,6 @@ const GroupSettings = () => {
           return response.data;
         })
         .catch((error) => {
-      
           throw error;
         });
     },
@@ -79,7 +74,6 @@ const GroupSettings = () => {
   const { mutate: deleteGroup, isPending: isDeletingGroup } = useMutation({
     mutationKey: ["deleteGroup"],
     mutationFn: async (groupId: string) => {
-   
       return client.delete(`/api/user/${groupId}`);
     },
     onSuccess(response: AxiosResponse<any, any>) {
@@ -245,7 +239,7 @@ const CreateGroupForm = ({
 }: iCreateGroupProps) => {
   const organizationId = useSelector(selectOrganizationId);
   const user = useSelector(selectUser);
-  const {assignedCustomers} = usePermissions()
+  const { assignedCustomers } = usePermissions();
   const { client } = useAuth();
   const [selectedOptions, setSelectedOptions] = useState<
     (AssignedUser | undefined)[]
@@ -280,9 +274,7 @@ const CreateGroupForm = ({
       return client
         .get(`/api/user?organisation=${organizationId}&userType=individual`, {})
         .then((response: AxiosResponse<AssignedUser[], any>) => {
-          if (
-            user?.role === "staff"
-          ) {
+          if (user?.role === "staff") {
             return assignedCustomers;
           } else {
             return response.data;
@@ -360,7 +352,7 @@ const CreateGroupForm = ({
             ["status"]: "success",
           }) as postSavingsResponse,
       );
-            setGroupsChanged(true);
+      setGroupsChanged(true);
       return response.data;
     },
     onError(error: any) {
@@ -373,8 +365,7 @@ const CreateGroupForm = ({
             ["status"]: "failed",
           }) as postSavingsResponse,
       );
-            setGroupsChanged(false);
-
+      setGroupsChanged(false);
 
       throw error;
     },
@@ -450,7 +441,6 @@ const CreateGroupForm = ({
             ),
           })}
           onSubmit={(values: { groupName: string }, { setSubmitting }) => {
-        ;
             setTimeout(() => {
               setSubmitting(false);
 
@@ -645,9 +635,7 @@ const PostConfirmation = ({
   return (
     <div className="mx-auto mt-[10%] flex h-full w-1/2 flex-col items-center justify-center space-y-8">
       <h1 className="text-white">
-        {status !== undefined
-          ? postingMessage
-          : "Loading....."}
+        {status !== undefined ? postingMessage : "Loading....."}
       </h1>
       {status !== undefined ? (
         <Image
