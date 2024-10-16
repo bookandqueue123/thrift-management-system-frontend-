@@ -381,6 +381,31 @@ export interface Organisation {
   photo?: string;
   industry: string;
   natureOfBusiness: string;
+
+  contactFullName: string;
+  contactPhoneNumber: string;
+  contactEmail: string;
+  contactDOB: string;
+  contactRole: string;
+
+  contactNationality: string;
+  contactNIN: string;
+  contactBvn: string;
+  ContactPercentOwnership: string;
+  cacNumber: string;
+  businessLogo: string;
+  bankLetterOfRecommendation: string;
+  courtAffidavit: string;
+  letterOfRecommendation: string;
+  contactPersonID: string;
+  certOfBusinessName: string;
+  formCacBn: string;
+
+  facebook: string | undefined;
+  instagram: string | undefined;
+  twitter: string | undefined;
+  linkedIn: string | undefined;
+  pintrest: string | undefined;
 }
 
 export interface Guarantor {
