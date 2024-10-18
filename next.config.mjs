@@ -2,7 +2,6 @@
 
 const isProd = process.env.NEXT_PUBLIC_APP_ENV === "production";
 
-
 const nextConfig = {
   images: {
     domains: ["images.unsplash.com", "res.cloudinary.com"],
@@ -12,6 +11,7 @@ const nextConfig = {
       ? "https://api-prod.finkia.com.ng/"
       : "https://api-test.finkia.com.ng/",
     PASSWORD_ENCRYPTION_KEY: process.env.PASSWORD_ENCRYPTION_KEY,
+    PHOTOROOM_API_KEY: "0a5c58691fcc11c0e5d5ee16054feee4df9feff0",
   },
 };
 
