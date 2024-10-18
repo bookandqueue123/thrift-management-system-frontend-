@@ -8,7 +8,11 @@ import PaginationBar from "@/components/Pagination";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
-import { selectOrganizationId, selectToken, selectUser } from "@/slices/OrganizationIdSlice";
+import {
+  selectOrganizationId,
+  selectToken,
+  selectUser,
+} from "@/slices/OrganizationIdSlice";
 import {
   CustomerSignUpProps,
   FormErrors,
@@ -22,10 +26,10 @@ import {
 } from "@/types";
 import { extractDate } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import axios, { AxiosError, AxiosResponse } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   ChangeEvent,
   Dispatch,
@@ -153,7 +157,7 @@ const Customers = () => {
           if (error.response?.data.message.includes("unauthorized")) {
             setPermissionError(error.response?.data.message);
           }
-         
+
           throw error;
         });
     },
@@ -161,7 +165,6 @@ const Customers = () => {
   });
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchResult(e.target.value);
-    
 
     if (allCustomers) {
       const filtered = allCustomers.filter((item) =>
@@ -187,7 +190,6 @@ const Customers = () => {
     }
   };
 
-
   const paginatedCustomers = filteredCustomers?.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
@@ -202,61 +204,65 @@ const Customers = () => {
     refetch();
   }, [isCustomerCreated, refetch]);
 
-  
   const handleExport = async () => {
-  
     try {
-      const organisation = organisationId; 
-      const response = await fetch(`${apiUrl}api/user/export-users/${organisation}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+      const organisation = organisationId;
+      const response = await fetch(
+        `${apiUrl}api/user/export-users/${organisation}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
-      
+      );
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = 'users.csv';
+        a.download = "users.csv";
         document.body.appendChild(a);
         a.click();
         a.remove();
       } else {
-        console.error('Failed to export users:', response.statusText);
+        console.error("Failed to export users:", response.statusText);
       }
     } catch (error) {
-      console.error('An error occurred while exporting users:', error);
+      console.error("An error occurred while exporting users:", error);
     }
   };
 
   const handleExcelExport = async () => {
     try {
       const organisation = organisationId; // Replace with actual organisation ID or obtain it dynamically
-      const response = await fetch(`${apiUrl}api/user/export-users-excel/${organisation}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${apiUrl}api/user/export-users-excel/${organisation}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
-      
+      );
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = 'users.xlsx';
+        a.download = "users.xlsx";
         document.body.appendChild(a);
         a.click();
         a.remove();
       } else {
-        console.error('Failed to export users:', response.statusText);
+        console.error("Failed to export users:", response.statusText);
       }
     } catch (error) {
-      console.error('An error occurred while exporting users:', error);
+      console.error("An error occurred while exporting users:", error);
     }
   };
 
@@ -361,13 +367,19 @@ const Customers = () => {
               (user?.role === "staff" &&
                 userPermissions.includes(permissionsMap["export-saving"]))) && (
               <div className="mt-4 flex">
-                <button onClick={handleExport} className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite">
+                <button
+                  onClick={handleExport}
+                  className="mr-4 flex rounded border border-ajo_offWhite bg-transparent px-4 py-2 font-medium text-ajo_offWhite hover:border-transparent hover:bg-blue-500 hover:text-ajo_offWhite"
+                >
                   Export as CSV{" "}
                   <span className="ml-2 mt-1">
                     <CiExport />
                   </span>
                 </button>
-                <button onClick={handleExcelExport} className="relative rounded-md border-none bg-transparent px-4 py-2 text-white">
+                <button
+                  onClick={handleExcelExport}
+                  className="relative rounded-md border-none bg-transparent px-4 py-2 text-white"
+                >
                   <u>Export as Excel</u>
                 </button>
               </div>
@@ -600,7 +612,6 @@ export const SavingsSettings = ({
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          
           throw error;
         });
     },
@@ -690,12 +701,10 @@ export const SavingsSettings = ({
       });
     },
     onSuccess(response: AxiosResponse<setSavingsResponse, any>) {
-  
       setContent("confirmation");
       return response.data;
     },
     onError(error: AxiosError<any, any>) {
-      
       throw error;
     },
   });
@@ -1003,7 +1012,6 @@ export const ViewCustomer = ({
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          
           throw error;
         });
     },
@@ -1227,7 +1235,6 @@ export const EditCustomer = ({
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          
           throw error;
         });
     },
@@ -1246,7 +1253,6 @@ export const EditCustomer = ({
           return response.data;
         })
         .catch((error) => {
-       
           throw error;
         });
     },
@@ -1310,7 +1316,6 @@ export const EditCustomer = ({
     },
 
     onError(error: AxiosError<any, any>) {
-    
       setShowErrorToast(true);
       setErrorMessage(error.response?.data.message);
     },
@@ -1343,7 +1348,6 @@ export const EditCustomer = ({
       );
       // If state is found, return its LGAs
       if (stateObject) {
-       
         setSelectesLGAArray(stateObject.lgas);
       } else {
         // If state is not found, return an empty array
@@ -1393,7 +1397,6 @@ export const EditCustomer = ({
               organisation: Yup.string().required("Required"),
             })}
             onSubmit={(values, { setSubmitting }) => {
-             
               updateUserInfo(values);
               setTimeout(() => {
                 setShowSuccessToast(false);
@@ -1913,7 +1916,7 @@ export const CreateCustomer = ({
   setError: Dispatch<SetStateAction<string>>;
 }) => {
   const { client } = useAuth();
-  const [selectedOption, setSelectedOption] = useState('manual');
+  const [selectedOption, setSelectedOption] = useState("manual");
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedStateArray, setselectedStateArray] = useState<StateProps[]>(
     [],
@@ -1922,21 +1925,21 @@ export const CreateCustomer = ({
   const organizationId = useSelector(selectOrganizationId);
   // console.log("ID:  " + organizationId);
   const [selectedLGAArray, setSelectesLGAArray] = useState<string[]>([]);
-  const [showDialog, setShowDialog] = useState(false)
- 
-  const [selectedValue, setSelectedValue] = useState('');
-  const [organisationError, setOrganisationError] = useState('');
+  const [showDialog, setShowDialog] = useState(false);
+
+  const [selectedValue, setSelectedValue] = useState("");
+  const [organisationError, setOrganisationError] = useState("");
   const [file, setFile] = useState(null);
 
-  const pathname = usePathname()
-  const isSuperAdminPath = pathname.includes('/superadmin')
- 
-  
+  const pathname = usePathname();
+  const isSuperAdminPath = pathname.includes("/superadmin");
 
-  const handleOrganisationChange = (e: { target: { value: SetStateAction<string>; }; }) => {
+  const handleOrganisationChange = (e: {
+    target: { value: SetStateAction<string> };
+  }) => {
     setSelectedValue(e.target.value);
     if (e.target.value) {
-      setError('');
+      setError("");
     }
   };
 
@@ -1997,7 +2000,6 @@ export const CreateCustomer = ({
       );
       // If state is found, return its LGAs
       if (stateObject) {
-        
         setSelectesLGAArray(stateObject.lgas);
       } else {
         // If state is not found, return an empty array
@@ -2047,7 +2049,9 @@ export const CreateCustomer = ({
       formData.append("nokPhone", values.nokPhone);
       formData.append("homeAddress", values.homeAddress);
       formData.append("userType", values.userType);
-      (isSuperAdminPath ? formData.append("organisation", selectedValue) : formData.append("organisation", organizationId))
+      isSuperAdminPath
+        ? formData.append("organisation", selectedValue)
+        : formData.append("organisation", organizationId);
       // formData.append("organisation", values.organisation);
       formData.append("nin", values.nin);
       formData.append("bvn", values.bvn);
@@ -2067,10 +2071,9 @@ export const CreateCustomer = ({
     },
 
     onSuccess(response) {
-      
       setCustomerCreated(true);
       setModalContent("confirmation");
-      setError("Customer created successfully. ")
+      setError("Customer created successfully. ");
       setMutationResponse(response?.data.message);
       setTimeout(() => {
         setCloseModal(false);
@@ -2088,13 +2091,9 @@ export const CreateCustomer = ({
           "Custom error message: The file you're trying to upload is too large.",
         );
       } else {
-       
       }
-     
     },
   });
-
-
 
   const handleFileChange = (e: any) => {
     setFile(e.target.files[0]);
@@ -2117,28 +2116,32 @@ export const CreateCustomer = ({
   //   }
   // };
 
-  const handleOptionChange = (event: { target: { value: SetStateAction<string>; }; }) => {
+  const handleOptionChange = (event: {
+    target: { value: SetStateAction<string> };
+  }) => {
     setSelectedOption(event.target.value);
-  }
+  };
 
-  const {mutate: uploadCustomer, isPending: isuploadingCustomers, isError:isuploadingCustomersError} = useMutation({
-    mutationKey: ['upload bulk customer'],
-    mutationFn: async(e: any) => {
-      e.preventDefault()
+  const {
+    mutate: uploadCustomer,
+    isPending: isuploadingCustomers,
+    isError: isuploadingCustomersError,
+  } = useMutation({
+    mutationKey: ["upload bulk customer"],
+    mutationFn: async (e: any) => {
+      e.preventDefault();
       const formData = new FormData();
       if (file) {
-        formData.append('file', file);
+        formData.append("file", file);
       }
-      formData.append('organisation', organizationId)
-   
-      return client.post(`/api/user/upload`, formData)
+      formData.append("organisation", organizationId);
 
+      return client.post(`/api/user/upload`, formData);
     },
     onSuccess(response) {
-      
       setCustomerCreated(true);
       setModalContent("confirmation");
-      setError("Customers created successfully. ")
+      setError("Customers created successfully. ");
       setMutationResponse(response?.data.message);
       setTimeout(() => {
         setCloseModal(false);
@@ -2146,11 +2149,20 @@ export const CreateCustomer = ({
     },
 
     onError(error: AxiosError<any, any>) {
- 
-      const errorString = error.response?.data.errors.map((error: { message: string; row: any; }) => `Missing fields: ${error.message.split(': ')[1]} in row ${error.row}`).join(', ');
-      const errorString2 = error.response?.data.errors.map((error: { row: any; message: string; }) => `row ${error.row}: ${error.message} in row ${error.row}`).join(', ');
-    
-       setCustomerCreated(false);
+      const errorString = error.response?.data.errors
+        .map(
+          (error: { message: string; row: any }) =>
+            `Missing fields: ${error.message.split(": ")[1]} in row ${error.row}`,
+        )
+        .join(", ");
+      const errorString2 = error.response?.data.errors
+        .map(
+          (error: { row: any; message: string }) =>
+            `row ${error.row}: ${error.message} in row ${error.row}`,
+        )
+        .join(", ");
+
+      setCustomerCreated(false);
       setModalContent("confirmation");
       setMutationResponse(errorString2 ?? error.response?.data.message);
       setError(error.response?.data.message ?? error.message);
@@ -2160,14 +2172,9 @@ export const CreateCustomer = ({
           "Custom error message: The file you're trying to upload is too large.",
         );
       } else {
-       
       }
-     
     },
-    
-
-
-  })
+  });
 
   return (
     <div>
@@ -2176,7 +2183,7 @@ export const CreateCustomer = ({
           <input
             type="radio"
             value="manual"
-            checked={selectedOption === 'manual'}
+            checked={selectedOption === "manual"}
             onChange={handleOptionChange}
             className="mr-2"
           />
@@ -2186,7 +2193,7 @@ export const CreateCustomer = ({
           <input
             type="radio"
             value="bulk"
-            checked={selectedOption === 'bulk'}
+            checked={selectedOption === "bulk"}
             onChange={handleOptionChange}
             className="mr-2"
           />
@@ -2194,33 +2201,33 @@ export const CreateCustomer = ({
         </label>
       </div>
 
-      {selectedOption === 'bulk' && (
+      {selectedOption === "bulk" && (
         <div>
           <div>
-          <a href="/users.csv" download="users.csv">
-            <button className="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 md:w-[40%]">
-              Download Sample file
-            </button>
-          </a>
+            <a href="/sample.csv" download="sample.csv">
+              <button className="rounded-md bg-ajo_blue px-9 py-3 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500 md:w-[40%]">
+                Download Sample file
+              </button>
+            </a>
           </div>
           <form onSubmit={uploadCustomer}>
             <label
               htmlFor="imageUrl"
               className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
             >
-              <input type="file" accept=".csv,.xlsx" onChange={handleFileChange} />
+              <input
+                type="file"
+                accept=".csv,.xlsx"
+                onChange={handleFileChange}
+              />
             </label>
-            
+
             <label
-                htmlFor="imageUrl"
-                className="cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
-              >
-          
-            <button
-            type="submit"
-            disabled={isuploadingCustomers}
+              htmlFor="imageUrl"
+              className="cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
             >
-            {isuploadingCustomers ? (
+              <button type="submit" disabled={isuploadingCustomers}>
+                {isuploadingCustomers ? (
                   <Image
                     src="/loadingSpinner.svg"
                     alt="loading spinner"
@@ -2231,216 +2238,210 @@ export const CreateCustomer = ({
                 ) : (
                   "Upload File"
                 )}
-            </button>
+              </button>
             </label>
           </form>
-      </div>  
+        </div>
       )}
 
-      {selectedOption === 'manual' && (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={Yup.object({
-        firstName: Yup.string().required("First Name is required"),
-        lastName: Yup.string().required("Last Name is required"),
-        phoneNumber: Yup.string()
-          .matches(
-            /^(?:\+234\d{10}|\d{11})$/,
-            "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
-          )
-          .required("Phone number is required"),
-        email: Yup.string().email("Invalid email address").optional(),
-        country: Yup.string().required("Required"),
-        state: Yup.string().required("Required"),
-        lga: Yup.string().required("Required"),
-        city: Yup.string().required("Required"),
-        popularMarket: Yup.string().required("Required"),
-        nok: Yup.string().required("Required"),
-        nokRelationship: Yup.string().required("Required"),
-        nokPhone: Yup.string().required("Required"),
-        homeAddress: Yup.string().optional(),
-        //  organisation: Yup.string().optional(),
-        photo: Yup.mixed()
-          .required("Required")
-          .test(
-            "fileSize",
-            "File size must be less than 5MB",
-            (value: MyFileList) => {
-              if (value) {
-                return value[0].size <= 5242880;
+      {selectedOption === "manual" && (
+        <Formik
+          initialValues={initialValues}
+          validationSchema={Yup.object({
+            firstName: Yup.string().required("First Name is required"),
+            lastName: Yup.string().required("Last Name is required"),
+            phoneNumber: Yup.string()
+              .matches(
+                /^(?:\+234\d{10}|\d{11})$/,
+                "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
+              )
+              .required("Phone number is required"),
+            email: Yup.string().email("Invalid email address").optional(),
+            country: Yup.string().required("Required"),
+            state: Yup.string().required("Required"),
+            lga: Yup.string().required("Required"),
+            city: Yup.string().required("Required"),
+            popularMarket: Yup.string().required("Required"),
+            nok: Yup.string().required("Required"),
+            nokRelationship: Yup.string().required("Required"),
+            nokPhone: Yup.string().required("Required"),
+            homeAddress: Yup.string().optional(),
+            //  organisation: Yup.string().optional(),
+            photo: Yup.mixed()
+              .required("Required")
+              .test(
+                "fileSize",
+                "File size must be less than 5MB",
+                (value: MyFileList) => {
+                  if (value) {
+                    return value[0].size <= 5242880;
+                  }
+                  return true;
+                },
+              ),
+            meansOfID: Yup.string().required("Required"),
+            meansOfIDPhoto: Yup.mixed()
+              .required("Means of ID photo is required")
+              .test(
+                "fileSize",
+                "File size must be less than 5MB",
+                (value: MyFileList) => {
+                  if (value) {
+                    return value[0].size <= 5242880;
+                  }
+                  return true;
+                },
+              ),
+            nin: Yup.string().optional(),
+            bvn: Yup.string().optional(),
+            // bankName: Yup.string()
+            //   .required("Required")
+            //   .min(2, "Bank name must be at least 2 characters")
+            //   .max(50, "Bank name must be less than 50 characters"),
+            // bankAcctName: Yup.string()
+            //   .required("Required")
+            //   .min(2, "Account name must be at least 2 characters")
+            //   .max(100, "Account name must be less than 100 characters")
+            //   .matches(
+            //     /^[a-zA-Z\s]*$/,
+            //     "Account name should only contain alphabets and spaces",
+            //   ),
+            bankAcctNo: Yup.string()
+              .optional()
+              .length(10, "Account number must be exactly 10 digits")
+              .matches(/^\d{10}$/, "Account number should only contain digits"),
+          })}
+          onSubmit={(values, { setSubmitting }) => {
+            if (isSuperAdminPath) {
+              if (!selectedValue) {
+                alert(`You didn't select any organisation: ${selectedValue}`);
+                setError("Please select an option.");
+              } else {
+                setError("");
+
+                createNewCustomer(values);
+                setTimeout(() => {
+                  setSubmitting(false);
+                }, 400);
+                // Han
               }
-              return true;
-            },
-          ),
-        meansOfID: Yup.string().required("Required"),
-        meansOfIDPhoto: Yup.mixed()
-          .required("Means of ID photo is required")
-          .test(
-            "fileSize",
-            "File size must be less than 5MB",
-            (value: MyFileList) => {
-              if (value) {
-                return value[0].size <= 5242880;
-              }
-              return true;
-            },
-          ),
-        nin: Yup.string().optional(),
-        bvn: Yup.string().optional(),
-        // bankName: Yup.string()
-        //   .required("Required")
-        //   .min(2, "Bank name must be at least 2 characters")
-        //   .max(50, "Bank name must be less than 50 characters"),
-        // bankAcctName: Yup.string()
-        //   .required("Required")
-        //   .min(2, "Account name must be at least 2 characters")
-        //   .max(100, "Account name must be less than 100 characters")
-        //   .matches(
-        //     /^[a-zA-Z\s]*$/,
-        //     "Account name should only contain alphabets and spaces",
-        //   ),
-        bankAcctNo: Yup.string()
-          .optional()
-          .length(10, "Account number must be exactly 10 digits")
-          .matches(/^\d{10}$/, "Account number should only contain digits"),
-      })}
-      onSubmit={(values, { setSubmitting }) => {
-       
-      if(isSuperAdminPath){
-        
-        if (!selectedValue) {
-          alert(`You didn't select any organisation: ${selectedValue}`);
-          setError('Please select an option.');
-        } else {
-          setError('');
-          
-           createNewCustomer(values);
-          setTimeout(() => {
-            
-            setSubmitting(false);
-          }, 400);
-          // Han
-        }
-      } else{
-         createNewCustomer(values);
-        setTimeout(() => {
-            
-          setSubmitting(false);
-        }, 400);
-      }
-        
-      }}
-    >
-      {({
-        isSubmitting,
-        handleChange,
-        handleSubmit,
-        values,
-        errors,
-        setFieldValue,
-      }) => (
-        <Form
-          className="mt-8"
-          onSubmit={handleSubmit}
-          encType="multipart/form-data"
-          name="image"
+            } else {
+              createNewCustomer(values);
+              setTimeout(() => {
+                setSubmitting(false);
+              }, 400);
+            }
+          }}
         >
-        
-        
-          <div className="flex w-full items-center justify-between gap-4">
-            <div className="mb-3 w-1/2">
-              <label
-                htmlFor="firstName"
-                className="m-0 text-xs font-medium text-white"
-              >
-                First Name{" "}
-                <span className="font-base font-semibold text-[#FF0000]">
-                  *
-                </span>
-              </label>
-              <Field
-                id="firstName"
-                name="firstName"
-                type="text"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-              <ErrorMessage
-                name="firstName"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-            <div className="mb-3 w-1/2">
-              <label
-                htmlFor="lastName"
-                className="m-0 text-xs font-medium text-white"
-              >
-                Last Name{" "}
-                <span className="font-base font-semibold text-[#FF0000]">
-                  *
-                </span>
-              </label>
-              <Field
-                id="lastName"
-                name="lastName"
-                type="text"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-              <ErrorMessage
-                name="lastName"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-          </div>
-
-          <div className="mb-3">
-            <label
-              htmlFor="otherName"
-              className="m-0 text-xs font-medium text-white"
+          {({
+            isSubmitting,
+            handleChange,
+            handleSubmit,
+            values,
+            errors,
+            setFieldValue,
+          }) => (
+            <Form
+              className="mt-8"
+              onSubmit={handleSubmit}
+              encType="multipart/form-data"
+              name="image"
             >
-              Other Names
-            </label>
-            <Field
-              id="otherName"
-              name="otherName"
-              type="text"
-              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-            />
-          </div>
+              <div className="flex w-full items-center justify-between gap-4">
+                <div className="mb-3 w-1/2">
+                  <label
+                    htmlFor="firstName"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    First Name{" "}
+                    <span className="font-base font-semibold text-[#FF0000]">
+                      *
+                    </span>
+                  </label>
+                  <Field
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                  <ErrorMessage
+                    name="firstName"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+                <div className="mb-3 w-1/2">
+                  <label
+                    htmlFor="lastName"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Last Name{" "}
+                    <span className="font-base font-semibold text-[#FF0000]">
+                      *
+                    </span>
+                  </label>
+                  <Field
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                  <ErrorMessage
+                    name="lastName"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+              </div>
 
-          {isSuperAdminPath && (
-           
-           
               <div className="mb-3">
                 <label
-                  htmlFor="organisation"
+                  htmlFor="otherName"
                   className="m-0 text-xs font-medium text-white"
                 >
-                  Organization{" "}
-                  <span className="font-base font-semibold text-[#FF0000]">
-                    *
-                  </span>
+                  Other Names
                 </label>
+                <Field
+                  id="otherName"
+                  name="otherName"
+                  type="text"
+                  className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                />
+              </div>
 
-                <div>
-                  {/* <label htmlFor="dropdown">Choose an option:</label> */}
-                  <select 
-                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                  id="dropdown"
-                   value={selectedValue} 
-                   onChange={handleOrganisationChange}>
-                    <option value="">--Select an option--</option>
-                    {organizations?.map((org: getOrganizationProps) => (
-                    <option key={org._id} value={org._id}>
-                      {org.organisationName}
-                    </option>
-                  ))}
-                  </select>
-                </div>
-                {organisationError && <p style={{ color: 'red' }}>{organisationError}</p>}
-               
-                {/* <Field
+              {isSuperAdminPath && (
+                <div className="mb-3">
+                  <label
+                    htmlFor="organisation"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Organization{" "}
+                    <span className="font-base font-semibold text-[#FF0000]">
+                      *
+                    </span>
+                  </label>
+
+                  <div>
+                    {/* <label htmlFor="dropdown">Choose an option:</label> */}
+                    <select
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                      id="dropdown"
+                      value={selectedValue}
+                      onChange={handleOrganisationChange}
+                    >
+                      <option value="">--Select an option--</option>
+                      {organizations?.map((org: getOrganizationProps) => (
+                        <option key={org._id} value={org._id}>
+                          {org.organisationName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {organisationError && (
+                    <p style={{ color: "red" }}>{organisationError}</p>
+                  )}
+
+                  {/* <Field
                   as="select"
                   id="organisation"
                   name="organisation"
@@ -2458,414 +2459,424 @@ export const CreateCustomer = ({
                   component="div"
                   className="text-red-500"
                 /> */}
+                </div>
+              )}
+              <div className="mb-3">
+                <label
+                  htmlFor="phoneNumber"
+                  className="m-0 text-xs font-medium text-white"
+                >
+                  Phone Number{" "}
+                  <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
+                </label>
+                <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                  <Field
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    type="tel"
+                    className="w-full bg-transparent outline-none"
+                  />
+                </div>
+                <ErrorMessage
+                  name="phoneNumber"
+                  component="div"
+                  className="text-red-500"
+                />
               </div>
-            
-          )}
-          <div className="mb-3">
-            <label
-              htmlFor="phoneNumber"
-              className="m-0 text-xs font-medium text-white"
-            >
-              Phone Number{" "}
-              <span className="font-base font-semibold text-[#FF0000]">*</span>
-            </label>
-            <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-              <Field
-                id="phoneNumber"
-                name="phoneNumber"
-                type="tel"
-                className="w-full bg-transparent outline-none"
-              />
-            </div>
-            <ErrorMessage
-              name="phoneNumber"
-              component="div"
-              className="text-red-500"
-            />
-          </div>
 
-          <div className="mb-3">
-            <label
-              htmlFor="email"
-              className="m-0 text-xs font-medium text-white"
-            >
-              Email address{" "}
-              <span className="font-base font-semibold text-[#FF0000]">*</span>
-            </label>
-            <Field
-              id="email"
-              name="email"
-              type="email"
-              className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-            />
-            <ErrorMessage
-              name="email"
-              component="div"
-              className="text-red-500"
-            />
-          </div>
-          {/* Personal Details Fields */}
-          <div className="mb-8">
-            <div className="mb-3">
-              <label
-                htmlFor="country"
-                className="m-0 text-xs font-medium text-white"
-              >
-                Country of Residence
-              </label>
-              <Field
-                onChange={handleChange}
-                as="select"
-                isInvalid={!!errors.country}
-                name="country"
-                id="country"
-                // type="text"
-                placeholder="country"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              >
-                <option>Select Country</option>
-                {StatesAndLGAs &&
-                  StatesAndLGAs.map((countries) => (
-                    <option key={countries.country} value={countries.country}>
-                      {countries.country}
-                    </option>
-                  ))}
-              </Field>
-              <ErrorMessage
-                name="country"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-            {/* Add more fields for personal details */}
+              <div className="mb-3">
+                <label
+                  htmlFor="email"
+                  className="m-0 text-xs font-medium text-white"
+                >
+                  Email address{" "}
+                  <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>
+                </label>
+                <Field
+                  id="email"
+                  name="email"
+                  type="email"
+                  className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                />
+                <ErrorMessage
+                  name="email"
+                  component="div"
+                  className="text-red-500"
+                />
+              </div>
+              {/* Personal Details Fields */}
+              <div className="mb-8">
+                <div className="mb-3">
+                  <label
+                    htmlFor="country"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Country of Residence
+                  </label>
+                  <Field
+                    onChange={handleChange}
+                    as="select"
+                    isInvalid={!!errors.country}
+                    name="country"
+                    id="country"
+                    // type="text"
+                    placeholder="country"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  >
+                    <option>Select Country</option>
+                    {StatesAndLGAs &&
+                      StatesAndLGAs.map((countries) => (
+                        <option
+                          key={countries.country}
+                          value={countries.country}
+                        >
+                          {countries.country}
+                        </option>
+                      ))}
+                  </Field>
+                  <ErrorMessage
+                    name="country"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+                {/* Add more fields for personal details */}
 
-            <div className="mb-3">
-              <label
-                htmlFor="state"
-                className="m-0 text-xs font-medium text-white"
-              >
-                State
-              </label>
-              <Field
-                as="select"
-                id="state"
-                name="state"
-                // type="text"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              >
-                <option>Select State</option>
+                <div className="mb-3">
+                  <label
+                    htmlFor="state"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    State
+                  </label>
+                  <Field
+                    as="select"
+                    id="state"
+                    name="state"
+                    // type="text"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  >
+                    <option>Select State</option>
 
-                {selectedStateArray &&
-                  selectedStateArray.map((state) => (
-                    <option key={state.name} value={state.name}>
-                      {state.name}
-                    </option>
-                  ))}
-              </Field>
-              <ErrorMessage
-                name="state"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-            <div className="mb-3">
-              <label
-                htmlFor="lga"
-                className="m-0 text-xs font-medium text-white"
-              >
-                Local Government Area (lga)
-              </label>
-              <Field
-                as="select"
-                id="lga"
-                name="lga"
-                // type="text"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              >
-                <option>Select LGA</option>
+                    {selectedStateArray &&
+                      selectedStateArray.map((state) => (
+                        <option key={state.name} value={state.name}>
+                          {state.name}
+                        </option>
+                      ))}
+                  </Field>
+                  <ErrorMessage
+                    name="state"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label
+                    htmlFor="lga"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Local Government Area (lga)
+                  </label>
+                  <Field
+                    as="select"
+                    id="lga"
+                    name="lga"
+                    // type="text"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  >
+                    <option>Select LGA</option>
 
-                {selectedLGAArray &&
-                  selectedLGAArray.map((lga) => (
-                    <option key={lga} value={lga}>
-                      {lga}
-                    </option>
-                  ))}
-                {/* {selectedLGAArray && selectedStateArray.map((lga) => (
+                    {selectedLGAArray &&
+                      selectedLGAArray.map((lga) => (
+                        <option key={lga} value={lga}>
+                          {lga}
+                        </option>
+                      ))}
+                    {/* {selectedLGAArray && selectedStateArray.map((lga) => (
                         <option>
 
                         </option>
                       )) } */}
-              </Field>
-              <ErrorMessage
-                name="lga"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-            <div className="mb-3">
-              <label
-                htmlFor="city"
-                className="m-0 text-xs font-medium text-white"
-              >
-                City/Town
-              </label>
-              <Field
-                name="city"
-                type="text"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-              <ErrorMessage
-                name="city"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-            <div className="mb-3">
-              <label
-                htmlFor="popularMarket"
-                className="m-0 text-xs font-medium text-white"
-              >
-                Popular market/bus park/religion centre/event centre/place in
-                your locality
-              </label>
-              <Field
-                name="popularMarket"
-                type="text"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-              <ErrorMessage
-                name="popularMarket"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-          </div>
-
-          <div className="mb-8">
-            <div className="mb-3">
-              <label
-                htmlFor="nok"
-                className="m-0 text-xs font-medium text-white"
-              >
-                Next Of Kin
-              </label>
-              <Field
-                name="nok"
-                type="text"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-              <ErrorMessage
-                name="nok"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-            {/* Add more fields for next of kin details */}
-            <div className="mb-3">
-              <label
-                htmlFor="nokRelationship"
-                className="m-0 text-xs font-medium text-white"
-              >
-                Relationship to Next of Kin
-              </label>
-              <Field
-                name="nokRelationship"
-                type="text"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-              <ErrorMessage
-                name="nokRelationship"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-            <div className="mb-3">
-              <label
-                htmlFor="nokPhone"
-                className="m-0 text-xs font-medium text-white"
-              >
-                Next of Kin Phone number
-              </label>
-              <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
-                <Field
-                  name="nokPhone"
-                  id="kin-phone"
-                  type="tel"
-                  className=" bg-transparent outline-none"
-                />
-              </div>
-              <ErrorMessage
-                name="nokPhone"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-            <div className="mb-3">
-              <label
-                htmlFor="homeAddress"
-                className="m-0 text-xs font-medium text-white"
-              >
-                Home address
-              </label>
-              <Field
-                name="homeAddress"
-                type="text"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-              <ErrorMessage
-                name="homeAddress"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-          </div>
-
-          <div className="mb-8">
-            <div className="">
-              <label
-                htmlFor="photoUpload"
-                className="text-md block font-medium text-white"
-              >
-                Photo(max size - 5MB)
-              </label>
-              <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5">
-                <input
-                  type="file"
-                  name="photo"
-                  id="photoUpload"
-                  className="hidden"
-                  onChange={(e) => setFieldValue("photo", e.target.files)}
-                  accept="image/*"
-                />
-                <label htmlFor="photoUpload" className="cursor-pointer">
-                  <p className="text-center text-white">
-                    Drag n drop an image here, or click to select one
-                  </p>
-                </label>
-                {values.photo && values.photo[0] && (
-                  <Image
-                    src={URL.createObjectURL(values.photo[0])}
-                    alt="Product"
-                    className="max-w-full"
-                    style={{ maxWidth: "100%" }}
-                    width={100}
-                    height={100}
+                  </Field>
+                  <ErrorMessage
+                    name="lga"
+                    component="div"
+                    className="text-red-500"
                   />
-                )}
-              </div>
-              <div className="text-red-500">
-                <ErrorMessage name="photo" />
-              </div>
-            </div>
-
-            <div className="mb-3 mt-4">
-              <label
-                htmlFor="meansOfID"
-                className="m-0 text-xs font-medium text-white"
-              >
-                Select Identification Document type
-              </label>
-              <Field
-                as="select"
-                name="meansOfID"
-                className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
-              >
-                <option className="hidden"></option>
-                <option value="International Passport">
-                  International Passport
-                </option>
-                <option value="Utility Bill">Utility Bill</option>
-                <option value="NIN">NIN</option>
-                <option value="Drivers License">Drivers License</option>
-                <option value="Voters Card">Voters Card</option>
-                <option value="Association Membership ID">
-                  Association Membership ID
-                </option>
-                <option value="School ID">School ID</option>
-              </Field>
-              <ErrorMessage
-                name="meansOfID"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-
-            <div className="mb-3">
-              <label
-                htmlFor="image"
-                className="text-md block font-medium text-white "
-              >
-                {!values.meansOfID ? "Means  of Id" : values.meansOfID} Photo (max size - 5MB)
-              </label>
-              <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5">
-                <input
-                  type="file"
-                  name="image"
-                  id="image"
-                  className="hidden"
-                  onChange={(e) =>
-                    setFieldValue("meansOfIDPhoto", e.target.files)
-                  }
-                  accept="image/*"
-                />
-                <label htmlFor="image" className="cursor-pointer">
-                  <p className="text-center text-white">
-                    Drag n drop an image here, or click to select one
-                  </p>
-                </label>
-                {values.meansOfIDPhoto && values.meansOfIDPhoto[0] && (
-                  <Image
-                    src={URL.createObjectURL(values.meansOfIDPhoto[0])}
-                    alt="Product"
-                    className="max-w-full"
-                    style={{ maxWidth: "100%" }}
-                    width={100}
-                    height={100}
+                </div>
+                <div className="mb-3">
+                  <label
+                    htmlFor="city"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    City/Town
+                  </label>
+                  <Field
+                    name="city"
+                    type="text"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
                   />
-                )}
+                  <ErrorMessage
+                    name="city"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label
+                    htmlFor="popularMarket"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Popular market/bus park/religion centre/event centre/place
+                    in your locality
+                  </label>
+                  <Field
+                    name="popularMarket"
+                    type="text"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                  <ErrorMessage
+                    name="popularMarket"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
               </div>
-              <div className="text-red-500">
-                <ErrorMessage name="meansOfIDPhoto" className="text-red-500" />
-              </div>
-            </div>
 
-            <div className="mb-3">
-              <label
-                htmlFor="nin"
-                className="m-0 text-xs font-medium text-white"
-              >
-                NIN number
-              </label>
-              <Field
-                name="nin"
-                type="text"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-              <ErrorMessage
-                name="nin"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-            <div className="mb-3">
-              <label
-                htmlFor="bvn"
-                className="m-0 text-xs font-medium text-white"
-              >
-                BVN number
-              </label>
-              <Field
-                name="bvn"
-                type="text"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-              <ErrorMessage
-                name="bvn"
-                component="div"
-                className="text-red-500"
-              />
-            </div>
-            {/* <div className="mb-3">
+              <div className="mb-8">
+                <div className="mb-3">
+                  <label
+                    htmlFor="nok"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Next Of Kin
+                  </label>
+                  <Field
+                    name="nok"
+                    type="text"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                  <ErrorMessage
+                    name="nok"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+                {/* Add more fields for next of kin details */}
+                <div className="mb-3">
+                  <label
+                    htmlFor="nokRelationship"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Relationship to Next of Kin
+                  </label>
+                  <Field
+                    name="nokRelationship"
+                    type="text"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                  <ErrorMessage
+                    name="nokRelationship"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label
+                    htmlFor="nokPhone"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Next of Kin Phone number
+                  </label>
+                  <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
+                    <Field
+                      name="nokPhone"
+                      id="kin-phone"
+                      type="tel"
+                      className=" bg-transparent outline-none"
+                    />
+                  </div>
+                  <ErrorMessage
+                    name="nokPhone"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label
+                    htmlFor="homeAddress"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Home address
+                  </label>
+                  <Field
+                    name="homeAddress"
+                    type="text"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                  <ErrorMessage
+                    name="homeAddress"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <div className="">
+                  <label
+                    htmlFor="photoUpload"
+                    className="text-md block font-medium text-white"
+                  >
+                    Photo(max size - 5MB)
+                  </label>
+                  <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5">
+                    <input
+                      type="file"
+                      name="photo"
+                      id="photoUpload"
+                      className="hidden"
+                      onChange={(e) => setFieldValue("photo", e.target.files)}
+                      accept="image/*"
+                    />
+                    <label htmlFor="photoUpload" className="cursor-pointer">
+                      <p className="text-center text-white">
+                        Drag n drop an image here, or click to select one
+                      </p>
+                    </label>
+                    {values.photo && values.photo[0] && (
+                      <Image
+                        src={URL.createObjectURL(values.photo[0])}
+                        alt="Product"
+                        className="max-w-full"
+                        style={{ maxWidth: "100%" }}
+                        width={100}
+                        height={100}
+                      />
+                    )}
+                  </div>
+                  <div className="text-red-500">
+                    <ErrorMessage name="photo" />
+                  </div>
+                </div>
+
+                <div className="mb-3 mt-4">
+                  <label
+                    htmlFor="meansOfID"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Select Identification Document type
+                  </label>
+                  <Field
+                    as="select"
+                    name="meansOfID"
+                    className="bg-right-20 mt-1 w-full cursor-pointer appearance-none  rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+                  >
+                    <option className="hidden"></option>
+                    <option value="International Passport">
+                      International Passport
+                    </option>
+                    <option value="Utility Bill">Utility Bill</option>
+                    <option value="NIN">NIN</option>
+                    <option value="Drivers License">Drivers License</option>
+                    <option value="Voters Card">Voters Card</option>
+                    <option value="Association Membership ID">
+                      Association Membership ID
+                    </option>
+                    <option value="School ID">School ID</option>
+                  </Field>
+                  <ErrorMessage
+                    name="meansOfID"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label
+                    htmlFor="image"
+                    className="text-md block font-medium text-white "
+                  >
+                    {!values.meansOfID ? "Means  of Id" : values.meansOfID}{" "}
+                    Photo (max size - 5MB)
+                  </label>
+                  <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-gray-300 px-6 pb-6 pt-5">
+                    <input
+                      type="file"
+                      name="image"
+                      id="image"
+                      className="hidden"
+                      onChange={(e) =>
+                        setFieldValue("meansOfIDPhoto", e.target.files)
+                      }
+                      accept="image/*"
+                    />
+                    <label htmlFor="image" className="cursor-pointer">
+                      <p className="text-center text-white">
+                        Drag n drop an image here, or click to select one
+                      </p>
+                    </label>
+                    {values.meansOfIDPhoto && values.meansOfIDPhoto[0] && (
+                      <Image
+                        src={URL.createObjectURL(values.meansOfIDPhoto[0])}
+                        alt="Product"
+                        className="max-w-full"
+                        style={{ maxWidth: "100%" }}
+                        width={100}
+                        height={100}
+                      />
+                    )}
+                  </div>
+                  <div className="text-red-500">
+                    <ErrorMessage
+                      name="meansOfIDPhoto"
+                      className="text-red-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label
+                    htmlFor="nin"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    NIN number
+                  </label>
+                  <Field
+                    name="nin"
+                    type="text"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                  <ErrorMessage
+                    name="nin"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label
+                    htmlFor="bvn"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    BVN number
+                  </label>
+                  <Field
+                    name="bvn"
+                    type="text"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                  <ErrorMessage
+                    name="bvn"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+                {/* <div className="mb-3">
                     <label
                       htmlFor="bankName"
                       className="m-0 text-xs font-medium text-white"
@@ -2883,7 +2894,7 @@ export const CreateCustomer = ({
                       className="text-xs text-red-500"
                     />
                   </div> */}
-            {/* <div className="mb-3">
+                {/* <div className="mb-3">
                     <label
                       htmlFor="bankAcctName"
                       className="m-0 text-xs font-medium text-white"
@@ -2901,49 +2912,50 @@ export const CreateCustomer = ({
                       className="text-xs text-red-500"
                     />
                   </div> */}
-            <div className="mb-3">
-              <label
-                htmlFor="bankAcctNo"
-                className="m-0 text-xs font-medium text-white"
-              >
-                Bank Account Number (All withdrawals will be made into this
-                account)
-              </label>
-              <Field
-                name="bankAcctNo"
-                type="text"
-                className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-              />
-              <ErrorMessage
-                name="bankAcctNo"
-                component="div"
-                className="text-xs text-red-500"
-              />
-            </div>
-          </div>
+                <div className="mb-3">
+                  <label
+                    htmlFor="bankAcctNo"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Bank Account Number (All withdrawals will be made into this
+                    account)
+                  </label>
+                  <Field
+                    name="bankAcctNo"
+                    type="text"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                  <ErrorMessage
+                    name="bankAcctNo"
+                    component="div"
+                    className="text-xs text-red-500"
+                  />
+                </div>
+              </div>
 
-          {/* Submission buttons */}
-          <button
-            type="submit"
-            className="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
-            disabled={isSubmitting}
-          >
-            {isSubmitting || isPending ? (
-              <Image
-                src="/loadingSpinner.svg"
-                alt="loading spinner"
-                className="relative left-1/2"
-                width={25}
-                height={25}
-              />
-            ) : (
-              "Submit"
-            )}
-          </button>
-          <MyEffectComponent formikValues={values} />
-        </Form>
+              {/* Submission buttons */}
+              <button
+                type="submit"
+                className="w-full rounded-md bg-ajo_blue py-3 text-sm font-semibold text-white  hover:bg-indigo-500 focus:bg-indigo-500"
+                disabled={isSubmitting}
+              >
+                {isSubmitting || isPending ? (
+                  <Image
+                    src="/loadingSpinner.svg"
+                    alt="loading spinner"
+                    className="relative left-1/2"
+                    width={25}
+                    height={25}
+                  />
+                ) : (
+                  "Submit"
+                )}
+              </button>
+              <MyEffectComponent formikValues={values} />
+            </Form>
+          )}
+        </Formik>
       )}
-    </Formik>)}
     </div>
   );
 };
