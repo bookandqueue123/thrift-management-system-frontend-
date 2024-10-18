@@ -274,9 +274,8 @@ import { useEffect, useRef, useState } from "react";
 import styles from "../../styles/selfie-generator.module.css";
 
 export default function SelfieGenerator() {
-  const [apiKey, setApiKey] = useState(
-    "sandbox_4f85351787f802157cd36c4817ebdd4a21c13f71",
-  );
+  const photoroomKey = process.env.PHOTOROOM_API_KEY;
+  const [apiKey, setApiKey] = useState(photoroomKey || "");
   const [overlayText, setOverlayText] = useState("");
   const [scaleFactor, setScaleFactor] = useState(1);
   const [rotationDegrees, setRotationDegrees] = useState(0);
