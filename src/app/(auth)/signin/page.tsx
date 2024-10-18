@@ -117,7 +117,6 @@ const SignInForm = () => {
               (subscription: any) => subscription.isActive,
             )
           : false;
-        console.log(hasActiveSubscription);
 
         if (hasActiveSubscription) {
           if (response.data.kycVerified) {
