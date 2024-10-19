@@ -573,7 +573,7 @@ const MutateUser = ({
           totalMonthly: packageInfo?.totals.monthly ?? 0,
           totalQuarterly: packageInfo?.totals.quarterly ?? 0,
           totalYearly: packageInfo?.totals.yearly ?? 0,
-          discount: packageInfo?.discount,
+          discount: packageInfo?.discount ?? 0,
           actualFee: "",
           promoCode: packageInfo?.promoCode?.code ?? "",
           promoStartDate: extractDate(packageInfo?.promoCode?.startDate) ?? "",
@@ -606,7 +606,7 @@ const MutateUser = ({
           totalMonthly: 0,
           totalQuarterly: 0,
           totalYearly: 0,
-          discount: 2,
+          discount: 0,
           actualFee: "",
           promoCode: "",
           promoStartDate: "",
@@ -779,7 +779,7 @@ const MutateUser = ({
         enableReinitialize={true}
         onSubmit={(values) => {
           if (actionToTake === "create-user") {
-            //console.log(values);
+            // console.log(values);
             createPackage(values);
           } else {
             editUser(values);
