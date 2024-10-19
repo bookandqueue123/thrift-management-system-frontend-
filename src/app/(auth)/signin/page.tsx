@@ -93,6 +93,11 @@ const SignInForm = () => {
           ) {
             // Redirect to /customer/savings-set-up if the array contains only 'savings'
             router.replace(`/customer/savings-setup`);
+          } else if (
+            serviceArray.length === 1 &&
+            serviceArray.includes("AIPhotoEditor")
+          ) {
+            router.replace(`/customer/photo-editor`);
           } else {
             // Redirect to pricing if no valid service is found
             router.replace(`/pricing`);
