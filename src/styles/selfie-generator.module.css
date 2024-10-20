@@ -89,14 +89,14 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.result_canvas {
-  width: 100%; /* Make it responsive */
-  height: auto; /* Maintain aspect ratio */
+/* .result_canvas {
+  width: 100%; 
+  height: auto; 
   display: block;
-  margin: 1rem auto; /* Center the canvas */
+  margin: 1rem auto; 
   border: 1px solid #ccc;
   border-radius: 5px;
-}
+} */
 
 .download_button {
   display: inline-block;
@@ -151,4 +151,33 @@
   cursor: pointer;
   transition: background-color 0.3s ease;
   margin: 0.2rem;
+}
+
+.editor_container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.upload_form {
+  width: 45%; /* Adjust width as needed */
+}
+
+.result_canvas {
+  width: 45%; /* Adjust width as needed */
+  height: auto;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+@media (max-width: 768px) {
+  .editor_container {
+    flex-direction: column;
+  }
+
+  .upload_form,
+  .result_canvas {
+    width: 100%; /* Take full width on small screens */
+  }
 }
