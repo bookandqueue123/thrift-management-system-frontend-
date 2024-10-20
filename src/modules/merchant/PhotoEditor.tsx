@@ -489,116 +489,109 @@ export default function SelfieGenerator() {
   return (
     <div className={styles.body}>
       <h1 className={styles.h1}>AI Photo Editor</h1>
-      <form onSubmit={handleImageUpload} className="upload-form">
-        {/* <div>
+      <div className={styles.editor_container}>
+        <form onSubmit={handleImageUpload} className={styles.upload_form}>
+          <div>
+            <label>Upload Image</label>
+            <br />
+            <input
+              className="input w-full max-w-xs rounded-lg border border-gray-300 p-4 placeholder-gray-400 shadow-md transition duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="file"
+              accept="image/*"
+              ref={imageInputRef}
+            />
+          </div>
+
+          <div className="my-2">
+            <label>Upload background image</label>
+            <br />
+            <input
+              className="input w-full max-w-xs rounded-lg border border-gray-300 p-4 placeholder-gray-400 shadow-md transition duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="file"
+              accept="image/*"
+              ref={backgroundInputRef}
+            />
+          </div>
+
+          <label>Add Text</label>
+          <br />
           <input
-            className="input"
+            className="w-full max-w-xs rounded-lg border border-gray-300 p-4 placeholder-gray-400 shadow-md transition duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
             type="text"
-            placeholder="Enter your PhotoRoom API key here..."
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="Enter text overlay here..."
+            maxLength={46}
+            value={overlayText}
+            onChange={(e) => setOverlayText(e.target.value)}
           />
-        </div> */}
-        <br />
-        <div>
-          <label>Upload Image</label>
+          <br />
+          <label>Scale</label>
           <br />
           <input
-            className="input w-full max-w-xs rounded-lg border border-gray-300 p-4 placeholder-gray-400 shadow-md transition duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-            type="file"
-            accept="image/*"
-            ref={imageInputRef}
+            className={styles.input_range}
+            type="range"
+            min="0.1"
+            max="3"
+            step="0.01"
+            value={scaleFactor}
+            onChange={(e) => setScaleFactor(parseFloat(e.target.value))}
           />
-        </div>
-
-        <div className="my-2">
-          <label>Upload background image</label>
+          <br />
+          <label>Rotation (degrees)</label>
           <br />
           <input
-            className="input w-full max-w-xs rounded-lg border border-gray-300 p-4 placeholder-gray-400 shadow-md transition duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-            type="file"
-            accept="image/*" // New input for background image
-            ref={backgroundInputRef}
+            className={styles.input_range}
+            type="range"
+            min="-180"
+            max="180"
+            step="1"
+            value={rotationDegrees}
+            onChange={(e) => setRotationDegrees(parseFloat(e.target.value))}
           />
-        </div>
-
-        <label>Add Text</label>
-        <br />
-        <input
-          className="w-full max-w-xs rounded-lg border border-gray-300 p-4 placeholder-gray-400 shadow-md transition duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-          type="text"
-          placeholder="Enter text overlay here..."
-          maxLength={46}
-          value={overlayText}
-          onChange={(e) => setOverlayText(e.target.value)}
-        />
-        <br />
-        <label>Scale</label>
-        <br />
-        <input
-          className={styles.input_range}
-          type="range"
-          min="0.1"
-          max="3"
-          step="0.01"
-          value={scaleFactor}
-          onChange={(e) => setScaleFactor(parseFloat(e.target.value))}
-        />
-        <br />
-        <label>Rotation (degrees)</label>
-        <br />
-        <input
-          className={styles.input_range}
-          type="range"
-          min="-180"
-          max="180"
-          step="1"
-          value={rotationDegrees}
-          onChange={(e) => setRotationDegrees(parseFloat(e.target.value))}
-        />
-        <br />
-        <div className={styles.arrow_buttons}>
-          <div className={styles.arrow_buttons_container}>
-            <div className={styles.arrow_up_container}>
-              <button
-                className={styles.arrow_button}
-                type="button"
-                onClick={() => setUserOffsetY(userOffsetY - moveStep)}
-              >
-                &uarr;
-              </button>
-            </div>
-            <div className={styles.arrow_middle_container}>
-              <button
-                className={styles.arrow_button}
-                type="button"
-                onClick={() => setUserOffsetX(userOffsetX - moveStep)}
-              >
-                &larr;
-              </button>
-              <button
-                className={styles.arrow_button}
-                type="button"
-                onClick={() => setUserOffsetY(userOffsetY + moveStep)}
-              >
-                &darr;
-              </button>
-              <button
-                className={styles.arrow_button}
-                type="button"
-                onClick={() => setUserOffsetX(userOffsetX + moveStep)}
-              >
-                &rarr;
-              </button>
+          <br />
+          <div className={styles.arrow_buttons}>
+            <div className={styles.arrow_buttons_container}>
+              <div className={styles.arrow_up_container}>
+                <button
+                  className={styles.arrow_button}
+                  type="button"
+                  onClick={() => setUserOffsetY(userOffsetY - moveStep)}
+                >
+                  &uarr;
+                </button>
+              </div>
+              <div className={styles.arrow_middle_container}>
+                <button
+                  className={styles.arrow_button}
+                  type="button"
+                  onClick={() => setUserOffsetX(userOffsetX - moveStep)}
+                >
+                  &larr;
+                </button>
+                <button
+                  className={styles.arrow_button}
+                  type="button"
+                  onClick={() => setUserOffsetY(userOffsetY + moveStep)}
+                >
+                  &darr;
+                </button>
+                <button
+                  className={styles.arrow_button}
+                  type="button"
+                  onClick={() => setUserOffsetX(userOffsetX + moveStep)}
+                >
+                  &rarr;
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-        <br />
-        <button className={styles.button_submit} type="submit">
-          Generate Image
-        </button>
-      </form>
-      <canvas className={styles.result_canvas} ref={resultCanvasRef} />
+          <br />
+          <button className={styles.button_submit} type="submit">
+            Upload
+          </button>
+        </form>
+        <canvas className={styles.result_canvas} ref={resultCanvasRef} />
+      </div>
+
       {downloadUrl && (
         <>
           <Link
@@ -610,7 +603,6 @@ export default function SelfieGenerator() {
           >
             <button>Download Image</button>
           </Link>
-
           <span className="ml-2 cursor-pointer rounded border-none bg-ajo_blue px-4 py-3 text-base text-white transition duration-300 ease-in-out hover:bg-green-700">
             <button onClick={() => handleShare(downloadUrl)}>
               Share Image
