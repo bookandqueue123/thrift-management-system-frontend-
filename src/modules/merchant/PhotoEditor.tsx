@@ -287,6 +287,7 @@ export default function SelfieGenerator() {
   const [backgroundPhoto, setBackgroundPhoto] =
     useState<HTMLImageElement | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false); // New loading state
 
   const imageInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
@@ -296,25 +297,34 @@ export default function SelfieGenerator() {
 
   const handleImageUpload = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
+    setLoading(true); // Set loading state to true when the form is submitted
 
     // Use optional chaining to safely access the files array
     const imageFile = imageInputRef.current?.files?.[0];
-    if (!imageFile) return;
+    if (!imageFile) {
+      setLoading(false); // Reset loading state if no image file is selected
+      return;
+    }
 
-    const image = await removeBackground(); // Now this will be HTMLImageElement
+    try {
+      const image = await removeBackground(); // Now this will be HTMLImageElement
 
-    const backgroundFile = backgroundInputRef.current?.files?.[0];
-    const backgroundImage = backgroundFile
-      ? await loadImage(backgroundFile) // This will also return HTMLImageElement
-      : null;
+      const backgroundFile = backgroundInputRef.current?.files?.[0];
+      const backgroundImage = backgroundFile
+        ? await loadImage(backgroundFile) // This will also return HTMLImageElement
+        : null;
 
-    setSegmentedPhoto(image); // image is HTMLImageElement
-    setBackgroundPhoto(backgroundImage); // backgroundImage can be HTMLImageElement or null
-    updateImage(image, backgroundImage); // Draw image on upload
+      setSegmentedPhoto(image); // image is HTMLImageElement
+      setBackgroundPhoto(backgroundImage); // backgroundImage can be HTMLImageElement or null
+      updateImage(image, backgroundImage); // Draw image on upload
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      setLoading(false); // Reset loading state after processing is complete
+    }
   };
 
   const removeBackground = async () => {
-    // Ensure imageInputRef and its files are not null
     if (
       !imageInputRef.current ||
       !imageInputRef.current.files ||
@@ -338,7 +348,7 @@ export default function SelfieGenerator() {
     if (!response.ok) throw new Error("Failed to remove background");
 
     const blob = await response.blob();
-    return await loadImage(blob); // Assuming loadImage returns an image or a file
+    return await loadImage(blob);
   };
 
   const loadImage = (file: Blob): Promise<HTMLImageElement> => {
@@ -346,24 +356,21 @@ export default function SelfieGenerator() {
       const reader = new FileReader();
 
       reader.onload = (event) => {
-        // Safely access the target and result
         const result = event.target?.result;
 
-        // Check if the result is a string
         if (typeof result === "string") {
           const img = new Image();
           img.src = result;
 
-          img.onload = () => resolve(img); // Resolve with the loaded image
-          img.onerror = (error) => reject(new Error("Failed to load image")); // Reject on error
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error("Failed to load image"));
         } else {
           reject(new Error("FileReader did not return a valid string"));
         }
       };
 
-      reader.onerror = (error) => reject(new Error("Failed to read file")); // Handle file read errors
-
-      reader.readAsDataURL(file); // Read the Blob as a Data URL
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
     });
   };
 
@@ -371,25 +378,23 @@ export default function SelfieGenerator() {
     image: HTMLImageElement,
     backgroundImage: HTMLImageElement | null,
   ) => {
-    if (!image) return; // Don't proceed if there's no image
+    if (!image) return;
     const canvas = resultCanvasRef.current;
-    if (!canvas) return; // Check if canvas is available
+    if (!canvas) return;
 
     const ctx = canvas?.getContext("2d");
     if (!ctx) return;
     const finalImage = await drawImageWithOverlay(image, backgroundImage);
     if (!finalImage) {
       console.error("finalImage is undefined");
-      return; // Exit if finalImage is not valid
+      return;
     }
     canvas.width = finalImage.width;
     canvas.height = finalImage.height;
     ctx.drawImage(finalImage, 0, 0);
 
-    // Create a downloadable version of the image
     finalImage.toBlob((blob) => {
       if (blob) {
-        // Check if blob is not null
         const url = URL.createObjectURL(blob);
         setDownloadUrl(url);
       } else {
@@ -411,19 +416,14 @@ export default function SelfieGenerator() {
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
-    // Fill the background with white if no background image is provided
     if (!backgroundImage) {
-      ctx.fillStyle = "white"; // Set default background color
+      ctx.fillStyle = "white";
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     } else {
-      // Draw the uploaded background image
       ctx.drawImage(backgroundImage, 0, 0, canvasWidth, canvasHeight);
     }
 
-    // Type guard to ensure image is a type with width and height properties
     const img = image as HTMLImageElement | HTMLCanvasElement;
-
-    // Scale the image to fit the canvas
     const scale = Math.min(canvasWidth / img.width, canvasHeight / img.height);
     const newScaledWidth = img.width * scale * scaleFactor;
     const newScaledHeight = img.height * scale * scaleFactor;
@@ -431,7 +431,6 @@ export default function SelfieGenerator() {
     const offsetX = (canvasWidth - newScaledWidth) / 2 + userOffsetX;
     const offsetY = (canvasHeight - newScaledHeight) / 2 + userOffsetY;
 
-    // Draw the segmented image (rotated and scaled)
     ctx.save();
     ctx.translate(canvasWidth / 2, canvasHeight / 2);
     ctx.rotate(rotationDegrees * (Math.PI / 180));
@@ -439,9 +438,8 @@ export default function SelfieGenerator() {
     ctx.drawImage(img, offsetX, offsetY, newScaledWidth, newScaledHeight);
     ctx.restore();
 
-    // Draw horizontal overlay text at the bottom
     const fontSize = 58;
-    const textMarginBottom = 50; // Margin from the bottom of the canvas
+    const textMarginBottom = 50;
 
     ctx.font = `bold ${fontSize}px 'DM Sans', sans-serif`;
     ctx.fillStyle = "#000000";
@@ -451,13 +449,11 @@ export default function SelfieGenerator() {
     const textX = canvasWidth / 2;
     const textY = canvasHeight - textMarginBottom;
 
-    // Draw the text horizontally at the bottom
     ctx.fillText(text, textX, textY);
 
     return canvas;
   };
 
-  // useEffect to redraw the image whenever scaleFactor or rotationDegrees changes
   useEffect(() => {
     if (segmentedPhoto) {
       updateImage(segmentedPhoto, backgroundPhoto);
@@ -467,7 +463,6 @@ export default function SelfieGenerator() {
   const handleShare = async (url: string | URL | Request) => {
     if (navigator.share) {
       try {
-        // Fetch the image file from the URL
         const response = await fetch(url);
         const blob = await response.blob();
         const file = new File([blob], "selfie.png", { type: blob.type });
@@ -585,8 +580,12 @@ export default function SelfieGenerator() {
             </div>
           </div>
           <br />
-          <button className={styles.button_submit} type="submit">
-            Upload
+          <button
+            className={styles.button_submit}
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Generate"}
           </button>
         </form>
         <canvas className={styles.result_canvas} ref={resultCanvasRef} />
