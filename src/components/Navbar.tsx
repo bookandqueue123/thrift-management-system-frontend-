@@ -20,7 +20,7 @@ const CustomerNavbar = () => {
   const user = useSelector(selectUser);
 
   const endpoints = [
-    "dashboard",
+    purpose ? "dashboard" : "",
     savings ? "make-payment" : "",
     savings ? "withdrawals" : "",
     savings ? "transactions" : "",
