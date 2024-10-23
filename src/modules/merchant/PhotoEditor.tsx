@@ -287,6 +287,7 @@ export default function SelfieGenerator() {
   const [backgroundPhoto, setBackgroundPhoto] =
     useState<HTMLImageElement | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false); // New loading state
 
   const imageInputRef = useRef<HTMLInputElement>(null);
   const backgroundInputRef = useRef<HTMLInputElement>(null);
@@ -296,25 +297,34 @@ export default function SelfieGenerator() {
 
   const handleImageUpload = async (event: { preventDefault: () => void }) => {
     event.preventDefault();
+    setLoading(true); // Set loading state to true when the form is submitted
 
     // Use optional chaining to safely access the files array
     const imageFile = imageInputRef.current?.files?.[0];
-    if (!imageFile) return;
+    if (!imageFile) {
+      setLoading(false); // Reset loading state if no image file is selected
+      return;
+    }
 
-    const image = await removeBackground(); // Now this will be HTMLImageElement
+    try {
+      const image = await removeBackground(); // Now this will be HTMLImageElement
 
-    const backgroundFile = backgroundInputRef.current?.files?.[0];
-    const backgroundImage = backgroundFile
-      ? await loadImage(backgroundFile) // This will also return HTMLImageElement
-      : null;
+      const backgroundFile = backgroundInputRef.current?.files?.[0];
+      const backgroundImage = backgroundFile
+        ? await loadImage(backgroundFile) // This will also return HTMLImageElement
+        : null;
 
-    setSegmentedPhoto(image); // image is HTMLImageElement
-    setBackgroundPhoto(backgroundImage); // backgroundImage can be HTMLImageElement or null
-    updateImage(image, backgroundImage); // Draw image on upload
+      setSegmentedPhoto(image); // image is HTMLImageElement
+      setBackgroundPhoto(backgroundImage); // backgroundImage can be HTMLImageElement or null
+      updateImage(image, backgroundImage); // Draw image on upload
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    } finally {
+      setLoading(false); // Reset loading state after processing is complete
+    }
   };
 
   const removeBackground = async () => {
-    // Ensure imageInputRef and its files are not null
     if (
       !imageInputRef.current ||
       !imageInputRef.current.files ||
@@ -338,7 +348,7 @@ export default function SelfieGenerator() {
     if (!response.ok) throw new Error("Failed to remove background");
 
     const blob = await response.blob();
-    return await loadImage(blob); // Assuming loadImage returns an image or a file
+    return await loadImage(blob);
   };
 
   const loadImage = (file: Blob): Promise<HTMLImageElement> => {
@@ -346,24 +356,21 @@ export default function SelfieGenerator() {
       const reader = new FileReader();
 
       reader.onload = (event) => {
-        // Safely access the target and result
         const result = event.target?.result;
 
-        // Check if the result is a string
         if (typeof result === "string") {
           const img = new Image();
           img.src = result;
 
-          img.onload = () => resolve(img); // Resolve with the loaded image
-          img.onerror = (error) => reject(new Error("Failed to load image")); // Reject on error
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error("Failed to load image"));
         } else {
           reject(new Error("FileReader did not return a valid string"));
         }
       };
 
-      reader.onerror = (error) => reject(new Error("Failed to read file")); // Handle file read errors
-
-      reader.readAsDataURL(file); // Read the Blob as a Data URL
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
     });
   };
 
@@ -371,25 +378,23 @@ export default function SelfieGenerator() {
     image: HTMLImageElement,
     backgroundImage: HTMLImageElement | null,
   ) => {
-    if (!image) return; // Don't proceed if there's no image
+    if (!image) return;
     const canvas = resultCanvasRef.current;
-    if (!canvas) return; // Check if canvas is available
+    if (!canvas) return;
 
     const ctx = canvas?.getContext("2d");
     if (!ctx) return;
     const finalImage = await drawImageWithOverlay(image, backgroundImage);
     if (!finalImage) {
       console.error("finalImage is undefined");
-      return; // Exit if finalImage is not valid
+      return;
     }
     canvas.width = finalImage.width;
     canvas.height = finalImage.height;
     ctx.drawImage(finalImage, 0, 0);
 
-    // Create a downloadable version of the image
     finalImage.toBlob((blob) => {
       if (blob) {
-        // Check if blob is not null
         const url = URL.createObjectURL(blob);
         setDownloadUrl(url);
       } else {
@@ -411,19 +416,14 @@ export default function SelfieGenerator() {
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
-    // Fill the background with white if no background image is provided
     if (!backgroundImage) {
-      ctx.fillStyle = "white"; // Set default background color
+      ctx.fillStyle = "white";
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     } else {
-      // Draw the uploaded background image
       ctx.drawImage(backgroundImage, 0, 0, canvasWidth, canvasHeight);
     }
 
-    // Type guard to ensure image is a type with width and height properties
     const img = image as HTMLImageElement | HTMLCanvasElement;
-
-    // Scale the image to fit the canvas
     const scale = Math.min(canvasWidth / img.width, canvasHeight / img.height);
     const newScaledWidth = img.width * scale * scaleFactor;
     const newScaledHeight = img.height * scale * scaleFactor;
@@ -431,7 +431,6 @@ export default function SelfieGenerator() {
     const offsetX = (canvasWidth - newScaledWidth) / 2 + userOffsetX;
     const offsetY = (canvasHeight - newScaledHeight) / 2 + userOffsetY;
 
-    // Draw the segmented image (rotated and scaled)
     ctx.save();
     ctx.translate(canvasWidth / 2, canvasHeight / 2);
     ctx.rotate(rotationDegrees * (Math.PI / 180));
@@ -439,9 +438,8 @@ export default function SelfieGenerator() {
     ctx.drawImage(img, offsetX, offsetY, newScaledWidth, newScaledHeight);
     ctx.restore();
 
-    // Draw horizontal overlay text at the bottom
     const fontSize = 58;
-    const textMarginBottom = 50; // Margin from the bottom of the canvas
+    const textMarginBottom = 50;
 
     ctx.font = `bold ${fontSize}px 'DM Sans', sans-serif`;
     ctx.fillStyle = "#000000";
@@ -451,13 +449,11 @@ export default function SelfieGenerator() {
     const textX = canvasWidth / 2;
     const textY = canvasHeight - textMarginBottom;
 
-    // Draw the text horizontally at the bottom
     ctx.fillText(text, textX, textY);
 
     return canvas;
   };
 
-  // useEffect to redraw the image whenever scaleFactor or rotationDegrees changes
   useEffect(() => {
     if (segmentedPhoto) {
       updateImage(segmentedPhoto, backgroundPhoto);
@@ -467,7 +463,6 @@ export default function SelfieGenerator() {
   const handleShare = async (url: string | URL | Request) => {
     if (navigator.share) {
       try {
-        // Fetch the image file from the URL
         const response = await fetch(url);
         const blob = await response.blob();
         const file = new File([blob], "selfie.png", { type: blob.type });
@@ -489,116 +484,113 @@ export default function SelfieGenerator() {
   return (
     <div className={styles.body}>
       <h1 className={styles.h1}>AI Photo Editor</h1>
-      <form onSubmit={handleImageUpload} className="upload-form">
-        {/* <div>
+      <div className={styles.editor_container}>
+        <form onSubmit={handleImageUpload} className={styles.upload_form}>
+          <div>
+            <label>Upload Image</label>
+            <br />
+            <input
+              className="input w-full max-w-xs rounded-lg border border-gray-300 p-4 placeholder-gray-400 shadow-md transition duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="file"
+              accept="image/*"
+              ref={imageInputRef}
+            />
+          </div>
+
+          <div className="my-2">
+            <label>Upload background image</label>
+            <br />
+            <input
+              className="input w-full max-w-xs rounded-lg border border-gray-300 p-4 placeholder-gray-400 shadow-md transition duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="file"
+              accept="image/*"
+              ref={backgroundInputRef}
+            />
+          </div>
+
+          <label>Add Text</label>
+          <br />
           <input
-            className="input"
+            className="w-full max-w-xs rounded-lg border border-gray-300 p-4 placeholder-gray-400 shadow-md transition duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
             type="text"
-            placeholder="Enter your PhotoRoom API key here..."
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="Enter text overlay here..."
+            maxLength={46}
+            value={overlayText}
+            onChange={(e) => setOverlayText(e.target.value)}
           />
-        </div> */}
-        <br />
-        <div>
-          <label>Upload Image</label>
+          <br />
+          <label>Scale</label>
           <br />
           <input
-            className="input w-full max-w-xs rounded-lg border border-gray-300 p-4 placeholder-gray-400 shadow-md transition duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-            type="file"
-            accept="image/*"
-            ref={imageInputRef}
+            className={styles.input_range}
+            type="range"
+            min="0.1"
+            max="3"
+            step="0.01"
+            value={scaleFactor}
+            onChange={(e) => setScaleFactor(parseFloat(e.target.value))}
           />
-        </div>
-
-        <div className="my-2">
-          <label>Upload background image</label>
+          <br />
+          <label>Rotation (degrees)</label>
           <br />
           <input
-            className="input w-full max-w-xs rounded-lg border border-gray-300 p-4 placeholder-gray-400 shadow-md transition duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-            type="file"
-            accept="image/*" // New input for background image
-            ref={backgroundInputRef}
+            className={styles.input_range}
+            type="range"
+            min="-180"
+            max="180"
+            step="1"
+            value={rotationDegrees}
+            onChange={(e) => setRotationDegrees(parseFloat(e.target.value))}
           />
-        </div>
-
-        <label>Add Text</label>
-        <br />
-        <input
-          className="w-full max-w-xs rounded-lg border border-gray-300 p-4 placeholder-gray-400 shadow-md transition duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
-          type="text"
-          placeholder="Enter text overlay here..."
-          maxLength={46}
-          value={overlayText}
-          onChange={(e) => setOverlayText(e.target.value)}
-        />
-        <br />
-        <label>Scale</label>
-        <br />
-        <input
-          className={styles.input_range}
-          type="range"
-          min="0.1"
-          max="3"
-          step="0.01"
-          value={scaleFactor}
-          onChange={(e) => setScaleFactor(parseFloat(e.target.value))}
-        />
-        <br />
-        <label>Rotation (degrees)</label>
-        <br />
-        <input
-          className={styles.input_range}
-          type="range"
-          min="-180"
-          max="180"
-          step="1"
-          value={rotationDegrees}
-          onChange={(e) => setRotationDegrees(parseFloat(e.target.value))}
-        />
-        <br />
-        <div className={styles.arrow_buttons}>
-          <div className={styles.arrow_buttons_container}>
-            <div className={styles.arrow_up_container}>
-              <button
-                className={styles.arrow_button}
-                type="button"
-                onClick={() => setUserOffsetY(userOffsetY - moveStep)}
-              >
-                &uarr;
-              </button>
-            </div>
-            <div className={styles.arrow_middle_container}>
-              <button
-                className={styles.arrow_button}
-                type="button"
-                onClick={() => setUserOffsetX(userOffsetX - moveStep)}
-              >
-                &larr;
-              </button>
-              <button
-                className={styles.arrow_button}
-                type="button"
-                onClick={() => setUserOffsetY(userOffsetY + moveStep)}
-              >
-                &darr;
-              </button>
-              <button
-                className={styles.arrow_button}
-                type="button"
-                onClick={() => setUserOffsetX(userOffsetX + moveStep)}
-              >
-                &rarr;
-              </button>
+          <br />
+          <div className={styles.arrow_buttons}>
+            <div className={styles.arrow_buttons_container}>
+              <div className={styles.arrow_up_container}>
+                <button
+                  className={styles.arrow_button}
+                  type="button"
+                  onClick={() => setUserOffsetY(userOffsetY - moveStep)}
+                >
+                  &uarr;
+                </button>
+              </div>
+              <div className={styles.arrow_middle_container}>
+                <button
+                  className={styles.arrow_button}
+                  type="button"
+                  onClick={() => setUserOffsetX(userOffsetX - moveStep)}
+                >
+                  &larr;
+                </button>
+                <button
+                  className={styles.arrow_button}
+                  type="button"
+                  onClick={() => setUserOffsetY(userOffsetY + moveStep)}
+                >
+                  &darr;
+                </button>
+                <button
+                  className={styles.arrow_button}
+                  type="button"
+                  onClick={() => setUserOffsetX(userOffsetX + moveStep)}
+                >
+                  &rarr;
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-        <br />
-        <button className={styles.button_submit} type="submit">
-          Generate Image
-        </button>
-      </form>
-      <canvas className={styles.result_canvas} ref={resultCanvasRef} />
+          <br />
+          <button
+            className={styles.button_submit}
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Generate"}
+          </button>
+        </form>
+        <canvas className={styles.result_canvas} ref={resultCanvasRef} />
+      </div>
+
       {downloadUrl && (
         <>
           <Link
@@ -610,7 +602,6 @@ export default function SelfieGenerator() {
           >
             <button>Download Image</button>
           </Link>
-
           <span className="ml-2 cursor-pointer rounded border-none bg-ajo_blue px-4 py-3 text-base text-white transition duration-300 ease-in-out hover:bg-green-700">
             <button onClick={() => handleShare(downloadUrl)}>
               Share Image
