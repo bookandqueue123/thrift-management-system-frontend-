@@ -65,7 +65,7 @@ export default function ContactUs({
           }}
         >
           {({ isSubmitting }) => (
-            <Form className="mt-8">
+            <Form className="mt-8" id="contactUs-content">
               <div className="justify-between  md:flex">
                 <div className="md:w-[50%]">
                   <div className="mb-8">

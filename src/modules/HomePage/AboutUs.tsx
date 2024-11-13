@@ -21,7 +21,7 @@ export default function AboutUs({bg, aboutText, data}:AboutProps ){
     
     
     return(
-        <div id="about-content" className={`${bg === "white" ? 'text-black': "text-white"} ${bg === "white" ? "bg-[#E3E7FA]": ""} py-12  md:px-[4%]   mt-16`}>
+        <div id="about-content" className={`${bg === "white" ? 'text-black': "text-white"} ${bg === "white" ? "bg-[#E3E7FA]": ""} py-12 px-[4%] md:px-[4%]   mt-16`}>
             <h2 className="text-3xl font-bold">About us</h2>
             <p className="my-8 md:mr-[4%] text-left whitespace-pre-line">
                 {aboutText}
