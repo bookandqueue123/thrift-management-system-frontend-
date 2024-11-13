@@ -10,7 +10,7 @@ import TanstackProvider from "../../providers/TanstackProvider";
 const montserrat = Montserrat({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Ajo by Raoatech",
+  title: "Finkia by Raoatech",
   description: "Experience the power of seamless savings with Ajo.",
 };
 
