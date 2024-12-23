@@ -141,8 +141,8 @@ export default function AboutUs() {
           2. Self-Serviced Smart Savings and Thrift Collection/Co-operative Society Management
         </h2>
         <p className="mb-4">
-        In Nigeria, we have over 300,000 cooperative societies (with over 31 million members), including those utilizing the traditional "ajo/esusu/adashe" system.
-        <br/>They contribute $1.2 billion yearly to Nigeria&quote;s GDP.
+        In Nigeria, we have over 300,000 cooperative societies (with over 31 million members), including those utilizing the traditional &ldquo;ajo/esusu/adashe&rdquo; system.
+        <br/>They contribute $1.2 billion yearly to Nigeria&apos;s GDP.
         <br/>
         However, these groups encounter hurdles such as manual record-keeping, transparency issues, and inefficient fund disbursement.
 <br/>These challenges impede financial growth and restrict access to credit and empowerment initiatives.

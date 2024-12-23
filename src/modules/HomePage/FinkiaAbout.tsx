@@ -27,7 +27,7 @@ const FinkiaAbout = () => {
       <section className="bg-white py-10">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold text-gray-800 text-center mb-4">
-            What's Finkia About?
+            What&apos;s Finkia About?
           </h2>
           <p className="text-gray-600 text-center max-w-2xl mx-auto mb-8">
             FINKIA is an AI-powered, business-process management and productivity-enhancing platform that comes with:
