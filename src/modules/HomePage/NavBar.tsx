@@ -46,15 +46,25 @@ export default function Navbar(){
                     {/* <li>
                     <a href="#" className="mt-2 block text-gray-400">Product/Services</a>
                     </li> */}
-                    <li>
+                    {/* <li>
                     <a href="/#" className="mt-2 block text-gray-400 hover:text-gray-200">Services</a>
-                    </li >
+                    </li > */}
                     {/* <li>
                     <a href="/signup" className="mt-2 block text-gray-400 hover:text-gray-200">Sign up</a>
                     </li> */}
-                    <a href="#contactUs-content">
+                    {/* <a href="#contactUs-content">
                         <button type="button" className="text-white bg-[#2D55FB] hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-1 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Join Community</button>
-                    </a>
+                    </a> */}
+                     <div className="space-x-4">
+              <Link href={'/signup'}>
+              <button className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Sign Up</button>
+              </Link>
+              
+              <Link href={'/signin'}>
+              <button className="px-4 py-1 border border-blue-500 text-blue-500 rounded hover:bg-blue-50">Sign In</button>
+              </Link>
+              
+            </div>
                     
                 </ul>
                 </div>

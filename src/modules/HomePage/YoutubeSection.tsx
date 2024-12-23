@@ -46,7 +46,7 @@ import { useState } from "react";
         <header className="bg-white ">
           <div className="container mx-auto flex justify-between items-center py-2 px-6">
             <h1 className="text-xl font-bold text-[#EAAB40] underline">Savings</h1>
-            <div className="space-x-4">
+            {/* <div className="space-x-4">
               <Link href={'/signup'}>
               <button className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Sign Up</button>
               </Link>
@@ -55,7 +55,7 @@ import { useState } from "react";
               <button className="px-4 py-1 border border-blue-500 text-blue-500 rounded hover:bg-blue-50">Sign In</button>
               </Link>
               
-            </div>
+            </div> */}
           </div>
         </header>
   

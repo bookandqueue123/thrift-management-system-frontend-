@@ -100,7 +100,7 @@ export default function AboutUs() {
       </header>
 
       <section className="mb-16">
-        <h2 className="text-3xl font-bold mb-4">
+        <h2 className="text-3xl font-bold mb-4" style={{ color: '#EAAB40' }}>
           1. Online Sales of Products/Services by Different Merchants to Different Customers Globally
         </h2>
         <p className="mb-4">

@@ -36,9 +36,9 @@ export default function Footer(){
                     </div>
 
                     <div className="flex space-x-8">
-            <a href="#" className="text-gray-500 hover:text-gray-700">About Us</a>
-            <a href="#" className="text-gray-500 hover:text-gray-700">Cookie</a>
-            <a href="#" className="text-gray-500 hover:text-gray-700">Privacy Policy</a>
+            <a href="/about-us" className="text-gray-500 hover:text-gray-700">About Us</a>
+            <a href="/contact-us" className="text-gray-500 hover:text-gray-700">Contact Us</a>
+            {/* <a href="#" className="text-gray-500 hover:text-gray-700">Privacy Policy</a> */}
           </div>
                 </div>
 
