@@ -28,7 +28,7 @@
 //             </p>
 //             <p className={`mt-2 ${!isHomepage ? 'hidden' : 'block'}`}>Finkia achieves this by:</p>
 
-          
+        //   jj
 //             {/* This component isn't meant to show on any other page except the homepage. scope might change later */}
 //             <div className={`mt-2 `}>
 //                 {data.map((item, index) => (
