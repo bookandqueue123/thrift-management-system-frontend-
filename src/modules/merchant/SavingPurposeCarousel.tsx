@@ -13,7 +13,7 @@ import AmountFormatter from "@/utils/AmountFormatter";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { ScrollMenu, VisibilityContext } from "react-horizontal-scrolling-menu";
 import "react-horizontal-scrolling-menu/dist/styles.css";
@@ -182,16 +182,18 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
     // Optionally, you can dispatch an action to update the Redux state as well
     dispatch(updateSelectedProducts([])); // Clear the Redux state too
   };
+  const pathname = usePathname();
+  
 
   return (
     <div>
       <div>
         {/* <button onClick={clearSelectedProducts}>Clear Selected Products</button> */}
-        <div className="text-extrabold mb-4 text-2xl text-white">
+        <div className={`text-extrabold mb-4 text-2xl ${pathname === "/" ? "text-black": 'text-white'}`}>
           Total Selected Item(s):
           <span
             // onClick={() => router.push(`/customer/savings-purpose/make-payment`)}
-            className="ml-2 cursor-pointer border-2 border-white px-4 text-xl text-white hover:text-blue-500"
+            className={`ml-2 cursor-pointer border-2 border-white px-4 text-xl ${pathname === "/" ? "text-black": 'text-white'} hover:text-blue-500`}
           >
             {selectedProducts?.length}
           </span>
@@ -199,7 +201,7 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
         <CustomButton
           label="Pay for Selected Item(s)"
           type="button"
-          style="bg-white text-bold mb-2 text-[15px] py-3 px-2 text-black hover:text-white hover:bg-[#EAAB40] rounded-md flex-1"
+          style={`${pathname === '/' ? 'bg-[#EAAB40]' : 'bg-white'} text-bold mb-2 text-[15px] py-3 px-2 text-black hover:text-white hover:bg-[#EAAB40] rounded-md flex-1`}
           onButtonClick={() =>
             router.push(`/customer/savings-purpose/make-payment`)
           }
@@ -217,16 +219,18 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
           return (
             <div
               key={categoryName}
+   
               style={{
+                
                 borderRadius: index === 0 ? "10px" : "0",
-                background:
+                background: pathname === "/" ? "none" : 
                   index === 0
                     ? "linear-gradient(to bottom, #EAAB40 50%, transparent 50%)"
                     : "none",
               }}
             >
               <div className="flex items-center pl-4">
-                <h2 className="text-bold text-white">
+                <h2 className={`text-bold ${pathname === "/" ? "text-black": 'text-white'}`}>
                   Category: {categoryName}
                 </h2>
                 <input
@@ -242,7 +246,7 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
                 />
               </div>
               <div className="scroll-container">
-                <ScrollMenu LeftArrow={LeftArrow} RightArrow={RightArrow}>
+                <ScrollMenu >
                   {categoryProducts.map((purpose: any) => (
                     <ProductCard
                       key={purpose._id}
@@ -402,147 +406,7 @@ const ProductCard = ({
   );
 };
 
-// const ProductCard = ({
-//   product,
-//   onCheckboxChange,
-//   isChecked,
-// }: {
-//   product: any;
-//   onCheckboxChange: (id: React.Key, isChecked: boolean) => void;
-//   isChecked: boolean;
-// }) => {
-//   const router = useRouter();
 
-//   const truncateDescription = (description: string, wordLimit: number) => {
-//     const words = description.split(" ");
-//     return (
-//       words.slice(0, wordLimit).join(" ") +
-//       (words.length > wordLimit ? "..." : "")
-//     );
-//   };
-
-//   const renderQuantityOptions = () => {
-//     if (product.quantity === "Nill") {
-//       return <option value="Nill">Nill</option>;
-//     }
-//     return Array.from({ length: product.quantity }, (_, i) => (
-//       <option key={i + 1} value={i + 1}>
-//         {i + 1}
-//       </option>
-//     ));
-//   };
-
-//   // URL for sharing
-//   const shareUrl = `${window.location.origin}/customer/savings-purpose/${product._id}`;
-
-//   return (
-//     <>
-//       <Head>
-//         {/* Dynamic Title and Meta Tags for Open Graph */}
-//         <title>{product.purposeName}</title>
-//         <meta property="og:type" content="website" />
-//         <meta property="og:url" content={`${window.location.href}`} />
-//         <meta property="og:title" content={product.purposeName} />
-//         <meta property="og:description" content={product.description} />
-//         <meta
-//           property="og:image"
-//           content={`https://res.cloudinary.com/dgoeed5be/image/upload/v1726058163/thrift/i04saferxaf5yuvpjahv.png`}
-//         />
-//         <meta property="og:image:alt" content={product.purposeName} />
-//         <meta property="og:image:width" content="1200" />
-//         <meta property="og:image:height" content="630" />
-
-//         {/* Twitter Card Meta Tags */}
-//         <meta name="twitter:card" content="summary_large_image" />
-//         <meta name="twitter:title" content={product.purposeName} />
-//         <meta name="twitter:description" content={product.description} />
-//         <meta
-//           name="twitter:image"
-//           content={`https://res.cloudinary.com/dgoeed5be/image/upload/v1726058163/thrift/i04saferxaf5yuvpjahv.png`}
-//         />
-//       </Head>
-//       <Link href={shareUrl}>
-//         <div className="">
-//           <input
-//             className="ml-4"
-//             type="checkbox"
-//             checked={isChecked}
-//             onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
-//           />
-//           <div className="product-card">
-//             <div className="image-section h-[40%]">
-//               <Image
-//                 height={100}
-//                 width={150}
-//                 src={product.imageUrl}
-//                 alt={product.purposeName}
-//                 className="product-image p-4"
-//               />
-//               <div className="social-share-container mt-4">
-//                 <FacebookShareButton url={shareUrl} hashtag="#ProductShare">
-//                   <FacebookIcon size={32} round />
-//                 </FacebookShareButton>
-//                 <TwitterShareButton url={shareUrl} title={product.purposeName}>
-//                   <TwitterIcon size={32} round />
-//                 </TwitterShareButton>
-//                 <WhatsappShareButton url={shareUrl} title={product.purposeName}>
-//                   <WhatsappIcon size={32} round />
-//                 </WhatsappShareButton>
-//                 <LinkedinShareButton
-//                   url={shareUrl}
-//                   title={product.purposeName}
-//                   summary={product.description}
-//                 >
-//                   <LinkedinIcon size={32} round />
-//                 </LinkedinShareButton>
-//               </div>
-//             </div>
-//             <div className="info-section bg-ajo_orange text-black">
-//               <h3 className="product-name">{product.purposeName}</h3>
-//               <div
-//                 className="product-price-row"
-//                 style={{
-//                   display: "flex",
-//                   justifyContent: "space-between",
-//                   alignItems: "center",
-//                 }}
-//               >
-//                 <p className="product-price">
-//                   NGN{AmountFormatter(product.amount)}
-//                 </p>
-//                 <div
-//                   style={{
-//                     display: "flex",
-//                     flexDirection: "column",
-//                     marginLeft: "auto",
-//                   }}
-//                 >
-//                   <label
-//                     htmlFor={`quantity-${product._id}`}
-//                     style={{ fontSize: "0.9rem", marginBottom: "4px" }}
-//                   >
-//                     Qty
-//                   </label>
-//                   {product.merchantQuantity}
-//                 </div>
-//               </div>
-
-//               <p className="product-description">
-//                 {truncateDescription(product.description, 15)}
-//               </p>
-//               <a
-//                 href={`/customer/savings-purpose/${product._id}`}
-//                 className="read-more"
-//               >
-//                 Read more
-//               </a>
-//             </div>
-//           </div>
-//         </div>
-//       </Link>
-//     </>
-//   );
-// };
 
 interface categoryToSHowProps {
   categoryToshow: string;
@@ -575,7 +439,6 @@ const App = ({ categoryToshow, merchantNumber }: categoryToSHowProps) => {
     staleTime: 5000,
   });
 
-  // console.log(allPurposeInhouse, "inhouse");
 
   const inhousePurpose = allPurpose?.filter(
     (purpose: { visibility: string; assignedCustomers: string | string[] }) =>

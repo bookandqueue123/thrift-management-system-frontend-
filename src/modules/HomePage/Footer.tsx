@@ -1,60 +1,56 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { FaFacebook,  FaEnvelope, FaWhatsapp } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 export default function Footer(){
     const pathName = usePathname()
     const isHomepage = pathName === "/"
     return(
-        <div className={`${isHomepage ? 'bg-ajo_darkBlue' : ""}`}>
+        <div className={``} >
             <div className="mt-[4%] mx-[6%]">
-                <p className="text-xl font-semibold text-ajo_orange pb-4">{isHomepage ? 'Finkia' : 'Maxwell'}</p>
+                <p className="text-xl font-semibold text-ajo_orange pb-4">
+                    <Image
+                
+                    src="/Logo.svg"
+                    width={100}
+                    height={100}
+                    alt="logo"
+                    />
+                </p>
                 
                 <div className="md:flex justify-between">
                     <div className="flex">
                         <div className="">
-                            <Image
-                            src="/fb.svg"
-                            alt="fb icon"
-                            width={40}
-                            height={40}
-                            />
+                        <FaFacebook size={40}  color="orange"/>
                         </div>
                         <div className="px-12">
-                            <Image
-                            src="/x.svg"
-                            alt="fb icon"
-                            width={40}
-                            height={40}
-                            />
+                           <FaXTwitter size={40}  color="orange"/>
                         </div>
                         <div className="">
-                            <Image
-                            src="/mail.svg"
-                            alt="fb icon"
-                            width={40}
-                            height={40}
-                            />
+                        <FaEnvelope size={40}  color="orange"/>
                         </div>
                         <div className="pl-12">
-                            <Image
-                            src="/whatsapp.svg"
-                            alt="fb icon"
-                            width={40}
-                            height={40}
-                            />
+                            <FaWhatsapp size={40}  color="orange"/>
                         </div>
                     </div>
 
-                    <div className={`${isHomepage ? 'text-white' : 'black'} mt-4 md:mt-0`}>
-                        <h2><Link href="#about-content">About us</Link></h2>
-                        <h2 className="py-4"><Link href="#contact-us">Contact us</Link></h2>
-                        <h2>Privacy policy</h2>
-                    </div>
+                    <div className="flex space-x-8">
+            <a href="#" className="text-gray-500 hover:text-gray-700">About Us</a>
+            <a href="#" className="text-gray-500 hover:text-gray-700">Cookie</a>
+            <a href="#" className="text-gray-500 hover:text-gray-700">Privacy Policy</a>
+          </div>
                 </div>
 
-                <div className={` my-8 flex justify-center  ${isHomepage ? 'text-white' : 'black'} pb-8`}>
-                Powered by <Link target="_blank" href={"https://raoatech.com/"} className="ml-1"><span> Raoatech</span> </Link>
-                </div>
+                <div className="text-center text-gray-400 text-sm mt-4 mb-4">
+          &copy; <Link
+            target="_blank"
+            href="https://www.raoatech.com"
+            className="text-blue-500 hover:underline"
+          >
+            2024 Roaetech Ng - All Rights Reserved
+          </Link>
+        </div>
             </div>
         </div>
     )
