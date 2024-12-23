@@ -131,7 +131,7 @@ export default function AboutUs() {
         <Image
         width={1000}
         height={1000}
-        src="/FINKIA_BANNER 1_E-COMMERCE.png"
+        src="/FINKIA_BANNER1.png"
         alt='about banner'
         />
       </section>
@@ -163,7 +163,7 @@ export default function AboutUs() {
         <Image
         width={1000}
         height={1000}
-        src="/FINKIA_BANNER 2_SMART SAVING.png"
+        src="/FINKIA_BANNER2.png"
         alt='about banner'
         />
       </section>
@@ -183,7 +183,7 @@ export default function AboutUs() {
         <Image
         width={1000}
         height={1000}
-        src="/FINKIA_BANNER 3_BILL COLLECTION MANAGEMENT.png"
+        src="/FINKIA_BANNER3.png"
         alt='about banner'
         />
       </section>
@@ -203,7 +203,7 @@ export default function AboutUs() {
         <Image
         width={1000}
         height={1000}
-        src="/FINKIA_BANNER 4_AI_POWERED PHOTO EDITOR.png"
+        src="/FINKIA_BANNER4.png"
         alt='about banner'
         />
       </section>

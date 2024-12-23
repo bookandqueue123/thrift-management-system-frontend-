@@ -20,22 +20,22 @@ const Carousel = () => {
     {
       id: 1,
       title: "Slide 1",
-      image: "/FINKIA_BANNER 1_E-COMMERCE.png", // Replace with your image paths
+      image: "/FINKIA_BANNER1.png", // Replace with your image paths
     },
     {
       id: 2,
       title: "Slide 2",
-      image: "/FINKIA_BANNER 2_SMART SAVING.png",
+      image: "/FINKIA_BANNER2.png",
     },
     {
       id: 3,
       title: "Slide 3",
-      image: "/FINKIA_BANNER 3_BILL COLLECTION MANAGEMENT.png",
+      image: "/FINKIA_BANNER3.png",
     },
     {
       id: 4,
       title: "Slide 4",
-      image: "/FINKIA_BANNER 4_AI_POWERED PHOTO EDITOR.png",
+      image: "/FINKIA_BANNER4.png",
     },
   ];
 
