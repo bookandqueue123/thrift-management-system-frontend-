@@ -46,15 +46,7 @@ import { useRouter } from "next/router";
 export default function MakePayment() {
   const token = useSelector(selectToken);
   const router = useRouter();
-  useEffect(() => {
-    if (!token) {
-      router.push(`/signin`);
-    }
-  }, [token, router]);
 
-  if (!token) {
-    return null;
-  }
 
   const selectedProducts = useSelector(selectSelectedProducts);
   const organisationId = useSelector(selectOrganizationId);
@@ -249,6 +241,15 @@ export default function MakePayment() {
     }
   };
 
+  useEffect(() => {
+    if (!token) {
+      router.push(`/signin`);
+    }
+  }, [token, router]);
+
+  if (!token) {
+    return null;
+  }
   // if (!token) {
   //   router.push(`/signin`);
   // }
