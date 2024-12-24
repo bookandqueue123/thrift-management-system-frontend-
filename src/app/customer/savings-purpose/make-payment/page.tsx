@@ -13,7 +13,8 @@ import AmountFormatter from "@/utils/AmountFormatter";
 import { daysBetweenDates, daysUntilDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+
 
 import {
   JSXElementConstructor,
@@ -46,7 +47,7 @@ function generateDateRange(startDate: Date, endDate: Date) {
 
 export default function MakePayment() {
   const token = useSelector(selectToken);
-  // const router = useRouter();
+  const router = useRouter();
 
 
   const selectedProducts = useSelector(selectSelectedProducts);
@@ -242,11 +243,11 @@ export default function MakePayment() {
     }
   };
 
-  // useEffect(() => {
-  //   if (!token) {
-  //     router.push(`/signin`);
-  //   }
-  // }, [token, router]);
+  useEffect(() => {
+    if (!token) {
+      router.push(`/signin`);
+    }
+  }, [token, router]);
 
   // if (!token) {
   //   return null;
