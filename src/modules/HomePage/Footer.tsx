@@ -31,7 +31,10 @@ export default function Footer(){
                         <FaEnvelope size={40}  color="orange"/>
                         </div>
                         <div className="pl-12">
+                            <Link href={`https://wa.me/08097227051`}>
                             <FaWhatsapp size={40}  color="orange"/>
+                            </Link>
+                            
                         </div>
                     </div>
 
@@ -48,7 +51,7 @@ export default function Footer(){
             href="https://www.raoatech.com"
             className="text-blue-500 hover:underline"
           >
-            2024 Roaetech Ng - All Rights Reserved
+            Powered by Raoatech
           </Link>
         </div>
             </div>

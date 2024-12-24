@@ -209,7 +209,7 @@ export default function AboutUs() {
       </section>
 
       <footer className="text-center mt-16">
-        <p className="text-sm" style={{ color: '#EAAB40' }}>&copy; 2024 Finkia. All rights reserved.</p>
+        <p className="text-sm" style={{ color: '#EAAB40' }}>&copy; Powered by Raoatech</p>
       </footer>
     </div>
   );

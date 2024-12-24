@@ -8,33 +8,22 @@ import { useState } from "react";
     {
       id: 1,
       title: "Introduction to Savings",
-      description: "Learn the basics of saving money effectively.",
-      url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      description: "Finkia's Sales Team(Including Mr Oludare Olarewaju( Founder and CEO of Raoatech) ) at Mandilas Shoes Market in Lagos State, Nigeria.",
+      url: "https://youtu.be/lV8LDtNY_vw",
     },
     {
       id: 2,
       title: "Smart Investment Tips",
-      description: "Tips to grow your savings through smart investments.",
-      url: "https://www.youtube.com/watch?v=3JZ_D3ELwOQ",
+      description: "Finkia (from Raoatech) : Some Team's Members in Sales Strategy Session.",
+      url: "https://youtu.be/-SXQzBruX4c",
     },
     {
       id: 3,
       title: "Budgeting for Beginners",
-      description: "Step-by-step guide to create a budget.",
-      url: "https://www.youtube.com/watch?v=2Vv-BfVoq4g",
+      description: "Finkia (from Raoatech) : AI-Powered Photo Editor",
+      url: "https://youtu.be/weQBImlJHGoo0zq",
     },
-    {
-      id: 4,
-      title: "Debt Management Strategies",
-      description: "Learn how to manage and reduce your debt.",
-      url: "https://www.youtube.com/watch?v=fLexgOxsZu0",
-    },
-    {
-      id: 5,
-      title: "Retirement Planning",
-      description: "Plan for a financially secure retirement.",
-      url: "https://www.youtube.com/watch?v=9bZkp7q19f0",
-    },
+    
   ];
   
   export default function Home() {
@@ -45,7 +34,7 @@ import { useState } from "react";
 
         <header className="bg-white ">
           <div className="container mx-auto flex justify-between items-center py-2 px-6">
-            <h1 className="text-xl font-bold text-[#EAAB40] underline">Savings</h1>
+            {/* <h1 className="text-xl font-bold text-[#EAAB40] underline">Savings</h1> */}
             {/* <div className="space-x-4">
               <Link href={'/signup'}>
               <button className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Sign Up</button>
@@ -99,7 +88,7 @@ import { useState } from "react";
                   />
                 </div>
                 <div className="p-4">
-                  <h2 className="text-lg font-semibold">{video.title}</h2>
+                  {/* <h2 className="text-lg font-semibold">{video.title}</h2> */}
                   <p className="text-gray-600 text-sm mt-2">{video.description}</p>
                 </div>
               </div>

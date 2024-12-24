@@ -198,6 +198,9 @@ export default function ContactUs({
                     <p className="pt-4">
                     The Waterside, 5 Admiralty Rd, off Admiralty Way, Lekki Phase 1, Lagos State, Nigeria.
                     </p>
+                    <p className="pt-4">
+                    1A, Huges Avenue, Alagomeji, Yaba, Lagos State Nigeria
+                    </p>
                   </div>
                   <div className="text-white">
                     <h2 className="text-4xl font-bold">Telephone</h2>
