@@ -13,6 +13,7 @@ import AmountFormatter from "@/utils/AmountFormatter";
 import { daysBetweenDates, daysUntilDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+// import { useRouter } from "next/navigation";
 
 import {
   JSXElementConstructor,
@@ -41,11 +42,11 @@ function generateDateRange(startDate: Date, endDate: Date) {
   return dates;
 }
 
-import { useRouter } from "next/router";
+
 
 export default function MakePayment() {
   const token = useSelector(selectToken);
-  const router = useRouter();
+  // const router = useRouter();
 
 
   const selectedProducts = useSelector(selectSelectedProducts);
