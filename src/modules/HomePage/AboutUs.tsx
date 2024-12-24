@@ -128,12 +128,16 @@ export default function AboutUs() {
           </li>
         </ul>
 
-        <Image
-        width={1000}
-        height={1000}
-        src="/FINKIA_BANNER1.png"
-        alt='about banner'
-        />
+        <div className='mt-4 w-full '>
+          <Image
+            className='w-full'
+              width={1000}
+              height={1000}
+              src="/FINKIA_BANNER1.png"
+              alt='about banner'
+              />
+        </div>
+      
       </section>
 
       <section className="mb-16">
@@ -160,12 +164,14 @@ export default function AboutUs() {
           <li>And funds disbursement seamlessly.
           </li>
         </ul>
+        <div className='mt-4 w-full '>
         <Image
+        className='w-full'
         width={1000}
         height={1000}
         src="/FINKIA_BANNER2.png"
         alt='about banner'
-        />
+        /></div>
       </section>
 
       <section className="mb-16">
@@ -180,12 +186,16 @@ export default function AboutUs() {
           </li>
         </ul>
         <p>Finkia provides solutions to all the above-mentioned problems.</p>
+        <div className='mt-4 w-full '>
+
+       
         <Image
+        className='w-full'
         width={1000}
         height={1000}
         src="/FINKIA_BANNER3.png"
         alt='about banner'
-        />
+        /> </div>
       </section>
 
       <section className="mb-16">
@@ -200,17 +210,21 @@ export default function AboutUs() {
           <li>Quickly customize photo backgrounds for professional or personal use.</li>
           <li>Enhance productivity by streamlining photo editing tasks.</li>
         </ul>
+        <div className='mt-4 w-full '>
         <Image
+        className='w-full'
         width={1000}
         height={1000}
         src="/FINKIA_BANNER4.png"
         alt='about banner'
-        />
+        /></div>
       </section>
 
+      <div className='mt-4 w-full '>
       <footer className="text-center mt-16">
         <p className="text-sm" style={{ color: '#EAAB40' }}>&copy; Powered by Raoatech</p>
       </footer>
+      </div>
     </div>
   );
 }
