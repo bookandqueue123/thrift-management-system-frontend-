@@ -13,7 +13,7 @@ import AmountFormatter from "@/utils/AmountFormatter";
 import { daysBetweenDates, daysUntilDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import {
   JSXElementConstructor,
   Key,
@@ -49,7 +49,7 @@ export default function MakePayment() {
   const { client } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const user = useSelector(selectUser);
-  const router = useRouter()
+  // const router = useRouter()
   const userId = useSelector(selectUserId);
 
   const [paymentDetails, setPaymentDetails] = useState<any>({});
@@ -235,9 +235,9 @@ export default function MakePayment() {
     }
   };
 
-  if (!token) {
-    router.push(`/signin`);
-  }
+  // if (!token) {
+  //   router.push(`/signin`);
+  // }
   return (
     <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
       {showModal && (
