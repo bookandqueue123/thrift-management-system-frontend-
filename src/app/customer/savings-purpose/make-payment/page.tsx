@@ -13,7 +13,7 @@ import AmountFormatter from "@/utils/AmountFormatter";
 import { daysBetweenDates, daysUntilDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-// import { useRouter } from "next/navigatiooon";
+
 import {
   JSXElementConstructor,
   Key,
@@ -41,15 +41,24 @@ function generateDateRange(startDate: Date, endDate: Date) {
   return dates;
 }
 
+import { useRouter } from "next/router";
+
 export default function MakePayment() {
   const token = useSelector(selectToken);
+  const router = useRouter();
+  if (!token) {
+    useEffect(() => {
+      router.push(`/signin`);
+    }, [router]);
+    return null;
+  }
 
   const selectedProducts = useSelector(selectSelectedProducts);
   const organisationId = useSelector(selectOrganizationId);
   const { client } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const user = useSelector(selectUser);
-  // const router = useRouter()
+
   const userId = useSelector(selectUserId);
 
   const [paymentDetails, setPaymentDetails] = useState<any>({});
@@ -70,6 +79,12 @@ export default function MakePayment() {
       setEnvironmentName("localhost");
     }
   }, [host]);
+
+  useEffect(() => {
+    if (!token) {
+      router.push(`/signin`);
+    }
+  }, [token, router]);
 
   const { data: allGateways, isLoading: isLoadingAllGateways } = useQuery({
     queryKey: ["all gateways"],
@@ -135,9 +150,9 @@ export default function MakePayment() {
           userFirstName: user?.firstName,
           userLastName: user?.lastName,
           platformFee:
-            ((100 * (payment.amount - payment.amountWithoutCharge)) /
-              payment.amountWithoutCharge /
-              100) *
+            ((100 * (payment.amount - payment.amountWithoutCharge)) / 
+              payment.amountWithoutCharge / 
+              100) * 
             updatedAmount,
         },
       };
