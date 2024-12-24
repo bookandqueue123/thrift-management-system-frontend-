@@ -488,6 +488,7 @@ const MutateUser = ({
   const initialValues: mutateUserProps = actionToTake === 'edit-user' ? {
     firstName: userInfo?.firstName ?? "", 
     lastName: userInfo?.lastName ?? "",
+    password: userInfo?.password ?? "",
     email: userInfo?.email ?? "",
     phone: userInfo?.phoneNumber ?? "",
     homeAddress: userInfo?.homeAddress ?? "",
@@ -512,6 +513,7 @@ const MutateUser = ({
   {
     firstName: "",
     lastName: "",
+    password: "",
     email: "",
     phone: "",
     homeAddress: "",
@@ -591,6 +593,7 @@ const MutateUser = ({
       const formData = new FormData()
       formData.append("firstName", values.firstName)
       formData.append("lastName", values.lastName)
+      formData.append("password", values.password)
       formData.append("phoneNumber", values.phone)
       formData.append("organisation", organizationId)
       formData.append("homeAddress", values.homeAddress)
@@ -681,6 +684,7 @@ const MutateUser = ({
       
       formData.append("firstName", values.firstName)
       formData.append("lastName", values.lastName)
+      formData.append("password", values.password)
       formData.append("phoneNumber", values.phone)
       formData.append("organisation", organizationId)
       formData.append("homeAddress", values.homeAddress)
@@ -950,6 +954,24 @@ const MutateUser = ({
                   />
                 </div>
               </div>
+              <div className="flex-1">
+                  <label
+                    htmlFor="password"
+                    className="m-0 text-xs font-medium text-ajo_darkBlue"
+                  >
+                    Password
+                  </label>
+                  <Field
+                    name="password"
+                    type="text"
+                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                  />
+                  <ErrorMessage
+                    name="password"
+                    component="div"
+                    className="text-xs text-red-500"
+                  />
+                </div>
               <div className="my-3 flex flex-col gap-4 md:flex-row">
                 <div className="flex-1">
                   <label

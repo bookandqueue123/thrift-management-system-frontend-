@@ -335,9 +335,8 @@ const ProductCard = ({
           /> */}
           </div>
           <div className="image-section h-[40%]">
-            <Image
-              height={100}
-              width={150}
+          <img
+              
               src={product.imageUrl[0]}
               alt={product.purposeName}
               className="product-image p-4"
@@ -416,10 +415,18 @@ interface categoryToSHowProps {
 const App = ({ categoryToshow, merchantNumber }: categoryToSHowProps) => {
   const organisationId = useSelector(selectOrganizationId);
   const user = useSelector(selectUser);
+  const pathname = usePathname()
   // const [filteredPurposes, setFilteredPurposes] = useState([]);
 
   const { client } = useAuth();
 
+  let url = ""
+  if(pathname === "/"){
+    url = `/api/purpose/getallpurposes`
+  }
+  else{
+    url = `/api/purpose`
+  }
   const {
     data: allPurpose,
     isLoading: isLoadingAllPurpose,
@@ -428,7 +435,7 @@ const App = ({ categoryToshow, merchantNumber }: categoryToSHowProps) => {
     queryKey: ["allPurpose", categoryToshow],
     queryFn: async () => {
       return client
-        .get(`/api/purpose`, {})
+        .get(`${url}`, {})
         .then((response) => {
           return response.data;
         })
@@ -439,6 +446,7 @@ const App = ({ categoryToshow, merchantNumber }: categoryToSHowProps) => {
     staleTime: 5000,
   });
 
+  console.log(allPurpose)
 
   const inhousePurpose = allPurpose?.filter(
     (purpose: { visibility: string; assignedCustomers: string | string[] }) =>

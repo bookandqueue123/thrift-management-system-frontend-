@@ -676,6 +676,7 @@ export interface createSuperRoleProps {
 export interface mutateUserProps {
   firstName: string;
   lastName: string;
+  password: string;
   email: string;
   phone: string;
   homeAddress: string;
@@ -738,6 +739,7 @@ export interface staffResponse {
   _id: string;
   firstName: string;
   lastName: string;
+  password: string;
   email: string;
   homeAddress: string;
   phoneNumber: string;
