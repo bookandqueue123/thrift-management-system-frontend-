@@ -247,9 +247,9 @@ export default function MakePayment() {
     }
   }, [token, router]);
 
-  if (!token) {
-    return null;
-  }
+  // if (!token) {
+  //   return null;
+  // }
   // if (!token) {
   //   router.push(`/signin`);
   // }
