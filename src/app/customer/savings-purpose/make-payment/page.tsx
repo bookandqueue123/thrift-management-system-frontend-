@@ -241,11 +241,11 @@ export default function MakePayment() {
     }
   };
 
-  useEffect(() => {
-    if (!token) {
-      router.push(`/signin`);
-    }
-  }, [token, router]);
+  // useEffect(() => {
+  //   if (!token) {
+  //     router.push(`/signin`);
+  //   }
+  // }, [token, router]);
 
   // if (!token) {
   //   return null;
