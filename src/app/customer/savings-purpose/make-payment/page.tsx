@@ -46,12 +46,7 @@ import { useRouter } from "next/router";
 export default function MakePayment() {
   const token = useSelector(selectToken);
   const router = useRouter();
-  if (!token) {
-    useEffect(() => {
-      router.push(`/signin`);
-    }, [router]);
-    return null;
-  }
+
 
   const selectedProducts = useSelector(selectSelectedProducts);
   const organisationId = useSelector(selectOrganizationId);
