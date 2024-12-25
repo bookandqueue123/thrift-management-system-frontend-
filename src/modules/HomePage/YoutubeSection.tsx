@@ -48,7 +48,7 @@ import { useState } from "react";
           </div>
         </header>
   
-        <main className="container mx-auto py-4 px-6">
+        {/* <main className="container mx-auto py-4 px-6">
           {selectedVideo && (
             <div className="mb-8">
               <div className="relative w-full h-0 pb-[56.25%]">
@@ -89,12 +89,40 @@ import { useState } from "react";
                 </div>
                 <div className="p-4">
                   {/* <h2 className="text-lg font-semibold">{video.title}</h2> */}
-                  <p className="text-gray-600 text-sm mt-2">{video.description}</p>
+                  {/* <p className="text-gray-600 text-sm mt-2">{video.description}</p>
                 </div>
               </div>
             ))}
           </div>
-        </main>
+        </main>  */}
+
+<main className="container mx-auto py-4 px-6">
+  <div className="flex overflow-x-auto space-x-6">
+    {testVideos.map((video) => (
+      <div
+        key={video.id}
+        className="flex-none bg-white shadow rounded-lg w-1/3"
+        style={{ minWidth: "33.333%" }}
+      >
+        <div
+          className="relative w-full h-40 bg-black cursor-pointer"
+          onClick={() => window.open(`https://www.youtube.com/watch?v=${video.url.split("v=")[1]}`, "_blank")}
+        >
+          <img
+            src={`https://img.youtube.com/vi/${video.url.split("v=")[1]}/hqdefault.jpg`}
+            alt={video.title}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="p-4">
+          {/* <h2 className="text-lg font-semibold">{video.title}</h2> */}
+          <p className="text-gray-600 text-sm mt-2">{video.description}</p>
+        </div>
+      </div>
+    ))}
+  </div>
+</main>
+
       </div>
     );
   }

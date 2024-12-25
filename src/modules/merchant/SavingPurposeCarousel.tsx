@@ -318,7 +318,7 @@ const ProductCard = ({
   };
 
   return (
-    <Link href={`/customer/savings-purpose/${product._id}`}>
+   
       <div className="">
         <input
           className="ml-4"
@@ -326,6 +326,7 @@ const ProductCard = ({
           checked={isChecked}
           onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
         />
+         <Link href={`/customer/savings-purpose/${product._id}`}>
         <div className="product-card">
           <div className="checkbox-container" style={{ marginLeft: "8px" }}>
             {/* <input
@@ -400,8 +401,9 @@ const ProductCard = ({
             </a>
           </div>
         </div>
+        </Link>
       </div>
-    </Link>
+    
   );
 };
 
@@ -446,6 +448,25 @@ const App = ({ categoryToshow, merchantNumber }: categoryToSHowProps) => {
     staleTime: 5000,
   });
 
+  const {
+    data: allPurposeGeneral,
+    isLoading: isLoadingAllPurposeGeneral,
+    refetch: refetchAllPurposeGeneral,
+  } = useQuery({
+    queryKey: ["allPurposeGeneral", ],
+    queryFn: async () => {
+      return client
+        .get(`${`/api/purpose/getallpurposes`}`, {})
+        .then((response) => {
+          return response.data;
+        })
+        .catch((error) => {
+          throw error;
+        });
+    },
+    staleTime: 5000,
+  });
+
   console.log(allPurpose)
 
   const inhousePurpose = allPurpose?.filter(
@@ -453,7 +474,7 @@ const App = ({ categoryToshow, merchantNumber }: categoryToSHowProps) => {
       purpose.assignedCustomers?.includes(user?._id) &&
       purpose.visibility === "inhouse",
   );
-  const generalPurpose = allPurpose?.filter(
+  const generalPurpose = allPurposeGeneral?.filter(
     (purpose: { visibility: string }) => purpose.visibility === "general",
   );
 

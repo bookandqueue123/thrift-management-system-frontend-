@@ -70,6 +70,14 @@ export default function SinglePurposePage() {
     }
   };
 
+  const progressWidth = (() => {
+    const userBalance = SinglePurpose?.customerBalances?.[userId];
+    if (!userBalance || !userBalance.total || !userBalance.balance) {
+      return "0%"; // Fallback value if data is unavailable
+    }
+    return `${((userBalance.total - userBalance.balance) / userBalance.total) * 100}%`;
+  })();
+  
   return (
     <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
       <div className="mb-4 space-y-2">
@@ -190,12 +198,15 @@ export default function SinglePurposePage() {
                     Savings Progress
                   </h2>
                   <div className="relative mb-2 h-4 w-full overflow-hidden rounded-full bg-gray-300">
+                    
                     <div
-                      className="absolute left-0 top-0 h-full bg-blue-500"
                       style={{
-                        width: `${((SinglePurpose?.customerBalances[userId]?.total - SinglePurpose?.customerBalances[userId]?.balance) / SinglePurpose?.customerBalances[userId]?.total) * 100}%`,
+                        width: progressWidth,
                       }}
-                    ></div>
+                        className="absolute left-0 top-0 h-full bg-blue-500"
+                    >
+                      {/* Content */}
+                    </div>
                   </div>
                   <p className="text-md font-normal md:text-xl md:font-semibold">
                     How many days left?
