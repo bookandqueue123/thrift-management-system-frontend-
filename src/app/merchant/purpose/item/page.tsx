@@ -591,7 +591,6 @@ const MutateUser = ({
     },
   });
 
-  console.log(singlePurpose)
   const initialValues: PurposeProps =
     actionToTake === "edit-purpose"
       ? {
