@@ -36,6 +36,7 @@ import {
   Dispatch,
   SetStateAction,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { CiExport } from "react-icons/ci";
@@ -1307,6 +1308,24 @@ const PostConfirmation = ({
       });
     }
   }, []);
+  // const confirmationRef = useRef<HTMLDivElement>(null);
+  
+  // const handleDownload = () => {
+
+  //   if (confirmationRef.current)
+  //     domtoimage
+  //       .toBlob(confirmationRef.current)
+  //       .then((blob: Blob | MediaSource) => {
+  //         const pdf = new jsPDF("landscape", "mm", "a4");
+  //         const pdfWidth = pdf.internal.pageSize.getWidth();
+  //         const pdfHeight = pdf.internal.pageSize.getHeight();
+
+  //         const imgData = URL.createObjectURL(blob);
+  //         pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+  //         pdf.save("certificate.pdf");
+  //       });
+  // };
+
 
   const handleDownload = () => {
     if (pdfBlob) {
