@@ -2,6 +2,7 @@ import { apiUrl } from "@/api/hooks/useAuth";
 import SinglePurposePage from "@/modules/customer/SinglePurposePage";
 import axios from "axios";
 import type { Metadata, ResolvingMetadata } from "next";
+import { Suspense } from "react";
 
 type Props = {
   params: { singlePurpose: string };
@@ -41,6 +42,13 @@ export async function generateMetadata(
   };
 }
 
+
 export default function Page({ params }: any) {
-  return <SinglePurposePage />;
+  return(
+    <div>
+      <Suspense>
+      <SinglePurposePage />;
+      </Suspense>
+    </div>
+  )
 }
