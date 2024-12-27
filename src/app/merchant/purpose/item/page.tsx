@@ -509,7 +509,7 @@ const MutateUser = ({
     isLoading: isLoadingAllPurpose,
     refetch: editingPurposeRefetched,
   } = useQuery({
-    queryKey: ["allPurpose"],
+    queryKey: ["single Purpose"],
     queryFn: async () => {
       return client
         .get(`/api/purpose/${purposeToBeEdited}`, {})
