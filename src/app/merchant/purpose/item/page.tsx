@@ -1747,7 +1747,7 @@ const MutateUser = ({
                   formik.setFieldValue("imageUrl", file); // Handle file input
                 }
               }}
-              accept="application/pdf, .jpg, .png"
+              // accept="application/pdf, .jpg, .png .mp4"
             />
             <div className="flex flex-col items-center justify-center">
               <Image
