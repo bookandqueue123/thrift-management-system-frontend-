@@ -8,20 +8,23 @@ import { useState } from "react";
     {
       id: 1,
       title: "Introduction to Savings",
+      thumbnailUrl: "tb1.webp",
       description: "Finkia's Sales Team(Including Mr Oludare Olarewaju( Founder and CEO of Raoatech) ) at Mandilas Shoes Market in Lagos State, Nigeria.",
-      url: "https://youtu.be/lV8LDtNY_vw",
+      url: "https://res.cloudinary.com/dldchwdkn/video/upload/v1735205579/jaqk37xnpewbd958vgj4.mp4",
     },
     {
       id: 2,
       title: "Smart Investment Tips",
+      thumbnailUrl: "tb3.webp",
       description: "Finkia (from Raoatech) : Some Team's Members in Sales Strategy Session.",
-      url: "https://youtu.be/-SXQzBruX4c",
+      url: "https://res.cloudinary.com/dldchwdkn/video/upload/v1735244767/sntj4fkgxymukfmztmss.mp4",
     },
     {
       id: 3,
       title: "Budgeting for Beginners",
+      thumbnailUrl: "/tb2.webp",
       description: "Finkia (from Raoatech) : AI-Powered Photo Editor",
-      url: "https://youtu.be/weQBImlJHGoo0zq",
+      url: "https://res.cloudinary.com/dldchwdkn/video/upload/v1735246566/feacgp0ovsgctvdbefvh.mp4",
     },
     
   ];
@@ -48,55 +51,68 @@ import { useState } from "react";
           </div>
         </header>
   
-        {/* <main className="container mx-auto py-4 px-6">
-          {selectedVideo && (
-            <div className="mb-8">
-              <div className="relative w-full h-0 pb-[56.25%]">
-                <iframe
-                  src={`https://www.youtube.com/embed/${selectedVideo.url.split("v=")[1]}`}
-                  title={selectedVideo.title}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="absolute top-0 left-0 w-full h-full"
-                ></iframe>
-              </div>
-              <button
-                className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                onClick={() => setSelectedVideo(null)}
-              >
-                Close Video
-              </button>
-            </div>
-          )}
-  
-          <div className="flex overflow-x-auto space-x-6">
-            {testVideos.map((video) => (
-              <div
-                key={video.id}
-                className="flex-none bg-white shadow rounded-lg w-1/3"
-                style={{ minWidth: "33.333%" }}
-              >
-                <div
-                  className="relative w-full h-40 bg-black cursor-pointer"
-                  onClick={() => setSelectedVideo(video)}
-                >
-                  <img
-                    src={`https://img.youtube.com/vi/${video.url.split("v=")[1]}/hqdefault.jpg`}
-                    alt={video.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-4">
-                  {/* <h2 className="text-lg font-semibold">{video.title}</h2> */}
-                  {/* <p className="text-gray-600 text-sm mt-2">{video.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </main>  */}
+        <main className="container mx-auto py-4 px-6">
+  {selectedVideo && (
+    <div className="mb-8">
+      <div className="relative w-full h-0 pb-[56.25%]">
+        {/* Cloudinary Video Embed */}
+        <video
+          src={selectedVideo.url}
+          title={selectedVideo.title}
+          controls
+          className="absolute top-0 left-0 w-full h-full"
+        ></video>
+      </div>
+      <button
+        className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+        onClick={() => setSelectedVideo(null)}
+      >
+        Close Video
+      </button>
+    </div>
+  )}
 
-<main className="container mx-auto py-4 px-6">
+<div className="flex overflow-x-auto space-x-6">
+  {testVideos.map((video) => (
+    <div
+      key={video.id}
+      className="flex-none bg-white shadow rounded-lg w-1/3"
+      style={{ minWidth: "33.333%" }}
+    >
+      <div
+        className="relative w-full h-40 bg-black cursor-pointer"
+        onClick={() => setSelectedVideo(video)}
+      >
+        {/* Cloudinary Thumbnail */}
+        <img
+          src={video.thumbnailUrl} // Replace with the Cloudinary thumbnail URL for the video
+          alt={video.title}
+          className="w-full h-full object-cover"
+        />
+        {/* Video Icon Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-12 w-12 text-white"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M9.5 7.5v9l7-4.5-7-4.5z"></path>
+          </svg>
+        </div>
+      </div>
+      <div className="p-4">
+        {/* Video Description */}
+        <p className="text-gray-600 text-sm mt-2">{video.description}</p>
+      </div>
+    </div>
+  ))}
+</div>
+
+</main>
+
+
+{/* <main className="container mx-auto py-4 px-6">
   <div className="flex overflow-x-auto space-x-6">
     {testVideos.map((video) => (
       <div
@@ -116,12 +132,12 @@ import { useState } from "react";
         </div>
         <div className="p-4">
           {/* <h2 className="text-lg font-semibold">{video.title}</h2> */}
-          <p className="text-gray-600 text-sm mt-2">{video.description}</p>
+          {/* <p className="text-gray-600 text-sm mt-2">{video.description}</p>
         </div>
       </div>
     ))}
   </div>
-</main>
+</main>  */}
 
       </div>
     );
