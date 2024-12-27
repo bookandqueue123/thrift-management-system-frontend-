@@ -38,20 +38,33 @@ export default function Navbar(){
                 <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg  md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 ">
                     
                     <li>
-                    <a href="#about-content" className="mt-2 block text-gray-400" aria-current="page">About Us</a>
+                    <a href="/about-us" className="mt-2 block text-gray-400" aria-current="page">About Us</a>
+                    </li>
+                    <li>
+                    <a href="/contact-us" className="mt-2 block text-gray-400" aria-current="page">Contact Us</a>
                     </li>
                     {/* <li>
                     <a href="#" className="mt-2 block text-gray-400">Product/Services</a>
                     </li> */}
-                    <li>
-                    <a href="/signin" className="mt-2 block text-gray-400 hover:text-gray-200">Sign in</a>
-                    </li >
+                    {/* <li>
+                    <a href="/#" className="mt-2 block text-gray-400 hover:text-gray-200">Services</a>
+                    </li > */}
                     {/* <li>
                     <a href="/signup" className="mt-2 block text-gray-400 hover:text-gray-200">Sign up</a>
                     </li> */}
-                    <a href="#contactUs-content">
-                        <button type="button" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Contact us</button>
-                    </a>
+                    {/* <a href="#contactUs-content">
+                        <button type="button" className="text-white bg-[#2D55FB] hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-1 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Join Community</button>
+                    </a> */}
+                     <div className="space-x-4">
+              <Link href={'/signup'}>
+              <button className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Sign Up</button>
+              </Link>
+              
+              <Link href={'/signin'}>
+              <button className="px-4 py-1 border border-blue-500 text-blue-500 rounded hover:bg-blue-50">Sign In</button>
+              </Link>
+              
+            </div>
                     
                 </ul>
                 </div>

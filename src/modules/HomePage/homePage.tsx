@@ -7,6 +7,10 @@ import FAQ from "./Faq";
 import ContactUs from "./ContactUs";
 import Footer from "./Footer";
 import { useEffect, useState } from "react";
+import Carousel from "./Carousel";
+import FinkiaAbout from "./FinkiaAbout";
+import YoutubeSection from "./YoutubeSection";
+import GeneralMarket from "./GeneralMarket";
 
 const aboutText =
     "At Finkia, we believe in the transformative power of saving, and our platform is designed to make saving not just easy but also rewarding. Whether you're a seasoned trader looking to enhance your financial strategy or a young individual embarking on your savings journey, Finkia is here to guide and support you every step of the way. \n \n FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly.It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan - repayment ability of the customer.";
@@ -41,14 +45,18 @@ export default function HomePage() {
         }
       }, [host]);
     return (
-      <div className="bg-ajo_darkBlue ">
+      <div className=" ">
         <Navbar />
-        <HeroSection />
+        <Carousel/>
+        <FinkiaAbout/>
+        <YoutubeSection/>
+        <GeneralMarket/>
+        {/* <HeroSection />
         <AboutUs aboutText={aboutText} data={data} />
         <HowToUse />
         <ProductService />
-        <FAQ />
-        <ContactUs
+        <FAQ /> */}
+        {/* <ContactUs
           contactPhone={
             host === "www.maxwellsaving.com.ng"
               ? "+234 906 190 3588"
@@ -59,7 +67,7 @@ export default function HomePage() {
               ? "info@maxwellsavings.com.ng"
               : "finkia.support@raoatech.com"
           }
-        />
+        /> */}
         <Footer />
       </div>
     );

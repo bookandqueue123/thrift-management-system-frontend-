@@ -13,6 +13,9 @@ import AmountFormatter from "@/utils/AmountFormatter";
 import { daysBetweenDates, daysUntilDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+
+
 import {
   JSXElementConstructor,
   Key,
@@ -40,14 +43,19 @@ function generateDateRange(startDate: Date, endDate: Date) {
   return dates;
 }
 
+
+
 export default function MakePayment() {
   const token = useSelector(selectToken);
+  const router = useRouter();
+
 
   const selectedProducts = useSelector(selectSelectedProducts);
   const organisationId = useSelector(selectOrganizationId);
   const { client } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const user = useSelector(selectUser);
+
   const userId = useSelector(selectUserId);
 
   const [paymentDetails, setPaymentDetails] = useState<any>({});
@@ -68,6 +76,8 @@ export default function MakePayment() {
       setEnvironmentName("localhost");
     }
   }, [host]);
+
+ 
 
   const { data: allGateways, isLoading: isLoadingAllGateways } = useQuery({
     queryKey: ["all gateways"],
@@ -133,9 +143,9 @@ export default function MakePayment() {
           userFirstName: user?.firstName,
           userLastName: user?.lastName,
           platformFee:
-            ((100 * (payment.amount - payment.amountWithoutCharge)) /
-              payment.amountWithoutCharge /
-              100) *
+            ((100 * (payment.amount - payment.amountWithoutCharge)) / 
+              payment.amountWithoutCharge / 
+              100) * 
             updatedAmount,
         },
       };
@@ -233,6 +243,18 @@ export default function MakePayment() {
     }
   };
 
+  useEffect(() => {
+    if (!token) {
+      router.push(`/signin`);
+    }
+  }, [token, router]);
+
+  // if (!token) {
+  //   return null;
+  // }
+  // if (!token) {
+  //   router.push(`/signin`);
+  // }
   return (
     <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
       {showModal && (

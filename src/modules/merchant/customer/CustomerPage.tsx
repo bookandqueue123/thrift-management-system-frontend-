@@ -46,6 +46,7 @@ const initialValues: CustomerSignUpProps = {
   firstName: "",
   lastName: "",
   otherName: "",
+  password: "",
   phoneNumber: "",
   homeAddress: "",
   countryOfResidence: "",
@@ -57,7 +58,7 @@ const initialValues: CustomerSignUpProps = {
   nin: "",
   ninslip: null,
   bvn: "",
-  password: "",
+
   confirmPassword: "",
   organization: "",
 };
@@ -1362,6 +1363,7 @@ export const EditCustomer = ({
             initialValues={{
               firstName: customerInfo?.firstName,
               lastName: customerInfo?.lastName,
+              password: customerInfo?.password,
               otherName: customerInfo?.otherName,
               phoneNumber: customerInfo?.phoneNumber,
               email: customerInfo?.email,
@@ -1387,6 +1389,7 @@ export const EditCustomer = ({
             validationSchema={Yup.object({
               firstName: Yup.string().required("Required"),
               lastName: Yup.string().required("Required"),
+              password: Yup.string().required("Password is required"),
               otherName: Yup.string().optional(),
               email: Yup.string().required("Required"),
               homeAddress: Yup.string().required("Required"),
@@ -2036,6 +2039,7 @@ export const CreateCustomer = ({
       // Append all the fields to the formData
       formData.append("firstName", values.firstName);
       formData.append("lastName", values.lastName);
+      formData.append("password", values.password);
       formData.append("otherName", values.otherName);
       formData.append("phoneNumber", values.phoneNumber);
       formData.append("email", values.email);
@@ -2392,6 +2396,26 @@ export const CreateCustomer = ({
                     className="text-red-500"
                   />
                 </div>
+              </div>
+
+              <div className="mb-3">
+                <label
+                  htmlFor="password"
+                  className="m-0 text-xs font-medium text-white"
+                >
+                  Password
+                </label>
+                <Field
+                  id="password"
+                  name="password"
+                  type="text"
+                  className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                />
+                <ErrorMessage
+                    name="password"
+                    component="div"
+                    className="text-red-500"
+                  />
               </div>
 
               <div className="mb-3">
