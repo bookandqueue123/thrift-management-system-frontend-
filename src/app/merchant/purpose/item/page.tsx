@@ -509,7 +509,7 @@ const MutateUser = ({
     isLoading: isLoadingAllPurpose,
     refetch: editingPurposeRefetched,
   } = useQuery({
-    queryKey: ["allPurpose"],
+    queryKey: ["single Purpose"],
     queryFn: async () => {
       return client
         .get(`/api/purpose/${purposeToBeEdited}`, {})
@@ -591,6 +591,7 @@ const MutateUser = ({
     },
   });
 
+  console.log(singlePurpose)
   const initialValues: PurposeProps =
     actionToTake === "edit-purpose"
       ? {
