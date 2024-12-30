@@ -6,12 +6,7 @@ import PaginationBar from "@/components/Pagination";
 import { StatusIndicator } from "@/components/StatusIndicator";
 import TransactionsTable from "@/components/Tables";
 import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
-import {
-  Organisation,
-  OrganisationGroupsProps,
-  customer,
-  mutateUserProps,
-} from "@/types";
+import { Organisation, OrganisationGroupsProps, customer } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
@@ -45,7 +40,7 @@ const Users = () => {
     "edit-user" | "create-user" | "view-user" | ""
   >("");
   const [isUserCreated, setIsUserCreated] = useState(false);
-  
+
   const [modalContent, setModalContent] = useState<"status" | "form" | "">(
     "form",
   );
@@ -68,26 +63,20 @@ const Users = () => {
     queryKey: ["allRoles"],
     queryFn: async () => {
       return client
-        .get(
-          `/api/user?role=superuser`,
-          {},
-        )
+        .get(`/api/user?role=superuser`, {})
         .then((response: AxiosResponse<customer[], any>) => {
           setFilteredUsers(response.data);
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-        
           throw error;
         });
     },
     staleTime: 5000,
   });
 
-  
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
-  
 
     if (allUsers) {
       const filtered = allUsers.filter((item) =>
@@ -130,7 +119,6 @@ const Users = () => {
   useEffect(() => {
     refetch();
   }, [isUserCreated, refetch]);
-
 
   return (
     <>
@@ -179,7 +167,7 @@ const Users = () => {
               setModalState(true);
               setModalToShow("create-user");
               setModalContent("form");
-                setIsUserCreated(false);
+              setIsUserCreated(false);
             }}
           />
         </div>
@@ -228,7 +216,7 @@ const Users = () => {
                       {user.homeAddress || "----"}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      {(user.assignedUser).length }
+                      {user.assignedUser.length}
                     </td>
                     {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                       {user.assignedOrgName || "----"}
@@ -305,7 +293,7 @@ const Users = () => {
                 </div>
               ) : (
                 <ModalConfirmation
-                  successTitle={`User ${modalToShow === "create-user" ? "Creation" : modalToShow === "edit-user" ? "Editing": ""} Successful`}
+                  successTitle={`User ${modalToShow === "create-user" ? "Creation" : modalToShow === "edit-user" ? "Editing" : ""} Successful`}
                   errorTitle={`User ${modalToShow === "create-user" ? "Creation" : "Editing"} Failed`}
                   status={isUserCreated || isUserEdited ? "success" : "failed"}
                   responseMessage={mutationResponse}
@@ -332,7 +320,7 @@ const MutateUser = ({
   setUserEdited,
   setModalContent,
   userToBeEdited,
-  setMutationResponse
+  setMutationResponse,
 }: {
   actionToTake: "create-user" | "edit-user" | "view-user" | "";
   setCloseModal: Dispatch<SetStateAction<boolean>>;
@@ -341,27 +329,25 @@ const MutateUser = ({
   setUserEdited: Dispatch<SetStateAction<boolean>>;
   setModalContent: Dispatch<SetStateAction<"" | "status" | "form">>;
   setMutationResponse: Dispatch<SetStateAction<string>>;
-  userToBeEdited: string
-
+  userToBeEdited: string;
 }) => {
   const { client } = useAuth();
 
-  interface userProps{
-    email: string,
-    phone: string,
-    address: string,
-   name: string,
-   selectOrganisation: string,
-   selectOrganisationGroup: string
+  interface userProps {
+    email: string;
+    phone: string;
+    address: string;
+    name: string;
+    selectOrganisation: string;
+    selectOrganisationGroup: string;
   }
   const initialValues: userProps = {
-   
     email: "",
     phone: "",
     address: "",
-   name: "",
-   selectOrganisation: "",
-   selectOrganisationGroup: ""
+    name: "",
+    selectOrganisation: "",
+    selectOrganisationGroup: "",
   };
 
   const [assignType, setAssignType] = useState<"single" | "group">("single");
@@ -369,18 +355,16 @@ const MutateUser = ({
   const { mutate: createUser, isPending: isCreatingRole } = useMutation({
     mutationKey: ["create role"],
     mutationFn: async (values: userProps) => {
-
-      
       return client.post(`/api/user/create-superuser`, {
-       
-        name : values.name,
-        email : values.email,
-        phoneNumber : values.phone,
+        name: values.name,
+        email: values.email,
+        phoneNumber: values.phone,
         homeAddress: values.address,
-        assignedUser: assignType === "single" ? values.selectOrganisation : values.selectOrganisationGroup,
-        role:  "superuser"
-      
-      
+        assignedUser:
+          assignType === "single"
+            ? values.selectOrganisation
+            : values.selectOrganisationGroup,
+        role: "superuser",
       });
     },
 
@@ -390,17 +374,17 @@ const MutateUser = ({
       setMutationResponse(response?.data.message);
       setTimeout(() => {
         setCloseModal(false);
-        setModalContent("form")
+        setModalContent("form");
       }, 2000);
     },
 
     onError(error: AxiosError<any, any>) {
       setUserCreated(false);
       setModalContent("status");
-      
+
       setMutationResponse(error.response?.data.message);
       setTimeout(() => {
-        setModalContent("form")
+        setModalContent("form");
       }, 1000);
     },
   });
@@ -408,8 +392,6 @@ const MutateUser = ({
   const { mutate: editUser, isPending: isEditingRole } = useMutation({
     mutationKey: ["edit role"],
     mutationFn: async (values: userProps) => {
-      
-      
       return;
       //  client.put(`/api/user/${userId}`, formData);
     },
@@ -423,16 +405,35 @@ const MutateUser = ({
 
     onError(error: AxiosError<any, any>) {
       setUserMutated(false);
-     
     },
   });
 
-  const { data: organisationGroups } = useQuery({
-    queryKey: ["allOrganisationGroups"],
+  // const { data: organisationGroups } = useQuery({
+  //   queryKey: ["allOrganisationGroups"],
+  //   queryFn: async () => {
+  //     return client
+  //       .get(`/api/user?userType=organisation`, {})
+  //       .then((response) => {
+  //         return response.data;
+  //       })
+  //       .catch((error) => {
+  //         throw error;
+  //       });
+  //   },
+  // });
+
+  const {
+    data: organizationsGroups,
+    isLoading: isUserLoading,
+    isError: getGroupError,
+    refetch,
+  } = useQuery({
+    queryKey: ["allOrganizationsGroup"],
     queryFn: async () => {
       return client
-        .get(`/api/user?userType=organisation`, {})
+        .get(`/api/user?userType=group`, {})
         .then((response) => {
+          // setFilteredGroups(response.data);
           return response.data;
         })
         .catch((error) => {
@@ -440,7 +441,6 @@ const MutateUser = ({
         });
     },
   });
-
   const { data: organisation } = useQuery({
     queryKey: ["allOrganisation"],
     queryFn: async () => {
@@ -450,11 +450,11 @@ const MutateUser = ({
           return response.data;
         })
         .catch((error) => {
-        
           throw error;
         });
     },
   });
+  console.log(organizationsGroups);
 
   return (
     <Formik
@@ -475,8 +475,8 @@ const MutateUser = ({
         setTimeout(() => {
           if (actionToTake === "create-user") {
             console.log("creating user.....................");
-           
-             createUser(values);
+
+            createUser(values);
           } else {
             console.log("editing user.....................");
             editUser(values);
@@ -665,7 +665,7 @@ const MutateUser = ({
                       name="selectOrganisationGroup"
                       className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
                     >
-                      {organisationGroups?.map(
+                      {organizationsGroups?.map(
                         (group: OrganisationGroupsProps) => (
                           <option key={group._id} value={group._id}>
                             {group.groupName}

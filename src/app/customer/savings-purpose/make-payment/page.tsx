@@ -13,8 +13,8 @@ import AmountFormatter from "@/utils/AmountFormatter";
 import { daysBetweenDates, daysUntilDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { Formik } from "formik";
 import { useRouter } from "next/navigation";
-
 
 import {
   JSXElementConstructor,
@@ -43,17 +43,16 @@ function generateDateRange(startDate: Date, endDate: Date) {
   return dates;
 }
 
-
-
 export default function MakePayment() {
   const token = useSelector(selectToken);
   const router = useRouter();
-
 
   const selectedProducts = useSelector(selectSelectedProducts);
   const organisationId = useSelector(selectOrganizationId);
   const { client } = useAuth();
   const [showModal, setShowModal] = useState(false);
+  const [showDirectDebitModal, setShowDirectDebitModal] = useState(false);
+  const [debitMode, setDebitMode] = useState<"direct" | "onetime">("onetime");
   const user = useSelector(selectUser);
 
   const userId = useSelector(selectUserId);
@@ -62,6 +61,13 @@ export default function MakePayment() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [host, setHost] = useState("");
   const [environmentName, setEnvironmentName] = useState("");
+  const [directDebitValues, setDirectDebitValues] = useState({
+    amount: "",
+    interval: "",
+    startDate: "",
+    endDate: "",
+  });
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
@@ -76,8 +82,6 @@ export default function MakePayment() {
       setEnvironmentName("localhost");
     }
   }, [host]);
-
- 
 
   const { data: allGateways, isLoading: isLoadingAllGateways } = useQuery({
     queryKey: ["all gateways"],
@@ -143,9 +147,9 @@ export default function MakePayment() {
           userFirstName: user?.firstName,
           userLastName: user?.lastName,
           platformFee:
-            ((100 * (payment.amount - payment.amountWithoutCharge)) / 
-              payment.amountWithoutCharge / 
-              100) * 
+            ((100 * (payment.amount - payment.amountWithoutCharge)) /
+              payment.amountWithoutCharge /
+              100) *
             updatedAmount,
         },
       };
@@ -154,7 +158,7 @@ export default function MakePayment() {
 
   const GoToPayment = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-
+    setDebitMode("direct");
     if (Object.keys(paymentDetails).length === 0) {
       setShowModal(false);
       setErrors({ general: "No payment details provided." });
@@ -214,10 +218,11 @@ export default function MakePayment() {
       const accountNumber = user.accountNumber;
       const redirectURL =
         "customer/savings-purpose/make-payment/payment-callback";
-      const response = await axios.post(
-        `${apiUrl}api/pay/flw`,
-
-        {
+      let paymentEndpoints = "";
+      let payload = {};
+      if (debitMode === "onetime") {
+        paymentEndpoints = `${apiUrl}api/pay/flw`;
+        payload = {
           environment,
           paymentFor,
           amount,
@@ -231,7 +236,16 @@ export default function MakePayment() {
           accountNumber,
           gatewayName,
           platformCharge,
-        },
+        };
+      } else {
+        paymentEndpoints = `${apiUrl}api/pay/flw/create-installment-plan`;
+        payload = directDebitValues;
+      }
+
+      const response = await axios.post(
+        `${paymentEndpoints}`,
+
+        payload,
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
@@ -248,6 +262,11 @@ export default function MakePayment() {
       router.push(`/signin`);
     }
   }, [token, router]);
+
+  function handleDirectModalFunction(): void {
+    setDebitMode("direct");
+    setShowDirectDebitModal(true);
+  }
 
   // if (!token) {
   //   return null;
@@ -288,6 +307,129 @@ export default function MakePayment() {
               )}
             </div>
           </div>
+        </Modal>
+      )}
+
+      {showDirectDebitModal && (
+        <Modal
+          title="Direct Debit Payment"
+          setModalState={setShowDirectDebitModal}
+        >
+          <Formik
+            initialValues={{
+              amount: "",
+              interval: "",
+              startDate: "",
+              endDate: "",
+            }}
+            onSubmit={async (values) => {
+              // const response = await fetch("/api/create-installment-plan", {
+              //   method: "POST",
+              //   headers: { "Content-Type": "application/json" },
+              //   body: JSON.stringify(values),
+              // });
+              // const data = await response.json();
+              setShowDirectDebitModal(false);
+              setDirectDebitValues(values);
+              setShowModal(true);
+            }}
+          >
+            {({ values, handleChange, handleSubmit }) => (
+              <form
+                onSubmit={handleSubmit}
+                className="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md"
+              >
+                <h2 className="text-center text-xl font-semibold text-gray-700">
+                  Create Installment Plan
+                </h2>
+
+                {/* Amount Field */}
+                <div>
+                  <label
+                    htmlFor="amount"
+                    className="mb-2 block text-sm font-medium text-gray-700"
+                  >
+                    Amount
+                  </label>
+                  <input
+                    id="amount"
+                    name="amount"
+                    type="number"
+                    value={values.amount}
+                    onChange={handleChange}
+                    placeholder="Enter amount"
+                    className="w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Interval Field */}
+                <div>
+                  <label
+                    htmlFor="interval"
+                    className="mb-2 block text-sm font-medium text-gray-700"
+                  >
+                    Interval
+                  </label>
+                  <select
+                    id="interval"
+                    name="interval"
+                    value={values.interval}
+                    onChange={handleChange}
+                    className="w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Interval</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </div>
+
+                {/* Start Date Field */}
+                <div>
+                  <label
+                    htmlFor="startDate"
+                    className="mb-2 block text-sm font-medium text-gray-700"
+                  >
+                    Start Date
+                  </label>
+                  <input
+                    id="startDate"
+                    name="startDate"
+                    type="date"
+                    value={values.startDate}
+                    onChange={handleChange}
+                    className="w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* End Date Field */}
+                <div>
+                  <label
+                    htmlFor="endDate"
+                    className="mb-2 block text-sm font-medium text-gray-700"
+                  >
+                    End Date
+                  </label>
+                  <input
+                    id="endDate"
+                    name="endDate"
+                    type="date"
+                    value={values.endDate}
+                    onChange={handleChange}
+                    className="w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  className="w-full rounded-lg bg-blue-500 p-3 font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  Create Installment Plan
+                </button>
+              </form>
+            )}
+          </Formik>
         </Modal>
       )}
 
@@ -446,7 +588,14 @@ export default function MakePayment() {
                       </div>
                     </form>
                   </td>
-                  <td></td>
+                  <td>
+                    <button
+                      onClick={() => handleDirectModalFunction()}
+                      className="mx-2 rounded-md bg-blue-500 px-2  py-1 font-bold text-ajo_darkBlue hover:bg-ajo_orange"
+                    >
+                      Direct Debit Payment
+                    </button>
+                  </td>
                   <td></td>
                   <td></td>
                 </tr>

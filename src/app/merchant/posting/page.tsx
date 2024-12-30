@@ -36,7 +36,6 @@ import {
   Dispatch,
   SetStateAction,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import { CiExport } from "react-icons/ci";
@@ -1309,7 +1308,7 @@ const PostConfirmation = ({
     }
   }, []);
   // const confirmationRef = useRef<HTMLDivElement>(null);
-  
+
   // const handleDownload = () => {
 
   //   if (confirmationRef.current)
@@ -1325,7 +1324,6 @@ const PostConfirmation = ({
   //         pdf.save("certificate.pdf");
   //       });
   // };
-
 
   const handleDownload = () => {
     if (pdfBlob) {
