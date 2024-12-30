@@ -48,7 +48,7 @@ export default function Pricing() {
   const handleChange = (e: { target: { value: SetStateAction<string> } }) => {
     setReferralName(e.target.value); // Update the state when the input value changes
   };
-  console.log(referralName);
+  
   useEffect(() => {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);

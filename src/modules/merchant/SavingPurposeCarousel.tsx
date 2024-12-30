@@ -21,6 +21,7 @@ import {
   FaBookmark,
   FaChevronLeft,
   FaChevronRight,
+  FaRegBookmark,
   FaShareAlt,
 } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
@@ -328,19 +329,16 @@ const ProductCard = ({
         />
          <Link href={`/customer/savings-purpose/${product._id}`}>
         <div className="product-card">
-          <div className="checkbox-container" style={{ marginLeft: "8px" }}>
-            {/* <input
-            type="checkbox"
-            checked={isChecked}
-            onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
-          /> */}
-          </div>
-          <div className="image-section h-[40%]">
+          {/* <div className="checkbox-container" style={{ marginLeft: "8px" }}>
+       
+          </div> */}
+          <div className="image-section h-[70%]">
           <img
-              
+              // height={250}
+              // width={250}
               src={product.imageUrl[0]}
               alt={product.purposeName}
-              className="product-image p-4"
+              className="product-image p-4 "
             />
             <div
               className="icon-container"
@@ -357,8 +355,8 @@ const ProductCard = ({
               <FaBookmark className="icon" />
             </div>
           </div>
-          <div className="info-section bg-ajo_orange text-black">
-            <h3 className="product-name">{product.purposeName}</h3>
+          <div className="info-section pb-4 bg-ajo_orange text-black">
+            <h6 className="product-name capitalize">{truncateDescription(product.purposeName, 5)}</h6>
             <div
               className="product-price-row"
               style={{
@@ -381,9 +379,9 @@ const ProductCard = ({
                   htmlFor={`quantity-${product._id}`}
                   style={{ fontSize: "0.9rem", marginBottom: "4px" }}
                 >
-                  Qty
+                  Qty-{product.merchantQuantity}
                 </label>
-                {product.merchantQuantity}
+                
                 {/* <select id={`quantity-${product._id}`} className="quantity-dropdown">
               {renderQuantityOptions()}
             </select> */}
@@ -399,10 +397,11 @@ const ProductCard = ({
             >
               Read more
             </a>
-          </div>
+          </div>  
         </div>
         </Link>
       </div>
+    
     
   );
 };
