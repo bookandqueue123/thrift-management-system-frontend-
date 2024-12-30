@@ -333,6 +333,9 @@ export default function MakePayment() {
                                         </div>
                                     </form>
                                 </td>
+                                {/* <td>
+                                    <button>Direct Debit Option</button>
+                                </td> */}
                             </tr>
                         </>}
                     />
