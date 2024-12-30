@@ -72,11 +72,11 @@ import { useState } from "react";
     </div>
   )}
 
-<div className="flex overflow-x-auto space-x-6">
+<div className="md:flex md:overflow-x-auto  md:space-x-6">
   {testVideos.map((video) => (
     <div
       key={video.id}
-      className="flex-none bg-white shadow rounded-lg w-1/3"
+      className="py-4 flex-none bg-white shadow rounded-lg w-full md:w-1/3"
       style={{ minWidth: "33.333%" }}
     >
       <div
