@@ -335,6 +335,7 @@ const MutateUser = ({
 
   interface userProps {
     email: string;
+    password: string;
     phone: string;
     address: string;
     name: string;
@@ -343,6 +344,7 @@ const MutateUser = ({
   }
   const initialValues: userProps = {
     email: "",
+    password: "",
     phone: "",
     address: "",
     name: "",
@@ -357,6 +359,7 @@ const MutateUser = ({
     mutationFn: async (values: userProps) => {
       return client.post(`/api/user/create-superuser`, {
         name: values.name,
+        password: values.password,
         email: values.email,
         phoneNumber: values.phone,
         homeAddress: values.address,
@@ -462,6 +465,7 @@ const MutateUser = ({
       initialValues={initialValues}
       validationSchema={Yup.object({
         name: Yup.string().required("Required"),
+        password: Yup.string().required("Required"),
         email: Yup.string().required("Required").email("Invalid email address"),
         phone: Yup.string()
           .matches(
@@ -513,6 +517,26 @@ const MutateUser = ({
                 />
                 <ErrorMessage
                   name="name"
+                  component="div"
+                  className="text-xs text-red-500"
+                />
+              </div>
+
+              <div className="my-3">
+                <label
+                  htmlFor="password"
+                  className="m-0 text-xs font-medium text-ajo_darkBlue"
+                >
+                  Password
+                </label>
+                <Field
+                  onChange={handleChange}
+                  name="password"
+                  type="text"
+                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                />
+                <ErrorMessage
+                  name="password"
                   component="div"
                   className="text-xs text-red-500"
                 />
