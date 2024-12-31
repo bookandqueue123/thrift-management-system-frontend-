@@ -77,7 +77,7 @@ export default function SinglePurposePage() {
     }
     return `${((userBalance.total - userBalance.balance) / userBalance.total) * 100}%`;
   })();
-  
+
   return (
     <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
       <div className="mb-4 space-y-2">
@@ -198,12 +198,11 @@ export default function SinglePurposePage() {
                     Savings Progress
                   </h2>
                   <div className="relative mb-2 h-4 w-full overflow-hidden rounded-full bg-gray-300">
-                    
                     <div
                       style={{
                         width: progressWidth,
                       }}
-                        className="absolute left-0 top-0 h-full bg-blue-500"
+                      className="absolute left-0 top-0 h-full bg-blue-500"
                     >
                       {/* Content */}
                     </div>
