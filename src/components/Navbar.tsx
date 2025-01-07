@@ -724,7 +724,8 @@ export const SuperAdminSidebar = ({
 }) => {
   const { SignOut } = useAuth();
   const router = useRouter();
-
+  const user = useSelector(selectUser);
+  const { userPermissions, permissionsMap } = usePermissions();
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
   const [itemsDropdownIsOpen, setItemsDropdownIsOpen] = useState(false);
   const [subscriptionDropdownIsOpen, setSubscriptionDropdownIsOpen] =
@@ -740,6 +741,12 @@ export const SuperAdminSidebar = ({
   const merchantRoutes = [
     "dashboard",
     "organisation",
+    // user?.role === "superadmin"
+    //     ? "organisation"
+    //     : user?.role === "staff" &&
+    //         userPermissions.includes(permissionsMap["view-savings"])
+    //       ? "analytics"
+    //       : ""
     "customers",
     "group",
     "services",

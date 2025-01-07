@@ -21,12 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-      
-      </head>
-
       <body className={montserrat.className}>
-
         {/* <Provider store={store}> */}
         <TanstackProvider>
           <PreferredUrlProvider>
@@ -39,7 +34,6 @@ export default function RootLayout({
           </PreferredUrlProvider>
         </TanstackProvider>
         {/* </Provider> */}
-
       </body>
     </html>
   );

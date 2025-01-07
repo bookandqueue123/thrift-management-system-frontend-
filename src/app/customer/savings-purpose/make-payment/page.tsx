@@ -66,6 +66,7 @@ export default function MakePayment() {
     interval: "",
     startDate: "",
     endDate: "",
+    name: "ajibade",
   });
 
   useEffect(() => {
@@ -238,8 +239,23 @@ export default function MakePayment() {
           platformCharge,
         };
       } else {
-        paymentEndpoints = `${apiUrl}api/pay/flw/create-installment-plan`;
-        payload = directDebitValues;
+        paymentEndpoints = `${apiUrl}api/pay/flw/create-payment-plan`;
+        payload = {
+          ...directDebitValues,
+          environment,
+          paymentFor,
+          totalAmount: amount,
+          redirectURL,
+          email,
+          paymentDetails: Object.values(paymentDetails),
+          userId,
+          organisationId,
+          phoneNumber,
+          customerName,
+          accountNumber,
+          gatewayName,
+          platformCharge,
+        };
       }
 
       const response = await axios.post(
@@ -321,14 +337,19 @@ export default function MakePayment() {
               interval: "",
               startDate: "",
               endDate: "",
+              name: "ajibade",
+              email: "ajibadeemmanuel@gmail.com",
+              phoneNumber: "08012345678",
+              customerName: "Ajibade Emmanuel",
             }}
             onSubmit={async (values) => {
-              // const response = await fetch("/api/create-installment-plan", {
+              // const response = await fetch(`${apiUrl}api/create-payment-plan`, {
               //   method: "POST",
               //   headers: { "Content-Type": "application/json" },
               //   body: JSON.stringify(values),
               // });
               // const data = await response.json();
+              // console.log(data);
               setShowDirectDebitModal(false);
               setDirectDebitValues(values);
               setShowModal(true);
@@ -378,6 +399,7 @@ export default function MakePayment() {
                     className="w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select Interval</option>
+                    <option value="hourly">Hourly</option>
                     <option value="daily">Daily</option>
                     <option value="weekly">Weekly</option>
                     <option value="monthly">Monthly</option>
@@ -591,9 +613,9 @@ export default function MakePayment() {
                   <td>
                     <button
                       onClick={() => handleDirectModalFunction()}
-                      className="mx-2 rounded-md bg-blue-500 px-2  py-1 font-bold text-ajo_darkBlue hover:bg-ajo_orange"
+                      className="mx-2 rounded-md bg-ajo_orange px-2  py-1 font-bold text-ajo_darkBlue hover:bg-blue-500"
                     >
-                      Direct Debit Payment
+                      Direct Payment
                     </button>
                   </td>
                   <td></td>
