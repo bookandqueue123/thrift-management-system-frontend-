@@ -13,8 +13,9 @@ import AmountFormatter from "@/utils/AmountFormatter";
 import { daysBetweenDates, daysUntilDate } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { Formik } from "formik";
+import { ErrorMessage, Field, Formik } from "formik";
 import { useRouter } from "next/navigation";
+import Select from "react-select";
 
 import {
   JSXElementConstructor,
@@ -159,7 +160,8 @@ export default function MakePayment() {
 
   const GoToPayment = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    setDebitMode("direct");
+    setDebitMode("onetime");
+    console.log(debitMode);
     if (Object.keys(paymentDetails).length === 0) {
       setShowModal(false);
       setErrors({ general: "No payment details provided." });
@@ -258,6 +260,7 @@ export default function MakePayment() {
         };
       }
 
+      console.log(debitMode, payload, paymentEndpoints);
       const response = await axios.post(
         `${paymentEndpoints}`,
 
@@ -265,7 +268,10 @@ export default function MakePayment() {
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
+      console.log(response.data);
+
       if (response.data.status === "success") {
+        console.log("inside if");
         window.location.href = response.data.data.link;
       }
     } catch (error) {
@@ -283,13 +289,23 @@ export default function MakePayment() {
     setDebitMode("direct");
     setShowDirectDebitModal(true);
   }
+  const { data: AllBanks, isLoading: isLoadingBanks } = useQuery({
+    queryKey: ["banks"],
+    queryFn: async () => {
+      return client
+        .get("api/pay/flw/get-banks")
+        .then((response) => response.data)
+        .catch((error) => {
+          throw error;
+        });
+    },
+  });
 
-  // if (!token) {
-  //   return null;
-  // }
-  // if (!token) {
-  //   router.push(`/signin`);
-  // }
+  const bankOptions =
+    AllBanks?.map((bank: { name: any; code: any }) => ({
+      label: bank.name,
+      value: bank.code,
+    })) || [];
   return (
     <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
       {showModal && (
@@ -333,6 +349,9 @@ export default function MakePayment() {
         >
           <Formik
             initialValues={{
+              accountNumber: "",
+              bankName: "",
+              bankCode: "",
               amount: "",
               interval: "",
               startDate: "",
@@ -349,13 +368,13 @@ export default function MakePayment() {
               //   body: JSON.stringify(values),
               // });
               // const data = await response.json();
-              // console.log(data);
+              console.log(values);
               setShowDirectDebitModal(false);
               setDirectDebitValues(values);
               setShowModal(true);
             }}
           >
-            {({ values, handleChange, handleSubmit }) => (
+            {({ values, setFieldValue, handleChange, handleSubmit }) => (
               <form
                 onSubmit={handleSubmit}
                 className="mx-auto max-w-md space-y-6 rounded-lg bg-white p-6 shadow-md"
@@ -439,6 +458,56 @@ export default function MakePayment() {
                     value={values.endDate}
                     onChange={handleChange}
                     className="w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="accountNumber">Account Number</label>
+                  <Field
+                    name="accountNumber"
+                    type="text"
+                    className="w-full rounded border p-2"
+                  />
+                  <ErrorMessage
+                    name="accountNumber"
+                    component="div"
+                    className="text-sm text-red-500"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="bankCode">Bank</label>
+                  <Select
+                    id="bankName"
+                    name="bankName"
+                    options={bankOptions}
+                    isLoading={isLoadingBanks}
+                    onChange={(option) => {
+                      setFieldValue("bankName", option);
+                      setFieldValue("bankCode", option);
+                    }}
+                    value={values.bankName}
+                    placeholder="Select a bank"
+                    isSearchable
+                  />
+                  <ErrorMessage
+                    name="bankCode"
+                    component="div"
+                    className="text-sm text-red-500"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="email">Email</label>
+                  <Field
+                    name="email"
+                    type="email"
+                    className="w-full rounded border p-2"
+                  />
+                  <ErrorMessage
+                    name="email"
+                    component="div"
+                    className="text-sm text-red-500"
                   />
                 </div>
 

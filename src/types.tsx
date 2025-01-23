@@ -302,6 +302,7 @@ export interface UpdateKycProps {
   otherName?: any;
   lastName?: any;
   firstName?: any;
+  createdBy?: string;
   country: string;
   state: string;
   lga: string;
