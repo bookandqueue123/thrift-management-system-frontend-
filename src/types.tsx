@@ -9,6 +9,7 @@ export type customer = {
   organisationName?: string;
   _id: string;
   firstName: string;
+  createdBy: string;
   lastName: string;
   otherName: string;
   email: string;

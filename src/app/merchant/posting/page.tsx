@@ -75,22 +75,22 @@ const Posting = () => {
   const { userPermissions, permissionsLoading, permissionsMap } =
     usePermissions();
 
-  // const { data: allSavings, isLoading: isLoadingAllSavings } = useQuery({
-  //   queryKey: ["allSavings"],
-  //   staleTime: 5000,
-  //   queryFn: async () => {
-  //     return client
-  //       .get(`/api/saving/get-savings?organisation=${organizationId}`, config)
-  //       .then((response) => {
-  //         setFilteredSavings(response.data.savings);
+  const { data: allSavings, isLoading: isLoadingAllSavings } = useQuery({
+    queryKey: ["allSavings"],
+    staleTime: 5000,
+    queryFn: async () => {
+      return client
+        .get(`/api/saving/get-savings?organisation=${organizationId}`, config)
+        .then((response) => {
+          // setFilteredSavings(response.data.savings);
 
-  //         return response.data;
-  //       })
-  //       .catch((error: AxiosError<any, any>) => {
-  //         throw error;
-  //       });
-  //   },
-  // });
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          throw error;
+        });
+    },
+  });
 
   const { data: allPostings, isLoading: isLoadingAllPostings } = useQuery({
     queryKey: ["all postings"],
@@ -330,7 +330,7 @@ const Posting = () => {
                 ) : (
                   <PostingForm
                     onSubmit={setModalContent}
-                    Savings={allPostings}
+                    Savings={allSavings}
                     setPostingResponse={setPostingResponse}
                     setCustomerAcctNo={setCustomerAcctNumber}
                   />

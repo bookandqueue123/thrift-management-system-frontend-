@@ -48,7 +48,7 @@ export default function Pricing() {
   const handleChange = (e: { target: { value: SetStateAction<string> } }) => {
     setReferralName(e.target.value); // Update the state when the input value changes
   };
-  
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
@@ -224,7 +224,7 @@ export default function Pricing() {
     promoCode: "",
   };
   return (
-    <div className="min-h-screen w-full border border-red-500 bg-ajo_darkBlue  px-4 py-12 md:px-16">
+    <div className="min-h-screen w-full  bg-ajo_darkBlue  px-4 py-12 md:px-16">
       {showModal ? (
         <Modal title="Referral Name" setModalState={setShowModal}>
           <div className="mx-auto w-full max-w-md">
