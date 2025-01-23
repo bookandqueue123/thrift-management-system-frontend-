@@ -396,11 +396,12 @@ const Posting = () => {
                 "Email Address",
                 "Phone Number",
                 "Time",
-                "State",
-                "Local Govt Area",
+                "Date",
+                // "State",
+                // "Local Govt Area",
                 "Posted By",
-                "Payment Mode",
-                "Status",
+                // "Payment Mode",
+                // "Status",
                 "Start Date",
                 "End Date",
                 "Action",
@@ -432,22 +433,22 @@ const Posting = () => {
                     {savings.date ?? "-----"}
                   </td>
 
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {savings.state ?? "----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {savings.lga ?? "----"}
-                  </td>
+                  </td> */}
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {user.role === "organisation" ? "Admin" : ""}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     Payment Mode
-                  </td>
+                  </td> */}
 
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {savings.isPaid ?? "----"}
-                  </td>
+                  </td> */}
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {extractDate(savings.startDate) ?? "----"}
                   </td>
