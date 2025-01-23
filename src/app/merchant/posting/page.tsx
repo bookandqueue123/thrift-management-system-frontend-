@@ -75,14 +75,31 @@ const Posting = () => {
   const { userPermissions, permissionsLoading, permissionsMap } =
     usePermissions();
 
-  const { data: allSavings, isLoading: isLoadingAllSavings } = useQuery({
-    queryKey: ["allSavings"],
+  // const { data: allSavings, isLoading: isLoadingAllSavings } = useQuery({
+  //   queryKey: ["allSavings"],
+  //   staleTime: 5000,
+  //   queryFn: async () => {
+  //     return client
+  //       .get(`/api/saving/get-savings?organisation=${organizationId}`, config)
+  //       .then((response) => {
+  //         setFilteredSavings(response.data.savings);
+
+  //         return response.data;
+  //       })
+  //       .catch((error: AxiosError<any, any>) => {
+  //         throw error;
+  //       });
+  //   },
+  // });
+
+  const { data: allPostings, isLoading: isLoadingAllPostings } = useQuery({
+    queryKey: ["all postings"],
     staleTime: 5000,
     queryFn: async () => {
       return client
-        .get(`/api/saving/get-savings?organisation=${organizationId}`, config)
+        .get(`/api/saving/get-postings?organisation=${organizationId}`, config)
         .then((response) => {
-          setFilteredSavings(response.data.savings);
+          setFilteredSavings(response.data);
 
           return response.data;
         })
@@ -95,8 +112,8 @@ const Posting = () => {
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
 
-    if (allSavings) {
-      const filtered = allSavings.savings.filter(
+    if (allPostings) {
+      const filtered = allPostings.filter(
         (item: { [x: string]: any; accountNumber: any }) =>
           String(item.user.accountNumber).includes(String(e.target.value)),
       );
@@ -106,21 +123,29 @@ const Posting = () => {
   };
 
   const handleDateFilter = () => {
-    // Filter the data based on the date range
-    if (allSavings) {
-      const filtered = allSavings.savings.filter(
-        (item: { createdAt: string | number | Date }) => {
-          const itemDate = new Date(item.createdAt); // Convert item date to Date object
-          const startDateObj = new Date(fromDate);
-          const endDateObj = new Date(toDate);
+    // Parse fromDate and toDate as Date objects
+    const from = new Date(fromDate);
+    const to = new Date(toDate);
 
-          return itemDate >= startDateObj && itemDate <= endDateObj;
-        },
-      );
-
-      // Update the filtered data state
-      setFilteredSavings(filtered);
+    // Ensure the dates are valid
+    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+      console.error("Invalid date range provided");
+      return;
     }
+
+    console.log(allPostings);
+    // Filter the original data instead of filteredSavings to avoid overwriting issues
+    const filtered = allPostings.filter((item: { date: string }) => {
+      const itemDate = new Date(item.date); // Convert item.date to a Date object
+      console.log({ itemDate, from, to }); // Debugging logs
+      return itemDate >= from && itemDate <= to;
+    });
+
+    // Debugging logs
+    console.log("Filtered Data:", filtered);
+
+    // Update the state with filtered results
+    setFilteredSavings(filtered);
   };
 
   const handleFromDateChange = (event: {
@@ -141,9 +166,10 @@ const Posting = () => {
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
+
   let totalPages = 0;
-  if (allSavings) {
-    totalPages = Math.ceil(allSavings.savings.length / PAGE_SIZE);
+  if (allPostings) {
+    totalPages = Math.ceil(allPostings.length / PAGE_SIZE);
   }
 
   const goToPreviousPage = () => {
@@ -304,7 +330,7 @@ const Posting = () => {
                 ) : (
                   <PostingForm
                     onSubmit={setModalContent}
-                    Savings={allSavings}
+                    Savings={allPostings}
                     setPostingResponse={setPostingResponse}
                     setCustomerAcctNo={setCustomerAcctNumber}
                   />
@@ -382,34 +408,35 @@ const Posting = () => {
               content={paginatedSavings?.map((savings, index) => (
                 <tr className="" key={index}>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings.user.groupName ??
-                      savings.user.firstName + " " + savings.user.lastName ??
-                      "----"}
+                    {savings.groupName ?? savings.name ?? "----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings.user.accountNumber ?? "----"}
+                    {savings.accountNumber ?? "----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings._id ?? "-----"}
+                    {savings.transactionId ?? "-----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings.purposeName ?? "-----"}
+                    {savings.purpose ?? "-----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings.user.email ?? "----"}
+                    {savings.email ?? "----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings.user.phoneNumber ?? "----"}
+                    {savings.phoneNumber ?? "----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {extractTime(savings.updatedAt ?? "-----")}
+                    {savings.time ?? "-----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {savings.date ?? "-----"}
                   </td>
 
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings.user.state ?? "----"}
+                    {savings.state ?? "----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings.user.lga ?? "----"}
+                    {savings.lga ?? "----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {user.role === "organisation" ? "Admin" : ""}

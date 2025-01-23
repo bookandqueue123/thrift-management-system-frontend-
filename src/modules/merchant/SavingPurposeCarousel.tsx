@@ -11,7 +11,6 @@ import {
 import { PurposeProps } from "@/types";
 import AmountFormatter from "@/utils/AmountFormatter";
 import { useQuery } from "@tanstack/react-query";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
@@ -21,7 +20,6 @@ import {
   FaBookmark,
   FaChevronLeft,
   FaChevronRight,
-  FaRegBookmark,
   FaShareAlt,
 } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
@@ -184,17 +182,18 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
     dispatch(updateSelectedProducts([])); // Clear the Redux state too
   };
   const pathname = usePathname();
-  
 
   return (
     <div>
       <div>
         {/* <button onClick={clearSelectedProducts}>Clear Selected Products</button> */}
-        <div className={`text-extrabold mb-4 text-2xl ${pathname === "/" ? "text-black": 'text-white'}`}>
+        <div
+          className={`text-extrabold mb-4 text-2xl ${pathname === "/" ? "text-black" : "text-white"}`}
+        >
           Total Selected Item(s):
           <span
             // onClick={() => router.push(`/customer/savings-purpose/make-payment`)}
-            className={`ml-2 cursor-pointer border-2 border-white px-4 text-xl ${pathname === "/" ? "text-black": 'text-white'} hover:text-blue-500`}
+            className={`ml-2 cursor-pointer border-2 border-white px-4 text-xl ${pathname === "/" ? "text-black" : "text-white"} hover:text-blue-500`}
           >
             {selectedProducts?.length}
           </span>
@@ -202,7 +201,7 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
         <CustomButton
           label="Pay for Selected Item(s)"
           type="button"
-          style={`${pathname === '/' ? 'bg-[#EAAB40]' : 'bg-white'} text-bold mb-2 text-[15px] py-3 px-2 text-black hover:text-white hover:bg-[#EAAB40] rounded-md flex-1`}
+          style={`${pathname === "/" ? "bg-[#EAAB40]" : "bg-white"} text-bold mb-2 text-[15px] py-3 px-2 text-black hover:text-white hover:bg-[#EAAB40] rounded-md flex-1`}
           onButtonClick={() =>
             router.push(`/customer/savings-purpose/make-payment`)
           }
@@ -220,18 +219,20 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
           return (
             <div
               key={categoryName}
-   
               style={{
-                
                 borderRadius: index === 0 ? "10px" : "0",
-                background: pathname === "/" ? "none" : 
-                  index === 0
-                    ? "linear-gradient(to bottom, #EAAB40 50%, transparent 50%)"
-                    : "none",
+                background:
+                  pathname === "/"
+                    ? "none"
+                    : index === 0
+                      ? "linear-gradient(to bottom, #EAAB40 50%, transparent 50%)"
+                      : "none",
               }}
             >
               <div className="flex items-center pl-4">
-                <h2 className={`text-bold ${pathname === "/" ? "text-black": 'text-white'}`}>
+                <h2
+                  className={`text-bold ${pathname === "/" ? "text-black" : "text-white"}`}
+                >
                   Category: {categoryName}
                 </h2>
                 <input
@@ -247,7 +248,7 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
                 />
               </div>
               <div className="scroll-container">
-                <ScrollMenu >
+                <ScrollMenu>
                   {categoryProducts.map((purpose: any) => (
                     <ProductCard
                       key={purpose._id}
@@ -319,21 +320,20 @@ const ProductCard = ({
   };
 
   return (
-   
-      <div className="">
-        <input
-          className="ml-4"
-          type="checkbox"
-          checked={isChecked}
-          onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
-        />
-         <Link href={`/customer/savings-purpose/${product._id}`}>
+    <div className="">
+      <input
+        className="ml-4"
+        type="checkbox"
+        checked={isChecked}
+        onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
+      />
+      <Link href={`/customer/savings-purpose/${product._id}`}>
         <div className="product-card">
           {/* <div className="checkbox-container" style={{ marginLeft: "8px" }}>
        
           </div> */}
           <div className="image-section h-[70%]">
-          <img
+            <img
               // height={250}
               // width={250}
               src={product.imageUrl[0]}
@@ -355,8 +355,10 @@ const ProductCard = ({
               <FaBookmark className="icon" />
             </div>
           </div>
-          <div className="info-section pb-4 bg-ajo_orange text-black">
-            <h6 className="product-name capitalize">{truncateDescription(product.purposeName, 5)}</h6>
+          <div className="info-section bg-ajo_orange pb-4 text-black">
+            <h6 className="product-name capitalize">
+              {truncateDescription(product.purposeName, 5)}
+            </h6>
             <div
               className="product-price-row"
               style={{
@@ -381,7 +383,7 @@ const ProductCard = ({
                 >
                   Qty-{product.merchantQuantity}
                 </label>
-                
+
                 {/* <select id={`quantity-${product._id}`} className="quantity-dropdown">
               {renderQuantityOptions()}
             </select> */}
@@ -397,16 +399,12 @@ const ProductCard = ({
             >
               Read more
             </a>
-          </div>  
+          </div>
         </div>
-        </Link>
-      </div>
-    
-    
+      </Link>
+    </div>
   );
 };
-
-
 
 interface categoryToSHowProps {
   categoryToshow: string;
@@ -416,17 +414,16 @@ interface categoryToSHowProps {
 const App = ({ categoryToshow, merchantNumber }: categoryToSHowProps) => {
   const organisationId = useSelector(selectOrganizationId);
   const user = useSelector(selectUser);
-  const pathname = usePathname()
+  const pathname = usePathname();
   // const [filteredPurposes, setFilteredPurposes] = useState([]);
 
   const { client } = useAuth();
 
-  let url = ""
-  if(pathname === "/"){
-    url = `/api/purpose/getallpurposes`
-  }
-  else{
-    url = `/api/purpose`
+  let url = "";
+  if (pathname === "/") {
+    url = `/api/purpose/getallpurposes`;
+  } else {
+    url = `/api/purpose`;
   }
   const {
     data: allPurpose,
@@ -452,7 +449,7 @@ const App = ({ categoryToshow, merchantNumber }: categoryToSHowProps) => {
     isLoading: isLoadingAllPurposeGeneral,
     refetch: refetchAllPurposeGeneral,
   } = useQuery({
-    queryKey: ["allPurposeGeneral", ],
+    queryKey: ["allPurposeGeneral"],
     queryFn: async () => {
       return client
         .get(`${`/api/purpose/getallpurposes`}`, {})
@@ -466,7 +463,7 @@ const App = ({ categoryToshow, merchantNumber }: categoryToSHowProps) => {
     staleTime: 5000,
   });
 
-  console.log(allPurpose)
+  console.log(allPurpose);
 
   const inhousePurpose = allPurpose?.filter(
     (purpose: { visibility: string; assignedCustomers: string | string[] }) =>
