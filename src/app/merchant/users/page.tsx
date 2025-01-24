@@ -455,7 +455,7 @@ const MutateUser = ({
     (customer | undefined)[]
   >([]);
   const { data: userInfo, isLoading: isLoadingUserInfo } = useQuery({
-    queryKey: ["userInfo"],
+    queryKey: ["user Info"],
     queryFn: async () => {
       return client
         .get(`/api/user/${userToBeEdited}`)
@@ -468,6 +468,7 @@ const MutateUser = ({
     },
   });
 
+  console.log(userInfo);
   const initialValues: mutateUserProps =
     actionToTake === "edit-user"
       ? {
@@ -492,8 +493,10 @@ const MutateUser = ({
           guarantor2Email: userInfo?.guarantor2?.email ?? "",
           guarantor2Phone: userInfo?.guarantor2?.phoneNumber ?? "",
           guarantor2Address: userInfo?.guarantor2?.homeAddress ?? "",
-          assignedCustomers: userInfo?.assignedUser ?? [],
-          roles: userInfo?.roles ?? [],
+          assignedCustomers: userInfo?.assignedUser
+            ? userInfo.assignedUser.map((user) => user._id)
+            : [],
+          roles: userInfo?.roles[0]?._id ?? "",
         }
       : {
           firstName: "",
@@ -521,13 +524,14 @@ const MutateUser = ({
           roles: [],
         };
   const [assignedCustomerIds, setAssignedCustomerIds] = useState<string[]>([]);
-
+  console.log(assignedCustomerIds);
   useEffect(() => {
     if (actionToTake === "edit-user") {
       if (userInfo?.assignedUser) {
         const customerIds = userInfo?.assignedUser?.map(
           (customer: { _id: any }) => customer._id,
         );
+
         setAssignedCustomerIds(customerIds || []);
       }
     } else {
@@ -856,11 +860,11 @@ const MutateUser = ({
         onSubmit={(values, { setSubmitting }) => {
           setTimeout(() => {
             if (actionToTake === "create-user") {
-              console.log("creating user.....................");
+              console.log("creating user.....................", values);
 
-              createUser(values);
+              // createUser(values);
             } else {
-              console.log("editing user.....................");
+              console.log("editing user.....................", values);
               editUser(values);
             }
 
@@ -1897,6 +1901,7 @@ const MutateUser = ({
                               ...assignedCustomers,
                               e.target.value,
                             ];
+                            console.log(updatedAssignedCustomers);
                             setAssignedCustomerIds(updatedAssignedCustomers);
                           }
                         }}
@@ -2058,7 +2063,7 @@ const MutateUser = ({
 const ViewUser = ({ userId }: { userId: string }) => {
   const { client } = useAuth();
   const { data: userInfo, isLoading: isLoadingUserInfo } = useQuery({
-    queryKey: ["userInfo"],
+    queryKey: ["view user Info"],
     queryFn: async () => {
       return client
         .get(`/api/user/${userId}`)

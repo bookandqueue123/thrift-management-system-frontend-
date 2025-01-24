@@ -270,9 +270,17 @@ export default function MakePayment() {
 
       console.log(response.data);
 
-      if (response.data.status === "success") {
-        console.log("inside if");
-        window.location.href = response.data.data.link;
+      if (debitMode === "onetime") {
+        if (response.data.status === "success") {
+          console.log("inside if");
+          window.location.href = response.data.data.link;
+        } else {
+          console.log(response.data);
+          // window.location.href = "/customer/savings-purpose/make-payment/mandate-autorize";
+        }
+      } else {
+        console.log(response.data.data);
+        window.location.href = `/customer/savings-purpose/make-payment/mandate-autorize?accountNumber=${response.data.data.mandate_consent.account_number}&bankName=${response.data.data.mandate_consent.bank_name}&amount=${response.data.data.mandate_consent.amount}`;
       }
     } catch (error) {
       console.error(error);
