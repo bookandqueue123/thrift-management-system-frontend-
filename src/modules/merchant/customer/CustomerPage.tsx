@@ -39,7 +39,6 @@ import {
 import { CiExport } from "react-icons/ci";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
-import ninslip from "../../../../public/NIN.svg";
 
 const initialValues: CustomerSignUpProps = {
   firstName: "",
@@ -479,6 +478,7 @@ const Customers = () => {
                               setModalToShow("view");
                               setCustomerToBeEdited(customer._id);
                               console.log("View Customer");
+                              console.log(modalToShow);
                             },
                             () => {
                               setModalToShow("edit");
@@ -609,7 +609,7 @@ export const SavingsSettings = ({
 }: ShowModalProps) => {
   const { client } = useAuth();
   const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
-    queryKey: ["customerInfo"],
+    queryKey: ["customer Info savings"],
     queryFn: async () => {
       return client
         .get(`/api/user/${customerId}`)
@@ -1026,9 +1026,7 @@ export const ViewCustomer = ({
     <div>
       <div className="mx-auto mt-8 w-[100%] overflow-hidden rounded-md bg-white p-4 shadow-md">
         {/* Image and First Batch of Details Section */}
-        <p className="mb-8 mt-2 text-xl font-bold text-white">
-          Customer Details
-        </p>
+        <p className="mb-8 mt-2 text-xl font-bold ">Customer Details</p>
         <div className="rounded-lg md:border">
           <div className="p-6 md:flex ">
             <div className="mr-6 md:w-1/6 ">
@@ -1042,7 +1040,7 @@ export const ViewCustomer = ({
             </div>
             <div className="flex w-5/6 flex-wrap md:ml-4">
               <div className="mb-2 mt-2 w-full md:w-1/2">
-                <p className="font-semibold text-white">
+                <p className="font-semibold ">
                   Name:{" "}
                   <span className="font-normal">
                     {customerInfo ? customerInfo.firstName : ""}{" "}
@@ -1052,7 +1050,7 @@ export const ViewCustomer = ({
                 {/* <p className="text-gray-900">John Doe</p> */}
               </div>
               <div className="mb-2 w-full md:w-1/2  md:pl-8">
-                <p className="font-semibold text-white">
+                <p className="font-semibold ">
                   Phone Number:{" "}
                   <span className="font-normal md:pl-8">
                     {customerInfo ? customerInfo.phoneNumber : ""}
@@ -1061,7 +1059,7 @@ export const ViewCustomer = ({
                 {/* <p className="text-gray-900">123-456-7890</p> */}
               </div>
               <div className="mb-2 w-full md:w-1/2">
-                <p className="font-semibold text-white">
+                <p className="font-semibold ">
                   Email Address:{" "}
                   <span className="font-normal">
                     {customerInfo ? customerInfo.email : ""}
@@ -1070,7 +1068,7 @@ export const ViewCustomer = ({
                 {/* <p className="text-gray-900">johndoe@example.com</p> */}
               </div>
               <div className="mb-2 w-full md:w-1/2 md:pl-8">
-                <p className="font-semibold text-white">
+                <p className="font-semibold ">
                   Country of Residence:{" "}
                   <span className="font-normal">
                     {customerInfo ? customerInfo.country : "N/A"}
@@ -1079,7 +1077,7 @@ export const ViewCustomer = ({
                 {/* <p className="text-gray-900">United States</p> */}
               </div>
               <div className="mb-4 w-full">
-                <p className="font-semibold text-white">
+                <p className="font-semibold ">
                   Home Address:{" "}
                   <span className="font-normal">
                     {customerInfo ? customerInfo.homeAddress : "N/A"}
@@ -1094,28 +1092,28 @@ export const ViewCustomer = ({
           <div className="p-6 ">
             <div className="mb-4 flex flex-wrap">
               <div className="w-full sm:w-1/3">
-                <p className="font-semibold text-white">
+                <p className="font-semibold ">
                   State:{" "}
                   <span className="font-normal">
-                    {customerInfo ? customerInfo.state : "N/A"}
+                    {customerInfo?.state || "N/A"}
                   </span>
                 </p>
                 {/* <p className="text-gray-900">California</p> */}
               </div>
               <div className="w-full sm:w-1/3">
-                <p className="font-semibold text-white">
+                <p className="font-semibold ">
                   LGA:{" "}
                   <span className="font-normal">
-                    {customerInfo ? customerInfo.lga : "N/A"}
+                    {customerInfo?.lga || "N/A"}
                   </span>
                 </p>
                 {/* <p className="text-gray-900">Local Government Area</p> */}
               </div>
               <div className="w-full sm:w-1/3">
-                <p className="font-semibold text-white">
+                <p className="font-semibold ">
                   City:{" "}
                   <span className="font-normal">
-                    {customerInfo ? customerInfo.city : "N/A"}
+                    {customerInfo?.city || "N/A"}
                   </span>
                 </p>
                 {/* <p className="text-gray-900">City Name</p> */}
@@ -1123,19 +1121,19 @@ export const ViewCustomer = ({
             </div>
             <div className="mb-4 flex flex-wrap">
               <div className="w-full sm:w-1/3">
-                <p className="font-semibold text-white">
+                <p className="font-semibold ">
                   NIN:{" "}
                   <span className="font-normal">
-                    {customerInfo ? customerInfo.nin : "N/A"}
+                    {customerInfo?.nin || "N/A"}
                   </span>
                 </p>
                 {/* <p className="text-gray-900">1234567890</p> */}
               </div>
               <div className="w-full sm:w-1/3">
-                <p className="font-semibold text-white">
+                <p className="font-semibold ">
                   BVN:{" "}
                   <span className="font-normal">
-                    {customerInfo ? customerInfo.bvn : "N/A"}
+                    {customerInfo?.bvn || "N/A"}
                   </span>
                 </p>
                 {/* <p className="text-gray-900">1234567890</p> */}
@@ -1144,7 +1142,7 @@ export const ViewCustomer = ({
           </div>
         </div>
 
-        <div className=" mt-8 rounded-lg text-white">
+        <div className=" mt-8 rounded-lg ">
           <div className="md:flex ">
             <div className="w-[60%] rounded-lg p-6 md:border">
               <p className="mb-8 mt-2 text-xl font-bold">Next of Kin Details</p>
@@ -1154,7 +1152,7 @@ export const ViewCustomer = ({
                   <p className="font-bold">
                     Name:{" "}
                     <span className="font-normal">
-                      {customerInfo ? customerInfo.nok : "N/A"}
+                      {customerInfo?.nok || "N/A"}
                     </span>
                   </p>
                   {/* <p className="text-gray-900">John Doe</p> */}
@@ -1164,7 +1162,7 @@ export const ViewCustomer = ({
                   <p className=" font-bold">
                     Phone Number:{" "}
                     <span className="pl-8 font-normal">
-                      {customerInfo ? customerInfo.nokPhone : "N/A"}
+                      {customerInfo?.nokPhone || "N/A"}
                     </span>
                   </p>
                   {/* <p className="text-gray-900">123-456-7890</p> */}
@@ -1174,7 +1172,7 @@ export const ViewCustomer = ({
                   <p className=" font-bold">
                     Relationship:{" "}
                     <span className="pl-8 font-normal">
-                      {customerInfo ? customerInfo.nokRelationship : "N/A"}
+                      {customerInfo?.nokRelationship || "N/A"}
                     </span>
                   </p>
                   {/* <p className="text-gray-900">123-456-7890</p> */}
@@ -1197,7 +1195,7 @@ export const ViewCustomer = ({
 
               <div className="">
                 <Image
-                  src={customerInfo?.meansOfIDPhoto ?? ninslip}
+                  src={customerInfo?.meansOfIDPhoto ?? ""}
                   alt="Customer"
                   width={270}
                   height={165}
@@ -1218,6 +1216,7 @@ export const EditCustomer = ({
   content,
   closeModal,
 }: ShowModalProps) => {
+  console.log(123456);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -1232,7 +1231,7 @@ export const EditCustomer = ({
 
   const { client } = useAuth();
   const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
-    queryKey: ["customerInfo"],
+    queryKey: ["customer Info"],
     queryFn: async () => {
       return client
         .get(`/api/user/${customerId}`)
@@ -1245,12 +1244,13 @@ export const EditCustomer = ({
     },
   });
 
+  console.log(customerInfo);
   const {
     data: organizations,
     isLoading: isUserLoading,
     isError: getGroupError,
   } = useQuery({
-    queryKey: ["allOrganizations"],
+    queryKey: ["all Organizations edit"],
     queryFn: async () => {
       return client
         .get(`/api/user?role=organisation`, {})
@@ -1359,6 +1359,9 @@ export const EditCustomer = ({
       }
     }
   }, [selectedCountry, selectedState]);
+  if (isLoadingCustomerInfo) {
+    return <div className="text-white">Loading...</div>;
+  }
   return (
     <div className="mx-auto mt-8 w-[100%]  rounded-md  p-4 ">
       <div>
@@ -1379,8 +1382,8 @@ export const EditCustomer = ({
               organisation: customerInfo?.organisation,
               meansOfIDPhoto: null,
               photo: null,
-              nin: customerInfo?.nin,
-              bvn: customerInfo?.bvn,
+              nin: customerInfo?.nin || "",
+              bvn: customerInfo?.bvn || "",
               ninslip: null,
               nok: "",
               nokRelationship: "",
@@ -1404,6 +1407,7 @@ export const EditCustomer = ({
               organisation: Yup.string().optional(),
             })}
             onSubmit={(values, { setSubmitting }) => {
+              console.log(values);
               updateUserInfo(values);
               setTimeout(() => {
                 setShowSuccessToast(false);
