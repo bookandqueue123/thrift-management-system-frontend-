@@ -509,7 +509,7 @@ const MutateUser = ({
     isLoading: isLoadingAllPurpose,
     refetch: editingPurposeRefetched,
   } = useQuery({
-    queryKey: ["allPurpose"],
+    queryKey: ["single Purpose"],
     queryFn: async () => {
       return client
         .get(`/api/purpose/${purposeToBeEdited}`, {})
@@ -1746,7 +1746,7 @@ const MutateUser = ({
                   formik.setFieldValue("imageUrl", file); // Handle file input
                 }
               }}
-              accept="application/pdf, .jpg, .png"
+              // accept="application/pdf, .jpg, .png .mp4"
             />
             <div className="flex flex-col items-center justify-center">
               <Image

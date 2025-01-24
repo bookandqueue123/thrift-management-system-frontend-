@@ -724,7 +724,8 @@ export const SuperAdminSidebar = ({
 }) => {
   const { SignOut } = useAuth();
   const router = useRouter();
-
+  const user = useSelector(selectUser);
+  const { userPermissions, permissionsMap } = usePermissions();
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
   const [itemsDropdownIsOpen, setItemsDropdownIsOpen] = useState(false);
   const [subscriptionDropdownIsOpen, setSubscriptionDropdownIsOpen] =
@@ -740,6 +741,12 @@ export const SuperAdminSidebar = ({
   const merchantRoutes = [
     "dashboard",
     "organisation",
+    // user?.role === "superadmin"
+    //     ? "organisation"
+    //     : user?.role === "staff" &&
+    //         userPermissions.includes(permissionsMap["view-savings"])
+    //       ? "analytics"
+    //       : ""
     "customers",
     "group",
     "services",
@@ -912,20 +919,20 @@ export const SuperAdminSidebar = ({
                 {label === "settings" && settingsDropdownIsOpen && (
                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
                     <Link
-                      href={`/merchant/settings/location`}
+                      href={`#`}
                       className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
                     >
                       location settings
                     </Link>
                     <Link
-                      href="/merchant/settings/group"
+                      href="#"
                       className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
                     >
                       group settings
                     </Link>
 
                     <Link
-                      href="/merchant/settings"
+                      href="#"
                       className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
                     >
                       Savings settings

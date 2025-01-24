@@ -7,12 +7,14 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import PurposeCarousel from "@/modules/merchant/SavingPurposeCarousel";
 import {
   selectOrganizationId,
+  selectUser,
   updateSelectedProducts,
 } from "@/slices/OrganizationIdSlice";
 import { useQuery } from "@tanstack/react-query";
 import { SetStateAction, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 export default function Page() {
+
   const dispatch = useDispatch();
   const organisationId = useSelector(selectOrganizationId);
   const [mercantNumber, setMerchantNumber] = useState("");

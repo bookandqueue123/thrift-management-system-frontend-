@@ -40,5 +40,6 @@ export default function Home() {
     );
   }
 
-  return homePageToShow === "finkia" ? <HomePage /> : <Landing />;
+  // return homePageToShow === "finkia" ? <HomePage /> : <Landing />;
+  return homePageToShow === "finkia" ? <HomePage /> : <HomePage/>;
 }
