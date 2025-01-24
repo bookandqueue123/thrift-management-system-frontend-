@@ -116,17 +116,55 @@ const Posting = () => {
     if (allPostings) {
       const filtered = allPostings.filter(
         (item: { [x: string]: any; accountNumber: any }) =>
-          String(item.user.accountNumber).includes(String(e.target.value)),
+          String(item.name).includes(String(e.target.value)),
       );
       // Update the filtered data state
       setFilteredSavings(filtered);
     }
   };
 
+  // const handleDateFilter = (toDate: Date) => {
+  //   // Parse fromDate and toDate as Date objects
+  //   const from = new Date(fromDate);
+  //   const to = new Date(toDate);
+
+  //   console.log(toDate);
+  //   console.log(from);
+  //   console.log(to);
+  //   // Ensure the dates are valid
+  //   if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+  //     console.error("Invalid date range provided");
+  //     return;
+  //   }
+
+  //   // Filter the original data instead of filteredSavings to avoid overwriting issues
+  //   const filtered = allPostings.filter((item: { date: string }) => {
+  //     const itemDate = new Date(item.date); // Convert item.date to a Date object
+  //     console.log({ itemDate, from, to }, itemDate >= from, itemDate <= to); // Debugging logs
+  //     return itemDate >= from && itemDate <= to;
+  //   });
+
+  //   // Debugging logs
+
+  //   // Update the state with filtered results
+  //   setFilteredSavings(filtered);
+  // };
+
+  const handleResetButton = () => {
+    handleDateFilter();
+  };
   const handleDateFilter = () => {
     // Parse fromDate and toDate as Date objects
     const from = new Date(fromDate);
     const to = new Date(toDate);
+
+    // Normalize from and to dates to midnight
+    from.setHours(0, 0, 0, 0); // Set time to 00:00:00.000
+    to.setHours(23, 59, 59, 999); // Set time to 23:59:59.999 for inclusive end of the day
+
+    console.log(toDate);
+    console.log(from);
+    console.log(to);
 
     // Ensure the dates are valid
     if (isNaN(from.getTime()) || isNaN(to.getTime())) {
@@ -137,11 +175,14 @@ const Posting = () => {
     // Filter the original data instead of filteredSavings to avoid overwriting issues
     const filtered = allPostings.filter((item: { date: string }) => {
       const itemDate = new Date(item.date); // Convert item.date to a Date object
-      console.log({ itemDate, from, to }); // Debugging logs
+
+      // Normalize itemDate to midnight for comparison
+      itemDate.setHours(0, 0, 0, 0);
+
+      console.log({ itemDate, from, to }, itemDate >= from, itemDate <= to); // Debugging logs
+
       return itemDate >= from && itemDate <= to;
     });
-
-    // Debugging logs
 
     // Update the state with filtered results
     setFilteredSavings(filtered);
@@ -156,9 +197,10 @@ const Posting = () => {
   const handleToDateChange = (event: {
     target: { value: SetStateAction<string> };
   }) => {
+    // console.log(event.target.value);
     setToDate(event.target.value);
 
-    handleDateFilter();
+    // handleDateFilter(event.target.value);
   };
 
   const paginatedSavings = filteredSavings?.slice(
@@ -358,6 +400,15 @@ const Posting = () => {
                 onChange={handleToDateChange}
                 className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
               />
+              <CustomButton
+                type="button"
+                label="Go"
+                style="ml-2 rounded-md bg-ajo_blue py-2 px-1 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+                onButtonClick={() => {
+                  handleResetButton();
+                }}
+              />
+              {/* <button onClick={() => handleResetButton()}>reset</button> */}
             </div>
 
             {(user?.role === "organisation" ||
