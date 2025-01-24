@@ -468,7 +468,6 @@ const MutateUser = ({
     },
   });
 
-  console.log(userInfo);
   const initialValues: mutateUserProps =
     actionToTake === "edit-user"
       ? {
@@ -496,7 +495,10 @@ const MutateUser = ({
           assignedCustomers: userInfo?.assignedUser
             ? userInfo.assignedUser.map((user) => user._id)
             : [],
-          roles: userInfo?.roles[0]?._id ?? "",
+          roles:
+            Array.isArray(userInfo?.roles) && userInfo.roles.length > 0
+              ? userInfo.roles[0]._id
+              : "",
         }
       : {
           firstName: "",
@@ -521,7 +523,7 @@ const MutateUser = ({
           guarantor2Phone: "",
           guarantor2Address: "",
           assignedCustomers: [],
-          roles: [],
+          roles: "",
         };
   const [assignedCustomerIds, setAssignedCustomerIds] = useState<string[]>([]);
   console.log(assignedCustomerIds);
@@ -623,7 +625,7 @@ const MutateUser = ({
         setCloseModal(false);
         setModalContent("form");
         router.push("/merchant/users");
-      }, 1000);
+      }, 3000);
     },
 
     onError(error: AxiosError<any, any>) {
@@ -633,7 +635,7 @@ const MutateUser = ({
       setMutationResponse(error.response?.data.message);
       setTimeout(() => {
         setModalContent("form");
-      }, 1000);
+      }, 3000);
     },
   });
 
@@ -827,7 +829,9 @@ const MutateUser = ({
             .of(Yup.string())
             .min(1, "At least one customer must be selected")
             .required("required"),
-          roles: Yup.string().required("Required"),
+          roles: Yup.string()
+            .min(1, "One role must be selected")
+            .required("You must assign a role to a customer"),
           // guarantorForm: Yup.mixed()
           //   .optional()
           //   .test(
@@ -862,7 +866,7 @@ const MutateUser = ({
             if (actionToTake === "create-user") {
               console.log("creating user.....................", values);
 
-              // createUser(values);
+              createUser(values);
             } else {
               console.log("editing user.....................", values);
               editUser(values);
