@@ -862,7 +862,7 @@ const MutateUser = ({
             if (actionToTake === "create-user") {
               console.log("creating user.....................", values);
 
-              // createUser(values);
+              createUser(values);
             } else {
               console.log("editing user.....................", values);
               editUser(values);
