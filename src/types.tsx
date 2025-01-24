@@ -700,6 +700,15 @@ export interface mutateUserProps {
   assignedCustomers: any;
 
   roles: any;
+  // roles: {
+  //   _id: string;
+  //   name: string;
+  //   description: string;
+  //   permissions: Permission[];
+  //   createdAt: string;
+  //   updatedAt: string;
+  //   __v: number;
+  // }[];
   allCustomers?: string[];
 }
 
@@ -771,6 +780,7 @@ interface assignedUserdata {
   lastName: string;
 }
 interface RolesData {
+  _id: string;
   name: string;
 }
 

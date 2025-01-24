@@ -91,6 +91,7 @@ const Posting = () => {
         });
     },
   });
+  console.log(allSavings);
 
   const { data: allPostings, isLoading: isLoadingAllPostings } = useQuery({
     queryKey: ["all postings"],
@@ -133,7 +134,6 @@ const Posting = () => {
       return;
     }
 
-    console.log(allPostings);
     // Filter the original data instead of filteredSavings to avoid overwriting issues
     const filtered = allPostings.filter((item: { date: string }) => {
       const itemDate = new Date(item.date); // Convert item.date to a Date object
@@ -142,7 +142,6 @@ const Posting = () => {
     });
 
     // Debugging logs
-    console.log("Filtered Data:", filtered);
 
     // Update the state with filtered results
     setFilteredSavings(filtered);
@@ -257,9 +256,7 @@ const Posting = () => {
             Posting
           </p>
         </div>
-        <div className="mb-4">
-          <p className="text-xl text-white">Customer List</p>
-        </div>
+
         <section>
           <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <span className="flex items-center gap-3">
@@ -392,6 +389,7 @@ const Posting = () => {
                 "Customer Name",
                 "Account Number",
                 "Transaction ID",
+                "Amount",
                 "Purpose",
                 "Email Address",
                 "Phone Number",
@@ -418,6 +416,9 @@ const Posting = () => {
                     {savings.transactionId ?? "-----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {savings.amount ?? "-----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {savings.purpose ?? "-----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
@@ -440,7 +441,7 @@ const Posting = () => {
                     {savings.lga ?? "----"}
                   </td> */}
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {user.role === "organisation" ? "Admin" : ""}
+                    {savings.postedBy ?? "-----"}
                   </td>
                   {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     Payment Mode
@@ -717,7 +718,7 @@ const PostingForm = ({
     queryFn: async () => {
       return client
         .get(
-          `/api/user?organisation=${organizationId}&userType=${postDetails.postingType}`,
+          `/api/user?organisation=${organizationId}&userType=${postDetails.postingType}&role=${"customer"}`,
           {},
         )
         .then((response) => {
@@ -735,6 +736,7 @@ const PostingForm = ({
         });
     },
   });
+  console.log(users);
 
   const { data: customerAcctNumber, isLoading: isLoadingCustomerAcctNumber } =
     useQuery({
