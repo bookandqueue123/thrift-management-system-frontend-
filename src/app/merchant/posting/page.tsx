@@ -91,7 +91,6 @@ const Posting = () => {
         });
     },
   });
-  console.log(allSavings);
 
   const { data: allPostings, isLoading: isLoadingAllPostings } = useQuery({
     queryKey: ["all postings"],
@@ -110,6 +109,7 @@ const Posting = () => {
     },
   });
 
+  console.log(allPostings);
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
 
