@@ -445,7 +445,7 @@ const Posting = () => {
                 "Email Address",
                 "Phone Number",
                 "Time",
-                "Date",
+                "Posted date",
                 // "State",
                 // "Local Govt Area",
                 "Posted By",
