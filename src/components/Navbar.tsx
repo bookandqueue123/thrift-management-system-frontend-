@@ -10,11 +10,216 @@ import { Dispatch, ReactElement, SetStateAction, useState } from "react";
 import { useSelector } from "react-redux";
 import AvatarDropdown from "./Dropdowns";
 
+// const CustomerNavbar = () => {
+//   // const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
+//   const [DropdownMenuIsOpen, setDropdownMenuIsOpen] = useState(false);
+//   const [savingsDashboardDropdownIsOpen, setSavingsDashboardDropdownIsOpen] =
+//     useState(false);
+//   const { checkPermission } = useServiceCheckPermission();
+//   const { savings, purpose, aIPhotoEditor } = checkPermission;
+//   const user = useSelector(selectUser);
+
+//   const endpoints = [
+//     purpose ? "dashboard" : "",
+//     savings ? "make-payment" : "",
+//     savings ? "withdrawals" : "",
+//     savings ? "transactions" : "",
+//     savings ? "savings-setup" : "",
+//     purpose ? "savings-purpose" : "",
+//     purpose ? "coupon" : "",
+//     aIPhotoEditor ? "photo-editor" : "",
+//   ];
+
+//   // Filter out empty strings before mapping
+//   const filteredEndpoints = endpoints.filter(Boolean);
+//   const { SignOut } = useAuth();
+//   const routeOptions = [
+//     "Savings Dashboard",
+//     purpose ? "Purchased Items Report" : "",
+//   ];
+//   const filteredrouteOptions = routeOptions.filter(Boolean);
+//   return (
+//     <nav className="border-ajo_offWhite border-opacity-40 md:border-b">
+//       <div className="mx-auto max-w-7xl px-2 md:px-6 lg:px-8">
+//         <div className="relative flex h-16 items-center justify-between">
+//           <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
+//             {/* <!-- Mobile menu button--> */}
+//             <button
+//               type="button"
+//               className="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-1 focus:ring-inset focus:ring-ajo_offWhite"
+//               aria-controls="mobile-menu"
+//               aria-expanded="false"
+//               onClick={() => setDropdownMenuIsOpen(!DropdownMenuIsOpen)}
+//             >
+//               <span className="sr-only">Open main menu</span>
+//               {DropdownMenuIsOpen === false ? (
+//                 <svg
+//                   className="h-6 w-6"
+//                   fill="none"
+//                   viewBox="0 0 24 24"
+//                   strokeWidth="1.5"
+//                   stroke="currentColor"
+//                   aria-hidden="true"
+//                 >
+//                   <path
+//                     strokeLinecap="round"
+//                     strokeLinejoin="round"
+//                     d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+//                   />
+//                 </svg>
+//               ) : (
+//                 <svg
+//                   className="h-6 w-6"
+//                   fill="none"
+//                   viewBox="0 0 24 24"
+//                   strokeWidth="1.5"
+//                   stroke="currentColor"
+//                   aria-hidden="true"
+//                 >
+//                   <path
+//                     strokeLinecap="round"
+//                     strokeLinejoin="round"
+//                     d="M6 18L18 6M6 6l12 12"
+//                   />
+//                 </svg>
+//               )}
+//             </button>
+//           </div>
+//           <div className="flex flex-1 items-center justify-center md:items-stretch md:justify-between">
+//             <div className="flex flex-shrink-0 items-center">
+//               <Image
+//                 className="h-8 w-auto"
+//                 src="/Logo.svg"
+//                 alt="Finkia Logo"
+//                 width={20}
+//                 height={20}
+//               />
+//             </div>
+//             <div className="hidden items-center gap-x-2 md:flex">
+//               <div>
+//                 {filteredEndpoints.map((route) => {
+//                   return (
+//                     <Link
+//                       key={route}
+//                       href={
+//                         route !== "dashboard"
+//                           ? `/customer/${route}`
+//                           : "/customer/savings-purpose"
+//                       }
+//                       className={`rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}
+//                     >
+//                       {route === "make-payment"
+//                         ? "Make Payment"
+//                         : route === "savings-setup"
+//                           ? "Savings Setup"
+//                           : route === "savings-purpose"
+//                             ? "Savings Purpose"
+//                             : route === "savings-dashboard"
+//                               ? "Savings Dashboard"
+//                               : route === "photo-editor"
+//                                 ? "AI photo Editor"
+//                                 : route}
+//                     </Link>
+//                   );
+//                 })}
+//               </div>
+//             </div>
+//           </div>
+
+//           <div className="pr-2 md:pl-11">
+//             {/* <!-- Profile dropdown --> */}
+//             <button
+//               type="button"
+//               className="{`rounded-lg focus:opacity-100`} flex items-center gap-x-2 rounded-full px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700"
+//               onClick={() =>
+//                 setSavingsDashboardDropdownIsOpen(
+//                   !savingsDashboardDropdownIsOpen,
+//                 )
+//               }
+//             >
+//               Savings Dashboard
+//               <svg width="10" height="5" viewBox="0 0 12 7" fill="none">
+//                 <path
+//                   d="M1 1L6 6L11 1"
+//                   stroke="#BDBDBD"
+//                   strokeWidth="1"
+//                   strokeLinecap="round"
+//                   strokeLinejoin="round"
+//                 />
+//               </svg>
+//               <span className="sr-only">Open user menu</span>
+//             </button>
+//             {savingsDashboardDropdownIsOpen && (
+//               <div className="absolute right-0 top-14 z-10 mt-2 w-48  rounded-md bg-white bg-opacity-20 py-1 shadow-lg">
+//                 {filteredrouteOptions.map((route, index) => {
+//                   return (
+//                     <Link
+//                       key={route}
+//                       href={
+//                         route === "Savings Dashboard"
+//                           ? "/customer/savings-dashboard"
+//                           : route === "Purchased Items Report"
+//                             ? "/customer/purpose-report"
+//                             : `/customer/${route.toLowerCase()}`
+//                       }
+//                       className={`block px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
+//                     >
+//                       {route === "bank-settings" ? "Bank Settings" : route}
+//                     </Link>
+//                   );
+//                 })}
+//               </div>
+//             )}
+//           </div>
+
+//           {user?.role === "customer" ? (
+//             <AvatarDropdown
+//               avatarImg="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+//               routeOptions={["profile", "settings", "sign out"]}
+//               logoutFn={() => {
+//                 SignOut();
+//               }}
+//             />
+//           ) : (
+//             ""
+//           )}
+//         </div>
+//       </div>
+
+//       {/* <!-- Mobile menu, show/hide based on menu state. --> */}
+//       {DropdownMenuIsOpen && (
+//         <div className="absolute z-10 w-full rounded-b-lg bg-ajo_darkBlue md:hidden">
+//           <div className="space-y-1 px-2 pb-3 pt-2">
+//             {endpoints.map((route) => {
+//               return (
+//                 <Link
+//                   key={route}
+//                   href={
+//                     route !== "dashboard" ? `/customer/${route}` : "/customer"
+//                   }
+//                   className={`block rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}
+//                 >
+//                   {route}
+//                 </Link>
+//               );
+//             })}
+//           </div>
+//         </div>
+//       )}
+//     </nav>
+//   );
+// };
+
+// export default CustomerNavbar;
+
+
 const CustomerNavbar = () => {
-  // const [AvatarMenuIsOpen, setAvatarMenuIsOpen] = useState(false);
   const [DropdownMenuIsOpen, setDropdownMenuIsOpen] = useState(false);
   const [savingsDashboardDropdownIsOpen, setSavingsDashboardDropdownIsOpen] =
     useState(false);
+  const [billManagementDropdownIsOpen, setBillManagementDropdownIsOpen] = 
+    useState(false); // New state for bill management dropdown
+  
   const { checkPermission } = useServiceCheckPermission();
   const { savings, purpose, aIPhotoEditor } = checkPermission;
   const user = useSelector(selectUser);
@@ -38,6 +243,17 @@ const CustomerNavbar = () => {
     purpose ? "Purchased Items Report" : "",
   ];
   const filteredrouteOptions = routeOptions.filter(Boolean);
+
+  // Bill Management routes
+  const billManagementRoutes = [
+    "Current Bill",
+    "Generate previous bills",
+    "Account Statement",
+    "Payment history"
+
+
+  ];
+
   return (
     <nav className="border-ajo_offWhite border-opacity-40 md:border-b">
       <div className="mx-auto max-w-7xl px-2 md:px-6 lg:px-8">
@@ -126,11 +342,59 @@ const CustomerNavbar = () => {
             </div>
           </div>
 
-          <div className="pr-2 md:pl-11">
-            {/* <!-- Profile dropdown --> */}
+          {/* Bill Management Dropdown */}
+          <div className="pr-2 md:pl-4">
             <button
               type="button"
-              className="{`rounded-lg focus:opacity-100`} flex items-center gap-x-2 rounded-full px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700"
+              className="flex items-center gap-x-2 rounded-full px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
+              onClick={() =>
+                setBillManagementDropdownIsOpen(!billManagementDropdownIsOpen)
+              }
+            >
+              Bill Management
+              <svg width="10" height="5" viewBox="0 0 12 7" fill="none">
+                <path
+                  d="M1 1L6 6L11 1"
+                  stroke="#BDBDBD"
+                  strokeWidth="1"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="sr-only">Open bill management menu</span>
+            </button>
+            {billManagementDropdownIsOpen && (
+              <div className="absolute right-0 top-14 z-10 mt-2 w-48 rounded-md bg-white bg-opacity-20 py-1 shadow-lg">
+                {billManagementRoutes.map((route, index) => {
+                  return (
+                    <Link
+                      key={route}
+                      href={
+                        route === "Current Bill"
+                          ? "/customer/current-bill"
+                          : route === "Generate previous bills"
+                            ? "/customer/generate-bill"
+                             : route === "Account Statement"
+                              ? "/customer/account-statement"
+                            : route === "Payment History"
+                            ? "/customer/payment-history"
+                              : `/customer/${route.toLowerCase().replace(/\s+/g, '-')}`
+                      }
+                      className="block px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      {route}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Savings Dashboard Dropdown */}
+          <div className="pr-2 md:pl-4">
+            <button
+              type="button"
+              className="flex items-center gap-x-2 rounded-full px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
               onClick={() =>
                 setSavingsDashboardDropdownIsOpen(
                   !savingsDashboardDropdownIsOpen,
@@ -150,7 +414,7 @@ const CustomerNavbar = () => {
               <span className="sr-only">Open user menu</span>
             </button>
             {savingsDashboardDropdownIsOpen && (
-              <div className="absolute right-0 top-14 z-10 mt-2 w-48  rounded-md bg-white bg-opacity-20 py-1 shadow-lg">
+              <div className="absolute right-0 top-14 z-10 mt-2 w-48 rounded-md bg-white bg-opacity-20 py-1 shadow-lg">
                 {filteredrouteOptions.map((route, index) => {
                   return (
                     <Link
@@ -162,7 +426,7 @@ const CustomerNavbar = () => {
                             ? "/customer/purpose-report"
                             : `/customer/${route.toLowerCase()}`
                       }
-                      className={`block px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue`}
+                      className="block px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
                     >
                       {route === "bank-settings" ? "Bank Settings" : route}
                     </Link>
@@ -190,6 +454,7 @@ const CustomerNavbar = () => {
       {DropdownMenuIsOpen && (
         <div className="absolute z-10 w-full rounded-b-lg bg-ajo_darkBlue md:hidden">
           <div className="space-y-1 px-2 pb-3 pt-2">
+            {/* Regular navigation items for mobile */}
             {endpoints.map((route) => {
               return (
                 <Link
@@ -197,12 +462,40 @@ const CustomerNavbar = () => {
                   href={
                     route !== "dashboard" ? `/customer/${route}` : "/customer"
                   }
-                  className={`block rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100`}
+                  className="block rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
                 >
                   {route}
                 </Link>
               );
             })}
+            
+            {/* Bill Management section for mobile */}
+            <div className="border-t border-ajo_offWhite border-opacity-20 pt-2">
+              <div className="px-3 py-2 text-xs font-semibold text-ajo_offWhite opacity-70 uppercase tracking-wider">
+                Bill Management
+              </div>
+              {billManagementRoutes.map((route) => {
+                return (
+                  <Link
+                    key={route}
+                    href={
+                      route === "Current Bill"
+                        ? "/customer/current-bill"
+                        : route === "Generate previous bills"
+                          ? "/customer/generate-bill"
+                          : route === "Account Statement"
+                            ? "/customer/account-statement"
+                             : route === "Payment History"
+                            ? "/customer/payment-history"
+                            : `/customer/${route.toLowerCase().replace(/\s+/g, '-')}`
+                    }
+                    className="block rounded-lg px-3 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:rounded-lg hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
+                  >
+                    {route}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
@@ -226,10 +519,12 @@ export const Sidebar = ({
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
   const [setupdropdownOpen, setSetupDropdownOpen] = useState(false);
   const [generalAdminFeeOpen, setGeneralAdminFeeOpen] = useState(false);
+  const [billManagementDropdownOpen, setBillManagementDropdownOpen] = useState(false); // New state for bill management
 
   const [purposeDropdownIsOpen, setpurposeDropdownIsOpen] = useState(false);
   const [categoriesdropdownOpen, setCategoriesDropdownOpen] = useState(false);
   const [itemOpen, setItemOpen] = useState(false);
+  
   const toggleSidebar = () => {
     return onShow ? "visible" : "invisible";
   };
@@ -263,7 +558,7 @@ export const Sidebar = ({
             (userPermissions.includes(permissionsMap["export-withdrawal"]) ||
               userPermissions.includes(permissionsMap["view-withdrawals"]))
           ? "withdrawals"
-          : ""
+        : ""
       : "",
     user?.role === "organisation"
       ? "users"
@@ -282,7 +577,6 @@ export const Sidebar = ({
           userPermissions.includes(permissionsMap["view-role"])
         ? "roles"
         : "",
-    // "account-statement",
   ].filter(Boolean) as string[];
 
   const MenuBtn = ({
@@ -362,7 +656,7 @@ export const Sidebar = ({
             })}
           </div>
           <span className="w-full cursor-pointer">
-            {[purpose ? "item/purpose" : "", "settings", "sign out"].map(
+            {[purpose ? "item/purpose" : "", "bill management", "settings", "sign out"].map(
               (label) => (
                 <div
                   key={label}
@@ -384,6 +678,16 @@ export const Sidebar = ({
                       onClick={(e) => {
                         e.preventDefault();
                         setpurposeDropdownIsOpen(!purposeDropdownIsOpen);
+                      }}
+                    >
+                      {label}
+                    </Link>
+                  ) : label === "bill management" ? (
+                    <Link
+                      href="/merchant/create-bill"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setBillManagementDropdownOpen(!billManagementDropdownOpen);
                       }}
                     >
                       {label}
@@ -413,6 +717,38 @@ export const Sidebar = ({
                       width={8}
                       height={6}
                     />
+                  )}
+                  {label === "bill management" && (
+                    <Image
+                      src="/arrow_down.svg"
+                      alt="arrow down"
+                      width={8}
+                      height={6}
+                    />
+                  )}
+
+                  {/* Bill Management Dropdown */}
+                  {label === "bill management" && billManagementDropdownOpen && (
+                    <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+                      <Link
+                        href="/merchant/create-bill"
+                        className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                      >
+                        Create Bill
+                      </Link>
+                      <Link
+                        href="/merchant/view-edit"
+                        className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                      >
+                        View and Edit
+                      </Link>
+                      <Link
+                        href="/merchant/account-statement"
+                        className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                      >
+                        Account Statement
+                      </Link>
+                    </div>
                   )}
 
                   {label === "settings" && settingsDropdownIsOpen && (
@@ -714,6 +1050,8 @@ export const Sidebar = ({
     </aside>
   );
 };
+
+
 
 export const SuperAdminSidebar = ({
   onShow,

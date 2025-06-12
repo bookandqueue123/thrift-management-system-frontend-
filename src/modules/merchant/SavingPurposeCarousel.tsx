@@ -1,5 +1,6 @@
 import { useAuth } from "@/api/hooks/useAuth";
 import { CustomButton } from "@/components/Buttons";
+import MarketplaceInterface from "../HomePage/MarketPlace";
 import {
   addSelectedProduct,
   removeSelectedProduct,
@@ -186,8 +187,9 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
   return (
     <div>
       <div>
+        <MarketplaceInterface/>
         {/* <button onClick={clearSelectedProducts}>Clear Selected Products</button> */}
-        <div
+        {/* <div
           className={`text-extrabold mb-4 text-2xl ${pathname === "/" ? "text-black" : "text-white"}`}
         >
           Total Selected Item(s):
@@ -197,15 +199,15 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
           >
             {selectedProducts?.length}
           </span>
-        </div>
-        <CustomButton
+        </div> */}
+        {/* <CustomButton
           label="Pay for Selected Item(s)"
           type="button"
           style={`${pathname === "/" ? "bg-[#EAAB40]" : "bg-white"} text-bold mb-2 text-[15px] py-3 px-2 text-black hover:text-white hover:bg-[#EAAB40] rounded-md flex-1`}
           onButtonClick={() =>
             router.push(`/customer/savings-purpose/make-payment`)
           }
-        />
+        /> */}
       </div>
       {products &&
         Object.keys(products).map((categoryName, index) => {
@@ -233,9 +235,9 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
                 <h2
                   className={`text-bold ${pathname === "/" ? "text-black" : "text-white"}`}
                 >
-                  Category: {categoryName}
+                  {/* Category: {categoryName} */}
                 </h2>
-                <input
+                {/* <input
                   type="checkbox"
                   className="ml-2"
                   checked={allChecked}
@@ -245,9 +247,9 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
                       e.target.checked,
                     )
                   }
-                />
+                /> */}
               </div>
-              <div className="scroll-container">
+              {/* <div className="scroll-container">
                 <ScrollMenu>
                   {categoryProducts.map((purpose: any) => (
                     <ProductCard
@@ -263,7 +265,7 @@ const ProductHorizontalScroll = ({ products }: { products: any }) => {
                     />
                   ))}
                 </ScrollMenu>
-              </div>
+              </div> */}
             </div>
           );
         })}
@@ -321,21 +323,18 @@ const ProductCard = ({
 
   return (
     <div className="">
-      <input
+      {/* <input
         className="ml-4"
         type="checkbox"
         checked={isChecked}
         onChange={(e) => onCheckboxChange(product._id, e.target.checked)}
-      />
-      <Link href={`/customer/savings-purpose/${product._id}`}>
+      /> */}
+      {/* <Link href={`/customer/savings-purpose/${product._id}`}>
         <div className="product-card">
-          {/* <div className="checkbox-container" style={{ marginLeft: "8px" }}>
-       
-          </div> */}
+          
           <div className="image-section h-[70%]">
             <img
-              // height={250}
-              // width={250}
+              
               src={product.imageUrl[0]}
               alt={product.purposeName}
               className="product-image p-4 "
@@ -384,9 +383,7 @@ const ProductCard = ({
                   Qty-{product.merchantQuantity}
                 </label>
 
-                {/* <select id={`quantity-${product._id}`} className="quantity-dropdown">
-              {renderQuantityOptions()}
-            </select> */}
+                
               </div>
             </div>
 
@@ -401,7 +398,7 @@ const ProductCard = ({
             </a>
           </div>
         </div>
-      </Link>
+      </Link> */}
     </div>
   );
 };

@@ -20,7 +20,7 @@ const Carousel = () => {
     {
       id: 1,
       title: "Slide 1",
-      image: "/FINKIA_BANNER1.png", // Replace with your image paths
+      image: "/FINKIA_BANNER1.png", 
     },
     {
       id: 2,
@@ -41,6 +41,7 @@ const Carousel = () => {
 
   return (
     <div className="container mx-auto p-4">
+     
       <Slider {...settings}>
         {slides.map((slide) => (
           <div key={slide.id} className="flex justify-center items-center">
@@ -50,9 +51,7 @@ const Carousel = () => {
                 alt={slide.title}
                 className="rounded-md w-full h-full object-cover"
               />
-              {/* <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-4 py-2 rounded">
-                {slide.title}
-              </div> */}
+              
             </div>
           </div>
         ))}
