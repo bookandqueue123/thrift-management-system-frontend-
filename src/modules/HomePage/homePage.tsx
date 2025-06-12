@@ -11,6 +11,7 @@ import Carousel from "./Carousel";
 import FinkiaAbout from "./FinkiaAbout";
 import YoutubeSection from "./YoutubeSection";
 import GeneralMarket from "./GeneralMarket";
+import TopNav from "./TopNav";
 
 const aboutText =
     "At Finkia, we believe in the transformative power of saving, and our platform is designed to make saving not just easy but also rewarding. Whether you're a seasoned trader looking to enhance your financial strategy or a young individual embarking on your savings journey, Finkia is here to guide and support you every step of the way. \n \n FINKIA is a thrift management system that enables thrift collectors to collect different types of savings from their customers easily, through different payment channels, and manage financial records efficiently and properly.It uses artificial intelligence to understand financial behavioral patterns of each customer to determine saving culture and loan - repayment ability of the customer.";
@@ -47,10 +48,12 @@ export default function HomePage() {
     return (
       <div className=" ">
         <Navbar />
-        <Carousel/>
+        <Carousel/> 
+        {/* <TopNav/> */}
         <FinkiaAbout/>
+          
         <YoutubeSection/>
-        <GeneralMarket/>
+         <GeneralMarket/> 
         {/* <HeroSection />
         <AboutUs aboutText={aboutText} data={data} />
         <HowToUse />

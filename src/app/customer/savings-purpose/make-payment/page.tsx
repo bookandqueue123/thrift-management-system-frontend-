@@ -20,7 +20,7 @@ import Select from "react-select";
 import {
   JSXElementConstructor,
   Key,
-  PromiseLikeOfReactNode,
+  // PromiseLikeOfReactNode,
   ReactElement,
   ReactNode,
   useEffect,
@@ -567,7 +567,7 @@ export default function MakePayment() {
                               string | JSXElementConstructor<any>
                             >
                           | Iterable<ReactNode>
-                          | PromiseLikeOfReactNode
+                          // | PromiseLikeOfReactNode
                           | null
                           | undefined;
                         _id: string;

@@ -295,7 +295,7 @@ const Posting = () => {
       <ProtectedRoute requireSavings>
         <div className="mb-4 space-y-2">
           <p className="text-base font-bold text-ajo_offWhite text-opacity-60">
-            Posting
+            Posting 
           </p>
         </div>
 
