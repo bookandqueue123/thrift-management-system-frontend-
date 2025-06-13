@@ -114,7 +114,7 @@ export default function OrderConfirmation({
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between">
                   <span className="text-sm font-medium text-gray-600">Payment Mode:</span>
-                  <span className="text-sm text-blue-600 font-medium">Pay in Bit</span>
+                  <span className="text-sm text-blue-600 font-medium">Pay little-by-little</span>
                 </div>
               </div>
             </div>

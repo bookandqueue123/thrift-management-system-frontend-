@@ -247,7 +247,7 @@ const CustomerNavbar = () => {
   // Bill Management routes
   const billManagementRoutes = [
     "Current Bill",
-    "Generate previous bills",
+    // "Generate previous bills",
     "Account Statement",
     "Payment history"
 
@@ -372,8 +372,8 @@ const CustomerNavbar = () => {
                       href={
                         route === "Current Bill"
                           ? "/customer/current-bill"
-                          : route === "Generate previous bills"
-                            ? "/customer/generate-bill"
+                          // : route === "Generate previous bills"
+                          //   ? "/customer/generate-bill"
                              : route === "Account Statement"
                               ? "/customer/account-statement"
                             : route === "Payment History"
