@@ -894,7 +894,7 @@ export default function CartPage({ params }: { params: { id: string } }) {
                       className="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500"
                     />
                     <div className="ml-2 flex items-center">
-                      <span className="text-sm text-gray-700">Pay in Bits</span>
+                      <span className="text-sm text-gray-700">Pay little-by-little</span>
                       <div className="ml-2 w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center">
                         <span className="text-xs text-white font-bold">?</span>
                       </div>

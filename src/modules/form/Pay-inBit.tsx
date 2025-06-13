@@ -542,7 +542,7 @@ export default function PayInBitsForm({ isOpen, onClose, selectedItem }: PayInBi
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Pay In Bits</h2>
+          <h2 className="text-xl font-semibold">Pay little-by-little</h2>
           <button 
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-md transition-colors"
