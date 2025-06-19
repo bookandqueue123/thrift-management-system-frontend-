@@ -1,11 +1,22 @@
 "use client";
 import Banner from "@/components/Banner";
 import Link from "next/link";
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/api/hooks/useAuth';
+import { ProductCard } from '@/modules/HomePage/MarketPlace';
 
 const Landing = () => {
-  
+  const { client } = useAuth();
+  const { data: products, isLoading } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const res = await client.get('/api/products');
+      return res.data;
+    },
+  });
+
   return (
-    <main className="md:flex">
+    <main className="md:flex flex-col">
       <Banner />
       <section className="bg-ajo_darkBlue px-4 pb-10 pt-8 md:flex md:h-screen md:w-1/2 md:items-center md:justify-center md:px-8">
         <div className="">
@@ -57,6 +68,21 @@ const Landing = () => {
             </Link>
           </div>
         </div>
+      </section>
+      {/* Product Showcase Section */}
+      <section className="bg-white py-10 px-4 md:px-8">
+        <h2 className="text-2xl font-bold text-center mb-8 text-ajo_darkBlue">Shop Our Products</h2>
+        {isLoading ? (
+          <div className="text-center text-gray-500">Loading products...</div>
+        ) : products && products.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            {products.map((product: any) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-gray-500">No products found.</div>
+        )}
       </section>
     </main>
   );

@@ -19,6 +19,8 @@ interface Product {
   reviews?: number;
   badge?: string | null;
   subcategory?: string;
+  discount?: number;
+  costBeforeDiscount?: number;
 }
 
 interface Category {
@@ -312,52 +314,46 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             )}
           </div>
         </Link>
-        
-        {/* Badge */}
-        {product.badge && (
+        {/* Discount Badge */}
+        {product.discount && product.discount > 0 && (
           <div className="absolute top-2 left-2">
-            <span className={`px-2 py-1 text-xs font-semibold rounded ${
-              product.badge === "HOT" 
-                ? "bg-red-500 text-white" 
-                : product.badge === "SALE" 
-                ? "bg-green-500 text-white" 
-                : product.badge === "25% OFF" 
-                ? "bg-yellow-500 text-white" 
-                : "bg-gray-800 text-white"
-            }`}>
-              {product.badge}
+            <span className="px-2 py-1 text-xs font-semibold rounded bg-orange-100 text-orange-600">
+              -{product.discount}%
             </span>
           </div>
         )}
-
         {/* Wishlist Button */}
         <button className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-50">
           <Heart className="h-4 w-4 text-gray-400" />
         </button>
       </div>
-
       {/* Product Info */}
       <div>
-        {/* Rating - Commented out since rating is not available yet */}
-        {/* <div className="flex items-center mb-2">
-          <div className="flex mr-2">
-            {renderStars(product.rating)}
-          </div>
-          <span className="text-xs text-gray-500">({product.reviews || 0})</span>
-        </div> */}
-
-        {/* Product Name */}
         <Link href={`/product/${product._id}`} className="block">
           <h3 className="font-medium text-gray-800 mb-2 line-clamp-2 hover:text-orange-600">
             {product.name}
           </h3>
         </Link>
-
-        {/* Price */}
-        <div className="text-lg font-bold text-orange-600 mb-2">
-          ${product.price.toFixed(2)}
+        {/* Price and Discount */}
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-lg font-bold text-orange-600">
+            ₦{product.price.toLocaleString()}
+          </span>
+          {product.discount && product.discount > 0 && product.costBeforeDiscount && (
+            <span className="text-sm text-gray-400 line-through">
+              ₦{product.costBeforeDiscount.toLocaleString()}
+            </span>
+          )}
+          {product.discount && product.discount > 0 && (
+            <span className="ml-2 bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded">
+              -{product.discount}%
+            </span>
+          )}
         </div>
-
+        {/* Stock Left */}
+        <div className="text-xs text-gray-500 mb-1">
+          {product.stock} items left
+        </div>
         {/* Category Badge */}
         <div className="mt-2">
           <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
@@ -640,4 +636,5 @@ const MarketplaceInterface: React.FC = () => {
   );
 };
 
-export default MarketplaceInterface; 
+export default MarketplaceInterface;
+export { ProductCard }; 

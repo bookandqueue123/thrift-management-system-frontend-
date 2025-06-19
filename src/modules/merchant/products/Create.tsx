@@ -53,6 +53,8 @@ const Create = () => {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 10;
 
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
@@ -255,12 +257,26 @@ const Create = () => {
     'Name',
     'Description',
     'Price',
+    'Discount',
+    'Cost Before Discount',
+    'SKU',
+    'Size',
+    'Memory',
     'Category',
     'Brand',
     'Stock',
     'Image',
     'Actions',
   ];
+
+  const paginatedProducts = products ? products.filter(product =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.brand.toLowerCase().includes(searchQuery.toLowerCase())
+  ).slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage) : [];
+  const totalPages = products ? Math.ceil(products.filter(product =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.brand.toLowerCase().includes(searchQuery.toLowerCase())
+  ).length / productsPerPage) : 1;
 
   const openProductModal = (id: string, type: 'view' | 'edit') => {
     setSelectedProductId(id);
@@ -462,6 +478,16 @@ const Create = () => {
                 onChange={handleInputChange}
                 className="w-full rounded border px-3 py-2 text-black"
               />
+              {/* <button
+                type="button"
+                className="mt-2 px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                onClick={() => {
+                  const input = document.querySelector('input[name="images"]') as HTMLInputElement | null;
+                  if (input) input.click();
+                }}
+              >
+                Add More
+              </button> */}
             </div>
             {errors.general && <div className="text-red-500">{errors.general}</div>}
             <button
@@ -723,48 +749,42 @@ const Create = () => {
           content={
             isLoading ? (
               <tr><td colSpan={headers.length} className="text-center text-white">Loading products...</td></tr>
-            ) : products && products.length > 0 ? (
-              products.filter(product =>
-                product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                product.brand.toLowerCase().includes(searchQuery.toLowerCase())
-              ).map((product: Product, idx: number) => (
+            ) : paginatedProducts && paginatedProducts.length > 0 ? (
+              paginatedProducts.map((product: Product, idx: number) => (
                 <tr key={product._id} className="hover:bg-gray-800">
-                  <td className="px-6 py-4 whitespace-nowrap">{idx + 1}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{(currentPage - 1) * productsPerPage + idx + 1}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{product.description}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="font-bold text-lg">₦ {AmountFormatter(product.price)}</span>
-                    {product.discount > 0 && (
-                      <span className="ml-2 bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded">-{product.discount}%</span>
-                    )}
-                    {product.costBeforeDiscount > product.price && (
-                      <span className="block text-xs text-gray-400 line-through">₦ {AmountFormatter(product.costBeforeDiscount)}</span>
-                    )}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap font-bold text-lg">₦ {AmountFormatter(product.price)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.discount}%</td>
+                  <td className="px-6 py-4 whitespace-nowrap line-through text-gray-400">₦ {AmountFormatter(product.costBeforeDiscount)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.sku}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.size}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.memory}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{product.brand}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{product.stock} items left</td>
-                   <td className="px-6 py-4">
-    {product.imageUrl && product.imageUrl.length > 0 ? (
-      <div className="flex gap-2">
-        {product.imageUrl.map((src, idx) => (
-          <Image key={idx} src={src} alt={product.name + '-' + idx} width={50} height={50} className="object-cover rounded" />
-        ))}
-      </div>
-    ) : (
-      <div className="flex justify-center">
-        <span className="text-xs text-gray-400">No Image</span>
-      </div>
-    )}
-  </td>
+                  <td className="px-6 py-4">
+                    {product.imageUrl && product.imageUrl.length > 0 ? (
+                      <div className="flex gap-2">
+                        {product.imageUrl.map((src, idx) => (
+                          <Image key={idx} src={src} alt={product.name + '-' + idx} width={50} height={50} className="object-cover rounded" />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex justify-center">
+                        <span className="text-xs text-gray-400">No Image</span>
+                      </div>
+                    )}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap relative">
                     <StatusIndicator
                       label="Actions"
                       dropdownEnabled
-                      clickHandler={() => toggleDropdown(idx + 1)}
+                      clickHandler={() => toggleDropdown((currentPage - 1) * productsPerPage + idx + 1)}
                       openDropdown={openDropdown}
                       toggleDropdown={toggleDropdown}
-                      currentIndex={idx + 1}
+                      currentIndex={(currentPage - 1) * productsPerPage + idx + 1}
                       dropdownContents={{
                         labels: ['View Product', 'Edit Product', 'Delete Product'],
                         actions: [
@@ -779,6 +799,39 @@ const Create = () => {
               ))
             ) : (
               <tr><td colSpan={headers.length} className="text-center text-white">No products found.</td></tr>
+            )
+          }
+          belowText={
+            totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-4">
+                <button
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="p-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Prev
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-2 border rounded ${
+                      currentPage === page
+                        ? 'bg-orange-500 text-white border-orange-500'
+                        : 'border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="p-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
             )
           }
         />
