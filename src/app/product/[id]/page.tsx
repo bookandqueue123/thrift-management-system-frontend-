@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Star, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { notFound, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/api/hooks/useAuth";
 import Navbar from "@/modules/HomePage/NavBar";
 import Footer from "@/modules/HomePage/Footer";
@@ -53,7 +53,9 @@ export default function ProductDetailPage({
 }) {
   const router = useRouter();
   const { client } = useAuth();
+  const queryClient = useQueryClient();
   const [quantity, setQuantity] = useState<number>(1);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   // Fetch single product
   const { data: product, isLoading: isLoadingProduct, error } = useQuery<Product>({
@@ -72,6 +74,27 @@ export default function ProductDetailPage({
       const res = await client.get('/api/products');
       return res.data;
     },
+  });
+
+  // Add to cart mutation
+  const addToCartMutation = useMutation({
+    mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
+      const res = await client.post('/api/cart', {
+        productId,
+        quantity: quantity.toString()
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      // Invalidate cart query to refresh cart data
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      // Navigate to cart page
+      router.push('/cart');
+    },
+    onError: (error) => {
+      console.error('Error adding to cart:', error);
+      // You can add toast notification here
+    }
   });
 
   // Handle loading state
@@ -108,38 +131,20 @@ export default function ProductDetailPage({
   };
 
   // Handler for Add to Cart button
-  const handleAddToCart = () => {
-    // Here you can add logic to save the item to cart (localStorage, context, etc.)
-    // For now, we'll just navigate to the cart page
+  const handleAddToCart = async () => {
+    if (!product) return;
     
-    // Optional: Save cart data to localStorage or context
-    const cartItem = {
-      id: product._id,
-      name: product.name,
-      image: product.imageUrl,
-      price: product.price,
-      quantity: quantity,
-    };
-
-    // Get existing cart items from localStorage (if any)
-    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
-    
-    // Check if item already exists in cart
-    const existingItemIndex = existingCart.findIndex((item: any) => item.id === product._id);
-    
-    if (existingItemIndex > -1) {
-      // Update quantity if item already exists
-      existingCart[existingItemIndex].quantity += quantity;
-    } else {
-      // Add new item to cart
-      existingCart.push(cartItem);
+    setIsAddingToCart(true);
+    try {
+      await addToCartMutation.mutateAsync({
+        productId: product._id,
+        quantity: quantity
+      });
+    } catch (error) {
+      console.error('Failed to add to cart:', error);
+    } finally {
+      setIsAddingToCart(false);
     }
-
-    // Save updated cart to localStorage
-    localStorage.setItem('cart', JSON.stringify(existingCart));
-
-    // Navigate to cart page
-    router.push('/cart/1');
   };
 
   return (
@@ -271,10 +276,11 @@ export default function ProductDetailPage({
   {/* Add to Cart (same fixed height h-12) */}
   <button 
     onClick={handleAddToCart}
-    className="h-12 px-6 bg-[#fedc57] text-white rounded-lg font-medium hover:bg-yellow-500 transition flex items-center justify-center sm:flex-1"
+    disabled={isAddingToCart || addToCartMutation.isPending}
+    className="h-12 px-6 bg-[#fedc57] text-white rounded-lg font-medium hover:bg-yellow-500 transition flex items-center justify-center sm:flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
   >
     <ShoppingCart className="h-5 w-5 mr-2" />
-    Add to cart
+    {isAddingToCart || addToCartMutation.isPending ? "Adding..." : "Add to cart"}
   </button>
 
   {/* Buy Now (same fixed height h-12) */}
