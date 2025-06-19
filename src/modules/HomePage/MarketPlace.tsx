@@ -344,11 +344,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               ₦{product.costBeforeDiscount.toLocaleString()}
             </span>
           )}
-          {product.discount && product.discount > 0 && (
-            <span className="ml-2 bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded">
-              -{product.discount}%
-            </span>
-          )}
         </div>
         {/* Stock Left */}
         <div className="text-xs text-gray-500 mb-1">
