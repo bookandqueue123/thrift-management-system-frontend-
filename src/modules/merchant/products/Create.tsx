@@ -7,15 +7,21 @@ import Modal from '@/components/Modal';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { StatusIndicator } from '@/components/StatusIndicator';
 import Image from 'next/image';
+import AmountFormatter from '@/utils/AmountFormatter';
 
 interface Product {
   _id: string;
   name: string;
   description: string;
   price: number;
+  costBeforeDiscount: number;
+  discount: number;
   category: string;
   brand: string;
-  imageUrl?: string;
+  sku: string;
+  size: number;
+  memory: number;
+  imageUrl?: string[];
   stock: number;
 }
 
@@ -23,9 +29,14 @@ interface ProductFormData {
   name: string;
   description: string;
   price: string;
+  costBeforeDiscount: string;
+  discount: string;
   category: string;
   brand: string;
-  imageUrl: File | null;
+  sku: string;
+  size: string;
+  memory: string;
+  images: File[];
   stock: string;
 }
 
@@ -47,12 +58,17 @@ const Create = () => {
     name: '',
     description: '',
     price: '',
+    costBeforeDiscount: '',
+    discount: '',
     category: '',
     brand: '',
-    imageUrl: null,
+    sku: '',
+    size: '',
+    memory: '',
+    images: [],
     stock: '',
   });
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
 
 
@@ -82,11 +98,19 @@ const Create = () => {
       form.append('name', data.name);
       form.append('description', data.description);
       form.append('price', data.price);
+      form.append('costBeforeDiscount', data.costBeforeDiscount);
+      form.append('discount', data.discount);
       form.append('category', data.category);
       form.append('brand', data.brand);
+      form.append('sku', data.sku);
+      form.append('size', data.size);
+      form.append('memory', data.memory);
       form.append('stock', data.stock);
-      if (data.imageUrl) {
-        form.append('productImage', data.imageUrl);
+      if (data.images && data.images.length > 0) {
+        const imageFields = ['firstProductImage', 'secondProductImage', 'thirdProductImage'];
+        data.images.slice(0, 3).forEach((img, index) => {
+          form.append(imageFields[index], img);
+        });
       }
       return client.post('/api/products', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -96,18 +120,13 @@ const Create = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setShowCreateModal(false);
       setFormData({
-        name: '',
-        description: '',
-        price: '',
-        category: '',
-        brand: '',
-        imageUrl: null,
-        stock: '',
+        name: '', description: '', price: '', costBeforeDiscount: '', discount: '', category: '', brand: '', sku: '', size: '', memory: '', images: [], stock: ''
       });
-      setImagePreview(null);
+      setImagePreviews([]);
     },
-    onError: () => {
-      setErrors({ general: 'Failed to create product.' });
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || 'Failed to create product.';
+      setErrors({ general: errorMessage });
     },
   });
 
@@ -118,11 +137,19 @@ const Create = () => {
       form.append('name', data.name);
       form.append('description', data.description);
       form.append('price', data.price);
+      form.append('costBeforeDiscount', data.costBeforeDiscount);
+      form.append('discount', data.discount);
       form.append('category', data.category);
       form.append('brand', data.brand);
+      form.append('sku', data.sku);
+      form.append('size', data.size);
+      form.append('memory', data.memory);
       form.append('stock', data.stock);
-      if (data.imageUrl) {
-        form.append('productImage', data.imageUrl);
+      if (data.images && data.images.length > 0) {
+        const imageFields = ['firstProductImage', 'secondProductImage', 'thirdProductImage'];
+        data.images.slice(0, 3).forEach((img, index) => {
+          form.append(imageFields[index], img);
+        });
       }
       return client.put(`/api/products/${id}`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -134,8 +161,9 @@ const Create = () => {
       setSelectedProductId(null);
       setModalType(null);
     },
-    onError: () => {
-      setErrors({ general: 'Failed to update product.' });
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || 'Failed to update product.';
+      setErrors({ general: errorMessage });
     },
   });
 
@@ -150,18 +178,23 @@ const Create = () => {
       setSelectedProductId(null);
       setModalType(null);
     },
-    onError: () => {
-      setErrors({ general: 'Failed to delete product.' });
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || 'Failed to delete product.';
+      setErrors({ general: errorMessage });
     },
   });
 
-  
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, files } = e.target as HTMLInputElement;
-    if (name === 'imageUrl' && files && files.length > 0) {
-      const file = files[0];
-      setFormData((prev) => ({ ...prev, [name]: file }));
-      setImagePreview(URL.createObjectURL(file));
+    if (name === 'images' && files && files.length > 0) {
+      const fileArr = Array.from(files);
+      if (fileArr.length > 3) {
+        setErrors({ general: 'Maximum 3 images allowed.' });
+        return;
+      }
+      setFormData((prev) => ({ ...prev, images: fileArr }));
+      setImagePreviews(fileArr.map(file => URL.createObjectURL(file)));
+      setErrors({}); // Clear any previous errors
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -176,7 +209,9 @@ const Create = () => {
   const handleCreateSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
-    if (!formData.name || !formData.price || !formData.category || !formData.brand || !formData.stock) {
+    if (!formData.name || !formData.description || !formData.price || !formData.costBeforeDiscount || 
+        !formData.discount || !formData.category || !formData.brand || !formData.sku || 
+        !formData.size || !formData.memory || !formData.stock) {
       setErrors({ general: 'Please fill all required fields.' });
       return;
     }
@@ -189,7 +224,9 @@ const Create = () => {
     setErrors({});
     if (!selectedProductId || !singleProduct) return;
 
-    if (!formData.name || !formData.price || !formData.category || !formData.brand || !formData.stock) {
+    if (!formData.name || !formData.description || !formData.price || !formData.costBeforeDiscount || 
+        !formData.discount || !formData.category || !formData.brand || !formData.sku || 
+        !formData.size || !formData.memory || !formData.stock) {
       setErrors({ general: 'Please fill all required fields.' });
       return;
     }
@@ -237,13 +274,17 @@ const Create = () => {
           name: productToEdit.name,
           description: productToEdit.description,
           price: String(productToEdit.price),
+          costBeforeDiscount: String(productToEdit.costBeforeDiscount),
+          discount: String(productToEdit.discount),
           category: productToEdit.category,
           brand: productToEdit.brand,
-         imageUrl: null, 
+          sku: productToEdit.sku,
+          size: String(productToEdit.size),
+          memory: String(productToEdit.memory),
+          images: [],
           stock: String(productToEdit.stock),
         });
-     
-        setImagePreview(productToEdit.imageUrl ? `${productToEdit.imageUrl}` : null);
+        setImagePreviews(productToEdit.imageUrl ? productToEdit.imageUrl : []);
       }
     }
   };
@@ -263,9 +304,9 @@ const Create = () => {
           onClick={() => {
             setShowCreateModal(true);
             setFormData({
-              name: '', description: '', price: '', category: '', brand: '', imageUrl: null, stock: ''
+              name: '', description: '', price: '', costBeforeDiscount: '', discount: '', category: '', brand: '', sku: '', size: '', memory: '', images: [], stock: ''
             });
-            setImagePreview(null);
+            setImagePreviews([]);
             setErrors({});
           }}
         >
@@ -350,20 +391,74 @@ const Create = () => {
               />
             </div>
             <div>
-              <label className="block text-white">Product Image</label>
-              {imagePreview ? (
-                <div className="mb-4">
-                  <img
-                    src={imagePreview}
-                    alt="Product Preview"
-                    className="w-32 h-32 object-cover rounded"
-                  />
+              <label className="block text-white">SKU</label>
+              <input
+                type="text"
+                name="sku"
+                value={formData.sku}
+                onChange={handleInputChange}
+                className="w-full rounded border px-3 py-2 text-black"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-white">Cost Before Discount</label>
+              <input
+                type="number"
+                name="costBeforeDiscount"
+                value={formData.costBeforeDiscount}
+                onChange={handleInputChange}
+                className="w-full rounded border px-3 py-2 text-black"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-white">Discount (%)</label>
+              <input
+                type="number"
+                name="discount"
+                value={formData.discount}
+                onChange={handleInputChange}
+                className="w-full rounded border px-3 py-2 text-black"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-white">Size</label>
+              <input
+                type="number"
+                name="size"
+                value={formData.size}
+                onChange={handleInputChange}
+                className="w-full rounded border px-3 py-2 text-black"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-white">Memory</label>
+              <input
+                type="number"
+                name="memory"
+                value={formData.memory}
+                onChange={handleInputChange}
+                className="w-full rounded border px-3 py-2 text-black"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-white">Product Images (Max 3 images)</label>
+              {imagePreviews.length > 0 && (
+                <div className="flex gap-2 mb-4">
+                  {imagePreviews.map((src, idx) => (
+                    <img key={idx} src={src} alt={`Product Preview ${idx + 1}`} className="w-20 h-20 object-cover rounded" />
+                  ))}
                 </div>
-              ) : null}
+              )}
               <input
                 type="file"
-                name="imageUrl"
+                name="images"
                 accept="image/*"
+                multiple
                 onChange={handleInputChange}
                 className="w-full rounded border px-3 py-2 text-black"
               />
@@ -395,38 +490,53 @@ const Create = () => {
             ) : (
               <div className="text-white p-6 space-y-4 border border-gray-700 rounded-lg">
                 <h3 className="text-2xl font-bold text-ajo_offWhite mb-4">{singleProduct.name}</h3>
-               {singleProduct.imageUrl && (
-  <Image
-    src={singleProduct.imageUrl}  
-    alt={singleProduct.name}
-    width={200}
-    height={200}
-    className="object-cover rounded mb-4"
-  />
-)}<div className="space-y-4">
-  <p className="flex items-start">
-    <span className="w-32 font-semibold text-ajo_offWhite">Description:</span>
-    <span className="flex-1">{singleProduct.description}</span>
-  </p>
-  <p className="flex items-center">
-    <span className="w-32 font-semibold text-ajo_offWhite">Price:</span>
-    <span className="flex-1">{singleProduct.price}</span>
-  </p>
-  <p className="flex items-center">
-    <span className="w-32 font-semibold text-ajo_offWhite">Category:</span>
-    <span className="flex-1">{singleProduct.category}</span>
-  </p>
-  <p className="flex items-center">
-    <span className="w-32 font-semibold text-ajo_offWhite">Brand:</span>
-    <span className="flex-1">{singleProduct.brand}</span>
-  </p>
-  <p className="flex items-center">
-    <span className="w-32 font-semibold text-ajo_offWhite">Stock:</span>
-    <span className="flex-1">{singleProduct.stock}</span>
-  </p>
-</div>
-
-                
+                {singleProduct.imageUrl && singleProduct.imageUrl.length > 0 && (
+                  <div className="flex gap-2 mb-4">
+                    {singleProduct.imageUrl.map((src, idx) => (
+                      <Image key={idx} src={src} alt={singleProduct.name + '-' + idx} width={100} height={100} className="object-cover rounded" />
+                    ))}
+                  </div>
+                )}
+                <div className="space-y-4">
+                  <p className="flex items-start">
+                    <span className="w-32 font-semibold text-ajo_offWhite">Description:</span>
+                    <span className="flex-1">{singleProduct.description}</span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="w-32 font-semibold text-ajo_offWhite">SKU:</span>
+                    <span className="flex-1">{singleProduct.sku}</span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="w-32 font-semibold text-ajo_offWhite">Price:</span>
+                    <span className="flex-1 font-bold text-lg">₦ {AmountFormatter(singleProduct.price)}</span>
+                    {singleProduct.discount > 0 && (
+                      <span className="ml-2 bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded">-{singleProduct.discount}%</span>
+                    )}
+                    {singleProduct.costBeforeDiscount > singleProduct.price && (
+                      <span className="ml-2 text-xs text-gray-400 line-through">₦ {AmountFormatter(singleProduct.costBeforeDiscount)}</span>
+                    )}
+                  </p>
+                  <p className="flex items-center">
+                    <span className="w-32 font-semibold text-ajo_offWhite">Category:</span>
+                    <span className="flex-1">{singleProduct.category}</span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="w-32 font-semibold text-ajo_offWhite">Brand:</span>
+                    <span className="flex-1">{singleProduct.brand}</span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="w-32 font-semibold text-ajo_offWhite">Stock:</span>
+                    <span className="flex-1">{singleProduct.stock} items left</span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="w-32 font-semibold text-ajo_offWhite">Size:</span>
+                    <span className="flex-1">{singleProduct.size}</span>
+                  </p>
+                  <p className="flex items-center">
+                    <span className="w-32 font-semibold text-ajo_offWhite">Memory:</span>
+                    <span className="flex-1">{singleProduct.memory}</span>
+                  </p>
+                </div>
               </div>
             )
           )}
@@ -501,22 +611,76 @@ const Create = () => {
                 />
               </div>
               <div>
-                <label className="block text-white">Product Image</label>
-                {imagePreview ? (
-                  <div className="mb-4">
-                    <img
-                      src={imagePreview}
-                      alt="Product Preview"
-                      className="w-32 h-32 object-cover rounded"
-                    />
+                <label className="block text-white">SKU</label>
+                <input
+                  type="text"
+                  name="sku"
+                  value={formData.sku}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-white">Cost Before Discount</label>
+                <input
+                  type="number"
+                  name="costBeforeDiscount"
+                  value={formData.costBeforeDiscount}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-white">Discount (%)</label>
+                <input
+                  type="number"
+                  name="discount"
+                  value={formData.discount}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-white">Size</label>
+                <input
+                  type="number"
+                  name="size"
+                  value={formData.size}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-white">Memory</label>
+                <input
+                  type="number"
+                  name="memory"
+                  value={formData.memory}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-white">Product Images (Max 3 images)</label>
+                {imagePreviews.length > 0 && (
+                  <div className="flex gap-2 mb-4">
+                    {imagePreviews.map((src, idx) => (
+                      <img key={idx} src={src} alt={`Product Preview ${idx + 1}`} className="w-20 h-20 object-cover rounded" />
+                    ))}
                   </div>
-                ) : null}
+                )}
                 <input
                   type="file"
-                  name="imageUrl"
+                  name="images"
                   accept="image/*"
+                  multiple
                   onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-white"
+                  className="w-full rounded border px-3 py-2 text-black"
                 />
               </div>
               {errors.general && <div className="text-red-500">{errors.general}</div>}
@@ -568,18 +732,24 @@ const Create = () => {
                   <td className="px-6 py-4 whitespace-nowrap">{idx + 1}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{product.description}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.price}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="font-bold text-lg">₦ {AmountFormatter(product.price)}</span>
+                    {product.discount > 0 && (
+                      <span className="ml-2 bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded">-{product.discount}%</span>
+                    )}
+                    {product.costBeforeDiscount > product.price && (
+                      <span className="block text-xs text-gray-400 line-through">₦ {AmountFormatter(product.costBeforeDiscount)}</span>
+                    )}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{product.brand}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.stock}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.stock} items left</td>
                    <td className="px-6 py-4">
-    {product.imageUrl ? (
-      <div className="flex justify-center">
-        <img 
-          src={product.imageUrl} 
-          alt={product.name} 
-          className="h-20 w-20 object-cover rounded-lg border border-gray-300 shadow-sm" 
-        />
+    {product.imageUrl && product.imageUrl.length > 0 ? (
+      <div className="flex gap-2">
+        {product.imageUrl.map((src, idx) => (
+          <Image key={idx} src={src} alt={product.name + '-' + idx} width={50} height={50} className="object-cover rounded" />
+        ))}
       </div>
     ) : (
       <div className="flex justify-center">
