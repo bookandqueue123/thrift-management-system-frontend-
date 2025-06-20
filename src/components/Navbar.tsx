@@ -1681,7 +1681,6 @@ export const Sidebar = ({
 // };
 
 
-
 export const SuperAdminSidebar = ({
   onShow,
   setShow,
@@ -1697,6 +1696,9 @@ export const SuperAdminSidebar = ({
   const [itemsDropdownIsOpen, setItemsDropdownIsOpen] = useState(false);
   const [subscriptionDropdownIsOpen, setSubscriptionDropdownIsOpen] =
     useState(false);
+  const [pickupStationDropdownIsOpen, setPickupStationDropdownIsOpen] =
+    useState(false);
+
   const toggleSidebar = () => {
     return onShow ? "visible" : "invisible";
   };
@@ -1806,6 +1808,7 @@ export const SuperAdminSidebar = ({
             {[
               "subscription-report",
               "item/purpose",
+              "pick-up-station",
               "settings",
               "sign out",
             ].map((label) => (
@@ -1832,6 +1835,16 @@ export const SuperAdminSidebar = ({
                     }}
                   >
                     {label}
+                  </Link>
+                ) : label === "pick-up-station" ? (
+                  <Link
+                    href="/superadmin/pick-up-station"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPickupStationDropdownIsOpen(!pickupStationDropdownIsOpen);
+                    }}
+                  >
+                    pick up station
                   </Link>
                 ) : label === "subscription-report" ? (
                   <Link
@@ -1875,6 +1888,15 @@ export const SuperAdminSidebar = ({
                 )}
 
                 {label === "item/purpose" && (
+                  <Image
+                    src="/arrow_down.svg"
+                    alt="arrow down"
+                    width={8}
+                    height={6}
+                  />
+                )}
+
+                {label === "pick-up-station" && (
                   <Image
                     src="/arrow_down.svg"
                     alt="arrow down"
@@ -1927,6 +1949,23 @@ export const SuperAdminSidebar = ({
                       className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
                     >
                       Savings settings
+                    </Link> */}
+                  </div>
+                )}
+
+                {label === "pick-up-station" && pickupStationDropdownIsOpen && (
+                  <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+                    <Link
+                      href={`/superadmin/getpick-station`}
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                       Create-pick-up-station
+                    </Link>
+                    {/* <Link
+                      href="/superadmin/pickup-station"
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      Create-pick-up-station
                     </Link> */}
                   </div>
                 )}
