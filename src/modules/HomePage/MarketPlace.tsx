@@ -13,7 +13,7 @@ interface Product {
   price: number;
   category: string;
   brand: string;
-  imageUrl?: string;
+  imageUrl?: string | string[];
   stock: number;
   rating?: number;
   reviews?: number;
@@ -303,7 +303,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className="w-full h-48 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity">
             {product.imageUrl ? (
               <img
-                src={product.imageUrl}
+                src={Array.isArray(product.imageUrl) ? product.imageUrl[0] : product.imageUrl}
                 alt={product.name}
                 className="w-full h-full object-contain"
                 onError={handleImageError}
