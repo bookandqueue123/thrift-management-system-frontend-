@@ -9,6 +9,17 @@ import { StatusIndicator } from '@/components/StatusIndicator';
 import Image from 'next/image';
 import AmountFormatter from '@/utils/AmountFormatter';
 
+interface Promo {
+  code?: string;
+  percentage?: number;
+  status: string;
+  startDate?: string;
+  endDate?: string;
+  minimumPurchase: number;
+  maxUsage?: number;
+  currentUsage?: number;
+}
+
 interface Product {
   _id: string;
   name: string;
@@ -23,6 +34,7 @@ interface Product {
   memory: number;
   imageUrl?: string[];
   stock: number;
+  promo?: Promo;
 }
 
 type ProductFormData = {
@@ -41,6 +53,15 @@ type ProductFormData = {
   thirdProductImage?: File;
   productImage?: File;
   stock: string;
+  promo: {
+    code: string;
+    percentage: string;
+    status: 'active' | 'inactive';
+    startDate: string;
+    endDate: string;
+    minimumPurchase: string;
+    maxUsage: string;
+  };
 };
 
 interface FormErrors {
@@ -75,6 +96,15 @@ const Create = () => {
     thirdProductImage: undefined,
     productImage: undefined,
     stock: '',
+    promo: {
+      code: '',
+      percentage: '',
+      status: 'active',
+      startDate: '',
+      endDate: '',
+      minimumPurchase: '',
+      maxUsage: '',
+    },
   };
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
   const [imagePreviews, setImagePreviews] = useState<(string | undefined)[]>([undefined, undefined, undefined]);
@@ -116,6 +146,7 @@ const Create = () => {
       form.append('size', data.size);
       form.append('memory', data.memory);
       form.append('stock', data.stock);
+      form.append('promo', JSON.stringify(data.promo));
       if (data.firstProductImage) form.append('firstProductImage', data.firstProductImage);
       if (data.secondProductImage) form.append('secondProductImage', data.secondProductImage);
       if (data.thirdProductImage) form.append('thirdProductImage', data.thirdProductImage);
@@ -150,6 +181,7 @@ const Create = () => {
       form.append('size', data.size);
       form.append('memory', data.memory);
       form.append('stock', data.stock);
+      form.append('promo', JSON.stringify(data.promo));
       if (data.productImage) form.append('productImage', data.productImage);
       return client.put(`/api/products/${id}`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -184,7 +216,9 @@ const Create = () => {
     },
   });
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
     const { name, value, files } = e.target as HTMLInputElement;
     if (showCreateModal && (name === 'firstProductImage' || name === 'secondProductImage' || name === 'thirdProductImage')) {
       if (files && files.length > 0) {
@@ -229,12 +263,29 @@ const Create = () => {
       setFormData((prev) => ({ ...prev, [name]: value, price }));
       return;
     }
+
+    if (name.startsWith('promo.')) {
+      const promoField = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        promo: {
+          ...prev.promo,
+          [promoField]: value,
+        },
+      }));
+      return;
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
  
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
+  };
+
+  const handlePromoCodeGeneration = () => {
+    const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+    setFormData((prev) => ({ ...prev, promo: { ...prev.promo, code } }));
   };
 
  
@@ -296,6 +347,7 @@ const Create = () => {
     'Brand',
     'Stock',
     'Image',
+    'Promo Status',
     'Actions',
   ];
 
@@ -331,6 +383,15 @@ const Create = () => {
           thirdProductImage: undefined,
           productImage: undefined,
           stock: String(productToEdit.stock),
+          promo: {
+            code: productToEdit.promo?.code || '',
+            percentage: productToEdit.promo?.percentage?.toString() || '',
+            status: (productToEdit.promo?.status as 'active' | 'inactive') || 'active',
+            startDate: productToEdit.promo?.startDate?.split('T')[0] || '',
+            endDate: productToEdit.promo?.endDate?.split('T')[0] || '',
+            minimumPurchase: productToEdit.promo?.minimumPurchase?.toString() || '0',
+            maxUsage: productToEdit.promo?.maxUsage?.toString() || '0',
+          },
         });
         setImagePreview(productToEdit.imageUrl && productToEdit.imageUrl[0] ? productToEdit.imageUrl[0] : undefined);
         setImagePreviews([undefined, undefined, undefined]);
@@ -427,51 +488,8 @@ const Create = () => {
                   required
                 />
               </div>
-                 <div>
-                <label className="block text-white">PlatForm Charge %</label>
-                <input
-                  type="number"
-                  name=""
-                  // value={formData.costBeforeDiscount}
-                  onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-black"
-                  required
-                />
-              </div>
-                 <div>
-                <label className="block text-white">Actual Price</label>
-                <input
-                  type="number"
-                  name=""
-                  // value={formData.costBeforeDiscount}
-                  onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-black"
-                  required
-                />
-              </div>
-              <div className='grid grid-cols-2 gap-2'>
-              
-                  <div className="">
-            <label className="m-0 text-xs font-medium text-white">Promo Code</label>
-           <div className="relative  w-full">
-             <input
-          name="promoCode"
-          type="text"
-          className="w-full rounded border px-3 py-2 text-black"
-        />
-        <button
-          type="button"
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-blue-500 px-4 py-2 text-sm text-white"
-          // onClick={handlePromoCodeGeneration}
-        >
-          Generate
-        </button>
-      </div>
-    </div>
-
-              
               <div>
-                <label className="block text-white">Promo Percentage</label>
+                <label className="block text-white">Platform Charge %</label>
                 <input
                   type="number"
                   name=""
@@ -481,18 +499,7 @@ const Create = () => {
                 />
               </div>
               <div>
-                <label className="block text-white">Referral Bonus %</label>
-                <input
-                  type="number"
-                  name="costBeforeDiscount"
-                  value={formData.costBeforeDiscount}
-                  onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-black"
-                 
-                />
-              </div>
-              <div>
-                <label className="block text-white">Referral Bonus Value</label>
+                <label className="block text-white">Actaul Price</label>
                 <input
                   type="number"
                   name=""
@@ -501,8 +508,26 @@ const Create = () => {
                  
                 />
               </div>
+              <div>
+                <label className="block text-white">Minimum Deposit Amount</label>
+                <input
+                  type="number"
+                  name=""
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                 
+                />
               </div>
-                
+              <div>
+                <label className="block text-white">Maximum Repayment Timeline</label>
+                <input
+                  type="number"
+                  name=""
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                 
+                />
+              </div>
               <div>
                 <label className="block text-white">Category</label>
                 <input
@@ -589,6 +614,102 @@ const Create = () => {
                   </div>
                 ))}
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-gray-600 p-4 rounded-md">
+                <h3 className="col-span-1 md:col-span-2 text-lg font-semibold text-white">Promotion</h3>
+                <div className="">
+                  <label className="m-0 text-xs font-medium text-white">Promo Code</label>
+                  <div className="relative w-full">
+                    <input
+                      name="promo.code"
+                      type="text"
+                      value={formData.promo.code}
+                      onChange={handleInputChange}
+                      className="w-full rounded border px-3 py-2 text-black"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-blue-500 px-4 py-1 text-sm text-white"
+                      onClick={handlePromoCodeGeneration}
+                    >
+                      Generate
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-white">Promo Percentage</label>
+                  <input
+                    type="number"
+                    name="promo.percentage"
+                    value={formData.promo.percentage}
+                    onChange={handleInputChange}
+                    className="w-full rounded border px-3 py-2 text-black"
+                  />
+                </div>
+                 <div>
+                  <label className="block text-white">Start Date</label>
+                  <input
+                    type="date"
+                    name="promo.startDate"
+                    value={formData.promo.startDate}
+                    onChange={handleInputChange}
+                    className="w-full rounded border px-3 py-2 text-black"
+                  />
+                </div>
+                 <div>
+                  <label className="block text-white">End Date</label>
+                  <input
+                    type="date"
+                    name="promo.endDate"
+                    value={formData.promo.endDate}
+                    onChange={handleInputChange}
+                    className="w-full rounded border px-3 py-2 text-black"
+                  />
+                </div>
+                
+                 <div>
+                  <label className="block text-white">Status</label>
+                  <select
+                    name="promo.status"
+                    value={formData.promo.status}
+                    onChange={handleInputChange}
+                    className="w-full rounded border px-3 py-2 text-black"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+                 <div>
+                  <label className="block text-white">Minimum Purchase</label>
+                  <input
+                    type="number"
+                    name="promo.minimumPurchase"
+                    value={formData.promo.minimumPurchase}
+                    onChange={handleInputChange}
+                    className="w-full rounded border px-3 py-2 text-black"
+                  />
+                </div>
+               
+                <div>
+                  <label className="block text-white">Max Usage</label>
+                  <input
+                    type="number"
+                    name="promo.maxUsage"
+                    value={formData.promo.maxUsage}
+                    onChange={handleInputChange}
+                    className="w-full rounded border px-3 py-2 text-black"
+                  />
+                </div>
+                <div>
+                <label className="block text-white">Referral Bonus %</label>
+                <input
+                  type="number"
+                  name=""
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                 
+                />
+              </div>
+              </div>
               {errors.general && <div className="text-red-500">{errors.general}</div>}
               <button
                 type="submit"
@@ -662,6 +783,61 @@ const Create = () => {
                       <span className="w-32 font-semibold text-ajo_offWhite">Memory:</span>
                       <span className="flex-1">{singleProduct.memory}</span>
                     </p>
+                    {singleProduct.promo && (
+                      <div className="border-t border-gray-600 pt-4 mt-4">
+                        <h4 className="text-lg font-semibold text-ajo_offWhite mb-3">Promotion Details</h4>
+                        <p className="flex items-center">
+                          <span className="w-32 font-semibold text-ajo_offWhite">Status:</span>
+                          <span className="flex-1">
+                            <span className={singleProduct.promo.status === 'active' 
+                              ? 'px-2 py-1 rounded text-xs bg-green-100 text-green-600' 
+                              : 'px-2 py-1 rounded text-xs bg-red-100 text-red-600'}>
+                              {singleProduct.promo.status}
+                            </span>
+                          </span>
+                        </p>
+                        {singleProduct.promo.code && (
+                          <p className="flex items-center">
+                            <span className="w-32 font-semibold text-ajo_offWhite">Promo Code:</span>
+                            <span className="flex-1 font-mono bg-gray-100 text-gray-800 px-2 py-1 rounded">{singleProduct.promo.code}</span>
+                          </p>
+                        )}
+                        {singleProduct.promo.percentage && (
+                          <p className="flex items-center">
+                            <span className="w-32 font-semibold text-ajo_offWhite">Discount:</span>
+                            <span className="flex-1">{singleProduct.promo.percentage}%</span>
+                          </p>
+                        )}
+                        {singleProduct.promo.startDate && (
+                          <p className="flex items-center">
+                            <span className="w-32 font-semibold text-ajo_offWhite">Start Date:</span>
+                            <span className="flex-1">{new Date(singleProduct.promo.startDate).toLocaleDateString()}</span>
+                          </p>
+                        )}
+                        {singleProduct.promo.endDate && (
+                          <p className="flex items-center">
+                            <span className="w-32 font-semibold text-ajo_offWhite">End Date:</span>
+                            <span className="flex-1">{new Date(singleProduct.promo.endDate).toLocaleDateString()}</span>
+                          </p>
+                        )}
+                        <p className="flex items-center">
+                          <span className="w-32 font-semibold text-ajo_offWhite">Min Purchase:</span>
+                          <span className="flex-1">₦ {AmountFormatter(singleProduct.promo.minimumPurchase)}</span>
+                        </p>
+                        {singleProduct.promo.maxUsage && (
+                          <p className="flex items-center">
+                            <span className="w-32 font-semibold text-ajo_offWhite">Max Usage:</span>
+                            <span className="flex-1">{singleProduct.promo.maxUsage}</span>
+                          </p>
+                        )}
+                        {singleProduct.promo.currentUsage !== undefined && (
+                          <p className="flex items-center">
+                            <span className="w-32 font-semibold text-ajo_offWhite">Current Usage:</span>
+                            <span className="flex-1">{singleProduct.promo.currentUsage}</span>
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )
@@ -806,6 +982,90 @@ const Create = () => {
                       className="w-full rounded border px-3 py-2 text-black"
                     />
                   </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-gray-600 p-4 rounded-md">
+                    <h3 className="col-span-1 md:col-span-2 text-lg font-semibold text-white">Promotion</h3>
+                    <div className="">
+                      <label className="m-0 text-xs font-medium text-white">Promo Code</label>
+                      <div className="relative w-full">
+                        <input
+                          name="promo.code"
+                          type="text"
+                          value={formData.promo.code}
+                          onChange={handleInputChange}
+                          className="w-full rounded border px-3 py-2 text-black"
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-blue-500 px-4 py-1 text-sm text-white"
+                          onClick={handlePromoCodeGeneration}
+                        >
+                          Generate
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-white">Promo Percentage</label>
+                      <input
+                        type="number"
+                        name="promo.percentage"
+                        value={formData.promo.percentage}
+                        onChange={handleInputChange}
+                        className="w-full rounded border px-3 py-2 text-black"
+                      />
+                    </div>
+                     <div>
+                      <label className="block text-white">Status</label>
+                      <select
+                        name="promo.status"
+                        value={formData.promo.status}
+                        onChange={handleInputChange}
+                        className="w-full rounded border px-3 py-2 text-black"
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                      </select>
+                    </div>
+                     <div>
+                      <label className="block text-white">Start Date</label>
+                      <input
+                        type="date"
+                        name="promo.startDate"
+                        value={formData.promo.startDate}
+                        onChange={handleInputChange}
+                        className="w-full rounded border px-3 py-2 text-black"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-white">End Date</label>
+                      <input
+                        type="date"
+                        name="promo.endDate"
+                        value={formData.promo.endDate}
+                        onChange={handleInputChange}
+                        className="w-full rounded border px-3 py-2 text-black"
+                      />
+                    </div>
+                     <div>
+                      <label className="block text-white">Minimum Purchase</label>
+                      <input
+                        type="number"
+                        name="promo.minimumPurchase"
+                        value={formData.promo.minimumPurchase}
+                        onChange={handleInputChange}
+                        className="w-full rounded border px-3 py-2 text-black"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-white">Max Usage</label>
+                      <input
+                        type="number"
+                        name="promo.maxUsage"
+                        value={formData.promo.maxUsage}
+                        onChange={handleInputChange}
+                        className="w-full rounded border px-3 py-2 text-black"
+                      />
+                    </div>
+                  </div>
                   {errors.general && <div className="text-red-500">{errors.general}</div>}
                   <button
                     type="submit"
@@ -867,6 +1127,17 @@ const Create = () => {
                         <div className="flex justify-center">
                           <span className="text-xs text-gray-400">No Image</span>
                         </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {product.promo ? (
+                        <span className={product.promo.status === 'active' 
+                          ? 'px-2 py-1 rounded text-xs bg-green-100 text-green-600' 
+                          : 'px-2 py-1 rounded text-xs bg-red-100 text-red-600'}>
+                          {product.promo.status}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">No Promo</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap relative">
