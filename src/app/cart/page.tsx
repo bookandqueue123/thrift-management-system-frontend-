@@ -6,6 +6,7 @@ import { useAuth } from "@/api/hooks/useAuth";
 import Navbar from "@/modules/HomePage/NavBar";
 import Footer from "@/modules/HomePage/Footer";
 import PayInBitsForm from "@/modules/form/Pay-inBit";
+import { useRouter } from "next/navigation";
 
 // Define a type for a cart item from the backend
 interface CartItemFromAPI {
@@ -56,9 +57,9 @@ interface CartItemForForm {
 }
 
 export default function CartPage() {
+  const router = useRouter();
   const { client } = useAuth();
   const queryClient = useQueryClient();
-  const [deliveryOption, setDeliveryOption] = useState<"door" | "pickup">("door");
   const [paymentMode, setPaymentMode] = useState<"full" | "bits">("full");
   const [showPayInBitsForm, setShowPayInBitsForm] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CartItemForForm | null>(null);
@@ -184,15 +185,14 @@ export default function CartPage() {
   // Calculate total for all items
   const calculateTotal = () => {
     if (!Array.isArray(cartItems) || cartItems.length === 0) {
-      return deliveryOption === "pickup" ? 21.0 : 0;
+      return 0;
     }
     
     const itemsTotal = cartItems.reduce(
       (sum, item) => sum + calculateItemSubtotal(item),
       0
     );
-    // Add pickup fee if applicable
-    return itemsTotal + (deliveryOption === "pickup" ? 21.0 : 0);
+    return itemsTotal;
   };
 
   // Calculate minimum deposit (20% of total)
@@ -205,7 +205,7 @@ export default function CartPage() {
   const getMinimumDepositDisplay = () => {
     const twentyPercent = calculateTotal() * 0.2;
     if (twentyPercent < 400) {
-      return `${calculateMinimumDeposit().toFixed(2)} (minimum of $400)`;
+      return `${calculateMinimumDeposit().toFixed(2)} (minimum of ₦400)`;
     }
     return `${calculateMinimumDeposit().toFixed(2)}`;
   };
@@ -265,8 +265,7 @@ export default function CartPage() {
       setShowPayInBitsForm(true);
     } else {
       // Handle full payment checkout
-      console.log("Processing full payment checkout...");
-      // Add your full payment logic here
+      router.push('/order-confimation');
     }
   };
   
@@ -332,120 +331,6 @@ export default function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column: Delivery Details and Payment Mode */}
             <div className="lg:col-span-1 space-y-6">
-              {/* Delivery Details */}
-              <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                  Delivery Details
-                </h2>
-
-                <div className="space-y-4">
-                  <div>
-                    <label
-                      htmlFor="location"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Choose your Location
-                    </label>
-                    <select
-                      id="location"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-                    >
-                      <option>Lagos, Nigeria</option>
-                      <option>Abuja, Nigeria</option>
-                      <option>Port Harcourt, Nigeria</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="area"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Area
-                    </label>
-                    <select
-                      id="area"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-                    >
-                      <option>Ikeja</option>
-                      <option>Lekki</option>
-                      <option>Victoria Island</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="address"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Address
-                    </label>
-                    <input
-                      type="text"
-                      id="address"
-                      placeholder="Input Address"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-                    />
-                  </div>
-
-                  <div className="pt-2">
-                    <p className="text-sm font-medium text-gray-700 mb-2">
-                      Choose Your Preferred Mode of Delivery
-                    </p>
-                    <div className="space-y-3">
-                      <label className="flex items-center justify-between cursor-pointer">
-                        <div className="flex items-center">
-                          <input
-                            type="radio"
-                            name="delivery"
-                            value="door"
-                            checked={deliveryOption === "door"}
-                            onChange={() => setDeliveryOption("door")}
-                            className="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500"
-                          />
-                          <span className="ml-2 text-sm text-gray-700">
-                            Door Delivery
-                          </span>
-                        </div>
-                        <span className="text-sm font-semibold text-gray-800">
-                          $0.00
-                        </span>
-                      </label>
-
-                      <label className="flex items-center justify-between cursor-pointer">
-                        <div className="flex items-center">
-                          <input
-                            type="radio"
-                            name="delivery"
-                            value="pickup"
-                            checked={deliveryOption === "pickup"}
-                            onChange={() => setDeliveryOption("pickup")}
-                            className="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500"
-                          />
-                          <span className="ml-2 text-sm text-gray-700">
-                            Pick Up
-                          </span>
-                        </div>
-                        <span className="text-sm font-semibold text-gray-800">
-                          $21.00
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-gray-200 pt-4 mt-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-gray-800">
-                        Total
-                      </span>
-                      <span className="text-2xl font-extrabold text-gray-800">
-                        ${calculateTotal().toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Payment Mode */}
               <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">
@@ -491,7 +376,7 @@ export default function CartPage() {
                       <div className="flex justify-between items-center w-full">
                         <span className="text-sm text-gray-600">Minimum Deposit Amount:</span>
                         <span className="text-sm font-semibold text-gray-800">
-                          $ 400
+                          ₦ 400
                         </span>
                       </div>
                       <div className="flex justify-between items-center w-full">
@@ -501,6 +386,16 @@ export default function CartPage() {
                     </div>
                   </div>
                 )}
+                 <div className="border-t border-gray-200 pt-4 mt-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-bold text-gray-800">
+                        Total
+                      </span>
+                      <span className="text-2xl font-extrabold text-gray-800">
+                        ₦{calculateTotal().toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
               </div>
 
               <button 
@@ -549,7 +444,7 @@ export default function CartPage() {
                                 {item.name}
                               </div>
                               <div className="text-xs text-blue-600">
-                                ${item.price.toFixed(2)}
+                                ₦{item.price.toFixed(2)}
                               </div>
                             </div>
                           </div>
@@ -576,10 +471,10 @@ export default function CartPage() {
                           </div>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                          ${item.price.toFixed(2)}
+                          ₦{item.price.toFixed(2)}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
-                          ${calculateItemSubtotal(item).toFixed(2)}
+                          ₦{calculateItemSubtotal(item).toFixed(2)}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button

@@ -78,10 +78,11 @@ export default function ProductDetailPage({
 
   // Add to cart mutation
   const addToCartMutation = useMutation({
-    mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
+    mutationFn: async ({ productId, quantity, price }: { productId: string; quantity: number; price: number }) => {
       const res = await client.post('/api/cart', {
         productId,
-        quantity: quantity.toString()
+        quantity: quantity.toString(),
+        price: price
       });
       return res.data;
     },
@@ -138,7 +139,8 @@ export default function ProductDetailPage({
     try {
       await addToCartMutation.mutateAsync({
         productId: product._id,
-        quantity: quantity
+        quantity: quantity,
+        price: product.price
       });
     } catch (error) {
       console.error('Failed to add to cart:', error);
