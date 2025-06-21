@@ -1,9 +1,7 @@
 "use client"
-
 import React from 'react';
 import Image from 'next/image';
 import { ChevronRight, Home, Truck } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 // Mock data - replace with actual props
 const customerAddress = {
@@ -37,17 +35,7 @@ const shipment2 = {
   ],
 };
 
-interface OrderConfirmationProps {
-  paymentMode: 'full' | 'bits'; // Added paymentMode prop
-}
-
-const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ paymentMode }) => {
-  const router = useRouter();
-
-  const handleConfirmOrder = () => {
-    router.push('/payment');
-  };
-
+const OrderConfirmation = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-6xl mx-auto py-8 px-4">
@@ -141,22 +129,13 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ paymentMode }) =>
                 <span>Total</span>
                 <span>₦ {orderSummary.total.toLocaleString()}</span>
               </div>
-              {paymentMode === 'bits' && (
-                <div className="flex justify-between text-sm">
-                  <span>Payment Mode:</span>
-                  <span className="font-semibold">Pay little-by-little</span>
-                </div>
-              )}
             </div>
             <div className="mt-6">
               <div className="flex">
                 <input type="text" placeholder="Enter code" className="flex-grow border rounded-l-md p-2 text-sm" />
                 <button className="bg-gray-200 text-gray-600 rounded-r-md px-4 text-sm font-semibold">APPLY</button>
               </div>
-              <button 
-                onClick={handleConfirmOrder}
-                className="w-full bg-orange-500 text-white font-bold py-3 rounded-md mt-4 hover:bg-orange-600"
-              >
+              <button className="w-full bg-orange-500 text-white font-bold py-3 rounded-md mt-4 hover:bg-orange-600">
                 Confirm order
               </button>
             </div>
@@ -170,4 +149,4 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ paymentMode }) =>
   );
 };
 
-export default OrderConfirmation;
+export default OrderConfirmation; 
