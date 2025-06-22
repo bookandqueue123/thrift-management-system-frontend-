@@ -1,52 +1,76 @@
 "use client"
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { ChevronRight, Home, Truck } from 'lucide-react';
+import { Truck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/api/hooks/useAuth';
 
-// Mock data - replace with actual props
-const customerAddress = {
-  name: 'Favour Mbata',
-  address: 'Sabo yaba | Rivers - PORTHARCOURT-RUMUODUMAYA | +234 8104427559',
-};
-
-const orderSummary = {
-  itemsTotal: 11000,
-  deliveryFees: 3800,
-  total: 14800,
-};
-
-const shipment = {
-  store: 'oluwashidara store',
-  items: [
-    {
-      name: 'White Luxury Turtle Neck Long Sleeve - Pin Down',
-      image: '/market/Image2.png', 
-    },
-  ],
-};
-
-const shipment2 = {
-  store: 'Qualitinz Place',
-  items: [
-    {
-      name: 'Fidget Spinner',
-      image: '/market/Image3.png',
-    },
-  ],
-};
-
-interface OrderConfirmationProps {
-  paymentMode: 'full' | 'bits'; // Added paymentMode prop
+interface CartItemFromAPI {
+  _id: string;
+  product: {
+    _id: string;
+    name: string;
+    price: number;
+    imageUrl?: string;
+  };
+  name: string;
+  quantity: number;
+  price: number;
+  imageUrl?: string;
 }
 
-const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ paymentMode }) => {
+interface DeliveryInfo {
+  state: string;
+  city: string;
+  deliveryMode: string;
+  pickupStation?: string | null;
+}
+
+const OrderConfirmation: React.FC<{ paymentMode: 'full' | 'bits' }> = ({ paymentMode }) => {
   const router = useRouter();
+  const { client } = useAuth();
+  const [cartItems, setCartItems] = useState<CartItemFromAPI[]>([]);
+  const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const res = await client.get('/api/cart');
+        setCartItems(res.data.items || []);
+      } catch (e) {
+        setCartItems([]);
+      }
+    };
+    fetchCart();
+    // Fetch delivery info
+    const info = localStorage.getItem('deliveryInfo');
+    if (info) setDeliveryInfo(JSON.parse(info));
+    setIsLoading(false);
+  }, []);
+
+  const itemsTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // Example delivery fee logic
+  const deliveryFees = deliveryInfo?.deliveryMode === 'pickup' ? 1500 : 3800;
+  const total = itemsTotal + deliveryFees;
 
   const handleConfirmOrder = () => {
+    // Save order details to localStorage
+    const orderDetails = {
+      cartItems,
+      deliveryInfo,
+      total,
+      itemsTotal,
+      deliveryFees,
+    };
+    localStorage.setItem('orderDetails', JSON.stringify(orderDetails));
     router.push('/payment');
   };
+
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -58,13 +82,15 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ paymentMode }) =>
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center text-green-600 font-semibold">
-                  <span className="mr-2">1. CUSTOMER ADDRESS</span>
+                  <span className="mr-2">1. DELIVERY ADDRESS</span>
                 </div>
-                <button className="text-blue-600 hover:underline text-sm font-semibold">Change</button>
+                <button className="text-blue-600 hover:underline text-sm font-semibold" onClick={() => router.push('/cart/delivery')}>Change</button>
               </div>
               <div>
-                <p className="font-bold">{customerAddress.name}</p>
-                <p className="text-gray-600 text-sm">{customerAddress.address}</p>
+                <p className="font-bold">{deliveryInfo?.state}, {deliveryInfo?.city}</p>
+                {deliveryInfo?.deliveryMode === 'pickup' && deliveryInfo?.pickupStation && (
+                  <p className="text-gray-600 text-sm">Pickup: {deliveryInfo.pickupStation}</p>
+                )}
               </div>
             </div>
 
@@ -72,55 +98,36 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ paymentMode }) =>
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center text-green-600 font-semibold">
-                  <span className="mr-2">2. DELIVERY DETAILS</span>
+                  <span className="mr-2">2. DELIVERY MODE</span>
                 </div>
-                <button className="text-blue-600 hover:underline text-sm font-semibold">Change</button>
+                <button className="text-blue-600 hover:underline text-sm font-semibold" onClick={() => router.push('/cart/delivery')}>Change</button>
               </div>
               <div className="flex items-center justify-between">
-                <p className="font-bold">Door Delivery</p>
+                <p className="font-bold capitalize">{deliveryInfo?.deliveryMode === 'pickup' ? 'Pick Up' : 'Door Delivery'}</p>
                 <Truck className="text-orange-500" />
               </div>
-              <p className="text-gray-600 text-sm mb-4">Delivery between 01 July and 03 July.</p>
+              <p className="text-gray-600 text-sm mb-4">Delivery fees: ₦{deliveryFees.toLocaleString()}</p>
+            </div>
 
-              {/* Pickup station option */}
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <p className="text-green-600 font-bold text-sm">SAVE UP TO ₦ 2,300</p>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold">Switch to a pickup station starting from ₦ 1,500</p>
-                    <p className="text-gray-600 text-sm">Delivery between 01 July and 03 July.</p>
-                  </div>
-                  <button className="text-blue-600 hover:underline text-sm font-semibold flex items-center">
-                    Change <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Shipments */}
-              <div className="mt-6 space-y-4">
-                <h3 className="font-bold">Shipment 1/2</h3>
-                <div className="border p-4 rounded-lg">
-                  <p className="text-sm text-gray-500 mb-2">Fulfilled by {shipment.store}</p>
-                  <div className="flex items-center space-x-4">
-                    <Image src={shipment.items[0].image} alt={shipment.items[0].name} width={64} height={64} className="rounded-md" />
-                    <div>
-                      <p className="font-semibold text-sm">{shipment.items[0].name}</p>
-                      <p className="text-xs text-gray-500">Door Delivery</p>
+            {/* Products Ordered */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border">
+              <h3 className="font-bold mb-4">Products Ordered</h3>
+              <div className="space-y-4">
+                {cartItems.map((item) => (
+                  <div key={item._id} className="flex items-center gap-4 border-b pb-4 last:border-b-0">
+                    <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center">
+                      <Image src={item.imageUrl || item.product.imageUrl || '/market/Image8.png'} alt={item.name} width={64} height={64} className="rounded-md object-contain" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">{item.name}</p>
+                      <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold">₦{item.price.toLocaleString()}</p>
+                      <p className="text-xs text-gray-500">Subtotal: ₦{(item.price * item.quantity).toLocaleString()}</p>
                     </div>
                   </div>
-                </div>
-
-                <h3 className="font-bold">Shipment 2/2</h3>
-                <div className="border p-4 rounded-lg">
-                  <p className="text-sm text-gray-500 mb-2">Fulfilled by {shipment2.store}</p>
-                  <div className="flex items-center space-x-4">
-                    <Image src={shipment2.items[0].image} alt={shipment2.items[0].name} width={64} height={64} className="rounded-md" />
-                    <div>
-                      <p className="font-semibold text-sm">{shipment2.items[0].name}</p>
-                      <p className="text-xs text-gray-500">Door Delivery</p>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
@@ -130,16 +137,16 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ paymentMode }) =>
             <h2 className="text-xl font-bold mb-4">Order summary</h2>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-gray-600">Item&apos;s total (2)</span>
-                <span>₦ {orderSummary.itemsTotal.toLocaleString()}</span>
+                <span className="text-gray-600">Item&apos;s total ({cartItems.length})</span>
+                <span>₦ {itemsTotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Delivery fees</span>
-                <span>₦ {orderSummary.deliveryFees.toLocaleString()}</span>
+                <span>₦ {deliveryFees.toLocaleString()}</span>
               </div>
               <div className="flex justify-between font-bold text-lg border-t pt-3">
                 <span>Total</span>
-                <span>₦ {orderSummary.total.toLocaleString()}</span>
+                <span>₦ {total.toLocaleString()}</span>
               </div>
               {paymentMode === 'bits' && (
                 <div className="flex justify-between text-sm">
@@ -149,10 +156,6 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ paymentMode }) =>
               )}
             </div>
             <div className="mt-6">
-              <div className="flex">
-                <input type="text" placeholder="Enter code" className="flex-grow border rounded-l-md p-2 text-sm" />
-                <button className="bg-gray-200 text-gray-600 rounded-r-md px-4 text-sm font-semibold">APPLY</button>
-              </div>
               <button 
                 onClick={handleConfirmOrder}
                 className="w-full bg-orange-500 text-white font-bold py-3 rounded-md mt-4 hover:bg-orange-600"
