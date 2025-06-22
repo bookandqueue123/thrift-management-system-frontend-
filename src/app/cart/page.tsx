@@ -7,6 +7,8 @@ import Navbar from "@/modules/HomePage/NavBar";
 import Footer from "@/modules/HomePage/Footer";
 import PayInBitsForm from "@/modules/form/Pay-inBit";
 import { useRouter } from "next/navigation";
+import { useSelector } from 'react-redux';
+import { selectToken } from '@/slices/OrganizationIdSlice';
 
 // Define a type for a cart item from the backend
 interface CartItemFromAPI {
@@ -63,6 +65,12 @@ export default function CartPage() {
   const [paymentMode, setPaymentMode] = useState<"full" | "bits">("full");
   const [showPayInBitsForm, setShowPayInBitsForm] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CartItemForForm | null>(null);
+  const token = useSelector(selectToken);
+  // Promo code state
+  const [showPromo, setShowPromo] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState("");
+  const [promoError, setPromoError] = useState("");
 
   // Fetch cart items from backend
   const { 
@@ -259,14 +267,27 @@ export default function CartPage() {
 
   // Handler for checkout
   const handleCheckout = () => {
+    if (!token) {
+      router.push('/signin');
+      return;
+    }
     if (paymentMode === "bits") {
-      // Show PayInBits form for checkout
       setSelectedItem(Array.isArray(cartItems) && cartItems.length > 0 ? convertToFormItem(cartItems[0]) : null);
       setShowPayInBitsForm(true);
     } else {
-      // Handle full payment checkout
-      router.push('/order-confimation');
+      router.push('/cart/delivery');
     }
+  };
+
+  // Handler for applying promo code
+  const handleApplyPromo = () => {
+    if (!promoCode) {
+      setPromoError("Please enter a promo code.");
+      return;
+    }
+    setAppliedPromo(promoCode);
+    setPromoError("");
+    // Add logic for validating/applying promo code here
   };
   
   if (isLoading) {
@@ -317,17 +338,6 @@ export default function CartPage() {
           )}
         </div>
 
-        {safeCartItems.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-gray-500 text-lg mb-4">Your cart is empty</div>
-            <Link
-              href="/market-place"
-              className="inline-block bg-[#fedc57] text-white px-6 py-3 rounded-lg font-medium hover:bg-yellow-500 transition"
-            >
-              Continue Shopping
-            </Link>
-          </div>
-        ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column: Delivery Details and Payment Mode */}
             <div className="lg:col-span-1 space-y-6">
@@ -350,7 +360,6 @@ export default function CartPage() {
                       100% Full Payment
                     </span>
                   </label>
-                  
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="radio"
@@ -368,7 +377,31 @@ export default function CartPage() {
                     </div>
                   </label>
                 </div>
-
+              {/* Promo Code Section (inside payment mode, before total) */}
+              <div className="mt-6 mb-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter promo code"
+                    value={promoCode}
+                    onChange={e => setPromoCode(e.target.value)}
+                    className="border rounded p-2 w-full"
+                  />
+                  <button
+                    className="bg-orange-500 text-white px-4 py-2 rounded font-semibold hover:bg-orange-600 disabled:bg-orange-300"
+                    onClick={handleApplyPromo}
+                    disabled={!promoCode}
+                  >
+                    Apply
+                  </button>
+                </div>
+                {appliedPromo && (
+                  <span className="ml-2 text-green-600 font-semibold">Applied: {appliedPromo}</span>
+                )}
+                {promoError && (
+                  <span className="ml-2 text-red-600 text-sm">{promoError}</span>
+                )}
+              </div>
                 {/* Show payment details when "Pay in Bits" is selected */}
                 {paymentMode === "bits" && (
                   <div className="mt-4 p-4 bg-gray-50 rounded-lg border w-full">
@@ -415,14 +448,17 @@ export default function CartPage() {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Product
                       </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Product ID
+                    </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Quantity
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Price
+                      Price (₦)
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Subtotal
+                      Subtotal (₦)
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
                     </tr>
@@ -442,13 +478,11 @@ export default function CartPage() {
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900">
                                 {item.name}
-                              </div>
-                              <div className="text-xs text-blue-600">
-                                ₦{item.price.toFixed(2)}
-                              </div>
+                            </div>
                             </div>
                           </div>
                         </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-500">{item.product._id}</td>
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="flex items-center border border-gray-300 rounded w-24">
                             <button
@@ -492,7 +526,6 @@ export default function CartPage() {
               </div>
             </div>
           </div>
-        )}
       </div>
       <PayInBitsForm
         isOpen={showPayInBitsForm}
