@@ -288,41 +288,29 @@ const GetPickStation = () => {
               ))}
             </select>
           </div>
-          <div>
-            <label className="block text-xs font-semibold mb-1 text-white">Available Only</label>
-            <button
-              className="rounded-2xl border px-3 py-2 text-black bg-white"
-              onClick={() => {
-                fetchAvailableStations();
-                setShowAvailableModal(true);
-              }}
-            >
-              Show Available
-            </button>
+          <div className="flex flex-col gap-2 w-full sm:w-auto sm:flex-row sm:gap-4">
+            <div className="flex-1">
+              <label className="block text-xs font-semibold mb-1 text-white">Available Only</label>
+              <button
+                className="rounded-2xl border px-3 py-2 text-black bg-white w-full h-12 sm:w-40 sm:h-12"
+                onClick={() => {
+                  fetchAvailableStations();
+                  setShowAvailableModal(true);
+                }}
+              >
+                Show Available
+              </button>
+            </div>
+            <div className="flex-1">
+              <label className="block text-xs font-semibold mb-1 text-white">Nearby</label>
+              <button
+                className="rounded-2xl border px-3 py-2 text-black bg-white w-full h-12 sm:w-40 sm:h-12"
+                onClick={() => setShowNearbyModal(true)}
+              >
+                Find Nearby
+              </button>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-semibold mb-1 text-white">Nearby</label>
-            <button
-              className="rounded-2xl border px-3 py-2 text-black bg-white"
-              onClick={() => setShowNearbyModal(true)}
-            >
-              Find Nearby
-            </button>
-          </div>
-          <input
-            type="text"
-            placeholder="Search by name..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-[27%] rounded-2xl border px-3 py-2 text-black"
-          />
-          <input
-            type="text"
-            placeholder="City"
-            value={city}
-            onChange={e => setCity(e.target.value)}
-            className="w-[20%] rounded-2xl border px-3 py-2 text-black"
-          />
         </div>
         <div className="mt-8">
           <TransactionsTable

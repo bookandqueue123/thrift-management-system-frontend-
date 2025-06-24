@@ -137,8 +137,8 @@ export default function PayInBitsForm({ isOpen, onClose, selectedItem }: PayInBi
     // Close the current modal/form
     onClose()
 
-    // Navigate to the order confirmation page
-    router.push(`/order-confimation`)
+    // Navigate to the delivery details screen
+    router.push(`/cart/delivery`)
 
     // Reset form data
     setFormData({
