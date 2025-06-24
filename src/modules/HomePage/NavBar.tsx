@@ -159,11 +159,10 @@ export default function Navbar(): JSX.Element {
     <nav className="relative">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
      <Link href="https://finkia.com/" className="flex items-center space-x-3 rtl:space-x-reverse">
-          {isHomepage ? (
+        
             <Image src="/Logo.svg" width={100} height={100} alt="logo" />
-          ) : (
-            <Image src="/MAXWELL.png" width={100} height={100} alt="logo" />
-          )}
+         
+          
         </Link> 
        
         <button

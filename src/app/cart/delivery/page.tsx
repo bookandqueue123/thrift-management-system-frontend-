@@ -124,7 +124,7 @@ const DeliveryPage = () => {
       <div className="min-h-screen bg-gray-50 pb-12">
         <Navbar />
         <div className="max-w-2xl mx-auto px-4 py-8">
-          <h1 className="text-2xl font-bold mb-6">Delivery Details</h1>
+          <h1 className="text-2xl font-bold mb-6">Delivery details</h1>
           <div className="space-y-4 bg-white p-6 rounded-lg shadow border">
             <div>
               <label className="block text-sm font-medium mb-1">State</label>
@@ -205,7 +205,7 @@ const DeliveryPage = () => {
             </div>
             {deliveryMode === "pickup" && (
               <div>
-                <label className="block text-sm font-medium mb-1">Select Pickup Station</label>
+                <label className="block text-sm font-medium mb-1">Select Pickup center</label>
                 <input
                   type="text"
                   placeholder="Search pickup stations"
@@ -219,19 +219,19 @@ const DeliveryPage = () => {
                     onClick={() => setShowAvailableOnly(false)}
                     type="button"
                   >
-                    All Stations
+                    All centers
                   </button>
                   <button
                     className={`px-3 py-1 rounded ${showAvailableOnly ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'}`}
                     onClick={() => setShowAvailableOnly(true)}
                     type="button"
                   >
-                    Available Stations
+                    Available center&apo;s
                   </button>
                 </div>
                 {showAvailableOnly ? (
                   availableStations.length === 0 ? (
-                    <div className="text-gray-500 text-sm">No available stations found.</div>
+                    <div className="text-gray-500 text-sm">No available center found.</div>
                   ) : (
                     <select
                       className="w-full border rounded p-2"
@@ -246,14 +246,14 @@ const DeliveryPage = () => {
                   )
                 ) : (
                   isLoading ? (
-                    <div className="text-gray-500 text-sm">Loading stations...</div>
+                    <div className="text-gray-500 text-sm">Loading center&apos;...</div>
                   ) : (
                     <select
                       className="w-full border rounded p-2"
                       value={selectedPickup}
                       onChange={e => setSelectedPickup(e.target.value)}
                     >
-                      <option value="">Select Pickup Station</option>
+                      <option value="">Select Pickup center</option>
                       {pickupStations.map(station => (
                         <option key={station.id} value={station.name}>{station.name} - {station.address}</option>
                       ))}
@@ -269,7 +269,7 @@ const DeliveryPage = () => {
                 onClick={() => router.push("/cart")}
                 type="button"
               >
-                Back to Cart
+                Back to cart
               </button>
               <button
                 className="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600 font-semibold"

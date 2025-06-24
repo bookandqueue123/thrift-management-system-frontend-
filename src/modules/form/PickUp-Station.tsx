@@ -1,10 +1,11 @@
 "use client";
 import React, { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useAuth } from "@/api/hooks/useAuth";
+import { FaSpinner } from "react-icons/fa";
 
 export interface Address {
-  street: string;
+  street: string
   city: string;
   state: string;
   zipCode: string;
@@ -158,8 +159,55 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [message, setMessage] = useState('');
   const [autoFilledCoords, setAutoFilledCoords] = useState(false);
+  const [centreType, setCentreType] = useState<'new' | 'existing'>('new');
+  const [selectedMerchantId, setSelectedMerchantId] = useState<string>('');
   const queryClient = useQueryClient();
   const { client } = useAuth();
+
+  // Fetch merchants
+  const { data: merchants = [], isLoading: merchantsLoading } = useQuery({
+    queryKey: ['allManagers'],
+    queryFn: async () => {
+      const res = await client.get('/api/user?role=organisation');
+      return res.data;
+    },
+    enabled: centreType === 'existing',
+  });
+
+  // When merchant is selected, auto-populate form
+  React.useEffect(() => {
+    if (centreType === 'existing' && selectedMerchantId && merchants.length > 0) {
+      const merchant = merchants.find((m: any) => m._id === selectedMerchantId);
+      if (merchant) {
+        setForm((prev) => ({
+          ...prev,
+          name: merchant.organisationName || '',
+          code: merchant.organisationName|| '',
+          status: 'active',
+          address: {
+            street: merchant.officeAddress1 || '',
+            city: merchant.city || '',
+            state: merchant.state || '',
+            country: merchant.country || '',
+            zipCode: prev.address.zipCode,
+          },
+          googleMapLink: merchant.googleMapLink || '',
+          landmarkArea: merchant.landmarkArea || '',
+          contact: {
+            ...prev.contact,
+            phone: merchant.phoneNumber || '',
+            email: merchant.email || '',
+          },
+          manager: {
+            ...prev.manager,
+            fullName: merchant.contactFullName || '',
+            phone: merchant.contactPhoneNumber || merchant.phoneNumber || '',
+            email: merchant.contactEmail || merchant.email || '',
+          }
+        }));
+      }
+    }
+  }, [centreType, selectedMerchantId, merchants]);
 
   const createPickupStationMutation = useMutation({
     mutationFn: async (form: PickupStationForm) => {
@@ -305,14 +353,75 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
       case 1:
         return (
           <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-4 mb-6">
+              <div className="flex items-center gap-4">
+                <input
+                  type="radio"
+                  id="newCentre"
+                  name="centreType"
+                  value="new"
+                  checked={centreType === 'new'}
+                  onChange={() => {
+                    setCentreType('new');
+                    setSelectedMerchantId('');
+                    setForm(initialState);
+                  }}
+                  className="w-4 h-4 text-blue-600"
+                />
+                <label htmlFor="newCentre" className="text-sm font-medium text-gray-700">
+                  New Centre
+                </label>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <input
+                  type="radio"
+                  id="existingMerchant"
+                  name="centreType"
+                  value="existing"
+                  checked={centreType === 'existing'}
+                  onChange={() => setCentreType('existing')}
+                  className="w-4 h-4 text-blue-600"
+                />
+                <label htmlFor="existingMerchant" className="text-sm font-medium text-gray-700">
+                  Choose Existing Merchant
+                </label>
+              </div>
+
+              {centreType === 'existing' && (
+                <div className="pl-8 mt-2">
+                  <select
+                    value={selectedMerchantId}
+                    onChange={e => setSelectedMerchantId(e.target.value)}
+                    className="w-full px-2 py-3 border border-gray-300 rounded-lg"
+                  >
+                    <option value="">{merchantsLoading ? 'Loading...' : 'Select a merchant'}</option>
+                    {merchants.map((m: any) => (
+                      <option  key={m._id} value={m._id}>{m.email}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Center&apos;s Name/Business Name *</label>
-                <input name="name" value={form.name} onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg" required />
+                <input 
+                  name="name" 
+                  value={form.name} 
+                  onChange={handleChange} 
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg" 
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Center&apos;s Code *</label>
-                <input name="code" value={form.code} onChange={handleChange} className="w-full px-4 py-3 border border-gray-300 rounded-lg" required />
+                <input 
+                  name="code" 
+                  value={form.code} 
+                  onChange={handleChange} 
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg" 
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
@@ -485,9 +594,6 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
 
   return (
     <div className="min-h-screen p-0">
-      <div className="w-full flex items-center justify-between px-8 py-6 ">
-       
-      </div>
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-8 mt-8">
           <div className="mb-8">
