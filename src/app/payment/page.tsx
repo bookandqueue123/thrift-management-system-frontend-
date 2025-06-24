@@ -16,7 +16,7 @@ const PaymentPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    // Read order details from localStorage
+    
     const orderDetailsRaw = localStorage.getItem('orderDetails');
     if (!orderDetailsRaw) {
       setErrorMessage('Order details not found. Please try again.');
@@ -25,7 +25,7 @@ const PaymentPage = () => {
     }
     const orderDetails = JSON.parse(orderDetailsRaw);
     const { cartItems, deliveryInfo, total } = orderDetails;
-    // Build paymentData from orderDetails
+    
     const paymentData = {
       orderItems: cartItems.map((item: any) => ({
         product: item.product._id,

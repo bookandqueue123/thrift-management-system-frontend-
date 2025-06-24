@@ -42,6 +42,7 @@ export default function SuperAdminOrganisation() {
   );
   const [isOrganisationCreated, setIsOrganisationCreated] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+ 
   const {
     data: organizations,
     isLoading: isUserLoading,

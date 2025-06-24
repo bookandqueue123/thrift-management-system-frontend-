@@ -53,6 +53,10 @@ type ProductFormData = {
   thirdProductImage?: File;
   productImage?: File;
   stock: string;
+  minimumDepositAmount: string;
+  maximumRepaymentTimeline: string;
+  doorDeliveryTerms: string;
+  pickupTerms: string;
   promo: {
     code: string;
     percentage: string;
@@ -96,6 +100,10 @@ const Create = () => {
     thirdProductImage: undefined,
     productImage: undefined,
     stock: '',
+    minimumDepositAmount: '',
+    maximumRepaymentTimeline: '',
+    doorDeliveryTerms: '',
+    pickupTerms: '',
     promo: {
       code: '',
       percentage: '',
@@ -146,6 +154,10 @@ const Create = () => {
       form.append('size', data.size);
       form.append('memory', data.memory);
       form.append('stock', data.stock);
+      form.append('minimumDepositAmount', data.minimumDepositAmount);
+      form.append('maximumRepaymentTimeline', data.maximumRepaymentTimeline);
+      form.append('doorDeliveryTerms', data.doorDeliveryTerms);
+      form.append('pickupTerms', data.pickupTerms);
       form.append('promo', JSON.stringify(data.promo));
       if (data.firstProductImage) form.append('firstProductImage', data.firstProductImage);
       if (data.secondProductImage) form.append('secondProductImage', data.secondProductImage);
@@ -181,6 +193,10 @@ const Create = () => {
       form.append('size', data.size);
       form.append('memory', data.memory);
       form.append('stock', data.stock);
+      form.append('minimumDepositAmount', data.minimumDepositAmount);
+      form.append('maximumRepaymentTimeline', data.maximumRepaymentTimeline);
+      form.append('doorDeliveryTerms', data.doorDeliveryTerms);
+      form.append('pickupTerms', data.pickupTerms);
       form.append('promo', JSON.stringify(data.promo));
       if (data.productImage) form.append('productImage', data.productImage);
       return client.put(`/api/products/${id}`, form, {
@@ -294,7 +310,7 @@ const Create = () => {
     setErrors({});
     if (!formData.name || !formData.description || !formData.price || !formData.costBeforeDiscount || 
         !formData.discount || !formData.category || !formData.brand || !formData.sku || 
-        !formData.size || !formData.memory || !formData.stock) {
+        !formData.size || !formData.memory || !formData.stock || !formData.minimumDepositAmount || !formData.maximumRepaymentTimeline) {
       setErrors({ general: 'Please fill all required fields.' });
       return;
     }
@@ -309,7 +325,7 @@ const Create = () => {
 
     if (!formData.name || !formData.description || !formData.price || !formData.costBeforeDiscount || 
         !formData.discount || !formData.category || !formData.brand || !formData.sku || 
-        !formData.size || !formData.memory || !formData.stock) {
+        !formData.size || !formData.memory || !formData.stock || !formData.minimumDepositAmount || !formData.maximumRepaymentTimeline) {
       setErrors({ general: 'Please fill all required fields.' });
       return;
     }
@@ -383,6 +399,10 @@ const Create = () => {
           thirdProductImage: undefined,
           productImage: undefined,
           stock: String(productToEdit.stock),
+          minimumDepositAmount: (productToEdit as any).minimumDepositAmount?.toString() || '',
+          maximumRepaymentTimeline: (productToEdit as any).maximumRepaymentTimeline?.toString() || '',
+          doorDeliveryTerms: (productToEdit as any).doorDeliveryTerms || '',
+          pickupTerms: (productToEdit as any).pickupTerms || '',
           promo: {
             code: productToEdit.promo?.code || '',
             percentage: productToEdit.promo?.percentage?.toString() || '',
@@ -498,6 +518,16 @@ const Create = () => {
                  
                 />
               </div>
+               <div>
+                <label className="block text-white">Platform Charge Value </label>
+                <input
+                  type="number"
+                  name=""
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                 
+                />
+              </div>
               <div>
                 <label className="block text-white">Actaul Price</label>
                 <input
@@ -508,8 +538,8 @@ const Create = () => {
                  
                 />
               </div>
-              <div>
-                <label className="block text-white">Minimum Deposit Amount</label>
+               <div>
+                <label className="block text-white">Intesrest Rate (%) For little-by-little payment</label>
                 <input
                   type="number"
                   name=""
@@ -519,13 +549,43 @@ const Create = () => {
                 />
               </div>
               <div>
-                <label className="block text-white">Maximum Repayment Timeline</label>
+                <label className="block text-white">Minimum Deposit </label>
                 <input
                   type="number"
-                  name=""
+                  // name="minimumDepositAmount"
+                  // value={formData.minimumDepositAmount}
                   onChange={handleInputChange}
                   className="w-full rounded border px-3 py-2 text-black"
-                 
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-white">Maximum Repayment</label>
+                <input
+                  type="number"
+                  // name="maximumRepaymentTimeline"
+                  // value={formData.maximumRepaymentTimeline}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-white">Door delivery&apos;s terms and conditions</label>
+                <textarea
+                  name="doorDeliveryTerms"
+                  value={formData.doorDeliveryTerms}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-white">Pickup centre&apos;s terms and conditions</label>
+                <textarea
+                  name="pickupTerms"
+                  value={formData.pickupTerms}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
                 />
               </div>
               <div>
@@ -1065,6 +1125,46 @@ const Create = () => {
                         className="w-full rounded border px-3 py-2 text-black"
                       />
                     </div>
+                  </div>
+                  <div>
+                    <label className="block text-white">Minimum Deposit Amount</label>
+                    <input
+                      type="number"
+                      name="minimumDepositAmount"
+                      value={formData.minimumDepositAmount}
+                      onChange={handleInputChange}
+                      className="w-full rounded border px-3 py-2 text-black"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-white">Maximum Repayment Timeline</label>
+                    <input
+                      type="number"
+                      name="maximumRepaymentTimeline"
+                      value={formData.maximumRepaymentTimeline}
+                      onChange={handleInputChange}
+                      className="w-full rounded border px-3 py-2 text-black"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-white">Door delivery&apos;s terms and conditions</label>
+                    <textarea
+                      name="doorDeliveryTerms"
+                      value={formData.doorDeliveryTerms}
+                      onChange={handleInputChange}
+                      className="w-full rounded border px-3 py-2 text-black"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-white">Pickup centre&apos;s terms and conditions</label>
+                    <textarea
+                      name="pickupTerms"
+                      value={formData.pickupTerms}
+                      onChange={handleInputChange}
+                      className="w-full rounded border px-3 py-2 text-black"
+                    />
                   </div>
                   {errors.general && <div className="text-red-500">{errors.general}</div>}
                   <button
