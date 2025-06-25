@@ -60,6 +60,25 @@ export interface Manager {
   phone: string;
   email: string;
 }
+export interface StorageCapacity {
+  indoor: {
+    height: string;
+    length: string;
+    breadth: string;
+  };
+  outdoor: {
+    height: string;
+    length: string;
+    breadth: string;
+  };
+  refrigerated: {
+    height: string;
+    length: string;
+    breadth: string;
+  };
+  pickupCenterFee: string;
+ 
+}
 
 export interface PickupStationForm {
   name: string;
@@ -70,6 +89,7 @@ export interface PickupStationForm {
   contact: Contact;
   operatingHours: OperatingHours;
   capacity: Capacity;
+  storageCapacity: StorageCapacity; 
   facilities: string[];
   manager: Manager;
   googleMapLink: string;
@@ -111,6 +131,25 @@ const initialState: PickupStationForm = {
     currentOrders: '',
   },
   facilities: [],
+  storageCapacity: {
+    indoor: {
+      height: '',
+      length: '',
+      breadth: '',
+    },
+    outdoor: {
+      height: '',
+      length: '',
+      breadth: '',
+    },
+    refrigerated: {
+      height: '',
+      length: '',
+      breadth: '',
+    },
+    pickupCenterFee: '',
+   
+  },
   manager: {
     fullName: '',
     phone: '',
@@ -534,15 +573,212 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
               <label className="block text-base font-semibold text-gray-800 mb-2">Capacity</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-lg">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Maximum Orders *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Maximum orders *</label>
                   <input name="maxOrders" type="number" value={form.capacity.maxOrders} onChange={e => handleChange(e, ['capacity', 'maxOrders'])} className="w-full px-4 py-3 border border-gray-300 rounded-lg" required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Current Orders *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Current orders *</label>
                   <input name="currentOrders" type="number" value={form.capacity.currentOrders} onChange={e => handleChange(e, ['capacity', 'currentOrders'])} className="w-full px-4 py-3 border border-gray-300 rounded-lg" required />
                 </div>
               </div>
             </div>
+              <div>
+        <label className="block text-base font-semibold text-gray-800 mb-2 mt-6">Storage capacity</label>
+           <div className="grid  gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Pickup centre fee ($)</label>
+              <input 
+                name="pickupCenterFee" 
+                type="number" 
+                step="0.01"
+                value={form.storageCapacity.pickupCenterFee} 
+                onChange={e => handleChange(e, ['storageCapacity', 'pickupCenterFee'])} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500" 
+                placeholder="Enter fee amount"
+              />
+            </div>
+           
+          </div>
+        {/* Indoor Products Storage */}
+        <div className="mb-4">
+          <h3 className="text-sm font-semibold  mb-2">Indoor products storage</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4  p-4 rounded-lg border ">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Height (m)</label>
+              <input 
+                name="indoorHeight" 
+                type="number" 
+                step="0.01"
+                value={form.storageCapacity.indoor.height} 
+                onChange={e => handleChange(e, ['storageCapacity', 'indoor', 'height'])} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                placeholder="Enter height"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Length (m)</label>
+              <input 
+                name="indoorLength" 
+                type="number" 
+                step="0.01"
+                value={form.storageCapacity.indoor.length} 
+                onChange={e => handleChange(e, ['storageCapacity', 'indoor', 'length'])} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                placeholder="Enter length"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Breadth (m)</label>
+              <input 
+                name="indoorBreadth" 
+                type="number" 
+                step="0.01"
+                value={form.storageCapacity.indoor.breadth} 
+                onChange={e => handleChange(e, ['storageCapacity', 'indoor', 'breadth'])} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                placeholder="Enter breadth"
+              />
+            </div>
+            <div className="md:col-span-3">
+              <div className="text-sm  font-medium">
+                Indoor Capacity: {
+                  (parseFloat(form.storageCapacity.indoor.height) || 0) * 
+                  (parseFloat(form.storageCapacity.indoor.length) || 0) * 
+                  (parseFloat(form.storageCapacity.indoor.breadth) || 0)
+                } cubic meters
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Outdoor Products Storage */}
+        <div className="mb-4">
+          <h3 className="text-sm font-semibold  mb-2">Outdoor Products storage</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4  p-4 rounded-lg border border-green-200">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Height (m)</label>
+              <input 
+                name="outdoorHeight" 
+                type="number" 
+                step="0.01"
+                value={form.storageCapacity.outdoor.height} 
+                onChange={e => handleChange(e, ['storageCapacity', 'outdoor', 'height'])} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" 
+                placeholder="Enter height"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Length (m)</label>
+              <input 
+                name="outdoorLength" 
+                type="number" 
+                step="0.01"
+                value={form.storageCapacity.outdoor.length} 
+                onChange={e => handleChange(e, ['storageCapacity', 'outdoor', 'length'])} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" 
+                placeholder="Enter length"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Breadth (m)</label>
+              <input 
+                name="outdoorBreadth" 
+                type="number" 
+                step="0.01"
+                value={form.storageCapacity.outdoor.breadth} 
+                onChange={e => handleChange(e, ['storageCapacity', 'outdoor', 'breadth'])} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" 
+                placeholder="Enter breadth"
+              />
+            </div>
+            <div className="md:col-span-3">
+              <div className="text-sm  font-medium">
+                Outdoor Capacity: {
+                  (parseFloat(form.storageCapacity.outdoor.height) || 0) * 
+                  (parseFloat(form.storageCapacity.outdoor.length) || 0) * 
+                  (parseFloat(form.storageCapacity.outdoor.breadth) || 0)
+                } cubic meters
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Refrigerated Products Storage */}
+        <div className="mb-4">
+          <h3 className="text-sm font-semibold mb-2">Refrigerated products storage</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4  p-4 rounded-lg border border-purple-200">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Height (m)</label>
+              <input 
+                name="refrigeratedHeight" 
+                type="number" 
+                step="0.01"
+                value={form.storageCapacity.refrigerated.height} 
+                onChange={e => handleChange(e, ['storageCapacity', 'refrigerated', 'height'])} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                placeholder="Enter height"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Length (m)</label>
+              <input 
+                name="refrigeratedLength" 
+                type="number" 
+                step="0.01"
+                value={form.storageCapacity.refrigerated.length} 
+                onChange={e => handleChange(e, ['storageCapacity', 'refrigerated', 'length'])} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                placeholder="Enter length"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Breadth (m)</label>
+              <input 
+                name="refrigeratedBreadth" 
+                type="number" 
+                step="0.01"
+                value={form.storageCapacity.refrigerated.breadth} 
+                onChange={e => handleChange(e, ['storageCapacity', 'refrigerated', 'breadth'])} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" 
+                placeholder="Enter breadth"
+              />
+            </div>
+            <div className="md:col-span-3">
+              <div className="text-sm  font-medium">
+                Refrigerated Capacity: {
+                  (parseFloat(form.storageCapacity.refrigerated.height) || 0) * 
+                  (parseFloat(form.storageCapacity.refrigerated.length) || 0) * 
+                  (parseFloat(form.storageCapacity.refrigerated.breadth) || 0)
+                } cubic meters
+              </div>
+            </div>
+          </div>
+        </div>
+
+      
+
+        
+        {/* <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+          <h3 className="text-sm font-semibold text-yellow-800 mb-2">Total Storage Capacity Summary</h3>
+          <div className="text-lg font-bold text-yellow-700">
+            Total Capacity: {
+              (
+                (parseFloat(form.storageCapacity.indoor.height) || 0) * 
+                (parseFloat(form.storageCapacity.indoor.length) || 0) * 
+                (parseFloat(form.storageCapacity.indoor.breadth) || 0)
+              ) + (
+                (parseFloat(form.storageCapacity.outdoor.height) || 0) * 
+                (parseFloat(form.storageCapacity.outdoor.length) || 0) * 
+                (parseFloat(form.storageCapacity.outdoor.breadth) || 0)
+              ) + (
+                (parseFloat(form.storageCapacity.refrigerated.height) || 0) * 
+                (parseFloat(form.storageCapacity.refrigerated.length) || 0) * 
+                (parseFloat(form.storageCapacity.refrigerated.breadth) || 0)
+              )
+            } cubic meters
+          </div>
+        </div> */}
+      </div>
             <div>
               <label className="block text-base font-semibold text-gray-800 mb-2 mt-6">Facilities</label>
               <div className="flex flex-wrap gap-4 bg-gray-50 p-4 rounded-lg">
@@ -555,18 +791,18 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
               </div>
             </div>
             <div>
-              <label className="block text-base font-semibold text-gray-800 mb-2 mt-6">Center&apos;s Manager</label>
+              <label className="block text-base font-semibold text-gray-800 mb-2 mt-6">Center&apos;s manager</label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-lg">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Manager &apos;s FullName *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Manager &apos;s fullName *</label>
                   <input name="fullName" value={form.manager.fullName} onChange={e => handleChange(e, ['manager', 'fullName'])} className="w-full px-4 py-3 border border-gray-300 rounded-lg" required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Manager &apos;s Phone Number*</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Manager &apos;s Phone number*</label>
                   <input name="phone" value={form.manager.phone} onChange={e => handleChange(e, ['manager', 'phone'])} className="w-full px-4 py-3 border border-gray-300 rounded-lg" required />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Manager&apos;s Email Address *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Manager&apos;s Email address *</label>
                   <input name="email" value={form.manager.email} onChange={e => handleChange(e, ['manager', 'email'])} className="w-full px-4 py-3 border border-gray-300 rounded-lg" required />
                 </div>
                 <div>
