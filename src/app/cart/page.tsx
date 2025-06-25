@@ -71,6 +71,11 @@ export default function CartPage() {
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState("");
   const [promoError, setPromoError] = useState("");
+  // Add state for preview data
+  const [previewData, setPreviewData] = useState<any>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState("");
+  const [repaymentMonths, setRepaymentMonths] = useState(2); // default to 2
 
   // Fetch cart items from backend
   const { 
@@ -256,24 +261,44 @@ export default function CartPage() {
     clearCartMutation.mutate();
   };
    
+  const handlePayInBitsPreview = async (selectedItem: CartItemForForm) => {
+    setPreviewLoading(true);
+    setPreviewError("");
+    setPreviewData(null);
+    try {
+      const res = await client.get(
+        `/api/payments/payment-preview?productId=${selectedItem.productId}&repaymentMonths=${repaymentMonths}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPreviewData(res.data);
+      setShowPayInBitsForm(true);
+    } catch (err: any) {
+      setPreviewError("Failed to fetch payment preview.");
+      setShowPayInBitsForm(true);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
   const handlePaymentModeChange = (mode: "full" | "bits") => {
     setPaymentMode(mode);
     if (mode === "bits") {
-      // Show the PayInBits form and set the first item as selected
-      setSelectedItem(Array.isArray(cartItems) && cartItems.length > 0 ? convertToFormItem(cartItems[0]) : null);
-      setShowPayInBitsForm(true);
+      const item = Array.isArray(cartItems) && cartItems.length > 0 ? convertToFormItem(cartItems[0]) : null;
+      setSelectedItem(item);
+      if (item) handlePayInBitsPreview(item);
     }
   };
 
   // Handler for checkout
   const handleCheckout = () => {
-    if (!token) {
-      router.push('/signin');
-      return;
-    }
+    // if (!token) {
+    //   router.push('/signin');
+    //   return;
+    // }
     if (paymentMode === "bits") {
-      setSelectedItem(Array.isArray(cartItems) && cartItems.length > 0 ? convertToFormItem(cartItems[0]) : null);
-      setShowPayInBitsForm(true);
+      const item = Array.isArray(cartItems) && cartItems.length > 0 ? convertToFormItem(cartItems[0]) : null;
+      setSelectedItem(item);
+      if (item) handlePayInBitsPreview(item);
     } else {
       router.push('/cart/delivery');
     }
@@ -406,16 +431,28 @@ export default function CartPage() {
                 {paymentMode === "bits" && (
                   <div className="mt-4 p-4 bg-gray-50 rounded-lg border w-full">
                     <div className="space-y-3 w-full">
-                      <div className="flex justify-between items-center w-full">
-                        <span className="text-sm text-gray-600">Minimum Deposit Amount:</span>
-                        <span className="text-sm font-semibold text-gray-800">
-                          ₦ 400
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center w-full">
-                        <span className="text-sm text-gray-600 pr-2">Maximum Repayment Timeline:</span>
-                        <span className="text-sm font-semibold text-gray-800 text-right">3 Months</span>
-                      </div>
+                      {previewLoading ? (
+                        <div className="text-sm text-gray-600">Loading payment details...</div>
+                      ) : previewData ? (
+                        <>
+                          <div className="flex justify-between items-center w-full">
+                            <span className="text-sm text-gray-600">
+                              {previewData.depositAmount === 400 ? "Minimum Deposit Amount:" : "Deposit Amount:"}
+                            </span>
+                            <span className="text-sm font-semibold text-gray-800">
+                              ₦{previewData.depositAmount?.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center w-full">
+                            <span className="text-sm text-gray-600 pr-2">
+                              {previewData.repaymentMonths === 3 ? "Maximum Repayment Timeline:" : "Repayment Timeline:"}
+                            </span>
+                            <span className="text-sm font-semibold text-gray-800 text-right">
+                              {previewData.repaymentMonths} Months
+                            </span>
+                          </div>
+                        </>
+                      ) : null}
                     </div>
                   </div>
                 )}
@@ -429,6 +466,21 @@ export default function CartPage() {
                       </span>
                     </div>
                   </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Repayment Period
+                </label>
+                <select
+                  value={repaymentMonths}
+                  onChange={e => setRepaymentMonths(Number(e.target.value))}
+                  className="border rounded p-2 w-full"
+                >
+                  <option value={1}>1 Month</option>
+                  <option value={2}>2 Months</option>
+                  <option value={3}>3 Months</option>
+                </select>
               </div>
 
               <button 
@@ -531,6 +583,9 @@ export default function CartPage() {
         isOpen={showPayInBitsForm}
         onClose={() => setShowPayInBitsForm(false)}
         selectedItem={selectedItem || undefined}
+        previewData={previewData}
+        previewLoading={previewLoading}
+        previewError={previewError}
       />
       <Footer />
     </div>
