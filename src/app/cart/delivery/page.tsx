@@ -15,6 +15,21 @@ interface PickupStation {
   address: string;
 }
 
+interface CartItem {
+  _id: string;
+  product: {
+    _id: string;
+    name: string;
+    price: number;
+    doorDeliveryTermsAndCondition?: string;
+    pickupCentreTermsAndCondition?: string;
+  };
+  name: string;
+  quantity: number;
+  price: number;
+  imageUrl?: string;
+}
+
 const PAGE_SIZE = 10;
 
 const DeliveryPage = () => {
@@ -32,6 +47,17 @@ const DeliveryPage = () => {
   const [availableStations, setAvailableStations] = useState<PickupStation[]>([]);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', content: '' });
+
+  // Fetch cart items to get product terms and conditions
+  const { data: cartData } = useQuery({
+    queryKey: ['cart'],
+    queryFn: async () => {
+      const res = await client.get('/api/cart');
+      return res.data;
+    },
+  });
+
+  const cartItems: CartItem[] = cartData?.items || [];
 
   // Get all states
   const states = statesAndLGAs[0]?.states || [];
@@ -78,15 +104,20 @@ const DeliveryPage = () => {
   };
 
   const handleViewTerms = (type: 'door' | 'pickup') => {
+    // Get terms from the first product in cart (assuming all products have same terms)
+    const firstProduct = cartItems[0]?.product;
+    
     if (type === 'door') {
+      const doorTerms = firstProduct?.doorDeliveryTermsAndCondition || 'No door delivery terms and conditions available for this product.';
       setModalContent({
         title: 'Door Delivery Terms and Conditions',
-        content: 'These are the terms and conditions for door delivery. This is a placeholder and should be replaced with actual terms from the product.',
+        content: doorTerms,
       });
     } else {
+      const pickupTerms = firstProduct?.pickupCentreTermsAndCondition || 'No pickup terms and conditions available for this product.';
       setModalContent({
         title: 'Pickup Terms and Conditions',
-        content: 'These are the terms and conditions for pickup. This is a placeholder and should be replaced with actual terms from the product.',
+        content: pickupTerms,
       });
     }
     setShowTermsModal(true);
@@ -109,7 +140,7 @@ const DeliveryPage = () => {
       return;
     }
     setError("");
-    // Save delivery info to localStorage or context as needed
+    // Save delivery info to localStorage
     const deliveryInfo = {
       state: selectedState,
       city: selectedCity,
@@ -117,6 +148,8 @@ const DeliveryPage = () => {
       pickupStation: deliveryMode === "pickup" ? selectedPickup : null,
     };
     localStorage.setItem("deliveryInfo", JSON.stringify(deliveryInfo));
+    
+    // Navigate to order confirmation - the component will fetch fresh cart data from API
     router.push("/order-confimation");
   };
 
@@ -334,7 +367,7 @@ const DeliveryPage = () => {
           setModalState={setShowTermsModal}
           title={modalContent.title}
         >
-          <div>{modalContent.content}</div>
+          <div className="whitespace-pre-wrap">{modalContent.content}</div>
         </Modal>
       )}
     </>

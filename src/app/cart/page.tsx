@@ -77,6 +77,13 @@ export default function CartPage() {
   const [previewError, setPreviewError] = useState("");
   const [repaymentMonths, setRepaymentMonths] = useState(2); // default to 2
 
+  // Redirect to /signin if no token
+  // useEffect(() => {
+  //   if (!token) {
+  //     router.push('/signin');
+  //   }
+  // }, [token, router]);
+
   // Fetch cart items from backend
   const { 
     data: cartData, 
@@ -291,10 +298,6 @@ export default function CartPage() {
 
   // Handler for checkout
   const handleCheckout = () => {
-    // if (!token) {
-    //   router.push('/signin');
-    //   return;
-    // }
     if (paymentMode === "bits") {
       const item = Array.isArray(cartItems) && cartItems.length > 0 ? convertToFormItem(cartItems[0]) : null;
       setSelectedItem(item);
@@ -320,7 +323,7 @@ export default function CartPage() {
       <div className="min-h-screen bg-gray-50 pb-12">
         <Navbar />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex justify-center items-center h-64">
+          <div className="flex justify-center  items-center h-64">
             <div className="text-lg text-gray-600">Loading cart...</div>
           </div>
         </div>
@@ -429,6 +432,7 @@ export default function CartPage() {
               </div>
                 {/* Show payment details when "Pay in Bits" is selected */}
                 {paymentMode === "bits" && (
+                  <>
                   <div className="mt-4 p-4 bg-gray-50 rounded-lg border w-full">
                     <div className="space-y-3 w-full">
                       {previewLoading ? (
@@ -455,6 +459,22 @@ export default function CartPage() {
                       ) : null}
                     </div>
                   </div>
+                  {/* Repayment Period only visible for 'bits' mode */}
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Repayment Period
+                    </label>
+                    <select
+                      value={repaymentMonths}
+                      onChange={e => setRepaymentMonths(Number(e.target.value))}
+                      className="border rounded p-2 w-full"
+                    >
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                        <option key={month} value={month}>{month} Month{month > 1 ? 's' : ''}</option>
+                      ))}
+                    </select>
+                  </div>
+                  </>
                 )}
                  <div className="border-t border-gray-200 pt-4 mt-4">
                     <div className="flex justify-between items-center">
@@ -466,21 +486,6 @@ export default function CartPage() {
                       </span>
                     </div>
                   </div>
-              </div>
-
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Repayment Period
-                </label>
-                <select
-                  value={repaymentMonths}
-                  onChange={e => setRepaymentMonths(Number(e.target.value))}
-                  className="border rounded p-2 w-full"
-                >
-                  <option value={1}>1 Month</option>
-                  <option value={2}>2 Months</option>
-                  <option value={3}>3 Months</option>
-                </select>
               </div>
 
               <button 

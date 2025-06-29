@@ -7,6 +7,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/api/hooks/useAuth";
 import Navbar from "@/modules/HomePage/NavBar";
 import Footer from "@/modules/HomePage/Footer";
+import { useSelector } from 'react-redux';
+import { selectToken } from '@/slices/OrganizationIdSlice';
 
 /** Updated Product interface to match API response **/
 interface Product {
@@ -22,6 +24,8 @@ interface Product {
   reviews?: number;
   badge?: string | null;
   subcategory?: string;
+  doorDeliveryTermsAndCondition?: string;
+  pickupCentreTermsAndCondition?: string;
 }
 
 /** Helper that returns an array of star icons **/
@@ -56,6 +60,13 @@ export default function ProductDetailPage({
   const queryClient = useQueryClient();
   const [quantity, setQuantity] = useState<number>(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const token = useSelector(selectToken);
+
+  React.useEffect(() => {
+    if (!token) {
+      router.push('/signin');
+    }
+  }, [token, router]);
 
   // Fetch single product
   const { data: product, isLoading: isLoadingProduct, error } = useQuery<Product>({
@@ -275,7 +286,7 @@ export default function ProductDetailPage({
     </button>
   </div>
 
-  {/* Add to Cart (same fixed height h-12) */}
+
   <button 
     onClick={handleAddToCart}
     disabled={isAddingToCart || addToCartMutation.isPending}
@@ -285,7 +296,6 @@ export default function ProductDetailPage({
     {isAddingToCart || addToCartMutation.isPending ? "Adding..." : "Add to cart"}
   </button>
 
-  {/* Buy Now (same fixed height h-12) */}
   <button className="h-12 px-6 border border-[#fedc57] text-[#fedc57] rounded-lg font-medium hover:bg-yellow-50 transition flex items-center justify-center sm:flex-1">
     Buy now
   </button>
@@ -294,7 +304,7 @@ export default function ProductDetailPage({
           </div>
         </div>
 
-        {/* Tabs Section */}
+     
         <div className="mt-12 bg-white rounded-lg border border-gray-200">
           <div className="border-b border-gray-200">
             <nav className="flex space-x-4 px-6">
@@ -310,7 +320,7 @@ export default function ProductDetailPage({
             </nav>
           </div>
 
-          {/* Only showing "Product Details" content by default */}
+         
           <div className="px-6 py-8 space-y-6">
             <h2 className="text-lg font-semibold text-gray-800">
               Product Details
@@ -319,7 +329,7 @@ export default function ProductDetailPage({
               {product.description}
             </p>
 
-            {/* Product Specifications */}
+           
             <div>
               <h3 className="text-md font-semibold text-gray-800 mb-2">
                 Product Specifications
@@ -332,7 +342,7 @@ export default function ProductDetailPage({
               </ul>
             </div>
 
-            {/* Shipping Info */}
+       
             <div>
               <h3 className="text-md font-semibold text-gray-800 mb-2">
                 Shipping Information
@@ -344,7 +354,7 @@ export default function ProductDetailPage({
               </ul>
             </div>
 
-            {/* Vendor Details */}
+           
             <div>
               <h3 className="text-md font-semibold text-gray-800 mb-2">
                 Vendor Details
@@ -364,7 +374,7 @@ export default function ProductDetailPage({
           </div>
         </div>
 
-        {/* Similar Products */}
+     
         {similarProducts.length > 0 && (
           <div className="mt-12">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
