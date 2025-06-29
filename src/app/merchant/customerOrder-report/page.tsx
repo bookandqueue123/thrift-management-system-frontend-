@@ -1,6 +1,7 @@
 import React from 'react'
-import CustomerOrder from "@/modules/customer/ecommerce-order/Order-report"
+import CustomerOrder from "@/modules/merchant/order-report/Customer-order"
 
+ 
 const page = () => {
   return (
     <div>

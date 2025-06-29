@@ -364,31 +364,27 @@ export default function PayInBitsForm({ isOpen, onClose, selectedItem, previewDa
           {previewData && (
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-2">Payment Schedule</h3>
-              <table className="min-w-full divide-y divide-gray-200 border">
-                <thead>
-                  <tr>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">#</th>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">Due Date</th>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">Total Payment</th>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">Principal</th>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">Interest</th>
-                    <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">Remaining</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {previewData.paymentSchedule?.map((schedule: any, idx: number) => (
-                    <tr key={idx}>
-                      <td className="px-2 py-1 text-center">{schedule.paymentNumber}</td>
-                      <td className="px-2 py-1 text-center">{new Date(schedule.dueDate).toLocaleDateString()}</td>
-                      <td className="px-2 py-1 text-center">₦{schedule.totalPayment.toLocaleString()}</td>
-                      <td className="px-2 py-1 text-center">₦{schedule.principalAmount.toLocaleString()}</td>
-                      <td className="px-2 py-1 text-center">₦{schedule.interestAmount.toLocaleString()}</td>
-                      <td className="px-2 py-1 text-center">₦{schedule.remainingBalance.toLocaleString()}</td>
+              <div className="max-w-md">
+                <table className="min-w-full divide-y divide-gray-200 border">
+                  <thead>
+                    <tr>
+                      <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">#</th>
+                      <th className="px-1 py-1 text-xs font-medium text-gray-500 uppercase">Due Date</th>
+                      <th className="px-1 py-1 text-xs font-medium text-gray-500 uppercase">Total Payment</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="mt-4 flex flex-col gap-2">
+                  </thead>
+                  <tbody>
+                    {previewData.paymentSchedule?.map((schedule: any, idx: number) => (
+                      <tr key={idx}>
+                        <td className="px-2 py-1 text-center">{schedule.paymentNumber}</td>
+                        <td className="px-1 py-1 text-center">{new Date(schedule.dueDate).toLocaleDateString()}</td>
+                        <td className="px-1 py-1 text-center">₦{schedule.totalPayment.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-1 flex flex-col gap-2">
                 <span><b>Initial Payment:</b> ₦{previewData.firstPayment?.toLocaleString()}</span>
                 <span><b>Total Cost:</b> ₦{previewData.totalCost?.toLocaleString()}</span>
                 <span><b>Monthly Payment:</b> ₦{previewData.monthlyPayment?.toLocaleString()}</span>

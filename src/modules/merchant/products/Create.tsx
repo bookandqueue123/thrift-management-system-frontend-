@@ -63,6 +63,18 @@ type ProductFormData = {
   platformFee: string;
   doorDeliveryTerms: string;
   pickupTerms: string;
+  doorDeliveryTermsAndCondition: string;
+  pickupCentreTermsAndCondition: string;
+  storageOutdoor: {
+    height: string;
+    length: string;
+    breadth: string;
+  };
+  storageRefrigerated: {
+    height: string;
+    length: string;
+    breadth: string;
+  };
   promo: {
     code: string;
     percentage: string;
@@ -115,6 +127,10 @@ const Create = () => {
     platformFee: '',
     doorDeliveryTerms: '',
     pickupTerms: '',
+    doorDeliveryTermsAndCondition: '',
+    pickupCentreTermsAndCondition: '',
+    storageOutdoor: { height: '', length: '', breadth: '' },
+    storageRefrigerated: { height: '', length: '', breadth: '' },
     promo: {
       code: '',
       percentage: '',
@@ -174,6 +190,10 @@ const Create = () => {
       form.append('platformFee', data.platformFee);
       form.append('doorDeliveryTerms', data.doorDeliveryTerms);
       form.append('pickupTerms', data.pickupTerms);
+      form.append('doorDeliveryTermsAndCondition', data.doorDeliveryTermsAndCondition);
+      form.append('pickupCentreTermsAndCondition', data.pickupCentreTermsAndCondition);
+      form.append('storageOutdoor', JSON.stringify(data.storageOutdoor));
+      form.append('storageRefrigerated', JSON.stringify(data.storageRefrigerated));
       form.append('promo', JSON.stringify(data.promo));
       if (data.firstProductImage) form.append('firstProductImage', data.firstProductImage);
       if (data.secondProductImage) form.append('secondProductImage', data.secondProductImage);
@@ -218,6 +238,10 @@ const Create = () => {
       form.append('platformFee', data.platformFee);
       form.append('doorDeliveryTerms', data.doorDeliveryTerms);
       form.append('pickupTerms', data.pickupTerms);
+      form.append('doorDeliveryTermsAndCondition', data.doorDeliveryTermsAndCondition);
+      form.append('pickupCentreTermsAndCondition', data.pickupCentreTermsAndCondition);
+      form.append('storageOutdoor', JSON.stringify(data.storageOutdoor));
+      form.append('storageRefrigerated', JSON.stringify(data.storageRefrigerated));
       form.append('promo', JSON.stringify(data.promo));
       if (data.productImage) form.append('productImage', data.productImage);
       return client.put(`/api/products/${id}`, form, {
@@ -313,6 +337,22 @@ const Create = () => {
       }));
       return;
     }
+    if (name.startsWith('storageOutdoor.')) {
+      const field = name.split('.')[1];
+      setFormData((prev) => ({
+        ...prev,
+        storageOutdoor: { ...prev.storageOutdoor, [field]: value },
+      }));
+      return;
+    }
+    if (name.startsWith('storageRefrigerated.')) {
+      const field = name.split('.')[1];
+      setFormData((prev) => ({
+        ...prev,
+        storageRefrigerated: { ...prev.storageRefrigerated, [field]: value },
+      }));
+      return;
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -385,10 +425,10 @@ const Create = () => {
     'Brand',
     'Stock',
     'Repayment Period (Months)',
-    'Min Repayment Amount',
-    'Min Deposit %',
     'Interest Rate %',
     'Platform Fee',
+    'Door Delivery Terms & Condition',
+    'Pickup Centre Terms & Condition',
     'Image',
     'Promo Status',
     'Actions',
@@ -426,7 +466,6 @@ const Create = () => {
           thirdProductImage: undefined,
           productImage: undefined,
           stock: String(productToEdit.stock),
-   
           maximumRepaymentTimeline: (productToEdit as any).maximumRepaymentTimeline?.toString() || '',
           repaymentPeriodInMonths: (productToEdit as any).repaymentPeriodInMonths?.toString() || '',
           minimumRepaymentAmount: (productToEdit as any).minimumRepaymentAmount?.toString() || '',
@@ -435,6 +474,10 @@ const Create = () => {
           platformFee: (productToEdit as any).platformFee?.toString() || '',
           doorDeliveryTerms: (productToEdit as any).doorDeliveryTerms || '',
           pickupTerms: (productToEdit as any).pickupTerms || '',
+          doorDeliveryTermsAndCondition: (productToEdit as any).doorDeliveryTermsAndCondition || '',
+          pickupCentreTermsAndCondition: (productToEdit as any).pickupCentreTermsAndCondition || '',
+          storageOutdoor: (productToEdit as any).storageOutdoor || { height: '', length: '', breadth: '' },
+          storageRefrigerated: (productToEdit as any).storageRefrigerated || { height: '', length: '', breadth: '' },
           promo: {
             code: productToEdit.promo?.code || '',
             percentage: productToEdit.promo?.percentage?.toString() || '',
@@ -618,24 +661,8 @@ const Create = () => {
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
-              <div>
-                <label className="block text-white">Door delivery&apos;s terms and conditions</label>
-                <textarea
-                  name="doorDeliveryTerms"
-                  value={formData.doorDeliveryTerms}
-                  onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-black"
-                />
-              </div>
-              <div>
-                <label className="block text-white">Pickup centre&apos;s terms and conditions</label>
-                <textarea
-                  name="pickupTerms"
-                  value={formData.pickupTerms}
-                  onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-black"
-                />
-              </div>
+             
+             
               <div>
                 <label className="block text-white">Category</label>
                 <input
@@ -725,6 +752,82 @@ const Create = () => {
                     />
                   </div>
                 ))}
+              </div>
+              <div>
+                <label className="block text-white">Door Delivery Terms &amp; Condition</label>
+                <textarea
+                  name="doorDeliveryTermsAndCondition"
+                  value={formData.doorDeliveryTermsAndCondition}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-white">Pickup Centre Terms &amp; Condition</label>
+                <textarea
+                  name="pickupCentreTermsAndCondition"
+                  value={formData.pickupCentreTermsAndCondition}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-white">Storage Outdoor (Height, Length, Breadth)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    name="storageOutdoor.height"
+                    placeholder="Height"
+                    value={formData.storageOutdoor.height}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                  <input
+                    type="number"
+                    name="storageOutdoor.length"
+                    placeholder="Length"
+                    value={formData.storageOutdoor.length}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                  <input
+                    type="number"
+                    name="storageOutdoor.breadth"
+                    placeholder="Breadth"
+                    value={formData.storageOutdoor.breadth}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-white">Storage Refrigerated (Height, Length, Breadth)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    name="storageRefrigerated.height"
+                    placeholder="Height"
+                    value={formData.storageRefrigerated.height}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                  <input
+                    type="number"
+                    name="storageRefrigerated.length"
+                    placeholder="Length"
+                    value={formData.storageRefrigerated.length}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                  <input
+                    type="number"
+                    name="storageRefrigerated.breadth"
+                    placeholder="Breadth"
+                    value={formData.storageRefrigerated.breadth}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-gray-600 p-4 rounded-md">
                 <h3 className="col-span-1 md:col-span-2 text-lg font-semibold text-white">Promotion</h3>
@@ -1219,44 +1322,80 @@ const Create = () => {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-white">Minimum deposit amount</label>
-                    <input
-                      type="number"
-                      name="minimumDepositAmount"
-                      // value={formData.minimumDepositAmount}
-                      onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">Maximum repayment timeline</label>
-                    <input
-                      type="number"
-                      name="maximumRepaymentTimeline"
-                      // value={formData.maximumRepaymentTimeline}
-                      onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">Door delivery&apos;s terms and conditions</label>
+                    <label className="block text-white">Door Delivery Terms &amp; Condition</label>
                     <textarea
-                      name="doorDeliveryTerms"
-                      value={formData.doorDeliveryTerms}
+                      name="doorDeliveryTermsAndCondition"
+                      value={formData.doorDeliveryTermsAndCondition}
                       onChange={handleInputChange}
                       className="w-full rounded border px-3 py-2 text-black"
                     />
                   </div>
                   <div>
-                    <label className="block text-white">Pickup centre&apos;s terms and conditions</label>
+                    <label className="block text-white">Pickup Centre Terms &amp; Condition</label>
                     <textarea
-                      name="pickupTerms"
-                      value={formData.pickupTerms}
+                      name="pickupCentreTermsAndCondition"
+                      value={formData.pickupCentreTermsAndCondition}
                       onChange={handleInputChange}
                       className="w-full rounded border px-3 py-2 text-black"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-white">Storage Outdoor (Height, Length, Breadth)</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        name="storageOutdoor.height"
+                        placeholder="Height"
+                        value={formData.storageOutdoor.height}
+                        onChange={handleInputChange}
+                        className="w-1/3 rounded border px-3 py-2 text-black"
+                      />
+                      <input
+                        type="number"
+                        name="storageOutdoor.length"
+                        placeholder="Length"
+                        value={formData.storageOutdoor.length}
+                        onChange={handleInputChange}
+                        className="w-1/3 rounded border px-3 py-2 text-black"
+                      />
+                      <input
+                        type="number"
+                        name="storageOutdoor.breadth"
+                        placeholder="Breadth"
+                        value={formData.storageOutdoor.breadth}
+                        onChange={handleInputChange}
+                        className="w-1/3 rounded border px-3 py-2 text-black"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-white">Storage Refrigerated (Height, Length, Breadth)</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        name="storageRefrigerated.height"
+                        placeholder="Height"
+                        value={formData.storageRefrigerated.height}
+                        onChange={handleInputChange}
+                        className="w-1/3 rounded border px-3 py-2 text-black"
+                      />
+                      <input
+                        type="number"
+                        name="storageRefrigerated.length"
+                        placeholder="Length"
+                        value={formData.storageRefrigerated.length}
+                        onChange={handleInputChange}
+                        className="w-1/3 rounded border px-3 py-2 text-black"
+                      />
+                      <input
+                        type="number"
+                        name="storageRefrigerated.breadth"
+                        placeholder="Breadth"
+                        value={formData.storageRefrigerated.breadth}
+                        onChange={handleInputChange}
+                        className="w-1/3 rounded border px-3 py-2 text-black"
+                      />
+                    </div>
                   </div>
                   {errors.general && <div className="text-red-500">{errors.general}</div>}
                   <button
@@ -1313,10 +1452,10 @@ const Create = () => {
                     <td className="px-6 py-4 whitespace-nowrap">{product.brand}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{product.stock} items left</td>
                     <td className="px-6 py-4 whitespace-nowrap">{(product as any).repaymentPeriodInMonths || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).minimumRepaymentAmount || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).minimumDepositPercentage || '-'}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{(product as any).interestRatePercentage || '-'}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{(product as any).platformFee || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).doorDeliveryTermsAndCondition || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).pickupCentreTermsAndCondition || '-'}</td>
                     <td className="px-6 py-4">
                       {product.imageUrl && product.imageUrl.length > 0 ? (
                         <Image src={product.imageUrl[0]} alt={product.name + '-0'} width={50} height={50} className="object-cover rounded" />
