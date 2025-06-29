@@ -1,6 +1,3 @@
-
-
-
 'use client';
 import React, { useState, useMemo } from 'react'
 import TransactionsTable from '@/components/Tables'
@@ -112,12 +109,24 @@ interface ApiResponse {
   };
 }
 
+// Fixed headers to match all the columns being displayed
 const headers = [
+  'S/N',
+  'Customer ID',
+  'Customer Name',
+  'Customer Email',
   'Product',
   'Description',
   'Quantity',
   'Amount',
-  'Product ID'
+  'Product ID',
+  'Order ID',
+  'Date & Time',
+  'Payment',
+  'Mode',
+  'Status',
+  'Delivery Cost',
+  'Total Cost'
 ];
 
 const AdminOrderReport = () => {
@@ -258,8 +267,6 @@ const AdminOrderReport = () => {
     }
   };
 
-
-
   if (isLoading) {
     return (
       <div className="text-white p-4">
@@ -353,8 +360,6 @@ const AdminOrderReport = () => {
           </span>
         )}
       </div>
-
-
 
       <TransactionsTable
         key={`${search}-${filteredOrders.length}`}
