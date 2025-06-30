@@ -6,11 +6,28 @@ import Navbar from "@/modules/HomePage/NavBar";
 import Footer from "@/modules/HomePage/Footer";
 import { useAuth } from '@/api/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
+import Modal from '@/components/Modal';
+import TransactionsTable from '@/components/Tables';
 
 interface PickupStation {
   id: string;
   name: string;
   address: string;
+}
+
+interface CartItem {
+  _id: string;
+  product: {
+    _id: string;
+    name: string;
+    price: number;
+    doorDeliveryTermsAndCondition?: string;
+    pickupCentreTermsAndCondition?: string;
+  };
+  name: string;
+  quantity: number;
+  price: number;
+  imageUrl?: string;
 }
 
 const PAGE_SIZE = 10;
@@ -28,6 +45,19 @@ const DeliveryPage = () => {
   const [available] = useState(true); // Always fetch available stations
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
   const [availableStations, setAvailableStations] = useState<PickupStation[]>([]);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: '', content: '' });
+
+  // Fetch cart items to get product terms and conditions
+  const { data: cartData } = useQuery({
+    queryKey: ['cart'],
+    queryFn: async () => {
+      const res = await client.get('/api/cart');
+      return res.data;
+    },
+  });
+
+  const cartItems: CartItem[] = cartData?.items || [];
 
   // Get all states
   const states = statesAndLGAs[0]?.states || [];
@@ -73,6 +103,26 @@ const DeliveryPage = () => {
     }
   };
 
+  const handleViewTerms = (type: 'door' | 'pickup') => {
+    // Get terms from the first product in cart (assuming all products have same terms)
+    const firstProduct = cartItems[0]?.product;
+    
+    if (type === 'door') {
+      const doorTerms = firstProduct?.doorDeliveryTermsAndCondition || 'No door delivery terms and conditions available for this product.';
+      setModalContent({
+        title: 'Door Delivery Terms and Conditions',
+        content: doorTerms,
+      });
+    } else {
+      const pickupTerms = firstProduct?.pickupCentreTermsAndCondition || 'No pickup terms and conditions available for this product.';
+      setModalContent({
+        title: 'Pickup Terms and Conditions',
+        content: pickupTerms,
+      });
+    }
+    setShowTermsModal(true);
+  };
+
   useEffect(() => {
     if (showAvailableOnly && deliveryMode === 'pickup' && selectedCity) {
       fetchAvailableStations();
@@ -90,7 +140,7 @@ const DeliveryPage = () => {
       return;
     }
     setError("");
-    // Save delivery info to localStorage or context as needed
+    // Save delivery info to localStorage
     const deliveryInfo = {
       state: selectedState,
       city: selectedCity,
@@ -98,145 +148,230 @@ const DeliveryPage = () => {
       pickupStation: deliveryMode === "pickup" ? selectedPickup : null,
     };
     localStorage.setItem("deliveryInfo", JSON.stringify(deliveryInfo));
+    
+    // Navigate to order confirmation - the component will fetch fresh cart data from API
     router.push("/order-confimation");
   };
 
+  const deliveryHeaders = [
+    'S/N',
+    'Product',
+    'Description',
+    'Product ID',
+    'Order ID',
+    'Date/Time Ordered',
+    "Confirm Order's Arrival",
+    "Take Product's Picture",
+    "Take Rider's Picture",
+    'Confirm Receipt of Product in Good Condition',
+  ];
+
+  const mockDeliveries = [
+    {
+      sn: 1,
+      product: 'Phone',
+      description: 'Samsung Galaxy S21',
+      productId: 'P123',
+      orderId: 'O456',
+      dateOrdered: '2023-06-23 10:00',
+    },
+   
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
-      <Navbar />
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Delivery Details</h1>
-        <div className="space-y-4 bg-white p-6 rounded-lg shadow border">
-          <div>
-            <label className="block text-sm font-medium mb-1">State</label>
-            <select
-              className="w-full border rounded p-2"
-              value={selectedState}
-              onChange={e => {
-                setSelectedState(e.target.value);
-                setSelectedCity("");
-              }}
-            >
-              <option value="">Select State</option>
-              {states.map((state: any) => (
-                <option key={state.name} value={state.name}>{state.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">City / LGA</label>
-            <select
-              className="w-full border rounded p-2"
-              value={selectedCity}
-              onChange={e => setSelectedCity(e.target.value)}
-              disabled={!selectedState}
-            >
-              <option value="">Select City/LGA</option>
-              {cities.map((city: string) => (
-                <option key={city} value={city}>{city}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Delivery Mode</label>
-            <div className="flex gap-4">
-              <button
-                className={`px-4 py-2 rounded border ${deliveryMode === "door" ? "bg-orange-500 text-white" : "bg-gray-100"}`}
-                onClick={() => setDeliveryMode("door")}
-                type="button"
-              >
-                Door Delivery
-              </button>
-              <button
-                className={`px-4 py-2 rounded border ${deliveryMode === "pickup" ? "bg-orange-500 text-white" : "bg-gray-100"}`}
-                onClick={() => setDeliveryMode("pickup")}
-                type="button"
-              >
-                Pick Up
-              </button>
-            </div>
-          </div>
-          {deliveryMode === "pickup" && (
+    <>
+      <div className="min-h-screen bg-gray-50 pb-12">
+        <Navbar />
+        <div className="max-w-2xl mx-auto px-4 py-8">
+          <h1 className="text-2xl font-bold mb-6">Delivery details</h1>
+          <div className="space-y-4 bg-white p-6 rounded-lg shadow border">
             <div>
-              <label className="block text-sm font-medium mb-1">Select Pickup Station</label>
-              <input
-                type="text"
-                placeholder="Search pickup stations"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="border rounded p-2 mb-2 w-full"
-              />
-              <div className="mb-2 flex gap-2">
-                <button
-                  className={`px-3 py-1 rounded ${!showAvailableOnly ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-                  onClick={() => setShowAvailableOnly(false)}
-                  type="button"
-                >
-                  All Stations
-                </button>
-                <button
-                  className={`px-3 py-1 rounded ${showAvailableOnly ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-                  onClick={() => setShowAvailableOnly(true)}
-                  type="button"
-                >
-                  Available Stations
-                </button>
-              </div>
-              {showAvailableOnly ? (
-                availableStations.length === 0 ? (
-                  <div className="text-gray-500 text-sm">No available stations found.</div>
-                ) : (
-                  <select
-                    className="w-full border rounded p-2"
-                    value={selectedPickup}
-                    onChange={e => setSelectedPickup(e.target.value)}
-                  >
-                    <option value="">Select Pickup Station</option>
-                    {availableStations.map(station => (
-                      <option key={station.id} value={station.name}>{station.name} - {station.address}</option>
-                    ))}
-                  </select>
-                )
-              ) : (
-                isLoading ? (
-                  <div className="text-gray-500 text-sm">Loading stations...</div>
-                ) : (
-                  <select
-                    className="w-full border rounded p-2"
-                    value={selectedPickup}
-                    onChange={e => setSelectedPickup(e.target.value)}
-                  >
-                    <option value="">Select Pickup Station</option>
-                    {pickupStations.map(station => (
-                      <option key={station.id} value={station.name}>{station.name} - {station.address}</option>
-                    ))}
-                  </select>
-                )
-              )}
+              <label className="block text-sm font-medium mb-1">State</label>
+              <select
+                className="w-full border rounded p-2"
+                value={selectedState}
+                onChange={e => {
+                  setSelectedState(e.target.value);
+                  setSelectedCity("");
+                }}
+              >
+                <option value="">Select State</option>
+                {states.map((state: any) => (
+                  <option key={state.name} value={state.name}>{state.name}</option>
+                ))}
+              </select>
             </div>
-          )}
-          {error && <div className="text-red-600 text-sm">{error}</div>}
-          <div className="flex justify-between mt-6">
-            <button
-              className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
-              onClick={() => router.push("/cart")}
-              type="button"
-            >
-              Back to Cart
-            </button>
-            <button
-              className="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600 font-semibold"
-              onClick={handleContinue}
-              type="button"
-            >
-              Continue
-            </button>
+            <div>
+              <label className="block text-sm font-medium mb-1">City / LGA</label>
+              <select
+                className="w-full border rounded p-2"
+                value={selectedCity}
+                onChange={e => setSelectedCity(e.target.value)}
+                disabled={!selectedState}
+              >
+                <option value="">Select City/LGA</option>
+                {cities.map((city: string) => (
+                  <option key={city} value={city}>{city}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Choose Your Prefered  Mode Of Delivery</label>
+              <div className="space-y-4">
+                <div
+                  className={`p-4 rounded border cursor-pointer ${deliveryMode === "door" ? "border-orange-500 bg-orange-50" : "border-gray-300"}`}
+                  onClick={() => setDeliveryMode("door")}
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="deliveryMode"
+                        checked={deliveryMode === 'door'}
+                        onChange={() => setDeliveryMode('door')}
+                        className="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500"
+                      />
+                      <span className="ml-3 font-medium">Door Delivery</span>
+                    </div>
+                    <span className="font-bold">$0.00</span>
+                  </div>
+                  <a href="#" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleViewTerms('door'); }} className="text-sm text-blue-600 hover:underline ml-7">
+                    View terms and conditions
+                  </a>
+                </div>
+                <div
+                  className={`p-4 rounded border cursor-pointer ${deliveryMode === "pickup" ? "border-orange-500 bg-orange-50" : "border-gray-300"}`}
+                  onClick={() => setDeliveryMode("pickup")}
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        name="deliveryMode"
+                        checked={deliveryMode === 'pickup'}
+                        onChange={() => setDeliveryMode('pickup')}
+                        className="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500"
+                      />
+                      <span className="ml-3 font-medium">Pick Up</span>
+                    </div>
+                    <span className="font-bold">$21.00</span>
+                  </div>
+                  <a href="#" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleViewTerms('pickup'); }} className="text-sm text-blue-600 hover:underline ml-7">
+                    View terms and conditions
+                  </a>
+                </div>
+              </div>
+            </div>
+            {deliveryMode === "pickup" && (
+              <div>
+                <label className="block text-sm font-medium mb-1">Select Pickup center</label>
+                <input
+                  type="text"
+                  placeholder="Search pickup stations"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="border rounded p-2 mb-2 w-full"
+                />
+                <div className="mb-2 flex gap-2">
+                  <button
+                    className={`px-3 py-1 rounded ${!showAvailableOnly ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                    onClick={() => setShowAvailableOnly(false)}
+                    type="button"
+                  >
+                    All centers
+                  </button>
+                  <button
+                    className={`px-3 py-1 rounded ${showAvailableOnly ? 'bg-orange-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                    onClick={() => setShowAvailableOnly(true)}
+                    type="button"
+                  >
+                    Available centers
+                  </button>
+                </div>
+                {showAvailableOnly ? (
+                  availableStations.length === 0 ? (
+                    <div className="text-gray-500 text-sm">No available center found.</div>
+                  ) : (
+                    <select
+                      className="w-full border rounded p-2"
+                      value={selectedPickup}
+                      onChange={e => setSelectedPickup(e.target.value)}
+                    >
+                      <option value="">Select Pickup Station</option>
+                      {availableStations.map(station => (
+                        <option key={station.id} value={station.name}>{station.name} - {station.address}</option>
+                      ))}
+                    </select>
+                  )
+                ) : (
+                  isLoading ? (
+                    <div className="text-gray-500 text-sm">Loading center&apos;...</div>
+                  ) : (
+                    <select
+                      className="w-full border rounded p-2"
+                      value={selectedPickup}
+                      onChange={e => setSelectedPickup(e.target.value)}
+                    >
+                      <option value="">Select Pickup center</option>
+                      {pickupStations.map(station => (
+                        <option key={station.id} value={station.name}>{station.name} - {station.address}</option>
+                      ))}
+                    </select>
+                  )
+                )}
+              </div>
+            )}
+            {error && <div className="text-red-600 text-sm">{error}</div>}
+            <div className="flex justify-between mt-6">
+              <button
+                className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+                onClick={() => router.push("/cart")}
+                type="button"
+              >
+                Back to cart
+              </button>
+              <button
+                className="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600 font-semibold"
+                onClick={handleContinue}
+                type="button"
+              >
+                Continue
+              </button>
+            </div>
           </div>
         </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold mb-6">Delivery Dashboard</h1>
+        <TransactionsTable
+          headers={deliveryHeaders}
+          content={mockDeliveries.map((item, idx) => (
+            <tr key={item.orderId} className="border-b border-ajo_offWhite/10">
+              <td className="px-6 py-3 whitespace-nowrap">{item.sn}</td>
+              <td className="px-6 py-3 whitespace-nowrap">{item.product}</td>
+              <td className="px-6 py-3 whitespace-nowrap">{item.description}</td>
+              <td className="px-6 py-3 whitespace-nowrap">{item.productId}</td>
+              <td className="px-6 py-3 whitespace-nowrap">{item.orderId}</td>
+              <td className="px-6 py-3 whitespace-nowrap">{item.dateOrdered}</td>
+              <td className="px-6 py-3 whitespace-nowrap"><button className="bg-blue-500 text-white px-3 py-1 rounded">Check</button></td>
+              <td className="px-6 py-3 whitespace-nowrap"><input type="file" accept="image/*" className="block" /></td>
+              <td className="px-6 py-3 whitespace-nowrap"><input type="file" accept="image/*" className="block" /></td>
+              <td className="px-6 py-3 whitespace-nowrap"><button className="bg-green-500 text-white px-3 py-1 rounded">Check</button></td>
+            </tr>
+          ))}
+        />
+      </div>
+      {showTermsModal && (
+        <Modal
+          setModalState={setShowTermsModal}
+          title={modalContent.title}
+        >
+          <div className="whitespace-pre-wrap">{modalContent.content}</div>
+        </Modal>
+      )}
+    </>
   );
 };
 
-export default DeliveryPage; 
+export default DeliveryPage;

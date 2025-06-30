@@ -33,9 +33,12 @@ interface PayInBitsFormProps {
   isOpen: boolean
   onClose: () => void
   selectedItem?: CartItem
+  previewData?: any
+  previewLoading?: boolean
+  previewError?: string
 }
 
-export default function PayInBitsForm({ isOpen, onClose, selectedItem }: PayInBitsFormProps) {
+export default function PayInBitsForm({ isOpen, onClose, selectedItem, previewData, previewLoading, previewError }: PayInBitsFormProps) {
   const router = useRouter()
   const [formData, setFormData] = useState({
     accountName: "",
@@ -71,94 +74,58 @@ export default function PayInBitsForm({ isOpen, onClose, selectedItem }: PayInBi
     }
   }
 
-  const generateOrderNumber = () => {
-    return Math.floor(100 + Math.random() * 900).toString()
-  }
-
-  const getCurrentDate = () => {
-    const date = new Date()
-    const day = date.getDate()
-    const month = date.toLocaleString('default', { month: 'long' })
-    const year = date.getFullYear()
-    
-    const dayWithSuffix = day + (day % 10 === 1 && day !== 11 ? 'st' : 
-                                day % 10 === 2 && day !== 12 ? 'nd' : 
-                                day % 10 === 3 && day !== 13 ? 'rd' : 'th')
-    
-    return `${dayWithSuffix} of ${month}, ${year}`
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Form submitted:", formData)
-    
-    // Generate order confirmation data
-    const item = selectedItem || {
-      _id: "default",
-      productId: "default",
-      product: {
-        _id: "default",
-        name: "Samsung Electronics Samsung Galaxy S21 5G",
-        description: "Default product",
-        price: 38.0,
-        category: "Electronics",
-        brand: "Samsung",
-        imageUrl: "/placeholder.svg?height=80&width=80",
-        stock: 1,
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!previewData) return;
+    const paymentPayload = {
+      orderItems: [
+        {
+          product: selectedItem?.productId,
+          name: selectedItem?.product.name,
+          quantity: selectedItem?.quantity,
+          price: selectedItem?.product.price,
+        },
+      ],
+      shippingAddress: {
+        fullName: formData.accountName,
+        address: 'User address', // Replace with actual input
+        city: 'User city', // Replace with actual input
+        postalCode: 'User postal', // Replace with actual input
+        country: 'Nigeria',
       },
-      quantity: 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
+      paymentMethod: 'Card',
+      paymentMode: 'Pay In Bits',
+      totalPrice: previewData.totalCost,
+      initialPaymentAmount: previewData.firstPayment,
+      paymentSchedule: previewData.paymentSchedule,
+    };
+    // TODO: POST paymentPayload to /api/payments
+    // For now, just log it
+    console.log('Submitting payment:', paymentPayload);
+    onClose();
+    router.push('/cart/delivery');
+  };
 
-    const total = item.product.price * item.quantity
-    const firstInstallment = total * 0.5 // 50% for first installment
-    const secondInstallment = total * 0.5 // 50% for second installment
+  if (!isOpen) return null;
 
-    const orderData = {
-      orderNumber: generateOrderNumber(),
-      date: getCurrentDate(),
-      email: formData.accountName ? `${formData.accountName.toLowerCase().replace(/\s+/g, '')}@example.com` : "customer@example.com",
-      total: total,
-      firstInstallment: firstInstallment,
-      secondInstallment: secondInstallment
-    }
-
-    // Create URL parameters for the order confirmation page
-    const queryParams = new URLSearchParams({
-      orderNumber: orderData.orderNumber,
-      date: orderData.date,
-      email: orderData.email,
-      total: orderData.total.toString(),
-      firstInstallment: orderData.firstInstallment.toString(),
-      secondInstallment: orderData.secondInstallment.toString(),
-    })
-
-    // Close the current modal/form
-    onClose()
-
-    // Navigate to the order confirmation page
-    router.push(`/order-confimation`)
-
-    // Reset form data
-    setFormData({
-      accountName: "",
-      accountNumber: "",
-      bankName: "",
-      bvn: "",
-      nin: "",
-      guarantorA: {
-        name: "",
-        phone: "",
-      },
-      guarantorB: {
-        name: "",
-        phone: "",
-      },
-    })
+  if (previewLoading) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto flex flex-col items-center justify-center p-8">
+          <span className="text-lg font-semibold">Loading payment preview...</span>
+        </div>
+      </div>
+    );
   }
-
-  if (!isOpen) return null
+  if (previewError) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto flex flex-col items-center justify-center p-8">
+          <span className="text-lg font-semibold text-red-600">{previewError}</span>
+        </div>
+      </div>
+    );
+  }
 
   // Default item if none provided
   const item = selectedItem || {
@@ -178,9 +145,6 @@ export default function PayInBitsForm({ isOpen, onClose, selectedItem }: PayInBi
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }
-
-  const minimumDeposit = 400
-  const maxRepaymentMonths = 3
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -220,14 +184,18 @@ export default function PayInBitsForm({ isOpen, onClose, selectedItem }: PayInBi
                   </div>
 
                   <div className="space-y-2 pt-4 border-t">
-                    <div className="flex justify-between text-sm">
-                      <span>Minimum Deposit Amount:</span>
-                      <span className="font-semibold">${minimumDeposit}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Maximum Repayment Timeline:</span>
-                      <span className="font-semibold">{maxRepaymentMonths} Months</span>
-                    </div>
+                    {previewData && (
+                      <div className="flex justify-between text-sm">
+                        <span>Deposit Amount:</span>
+                        <span className="font-semibold">₦{previewData.depositAmount?.toLocaleString()}</span>
+                      </div>
+                    )}
+                    {previewData && (
+                      <div className="flex justify-between text-sm">
+                        <span>Repayment Timeline:</span>
+                        <span className="font-semibold">{previewData.repaymentMonths} Months</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -392,14 +360,49 @@ export default function PayInBitsForm({ isOpen, onClose, selectedItem }: PayInBi
             </div>
           </div>
 
+          {/* Payment Schedule Table */}
+          {previewData && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-2">Payment Schedule</h3>
+              <div className="max-w-md">
+                <table className="min-w-full divide-y divide-gray-200 border">
+                  <thead>
+                    <tr>
+                      <th className="px-2 py-1 text-xs font-medium text-gray-500 uppercase">#</th>
+                      <th className="px-1 py-1 text-xs font-medium text-gray-500 uppercase">Due Date</th>
+                      <th className="px-1 py-1 text-xs font-medium text-gray-500 uppercase">Total Payment</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewData.paymentSchedule?.map((schedule: any, idx: number) => (
+                      <tr key={idx}>
+                        <td className="px-2 py-1 text-center">{schedule.paymentNumber}</td>
+                        <td className="px-1 py-1 text-center">{new Date(schedule.dueDate).toLocaleDateString()}</td>
+                        <td className="px-1 py-1 text-center">₦{schedule.totalPayment.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-1 flex flex-col gap-2">
+                <span><b>Initial Payment:</b> ₦{previewData.firstPayment?.toLocaleString()}</span>
+                <span><b>Total Cost:</b> ₦{previewData.totalCost?.toLocaleString()}</span>
+                <span><b>Monthly Payment:</b> ₦{previewData.monthlyPayment?.toLocaleString()}</span>
+                <span><b>Repayment Months:</b> {previewData.repaymentMonths}</span>
+              </div>
+            </div>
+          )}
+
           {/* Submit Button */}
           <div className="mt-8">
-            <button
-              onClick={handleSubmit}
-              className="w-full bg-black hover:bg-gray-800 text-white py-3 text-lg font-medium rounded-md transition-colors"
-            >
-              Submit
-            </button>
+            <form onSubmit={handleSubmit} className="mt-6">
+              <button
+                type="submit"
+                className="w-full bg-orange-600 text-white py-3 rounded-lg font-semibold mt-4 hover:bg-orange-700 transition"
+              >
+                Confirm & Pay
+              </button>
+            </form>
           </div>
         </div>
       </div>

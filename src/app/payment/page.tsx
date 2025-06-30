@@ -16,7 +16,7 @@ const PaymentPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    // Read order details from localStorage
+    
     const orderDetailsRaw = localStorage.getItem('orderDetails');
     if (!orderDetailsRaw) {
       setErrorMessage('Order details not found. Please try again.');
@@ -24,26 +24,49 @@ const PaymentPage = () => {
       return;
     }
     const orderDetails = JSON.parse(orderDetailsRaw);
-    const { cartItems, deliveryInfo, total } = orderDetails;
-    // Build paymentData from orderDetails
-    const paymentData = {
-      orderItems: cartItems.map((item: any) => ({
-        product: item.product._id,
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price
-      })),
-      shippingAddress: {
-        address: deliveryInfo?.pickupStation || `${deliveryInfo?.city}, ${deliveryInfo?.state}`,
-        city: deliveryInfo?.city,
-        postalCode: '',
-        country: 'Nigeria'
-      },
-      amountPaid: total,
-      paymentMethod: 'Credit Card',
-      paymentMode: '100% Full Payment',
-      totalPrice: total
-    };
+    
+    // Check if we have the new order structure or old cart structure
+    let paymentData;
+    
+    if (orderDetails.order) {
+      // New order structure from OrderConfirmation
+      const { order } = orderDetails;
+      paymentData = {
+        orderItems: order.orderItems.map((item: any) => ({
+          product: item.product,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        shippingAddress: order.shippingAddress,
+        amountPaid: order.remainingBalance || order.totalPrice,
+        paymentMethod: order.paymentMethod || 'Credit Card',
+        paymentMode: order.paymentMode || '100% Full Payment',
+        totalPrice: order.totalPrice
+      };
+    } else {
+      // Old cart structure (fallback)
+      const { cartItems, deliveryInfo, total } = orderDetails;
+      paymentData = {
+        orderItems: cartItems.map((item: any) => ({
+          product: item.product._id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        shippingAddress: {
+          address: deliveryInfo?.pickupStation || `${deliveryInfo?.city}, ${deliveryInfo?.state}`,
+          city: deliveryInfo?.city,
+          postalCode: '',
+          country: 'Nigeria'
+        },
+        amountPaid: total,
+        paymentMethod: 'Credit Card',
+        paymentMode: '100% Full Payment',
+        totalPrice: total
+      };
+    }
+    
     // Trigger payment
     const makePayment = async () => {
       setIsLoading(true);

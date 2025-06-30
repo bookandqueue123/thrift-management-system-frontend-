@@ -17,7 +17,7 @@ interface Promo {
   endDate?: string;
   minimumPurchase: number;
   maxUsage?: number;
-  currentUsage?: number;
+ 
 }
 
 interface Product {
@@ -48,11 +48,33 @@ type ProductFormData = {
   sku: string;
   size: string;
   memory: string;
+  
   firstProductImage?: File;
   secondProductImage?: File;
   thirdProductImage?: File;
   productImage?: File;
   stock: string;
+ 
+  maximumRepaymentTimeline: string;
+  repaymentPeriodInMonths: string;
+  minimumRepaymentAmount: string;
+  minimumDepositPercentage: string;
+  interestRatePercentage: string;
+  platformFee: string;
+  doorDeliveryTerms: string;
+  pickupTerms: string;
+  doorDeliveryTermsAndCondition: string;
+  pickupCentreTermsAndCondition: string;
+  storageOutdoor: {
+    height: string;
+    length: string;
+    breadth: string;
+  };
+  storageRefrigerated: {
+    height: string;
+    length: string;
+    breadth: string;
+  };
   promo: {
     code: string;
     percentage: string;
@@ -96,6 +118,19 @@ const Create = () => {
     thirdProductImage: undefined,
     productImage: undefined,
     stock: '',
+  
+    maximumRepaymentTimeline: '',
+    repaymentPeriodInMonths: '',
+    minimumRepaymentAmount: '',
+    minimumDepositPercentage: '',
+    interestRatePercentage: '',
+    platformFee: '',
+    doorDeliveryTerms: '',
+    pickupTerms: '',
+    doorDeliveryTermsAndCondition: '',
+    pickupCentreTermsAndCondition: '',
+    storageOutdoor: { height: '', length: '', breadth: '' },
+    storageRefrigerated: { height: '', length: '', breadth: '' },
     promo: {
       code: '',
       percentage: '',
@@ -146,6 +181,19 @@ const Create = () => {
       form.append('size', data.size);
       form.append('memory', data.memory);
       form.append('stock', data.stock);
+     
+      form.append('maximumRepaymentTimeline', data.maximumRepaymentTimeline);
+      form.append('repaymentPeriodInMonths', data.repaymentPeriodInMonths);
+      form.append('minimumRepaymentAmount', data.minimumRepaymentAmount);
+      form.append('minimumDepositPercentage', data.minimumDepositPercentage);
+      form.append('interestRatePercentage', data.interestRatePercentage);
+      form.append('platformFee', data.platformFee);
+      form.append('doorDeliveryTerms', data.doorDeliveryTerms);
+      form.append('pickupTerms', data.pickupTerms);
+      form.append('doorDeliveryTermsAndCondition', data.doorDeliveryTermsAndCondition);
+      form.append('pickupCentreTermsAndCondition', data.pickupCentreTermsAndCondition);
+      form.append('storageOutdoor', JSON.stringify(data.storageOutdoor));
+      form.append('storageRefrigerated', JSON.stringify(data.storageRefrigerated));
       form.append('promo', JSON.stringify(data.promo));
       if (data.firstProductImage) form.append('firstProductImage', data.firstProductImage);
       if (data.secondProductImage) form.append('secondProductImage', data.secondProductImage);
@@ -181,6 +229,19 @@ const Create = () => {
       form.append('size', data.size);
       form.append('memory', data.memory);
       form.append('stock', data.stock);
+      
+      form.append('maximumRepaymentTimeline', data.maximumRepaymentTimeline);
+      form.append('repaymentPeriodInMonths', data.repaymentPeriodInMonths);
+      form.append('minimumRepaymentAmount', data.minimumRepaymentAmount);
+      form.append('minimumDepositPercentage', data.minimumDepositPercentage);
+      form.append('interestRatePercentage', data.interestRatePercentage);
+      form.append('platformFee', data.platformFee);
+      form.append('doorDeliveryTerms', data.doorDeliveryTerms);
+      form.append('pickupTerms', data.pickupTerms);
+      form.append('doorDeliveryTermsAndCondition', data.doorDeliveryTermsAndCondition);
+      form.append('pickupCentreTermsAndCondition', data.pickupCentreTermsAndCondition);
+      form.append('storageOutdoor', JSON.stringify(data.storageOutdoor));
+      form.append('storageRefrigerated', JSON.stringify(data.storageRefrigerated));
       form.append('promo', JSON.stringify(data.promo));
       if (data.productImage) form.append('productImage', data.productImage);
       return client.put(`/api/products/${id}`, form, {
@@ -272,6 +333,23 @@ const Create = () => {
           ...prev.promo,
           [promoField]: value,
         },
+        
+      }));
+      return;
+    }
+    if (name.startsWith('storageOutdoor.')) {
+      const field = name.split('.')[1];
+      setFormData((prev) => ({
+        ...prev,
+        storageOutdoor: { ...prev.storageOutdoor, [field]: value },
+      }));
+      return;
+    }
+    if (name.startsWith('storageRefrigerated.')) {
+      const field = name.split('.')[1];
+      setFormData((prev) => ({
+        ...prev,
+        storageRefrigerated: { ...prev.storageRefrigerated, [field]: value },
       }));
       return;
     }
@@ -294,7 +372,7 @@ const Create = () => {
     setErrors({});
     if (!formData.name || !formData.description || !formData.price || !formData.costBeforeDiscount || 
         !formData.discount || !formData.category || !formData.brand || !formData.sku || 
-        !formData.size || !formData.memory || !formData.stock) {
+        !formData.size || !formData.memory || !formData.stock  || !formData.repaymentPeriodInMonths || !formData.minimumRepaymentAmount || !formData.minimumDepositPercentage || !formData.interestRatePercentage || !formData.platformFee) {
       setErrors({ general: 'Please fill all required fields.' });
       return;
     }
@@ -309,7 +387,7 @@ const Create = () => {
 
     if (!formData.name || !formData.description || !formData.price || !formData.costBeforeDiscount || 
         !formData.discount || !formData.category || !formData.brand || !formData.sku || 
-        !formData.size || !formData.memory || !formData.stock) {
+        !formData.size || !formData.memory || !formData.stock  || !formData.maximumRepaymentTimeline || !formData.repaymentPeriodInMonths || !formData.minimumRepaymentAmount || !formData.minimumDepositPercentage || !formData.interestRatePercentage || !formData.platformFee) {
       setErrors({ general: 'Please fill all required fields.' });
       return;
     }
@@ -346,6 +424,11 @@ const Create = () => {
     'Category',
     'Brand',
     'Stock',
+    'Repayment Period (Months)',
+    'Interest Rate %',
+    'Platform Fee',
+    'Door Delivery Terms & Condition',
+    'Pickup Centre Terms & Condition',
     'Image',
     'Promo Status',
     'Actions',
@@ -383,6 +466,18 @@ const Create = () => {
           thirdProductImage: undefined,
           productImage: undefined,
           stock: String(productToEdit.stock),
+          maximumRepaymentTimeline: (productToEdit as any).maximumRepaymentTimeline?.toString() || '',
+          repaymentPeriodInMonths: (productToEdit as any).repaymentPeriodInMonths?.toString() || '',
+          minimumRepaymentAmount: (productToEdit as any).minimumRepaymentAmount?.toString() || '',
+          minimumDepositPercentage: (productToEdit as any).minimumDepositPercentage?.toString() || '',
+          interestRatePercentage: (productToEdit as any).interestRatePercentage?.toString() || '',
+          platformFee: (productToEdit as any).platformFee?.toString() || '',
+          doorDeliveryTerms: (productToEdit as any).doorDeliveryTerms || '',
+          pickupTerms: (productToEdit as any).pickupTerms || '',
+          doorDeliveryTermsAndCondition: (productToEdit as any).doorDeliveryTermsAndCondition || '',
+          pickupCentreTermsAndCondition: (productToEdit as any).pickupCentreTermsAndCondition || '',
+          storageOutdoor: (productToEdit as any).storageOutdoor || { height: '', length: '', breadth: '' },
+          storageRefrigerated: (productToEdit as any).storageRefrigerated || { height: '', length: '', breadth: '' },
           promo: {
             code: productToEdit.promo?.code || '',
             percentage: productToEdit.promo?.percentage?.toString() || '',
@@ -488,8 +583,20 @@ const Create = () => {
                   required
                 />
               </div>
-              <div>
-                <label className="block text-white">Platform Charge %</label>
+              
+              <div className="mb-4">
+                <label htmlFor="platformFee" className="block text-sm font-medium text-white">Platform Charge %</label>
+                <input
+                  type="number"
+                  id="platformFee"
+                  name="platformFee"
+                  value={formData.platformFee}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+               <div>
+                <label className="block text-white">Platform charge value </label>
                 <input
                   type="number"
                   name=""
@@ -499,7 +606,7 @@ const Create = () => {
                 />
               </div>
               <div>
-                <label className="block text-white">Actaul Price</label>
+                <label className="block text-white">Actual price</label>
                 <input
                   type="number"
                   name=""
@@ -508,26 +615,54 @@ const Create = () => {
                  
                 />
               </div>
-              <div>
-                <label className="block text-white">Minimum Deposit Amount</label>
+              
+              <div className="mb-4">
+                <label htmlFor="interestRatePercentage" className="block text-sm font-medium text-white">Interest rate (%) for little-by-little payment</label>
                 <input
                   type="number"
-                  name=""
+                  id="interestRatePercentage"
+                  name="interestRatePercentage"
+                  value={formData.interestRatePercentage}
                   onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-black"
-                 
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
-              <div>
-                <label className="block text-white">Maximum Repayment Timeline</label>
+               <div className="mb-4">
+                <label htmlFor="minimumDepositPercentage" className="block text-sm font-medium text-white">Minimum Deposit </label>
                 <input
                   type="number"
-                  name=""
+                  id="minimumDepositPercentage"
+                  name="minimumDepositPercentage"
+                  value={formData.minimumDepositPercentage}
                   onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-black"
-                 
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
+              
+               <div className="mb-4">
+                <label htmlFor="repaymentPeriodInMonths" className="block text-sm font-medium text-white">Repayment Period In Months</label>
+                <input
+                  type="number"
+                  id="repaymentPeriodInMonths"
+                  name="repaymentPeriodInMonths"
+                  value={formData.repaymentPeriodInMonths}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+               <div className="mb-4">
+                <label htmlFor="minimumRepaymentAmount" className="block text-sm font-medium text-white">Minimum Repayment Amount</label>
+                <input
+                  type="number"
+                  id="minimumRepaymentAmount"
+                  name="minimumRepaymentAmount"
+                  value={formData.minimumRepaymentAmount}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+             
+             
               <div>
                 <label className="block text-white">Category</label>
                 <input
@@ -553,14 +688,15 @@ const Create = () => {
               <div>
                 <label className="block text-white">Stock</label>
                 <input
-                  type="number"
+                  type="text"
+                  id="stock"
                   name="stock"
                   value={formData.stock}
                   onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-black"
-                  required
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
+             
               <div>
                 <label className="block text-white">SKU</label>
                 <input
@@ -595,10 +731,13 @@ const Create = () => {
                   required
                 />
               </div>
+            
+              
+              
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[0, 1, 2].map((idx) => (
                   <div key={idx}>
-                    <label className="block text-white">Product Image {idx + 1} (optional)</label>
+                    <label className="block text-white">Product image {idx + 1} (optional)</label>
                     {imagePreviews[idx] && (
                       <div className="flex gap-2 mb-2">
                         <img src={imagePreviews[idx]} alt={`Product Preview ${idx + 1}`} className="w-20 h-20 object-cover rounded" />
@@ -614,10 +753,86 @@ const Create = () => {
                   </div>
                 ))}
               </div>
+              <div>
+                <label className="block text-white">Door Delivery Terms &amp; Condition</label>
+                <textarea
+                  name="doorDeliveryTermsAndCondition"
+                  value={formData.doorDeliveryTermsAndCondition}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-white">Pickup Centre Terms &amp; Condition</label>
+                <textarea
+                  name="pickupCentreTermsAndCondition"
+                  value={formData.pickupCentreTermsAndCondition}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-white">Storage Outdoor (Height, Length, Breadth)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    name="storageOutdoor.height"
+                    placeholder="Height"
+                    value={formData.storageOutdoor.height}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                  <input
+                    type="number"
+                    name="storageOutdoor.length"
+                    placeholder="Length"
+                    value={formData.storageOutdoor.length}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                  <input
+                    type="number"
+                    name="storageOutdoor.breadth"
+                    placeholder="Breadth"
+                    value={formData.storageOutdoor.breadth}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-white">Storage Refrigerated (Height, Length, Breadth)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    name="storageRefrigerated.height"
+                    placeholder="Height"
+                    value={formData.storageRefrigerated.height}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                  <input
+                    type="number"
+                    name="storageRefrigerated.length"
+                    placeholder="Length"
+                    value={formData.storageRefrigerated.length}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                  <input
+                    type="number"
+                    name="storageRefrigerated.breadth"
+                    placeholder="Breadth"
+                    value={formData.storageRefrigerated.breadth}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-gray-600 p-4 rounded-md">
                 <h3 className="col-span-1 md:col-span-2 text-lg font-semibold text-white">Promotion</h3>
                 <div className="">
-                  <label className="m-0 text-xs font-medium text-white">Promo Code</label>
+                  <label className="m-0 text-xs font-medium text-white">Promo code</label>
                   <div className="relative w-full">
                     <input
                       name="promo.code"
@@ -636,7 +851,7 @@ const Create = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-white">Promo Percentage</label>
+                  <label className="block text-white">Promo percentage</label>
                   <input
                     type="number"
                     name="promo.percentage"
@@ -646,7 +861,7 @@ const Create = () => {
                   />
                 </div>
                  <div>
-                  <label className="block text-white">Start Date</label>
+                  <label className="block text-white">Start date</label>
                   <input
                     type="date"
                     name="promo.startDate"
@@ -656,7 +871,7 @@ const Create = () => {
                   />
                 </div>
                  <div>
-                  <label className="block text-white">End Date</label>
+                  <label className="block text-white">End date</label>
                   <input
                     type="date"
                     name="promo.endDate"
@@ -679,7 +894,7 @@ const Create = () => {
                   </select>
                 </div>
                  <div>
-                  <label className="block text-white">Minimum Purchase</label>
+                  <label className="block text-white">Minimum purchase</label>
                   <input
                     type="number"
                     name="promo.minimumPurchase"
@@ -690,7 +905,7 @@ const Create = () => {
                 </div>
                
                 <div>
-                  <label className="block text-white">Max Usage</label>
+                  <label className="block text-white">Max usage</label>
                   <input
                     type="number"
                     name="promo.maxUsage"
@@ -700,7 +915,7 @@ const Create = () => {
                   />
                 </div>
                 <div>
-                <label className="block text-white">Referral Bonus %</label>
+                <label className="block text-white">Referral bonus %</label>
                 <input
                   type="number"
                   name=""
@@ -785,7 +1000,7 @@ const Create = () => {
                     </p>
                     {singleProduct.promo && (
                       <div className="border-t border-gray-600 pt-4 mt-4">
-                        <h4 className="text-lg font-semibold text-ajo_offWhite mb-3">Promotion Details</h4>
+                        <h4 className="text-lg font-semibold text-ajo_offWhite mb-3">Promotion details</h4>
                         <p className="flex items-center">
                           <span className="w-32 font-semibold text-ajo_offWhite">Status:</span>
                           <span className="flex-1">
@@ -810,32 +1025,27 @@ const Create = () => {
                         )}
                         {singleProduct.promo.startDate && (
                           <p className="flex items-center">
-                            <span className="w-32 font-semibold text-ajo_offWhite">Start Date:</span>
+                            <span className="w-32 font-semibold text-ajo_offWhite">Start date:</span>
                             <span className="flex-1">{new Date(singleProduct.promo.startDate).toLocaleDateString()}</span>
                           </p>
                         )}
                         {singleProduct.promo.endDate && (
                           <p className="flex items-center">
-                            <span className="w-32 font-semibold text-ajo_offWhite">End Date:</span>
+                            <span className="w-32 font-semibold text-ajo_offWhite">End date:</span>
                             <span className="flex-1">{new Date(singleProduct.promo.endDate).toLocaleDateString()}</span>
                           </p>
                         )}
                         <p className="flex items-center">
-                          <span className="w-32 font-semibold text-ajo_offWhite">Min Purchase:</span>
+                          <span className="w-32 font-semibold text-ajo_offWhite">Min purchase:</span>
                           <span className="flex-1">₦ {AmountFormatter(singleProduct.promo.minimumPurchase)}</span>
                         </p>
                         {singleProduct.promo.maxUsage && (
                           <p className="flex items-center">
-                            <span className="w-32 font-semibold text-ajo_offWhite">Max Usage:</span>
+                            <span className="w-32 font-semibold text-ajo_offWhite">Max usage:</span>
                             <span className="flex-1">{singleProduct.promo.maxUsage}</span>
                           </p>
                         )}
-                        {singleProduct.promo.currentUsage !== undefined && (
-                          <p className="flex items-center">
-                            <span className="w-32 font-semibold text-ajo_offWhite">Current Usage:</span>
-                            <span className="flex-1">{singleProduct.promo.currentUsage}</span>
-                          </p>
-                        )}
+                        
                       </div>
                     )}
                   </div>
@@ -904,12 +1114,101 @@ const Create = () => {
                   <div>
                     <label className="block text-white">Stock</label>
                     <input
-                      type="number"
+                      type="text"
+                      id="stock"
                       name="stock"
                       value={formData.stock}
                       onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                      required
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    />
+                  </div>
+                   <div>
+                <label className="block text-white">SKU</label>
+                <input
+                  type="text"
+                  name="sku"
+                  value={formData.sku}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-white">Size</label>
+                <input
+                  type="number"
+                  name="size"
+                  value={formData.size}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-white">Memory</label>
+                <input
+                  type="number"
+                  name="memory"
+                  value={formData.memory}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                  required
+                />
+              </div>
+                  <div className="mb-4">
+                    <label htmlFor="repaymentPeriodInMonths" className="block text-sm font-medium text-white">Repayment Period In Months</label>
+                    <input
+                      type="number"
+                      id="repaymentPeriodInMonths"
+                      name="repaymentPeriodInMonths"
+                      value={formData.repaymentPeriodInMonths}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="minimumRepaymentAmount" className="block text-sm font-medium text-white">Minimum Repayment Amount</label>
+                    <input
+                      type="number"
+                      id="minimumRepaymentAmount"
+                      name="minimumRepaymentAmount"
+                      value={formData.minimumRepaymentAmount}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="minimumDepositPercentage" className="block text-sm font-medium text-white">Minimum Deposit Percentage</label>
+                    <input
+                      type="number"
+                      id="minimumDepositPercentage"
+                      name="minimumDepositPercentage"
+                      value={formData.minimumDepositPercentage}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="interestRatePercentage" className="block text-sm font-medium text-white">Interest Rate Percentage</label>
+                    <input
+                      type="number"
+                      id="interestRatePercentage"
+                      name="interestRatePercentage"
+                      value={formData.interestRatePercentage}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="platformFee" className="block text-sm font-medium text-white">Platform Fee</label>
+                    <input
+                      type="number"
+                      id="platformFee"
+                      name="platformFee"
+                      value={formData.platformFee}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
                     />
                   </div>
                   <div>
@@ -924,51 +1223,7 @@ const Create = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-white">Cost Before Discount</label>
-                    <input
-                      type="number"
-                      name="costBeforeDiscount"
-                      value={formData.costBeforeDiscount}
-                      onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">Discount (%)</label>
-                    <input
-                      type="number"
-                      name="discount"
-                      value={formData.discount}
-                      onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">Size</label>
-                    <input
-                      type="number"
-                      name="size"
-                      value={formData.size}
-                      onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">Memory</label>
-                    <input
-                      type="number"
-                      name="memory"
-                      value={formData.memory}
-                      onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">Product Image</label>
+                    <label className="block text-white">Product image</label>
                     {imagePreview && (
                       <div className="flex gap-2 mb-2">
                         <img src={imagePreview} alt="Product Preview" className="w-20 h-20 object-cover rounded" />
@@ -985,7 +1240,7 @@ const Create = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-gray-600 p-4 rounded-md">
                     <h3 className="col-span-1 md:col-span-2 text-lg font-semibold text-white">Promotion</h3>
                     <div className="">
-                      <label className="m-0 text-xs font-medium text-white">Promo Code</label>
+                      <label className="m-0 text-xs font-medium text-white">Promo code</label>
                       <div className="relative w-full">
                         <input
                           name="promo.code"
@@ -1004,7 +1259,7 @@ const Create = () => {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-white">Promo Percentage</label>
+                      <label className="block text-white">Promo percentage</label>
                       <input
                         type="number"
                         name="promo.percentage"
@@ -1026,7 +1281,7 @@ const Create = () => {
                       </select>
                     </div>
                      <div>
-                      <label className="block text-white">Start Date</label>
+                      <label className="block text-white">Start date</label>
                       <input
                         type="date"
                         name="promo.startDate"
@@ -1036,7 +1291,7 @@ const Create = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-white">End Date</label>
+                      <label className="block text-white">End ate</label>
                       <input
                         type="date"
                         name="promo.endDate"
@@ -1046,7 +1301,7 @@ const Create = () => {
                       />
                     </div>
                      <div>
-                      <label className="block text-white">Minimum Purchase</label>
+                      <label className="block text-white">Minimum purchase</label>
                       <input
                         type="number"
                         name="promo.minimumPurchase"
@@ -1056,13 +1311,89 @@ const Create = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-white">Max Usage</label>
+                      <label className="block text-white">Max usage</label>
                       <input
                         type="number"
                         name="promo.maxUsage"
                         value={formData.promo.maxUsage}
                         onChange={handleInputChange}
                         className="w-full rounded border px-3 py-2 text-black"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-white">Door Delivery Terms &amp; Condition</label>
+                    <textarea
+                      name="doorDeliveryTermsAndCondition"
+                      value={formData.doorDeliveryTermsAndCondition}
+                      onChange={handleInputChange}
+                      className="w-full rounded border px-3 py-2 text-black"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-white">Pickup Centre Terms &amp; Condition</label>
+                    <textarea
+                      name="pickupCentreTermsAndCondition"
+                      value={formData.pickupCentreTermsAndCondition}
+                      onChange={handleInputChange}
+                      className="w-full rounded border px-3 py-2 text-black"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-white">Storage Outdoor (Height, Length, Breadth)</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        name="storageOutdoor.height"
+                        placeholder="Height"
+                        value={formData.storageOutdoor.height}
+                        onChange={handleInputChange}
+                        className="w-1/3 rounded border px-3 py-2 text-black"
+                      />
+                      <input
+                        type="number"
+                        name="storageOutdoor.length"
+                        placeholder="Length"
+                        value={formData.storageOutdoor.length}
+                        onChange={handleInputChange}
+                        className="w-1/3 rounded border px-3 py-2 text-black"
+                      />
+                      <input
+                        type="number"
+                        name="storageOutdoor.breadth"
+                        placeholder="Breadth"
+                        value={formData.storageOutdoor.breadth}
+                        onChange={handleInputChange}
+                        className="w-1/3 rounded border px-3 py-2 text-black"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-white">Storage Refrigerated (Height, Length, Breadth)</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        name="storageRefrigerated.height"
+                        placeholder="Height"
+                        value={formData.storageRefrigerated.height}
+                        onChange={handleInputChange}
+                        className="w-1/3 rounded border px-3 py-2 text-black"
+                      />
+                      <input
+                        type="number"
+                        name="storageRefrigerated.length"
+                        placeholder="Length"
+                        value={formData.storageRefrigerated.length}
+                        onChange={handleInputChange}
+                        className="w-1/3 rounded border px-3 py-2 text-black"
+                      />
+                      <input
+                        type="number"
+                        name="storageRefrigerated.breadth"
+                        placeholder="Breadth"
+                        value={formData.storageRefrigerated.breadth}
+                        onChange={handleInputChange}
+                        className="w-1/3 rounded border px-3 py-2 text-black"
                       />
                     </div>
                   </div>
@@ -1120,6 +1451,11 @@ const Create = () => {
                     <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{product.brand}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{product.stock} items left</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).repaymentPeriodInMonths || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).interestRatePercentage || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).platformFee || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).doorDeliveryTermsAndCondition || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).pickupCentreTermsAndCondition || '-'}</td>
                     <td className="px-6 py-4">
                       {product.imageUrl && product.imageUrl.length > 0 ? (
                         <Image src={product.imageUrl[0]} alt={product.name + '-0'} width={50} height={50} className="object-cover rounded" />
