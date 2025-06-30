@@ -1,40 +1,9 @@
+
 "use client"
 import React, { useState } from 'react';
 import TransactionsTable from '@/components/Tables';
-
-// Mock data for demonstration
-const mockPayments = [
-  {
-    customer: 'John Doe',
-    customerId: 'CUST001',
-    product: 'Smartphone',
-    productDescription: 'Samsung Galaxy S21',
-    productId: 'PROD123',
-    orderId: 'ORD456',
-    totalAmount: 36000,
-    maxRepaymentPeriod: '3 months',
-    minDeposit: 12000,
-    totalPaid: 12000,
-    totalBalance: 24000,
-    paymentStartDate: '2025-06-01',
-    paymentEndDate: '2025-08-31',
-  },
-  {
-    customer: 'Jane Smith',
-    customerId: 'CUST002',
-    product: 'Laptop',
-    productDescription: 'Dell XPS 13',
-    productId: 'PROD456',
-    orderId: 'ORD789',
-    totalAmount: 150000,
-    maxRepaymentPeriod: '6 months',
-    minDeposit: 30000,
-    totalPaid: 60000,
-    totalBalance: 90000,
-    paymentStartDate: '2025-01-15',
-    paymentEndDate: '2025-07-15',
-  },
-];
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/api/hooks/useAuth';
 
 const headers = [
   'S/N',
@@ -54,37 +23,121 @@ const headers = [
   'View Breakdown',
 ];
 
-const LittleByLittlePayment = () => {
-  const [search, setSearch] = useState('');
+// Define types for the order data structure
+interface Customer {
+  name: string;
+  id: string;
+}
 
-  // Filter payments based on search query (case-insensitive, any field)
-  const filteredPayments = mockPayments.filter(row => {
+interface Product {
+  name: string;
+  description: string;
+  id: string;
+}
+
+interface PaymentPlan {
+  period: string;
+  minDeposit: number;
+  endDate: string;
+}
+
+interface Order {
+  id: string;
+  customer: Customer;
+  product: Product;
+  totalAmount: number;
+  paymentPlan: PaymentPlan;
+  totalPaid: number;
+  createdAt: string;
+}
+
+const LittleByLittlePayment = () => {
+  const [search, setSearch] = useState<string>('');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+
+  const { client } = useAuth();
+  const { data: orders = [], isLoading, isError, error } = useQuery({
+    queryKey: ['orders'],
+    queryFn: async () => {
+      const res = await client.get('/api/order/admin/all?page=1&limit=10&paymentMode="Pay In Bits"');
+      return res.data?.data?.orders || [];
+    },
+   
+  });
+
+  // Filter orders based on search query (case-insensitive, any field)
+  const filteredOrders = orders.filter((order: Order) => {
     const searchStr = search.toLowerCase();
     return (
-      row.customer.toLowerCase().includes(searchStr) ||
-      row.customerId.toLowerCase().includes(searchStr) ||
-      row.product.toLowerCase().includes(searchStr) ||
-      row.productDescription.toLowerCase().includes(searchStr) ||
-      row.productId.toLowerCase().includes(searchStr) ||
-      row.orderId.toLowerCase().includes(searchStr) ||
-      row.maxRepaymentPeriod.toLowerCase().includes(searchStr) ||
-      row.paymentStartDate.toLowerCase().includes(searchStr) ||
-      row.paymentEndDate.toLowerCase().includes(searchStr)
+      order.customer?.name?.toLowerCase().includes(searchStr) ||
+      order.customer?.id?.toLowerCase().includes(searchStr) ||
+      order.product?.name?.toLowerCase().includes(searchStr) ||
+      order.product?.description?.toLowerCase().includes(searchStr) ||
+      order.product?.id?.toLowerCase().includes(searchStr) ||
+      order.id?.toLowerCase().includes(searchStr) ||
+      order.paymentPlan?.period?.toLowerCase().includes(searchStr) ||
+      order.createdAt?.toLowerCase().includes(searchStr) ||
+      order.paymentPlan?.endDate?.toLowerCase().includes(searchStr)
     );
   });
 
+  // Format date for display
+  const formatDate = (dateString: string | number | Date): string => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  // Calculate total balance
+  const calculateBalance = (totalAmount: number, totalPaid: number): number => {
+    return (totalAmount || 0) - (totalPaid || 0);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-full mx-auto rounded-lg shadow p-6 mt-8 text-white">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-lg">Loading payment data...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="max-w-full mx-auto rounded-lg shadow p-6 mt-8 text-white">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-lg text-red-400">
+            Error loading data: {error?.message || 'Something went wrong'}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-full mx-auto  rounded-lg shadow p-6 mt-8 text-white">
+    <div className="max-w-full mx-auto rounded-lg shadow p-6 mt-8 text-white">
       <h2 className="text-xl font-bold mb-4">Little-by-Little Payment Report</h2>
+      
       {/* Filter/Search section */}
       <div className="flex flex-wrap gap-4 mb-6 items-end">
         <div>
           <label className="block text-sm mb-1">Start Date</label>
-          <input type="date" className="rounded border px-3 py-2 text-black" />
+          <input 
+            type="date" 
+            className="rounded border px-3 py-2 text-black"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
         </div>
         <div>
           <label className="block text-sm mb-1">End Date</label>
-          <input type="date" className="rounded border px-3 py-2 text-black" />
+          <input 
+            type="date" 
+            className="rounded border px-3 py-2 text-black"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
         </div>
         <div>
           <label className="block text-sm mb-1">Search</label>
@@ -96,33 +149,51 @@ const LittleByLittlePayment = () => {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-
       </div>
+
       <TransactionsTable
         headers={headers}
         content={
           <>
-            {filteredPayments.map((row, idx) => (
-              <tr key={row.orderId} className="border-b border-gray-700 hover:bg-[#23263a]">
-                <td className="px-6 py-3 whitespace-nowrap">{idx + 1}</td>
-                <td className="px-6 py-3 whitespace-nowrap">{row.customer}</td>
-                <td className="px-6 py-3 whitespace-nowrap">{row.customerId}</td>
-                <td className="px-6 py-3 whitespace-nowrap">{row.product}</td>
-                <td className="px-6 py-3 whitespace-nowrap">{row.productDescription}</td>
-                <td className="px-6 py-3 whitespace-nowrap">{row.productId}</td>
-                <td className="px-6 py-3 whitespace-nowrap">{row.orderId}</td>
-                <td className="px-6 py-3 whitespace-nowrap font-bold">₦{row.totalAmount.toLocaleString()}</td>
-                <td className="px-6 py-3 whitespace-nowrap">{row.maxRepaymentPeriod}</td>
-                <td className="px-6 py-3 whitespace-nowrap">₦{row.minDeposit.toLocaleString()}</td>
-                <td className="px-6 py-3 whitespace-nowrap">₦{row.totalPaid.toLocaleString()}</td>
-                <td className="px-6 py-3 whitespace-nowrap">₦{row.totalBalance.toLocaleString()}</td>
-                <td className="px-6 py-3 whitespace-nowrap">{row.paymentStartDate}</td>
-                <td className="px-6 py-3 whitespace-nowrap">{row.paymentEndDate}</td>
-                <td className="px-6 py-3 whitespace-nowrap">
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs">View Breakdown</button>
+            {filteredOrders.length === 0 ? (
+              <tr>
+                <td colSpan={headers.length} className="px-6 py-8 text-center text-gray-400">
+                  No payment records found
                 </td>
               </tr>
-            ))}
+            ) : (
+              filteredOrders.map((order: { id: React.Key | null | undefined; customer: { name: any; id: any; }; product: { name: any; description: any; id: any; }; totalAmount: number; paymentPlan: { period: any; minDeposit: any; endDate: string | number | Date; }; totalPaid: number; createdAt: string | number | Date; }, idx: number) => (
+                <tr key={order.id} className="border-b border-gray-700 hover:bg-[#23263a]">
+                  <td className="px-6 py-3 whitespace-nowrap">{idx + 1}</td>
+                  <td className="px-6 py-3 whitespace-nowrap">{order.customer?.name || 'N/A'}</td>
+                  <td className="px-6 py-3 whitespace-nowrap">{order.customer?.id || 'N/A'}</td>
+                  <td className="px-6 py-3 whitespace-nowrap">{order.product?.name || 'N/A'}</td>
+                  <td className="px-6 py-3 whitespace-nowrap">{order.product?.description || 'N/A'}</td>
+                  <td className="px-6 py-3 whitespace-nowrap">{order.product?.id || 'N/A'}</td>
+                  <td className="px-6 py-3 whitespace-nowrap">{order.id || 'N/A'}</td>
+                  <td className="px-6 py-3 whitespace-nowrap font-bold">
+                    ₦{(order.totalAmount || 0).toLocaleString()}
+                  </td>
+                  <td className="px-6 py-3 whitespace-nowrap">{order.paymentPlan?.period || 'N/A'}</td>
+                  <td className="px-6 py-3 whitespace-nowrap">
+                    ₦{(order.paymentPlan?.minDeposit || 0).toLocaleString()}
+                  </td>
+                  <td className="px-6 py-3 whitespace-nowrap">
+                    ₦{(order.totalPaid || 0).toLocaleString()}
+                  </td>
+                  <td className="px-6 py-3 whitespace-nowrap">
+                    ₦{calculateBalance(order.totalAmount, order.totalPaid).toLocaleString()}
+                  </td>
+                  <td className="px-6 py-3 whitespace-nowrap">{formatDate(order.createdAt)}</td>
+                  <td className="px-6 py-3 whitespace-nowrap">{formatDate(order.paymentPlan?.endDate)}</td>
+                  <td className="px-6 py-3 whitespace-nowrap">
+                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs">
+                      View Breakdown
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </>
         }
       />

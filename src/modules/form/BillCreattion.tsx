@@ -1,10 +1,9 @@
-
-
-
 "use client";
 
 import React, { useState, ChangeEvent } from 'react';
 import { Plus, Trash2, Calendar, User, Users, FileText, DollarSign, ChevronRight, ChevronLeft, Upload } from 'lucide-react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/api/hooks/useAuth';
 
 interface BillItem {
   id: number;
@@ -12,8 +11,8 @@ interface BillItem {
   description: string;
   category: string;
   amount: number;
-  quantity: number;
   amountWithoutCharge: number;
+  quantity: number;
 }
 
 interface BillDetails {
@@ -23,15 +22,13 @@ interface BillDetails {
   customerId: string;
   customerGroupId: string;
   startDate: string;
-   startTime: string;
-   endTime: string;
+  startTime: string;
+  endTime: string;
   endDate: string;
   promoCode: string;
   promoPercentage: number;
-  referralBonus: number;
   image: File | null;
   imageUrl: string | null;
-  digitalItem: File | null;
   visibility: string;
   visibilityStartDate: string;
   visibilityStartTime: string;
@@ -43,16 +40,8 @@ interface BillDetails {
   assignedCustomers: string[];
   organisation: string;
   referralBonusValue: string;
-}
-
-interface Customer {
-  id: string;
-  name: string;
-}
-
-interface CustomerGroup {
-  id: string;
-  name: string;
+  customUniqueCode: string;
+  platformServiceCharge: number;
 }
 
 interface Category {
@@ -60,11 +49,22 @@ interface Category {
   name: string;
 }
 
+
+
+
+
 const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
+  const { client } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
 
-  // Bill Details (5-7 core fields)
+  // State for modal/status management
+  const [userCreated, setUserCreated] = useState(false);
+  const [modalContent, setModalContent] = useState("form");
+  const [mutationResponse, setMutationResponse] = useState("");
+  const [closeModal, setCloseModal] = useState(true);
+
+  // Bill Details
   const [billDetails, setBillDetails] = useState<BillDetails>({
     id: 1,
     name: "",
@@ -77,10 +77,8 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
     startTime: '',
     endTime: '',
     promoPercentage: 0,
-    referralBonus: 0,
     image: null,
     imageUrl: null,
-    digitalItem: null,
     visibility: "inhouse",
     visibilityStartDate: "",
     visibilityStartTime: "",
@@ -91,39 +89,115 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
     assignToCustomer: "",
     assignedCustomers: [],
     organisation: organizationId,
-    referralBonusValue: ""
+    referralBonusValue: "",
+    customUniqueCode: "",
+    platformServiceCharge: 0
   });
 
-  // Bill Items (with item-specific fields)
+  // Bill Items
   const [billItems, setBillItems] = useState<BillItem[]>([{
     id: 1,
     purposeName: "",
     description: "",
     category: "",
     amount: 0,
+    amountWithoutCharge: 0,
     quantity: 1,
-    amountWithoutCharge: 0
   }]);
 
-  const [customers] = useState<Customer[]>([
-    { id: '1', name: 'John Ray' },
-    { id: '2', name: 'Peter J' },
-    { id: '3', name: 'Sarah Wilson' },
-    { id: '4', name: 'Mike Johnson' }
-  ]);
+  
+ 
+   const { data: categoriesData, isLoading } = useQuery<Category[]>({
+  queryKey: ['bill-categories'],
+  queryFn: async () => {
+    const res = await client.get('/api/bill-categories');
+    return res.data;
+  },
+});
 
-  const [customerGroups] = useState<CustomerGroup[]>([
-    { id: '1', name: 'Premium Customers' },
-    { id: '2', name: 'Regular Customers' },
-    { id: '3', name: 'VIP Customers' }
-  ]);
+  // React Query mutation
+  const { mutate: createBill, isPending: isCreatingBill } = useMutation({
+    mutationFn: async (values: any) => {
+      const formData = new FormData();
+      
+      // Bill Details
+      formData.append("billName", values.name);
+      formData.append("billCode", values.code);
+      formData.append("organisation", organizationId);
+      formData.append("assignToCustomer", "");
+       formData.append("assignToCustomerGroup", "");  
+      formData.append("startDate", values.startDate);
+      formData.append("startTime", values.startTime);
+      formData.append("endDate", values.endDate);
+      formData.append("endTime", values.endTime);
+      formData.append("promoCode", values.promoCode);
+      formData.append("customUniqueCode", values.customUniqueCode);
+      formData.append("platformServiceCharge", values.platformServiceCharge.toString());
+      formData.append("promoPercentage", values.promoPercentage.toString());
+      formData.append("visibility", values.visibility);
+      formData.append("visibilityStartDate", values.visibilityStartDate);
+      formData.append("visibilityStartTime", values.visibilityStartTime);
+      formData.append("visibilityEndDate", values.visibilityEndDate);
+      formData.append("visibilityEndTime", values.visibilityEndTime);
+      formData.append("SelectorAll", values.selectorAll);
+      formData.append("selectorCategory", values.selectorCategory);
+      formData.append("referralBonusValue", values.referralBonusValue);
 
-  const [categories] = useState<Category[]>([
-    { id: '1', name: 'Electronics' },
-    { id: '2', name: 'Clothing' },
-    { id: '3', name: 'Books' },
-    { id: '4', name: 'Home & Garden' }
-  ]);
+      // Handle assigned customers
+      const assignedCustomers = values.visibility === "general" 
+        ? values.assignedCustomers 
+        : values.assignedCustomers;
+      
+      assignedCustomers.forEach((customerId: string) => 
+        formData.append("assignedCustomers[]", customerId)
+      );
+
+      // Handle image upload
+      if (values.image) {
+        formData.append("billImage", values.image);
+      }
+
+      // Bill Items - send as JSON string
+      const billItemsData = billItems.map(({ id, ...rest }) => ({
+        billName: rest.purposeName,
+        description: rest.description,
+        category: rest.category,
+        amount: rest.amount,
+        amountWithoutCharge: rest.amountWithoutCharge,
+        quantity: rest.quantity
+      }));
+      formData.append("billItems", JSON.stringify(billItemsData));
+
+      // Max Payment Duration
+      const maxPaymentDuration = {
+        startDate: values.startDate,
+        endDate: values.endDate,
+        startTime: values.startTime,
+        endTime: values.endTime
+      };
+      formData.append("maxPaymentDuration", JSON.stringify(maxPaymentDuration));
+
+      return client.post('/api/bills', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    },
+    onSuccess(response) {
+      setUserCreated(true);
+      setModalContent("status");
+      setMutationResponse(response?.data.message || "Bill created successfully!");
+      setTimeout(() => {
+        setCloseModal(false);
+        setModalContent("form");
+        // Optionally reset form or redirect as needed
+        // router.push("/merchant/bills");
+      }, 3000);
+    },
+    onError(error: any) {
+      // Axios error handling pattern
+      setMutationResponse(error?.response?.data?.message || error.message || "An error occurred while creating the bill");
+      setModalContent("status");
+    }
+  });
 
   // Handlers for bill details
   const handleBillDetailsChange = (field: keyof BillDetails, value: string | number | File | null) => {
@@ -145,8 +219,8 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
       description: "",
       category: "",
       amount: 0,
+      amountWithoutCharge: 0,
       quantity: 1,
-      amountWithoutCharge: 0
     }]);
   };
 
@@ -164,13 +238,6 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
         image: file,
         imageUrl: URL.createObjectURL(file)
       }));
-    }
-  };
-
-  const handleDigitalItemUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleBillDetailsChange('digitalItem', file);
     }
   };
 
@@ -199,13 +266,10 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
   };
 
   const handleSubmit = () => {
-    const billData = {
-      billDetails,
-      billItems
-    };
-
-    console.log('Complete Bill Data:', billData);
-    alert('Bill created successfully!');
+    createBill({
+      ...billDetails,
+      billItems: billItems
+    });
   };
 
   const renderStepContent = () => {
@@ -242,7 +306,7 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                   <User size={16} />
                   Assign to Customer
@@ -253,15 +317,15 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select customer</option>
-                  {customers.map(customer => (
+                  {customersData?.map(customer => (
                     <option key={customer.id} value={customer.id}>
                       {customer.name}
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                   <Users size={16} />
                   Assign to Customer Group
@@ -272,13 +336,13 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select customer group</option>
-                  {customerGroups.map(group => (
+                  {customerGroupsData?.map(group => (
                     <option key={group.id} value={group.id}>
                       {group.name}
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
@@ -366,7 +430,7 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       >
                         <option value="">Select category</option>
-                        {categories.map(category => (
+                        {categoriesData?.map(category => (
                           <option key={category.id} value={category.id}>
                             {category.name}
                           </option>
@@ -374,11 +438,24 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
                       </select>
                     </div>
 
-                   
+                    {/* <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Amount Without Charge *
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.amountWithoutCharge}
+                        onChange={(e) => handleItemChange(item.id, 'amountWithoutCharge', parseFloat(e.target.value) || 0)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Enter base amount"
+                      />
+                    </div> */}
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Amount 
+                        Amount (with charge) *
                       </label>
                       <input
                         type="number"
@@ -387,6 +464,7 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
                         value={item.amount}
                         onChange={(e) => handleItemChange(item.id, 'amount', parseFloat(e.target.value) || 0)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Enter total amount"
                       />
                     </div>
 
@@ -403,17 +481,16 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
                       />
                     </div>
 
-                    <div>
+                    <div className="col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Amount Without Charge
+                        Description
                       </label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={item.amountWithoutCharge}
-                        onChange={(e) => handleItemChange(item.id, 'amountWithoutCharge', parseFloat(e.target.value) || 0)}
+                      <textarea
+                        value={item.description}
+                        onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        rows={3}
+                        placeholder="Enter item description"
                       />
                     </div>
                   </div>
@@ -426,7 +503,7 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
       case 3: // Additional Settings
         return (
           <div className="space-y-6">
-           
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Additional Settings</h2>
               
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -441,30 +518,33 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
                   placeholder="Enter promo code"
                 />
               </div>
-               <div>
+               
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Custome unique Code
+                  Custom Unique Code
                 </label>
                 <input
                   type="text"
-                  value={billDetails.customerId}
-                  onChange={(e) => handleBillDetailsChange('promoCode', e.target.value)}
+                  value={billDetails.customUniqueCode}
+                  onChange={(e) => handleBillDetailsChange('customUniqueCode', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter unique code"
                 />
               </div>
-                 <div>
+                 
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Platform Service Charge
                 </label>
                 <input
-                
                   type="number"
-                  value={billDetails.promoPercentage}
-                    onChange={(e) => handleBillDetailsChange('promoPercentage', parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-100"
+                  min="0"
+                  value={billDetails.platformServiceCharge}
+                  onChange={(e) => handleBillDetailsChange('platformServiceCharge', parseFloat(e.target.value) || 0)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
               </div>
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Promo Percentage (%)
@@ -477,34 +557,6 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
                   onChange={(e) => handleBillDetailsChange('promoPercentage', parseFloat(e.target.value) || 0)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="0"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Referral Bonus
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={billDetails.referralBonus}
-                  onChange={(e) => handleBillDetailsChange('referralBonus', parseFloat(e.target.value) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Referral Bonus Value
-                </label>
-                <input
-                  type="text"
-                  value={billDetails.referralBonusValue}
-                  onChange={(e) => handleBillDetailsChange('referralBonusValue', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter referral bonus value"
                 />
               </div>
 
@@ -535,81 +587,52 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
                   )}
                 </div>
               </div>
-                 <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                Digital Item
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <input
-                    type="file"
-                    accept="image/*"
-                   onChange={handleDigitalItemUpload}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label htmlFor="image-upload" className="cursor-pointer">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-600">Click to upload an image</p>
-                  </label>
-                  {billDetails.imageUrl && (
-                    <div className="mt-4">
-                      <img 
-                        src={billDetails.imageUrl} 
-                        alt="Preview" 
-                        className="mx-auto h-32 w-32 object-cover rounded-lg"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
             
               {/* Maximum payment Duration */}
-<div className="col-span-2">
-  <h4 className="font-semibold mb-2">Maximum payment Duration</h4>
-  <div className="grid grid-cols-2 gap-2">
-    <div>
-      <label>Start Date</label>
-      <input
-        type="date"
-        value={billDetails.startDate}
-        onChange={e => handleBillDetailsChange('startDate', e.target.value)}
-        className="w-full px-3 py-2 border rounded"
-      />
-    </div>
+              <div className="col-span-2">
+                <h4 className="font-semibold mb-2">Maximum payment Duration</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                    <input
+                      type="date"
+                      value={billDetails.startDate}
+                      onChange={e => handleBillDetailsChange('startDate', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
 
-    <div>
-      <label>Start Time</label>
-      <input
-        type="time"
-        value={billDetails.startTime}
-        onChange={e => handleBillDetailsChange('startTime', e.target.value)}
-        className="w-full px-3 py-2 border rounded"
-      />
-    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                    <input
+                      type="time"
+                      value={billDetails.startTime}
+                      onChange={e => handleBillDetailsChange('startTime', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
 
-    <div>
-      <label>End Date</label>
-      <input
-        type="date"
-        value={billDetails.endDate}
-        onChange={e => handleBillDetailsChange('endDate', e.target.value)}
-        className="w-full px-3 py-2 border rounded"
-      />
-    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                    <input
+                      type="date"
+                      value={billDetails.endDate}
+                      onChange={e => handleBillDetailsChange('endDate', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
 
-    <div>
-      <label>End Time</label>
-      <input
-        type="time"
-        value={billDetails.endTime}
-        onChange={e => handleBillDetailsChange('endTime', e.target.value)}
-        className="w-full px-3 py-2 border rounded"
-      />
-    </div>
-  </div>
-</div>
-
-             
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                    <input
+                      type="time"
+                      value={billDetails.endTime}
+                      onChange={e => handleBillDetailsChange('endTime', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -619,13 +642,45 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
     }
   };
 
+  // Status/Success Modal Content
+  if (modalContent === "status") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8 text-center">
+          <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+            userCreated ? 'bg-green-100' : 'bg-red-100'
+          }`}>
+            {userCreated ? (
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            ) : (
+              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            )}
+          </div>
+          <h2 className={`text-xl font-semibold mb-2 ${userCreated ? 'text-green-800' : 'text-red-800'}`}>
+            {userCreated ? 'Success!' : 'Error'}
+          </h2>
+          <p className="text-gray-600 mb-4">{mutationResponse}</p>
+          {userCreated && (
+            <div className="text-sm text-gray-500">
+              Redirecting in 3 seconds...
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen  p-6">
+    <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">
-             
+              <FileText className="text-blue-600" size={32} />
               Bill Creation
             </h1>
             <p className="text-gray-600">Create a new bill with detailed information</p>
@@ -659,7 +714,7 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
             <button
               type="button"
               onClick={prevStep}
-              disabled={currentStep === 1}
+              disabled={currentStep === 1 || isCreatingBill}
               className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
                 currentStep === 1
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -674,6 +729,7 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
               <button
                 type="button"
                 onClick={nextStep}
+                disabled={isCreatingBill}
                 className="flex items-center gap-2 px-6 py-3 bg-[#221c3e] text-white rounded-lg font-medium hover:bg-[#3b2f73] transition-colors"
               >
                 Next
@@ -683,9 +739,10 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="px-8 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+                disabled={isCreatingBill}
+                className="px-8 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
               >
-                Submit Bill
+                {isCreatingBill ? 'Creating Bill...' : 'Create Bill'}
               </button>
             )}
           </div>

@@ -4,6 +4,7 @@ import TransactionsTable from '@/components/Tables'
 import { StatusIndicator } from '@/components/StatusIndicator'
 import { useAuth } from '@/api/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
+import Modal from '@/components/Modal';
 
 // TypeScript interfaces for the API response
 interface ShippingAddress {
@@ -54,6 +55,7 @@ interface OrderItem {
 }
 
 interface PickupStation {
+  contact: any;
   address: {
     country: string;
   };
@@ -123,7 +125,8 @@ const headers = [
   'Order ID',
   'Date & Time',
   'Payment',
-  'Mode',
+  'Mode Of Delivery',
+  'Pickup Station',
   'Status',
   'Delivery Cost',
   'Total Cost'
@@ -135,6 +138,8 @@ const AdminOrderReport = () => {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [openDropdown, setOpenDropdown] = useState<number>(0);
+  const [selectedStationId, setSelectedStationId] = useState<string | null>(null);
+  const [selectedStation, setSelectedStation] = useState<PickupStation | null>(null);
   
   const { data: apiResponse, isLoading, isError, error } = useQuery<ApiResponse>({
     queryKey: ['orders'],
@@ -250,6 +255,7 @@ const AdminOrderReport = () => {
         dateTime: formatDate(order.createdAt),
         payment: getPaymentCompleteness(order),
         mode: order.pickupStation ? 'Pickup Centre' : 'Door Delivery',
+        pickupStation: order.pickupStation,
         status: getDeliveryStatus(order),
         deliveryCost: formatCurrency(order.productPaymentTerms?.platformFee || 0),
         totalCost: formatCurrency(order.totalPrice),
@@ -388,6 +394,18 @@ const AdminOrderReport = () => {
             </td>
             <td className="px-6 py-3 whitespace-nowrap">{row.mode}</td>
             <td className="px-6 py-3 whitespace-nowrap">
+              {row.pickupStation ? (
+                <button
+                  onClick={() => setSelectedStation(row.pickupStation)}
+                  className="text-blue-400 hover:underline"
+                >
+                  View Pickup Station
+                </button>
+              ) : (
+                'N/A'
+              )}
+            </td>
+            <td className="px-6 py-3 whitespace-nowrap">
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                 row.status === 'Delivered' 
                   ? 'bg-green-500/20 text-green-400' 
@@ -403,6 +421,16 @@ const AdminOrderReport = () => {
           </tr>
         ))}
       />
+      
+      {selectedStation && (
+        <Modal title="View Pickup Station" setModalState={() => setSelectedStation(null)}>
+          <div className="p-4 text-white space-y-2">
+            <div><b>Name:</b> {selectedStation.name || 'N/A'}</div>
+            <div><b>Address:</b> {selectedStation.fullAddress || selectedStation.address?.country || 'N/A'}</div>
+            <div><b>Phone Number:</b> {selectedStation.contact?.phone || 'N/A'}</div>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }
