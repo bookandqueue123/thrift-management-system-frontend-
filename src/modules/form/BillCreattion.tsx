@@ -8,7 +8,6 @@ import { useAuth } from '@/api/hooks/useAuth';
 interface BillItem {
   id: number;
   purposeName: string;
-  description: string;
   category: string;
   amount: number;
   amountWithoutCharge: number;
@@ -27,8 +26,8 @@ interface BillDetails {
   endDate: string;
   promoCode: string;
   promoPercentage: number;
-  image: File | null;
-  imageUrl: string | null;
+  billImage: File | null;
+  billImageUrl: string | null;
   visibility: string;
   visibilityStartDate: string;
   visibilityStartTime: string;
@@ -77,8 +76,8 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
     startTime: '',
     endTime: '',
     promoPercentage: 0,
-    image: null,
-    imageUrl: null,
+    billImage: null,
+    billImageUrl: null,
     visibility: "inhouse",
     visibilityStartDate: "",
     visibilityStartTime: "",
@@ -98,7 +97,6 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
   const [billItems, setBillItems] = useState<BillItem[]>([{
     id: 1,
     purposeName: "",
-    description: "",
     category: "",
     amount: 0,
     amountWithoutCharge: 0,
@@ -111,7 +109,8 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
   queryKey: ['bill-categories'],
   queryFn: async () => {
     const res = await client.get('/api/bill-categories');
-    return res.data;
+     console.log('API Response:', res.data);
+    return res.data.data;
   },
 });
 
@@ -153,14 +152,13 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
       );
 
       // Handle image upload
-      if (values.image) {
-        formData.append("billImage", values.image);
+      if (values.billImage) {
+        formData.append("billImage", values.billImage);
       }
 
       // Bill Items - send as JSON string
       const billItemsData = billItems.map(({ id, ...rest }) => ({
         billName: rest.purposeName,
-        description: rest.description,
         category: rest.category,
         amount: rest.amount,
         amountWithoutCharge: rest.amountWithoutCharge,
@@ -185,6 +183,42 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
       setUserCreated(true);
       setModalContent("status");
       setMutationResponse(response?.data.message || "Bill created successfully!");
+      setBillDetails({
+        id: 1,
+        name: "",
+        code: "",
+        customerId: "",
+        customerGroupId: "",
+        startDate: "",
+        endDate: "",
+        promoCode: "",
+        startTime: '',
+        endTime: '',
+        promoPercentage: 0,
+        billImage: null,
+        billImageUrl: null,
+        visibility: "inhouse",
+        visibilityStartDate: "",
+        visibilityStartTime: "",
+        visibilityEndDate: "",
+        visibilityEndTime: "",
+        selectorAll: "selectorAllOptional",
+        selectorCategory: "selectorCategoryOptional",
+        assignToCustomer: "",
+        assignedCustomers: [],
+        organisation: organizationId,
+        referralBonusValue: "",
+        customUniqueCode: "",
+        platformServiceCharge: 0
+      });
+      setBillItems([{
+        id: 1,
+        purposeName: "",
+        category: "",
+        amount: 0,
+        amountWithoutCharge: 0,
+        quantity: 1,
+      }]);
       setTimeout(() => {
         setCloseModal(false);
         setModalContent("form");
@@ -216,7 +250,6 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
     setBillItems(prev => [...prev, {
       id: newId,
       purposeName: "",
-      description: "",
       category: "",
       amount: 0,
       amountWithoutCharge: 0,
@@ -235,8 +268,8 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
     if (file) {
       setBillDetails(prev => ({
         ...prev,
-        image: file,
-        imageUrl: URL.createObjectURL(file)
+        billImage: file,
+        billImageUrl: URL.createObjectURL(file)
       }));
     }
   };
@@ -279,94 +312,96 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Bill Details</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bill Name *
-                </label>
-                <input
-                  type="text"
-                  value={billDetails.name}
-                  onChange={(e) => handleBillDetailsChange('name', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter bill name"
-                />
-              </div>
+            <div className="max-w-4xl mx-auto w-full p-4 md:p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bill Name <span className='text-red-500'>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={billDetails.name}
+                    onChange={(e) => handleBillDetailsChange('name', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter bill name"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bill Code
-                </label>
-                <input
-                  type="text"
-                  value={billDetails.code}
-                  onChange={(e) => handleBillDetailsChange('code', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter bill code"
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bill Code
+                  </label>
+                  <input
+                    type="text"
+                    value={billDetails.code}
+                    onChange={(e) => handleBillDetailsChange('code', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter bill code"
+                  />
+                </div>
 
-              {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                  <User size={16} />
-                  Assign to Customer
-                </label>
-                <select
-                  value={billDetails.customerId}
-                  onChange={(e) => handleBillDetailsChange('customerId', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select customer</option>
-                  {customersData?.map(customer => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.name}
-                    </option>
-                  ))}
-                </select>
-              </div> */}
+                {/* <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <User size={16} />
+                    Assign to Customer
+                  </label>
+                  <select
+                    value={billDetails.customerId}
+                    onChange={(e) => handleBillDetailsChange('customerId', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Select customer</option>
+                    {customersData?.map(customer => (
+                      <option key={customer.id} value={customer.id}>
+                        {customer.name}
+                      </option>
+                    ))}
+                  </select>
+                </div> */}
 
-              {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                  <Users size={16} />
-                  Assign to Customer Group
-                </label>
-                <select
-                  value={billDetails.customerGroupId}
-                  onChange={(e) => handleBillDetailsChange('customerGroupId', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select customer group</option>
-                  {customerGroupsData?.map(group => (
-                    <option key={group.id} value={group.id}>
-                      {group.name}
-                    </option>
-                  ))}
-                </select>
-              </div> */}
+                {/* <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <Users size={16} />
+                    Assign to Customer Group
+                  </label>
+                  <select
+                    value={billDetails.customerGroupId}
+                    onChange={(e) => handleBillDetailsChange('customerGroupId', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Select customer group</option>
+                    {customerGroupsData?.map(group => (
+                      <option key={group.id} value={group.id}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </select>
+                </div> */}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                  <Calendar size={16} />
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  value={billDetails.startDate}
-                  onChange={(e) => handleBillDetailsChange('startDate', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <Calendar size={16} />
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    value={billDetails.startDate}
+                    onChange={(e) => handleBillDetailsChange('startDate', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  End Date
-                </label>
-                <input
-                  type="date"
-                  value={billDetails.endDate}
-                  onChange={(e) => handleBillDetailsChange('endDate', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    value={billDetails.endDate}
+                    onChange={(e) => handleBillDetailsChange('endDate', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -375,21 +410,10 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
       case 2: // Bill Items
         return (
           <div className="space-y-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                <DollarSign className="text-green-600" size={20} />
-                Bill Items
-              </h2>
-              <button
-                type="button"
-                onClick={addBillItem}
-                className="flex items-center gap-2 px-4 py-2 bg-[#221c3e] text-white rounded-lg hover:bg-[#3b2f73] transition-colors"
-              >
-                <Plus size={16} />
-                Add Bill Item
-              </button>
-            </div>
-
+            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 mb-6">
+              <DollarSign className="text-green-600" size={20} />
+              Bill Items
+            </h2>
             <div className="space-y-4">
               {billItems.map((item, index) => (
                 <div key={item.id} className="bg-white rounded-lg p-4 border border-gray-200">
@@ -405,98 +429,76 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
                       </button>
                     )}
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Bill Name *
-                      </label>
-                      <input
-                        type="text"
-                        value={item.purposeName}
-                        onChange={(e) => handleItemChange(item.id, 'purposeName', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        placeholder="Enter item name"
-                      />
-                    </div>
-                     
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Category
-                      </label>
-                      <select
-                        value={item.category}
-                        onChange={(e) => handleItemChange(item.id, 'category', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      >
-                        <option value="">Select category</option>
-                        {categoriesData?.map(category => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Amount Without Charge *
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={item.amountWithoutCharge}
-                        onChange={(e) => handleItemChange(item.id, 'amountWithoutCharge', parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        placeholder="Enter base amount"
-                      />
-                    </div> */}
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Amount (with charge) *
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={item.amount}
-                        onChange={(e) => handleItemChange(item.id, 'amount', parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        placeholder="Enter total amount"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Quantity
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Description
-                      </label>
-                      <textarea
-                        value={item.description}
-                        onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        rows={3}
-                        placeholder="Enter item description"
-                      />
+                  <div className="max-w-4xl mx-auto w-full p-4 md:p-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Bill Name <span className='text-red-500'>*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={item.purposeName}
+                          onChange={(e) => handleItemChange(item.id, 'purposeName', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          placeholder="Enter item name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Category
+                        </label>
+                        <select
+                          value={item.category}
+                          onChange={(e) => handleItemChange(item.id, 'category', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        >
+                          <option value="">Select category</option>
+                          {categoriesData?.map(category => (
+                            <option key={category.id} value={category.id}>
+                              {category.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Amount
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={item.amount}
+                          onChange={(e) => handleItemChange(item.id, 'amount', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          placeholder="Enter total amount"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Quantity
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
+            <button
+              type="button"
+              onClick={addBillItem}
+              className="flex items-center gap-2 px-4 py-2 bg-[#221c3e] text-white rounded-lg hover:bg-[#3b2f73] transition-colors mt-4"
+            >
+              <Plus size={16} />
+              Add Bill Item
+            </button>
           </div>
         );
 
@@ -505,131 +507,135 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Additional Settings</h2>
               
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Promo Code
-                </label>
-                <input
-                  type="text"
-                  value={billDetails.promoCode}
-                  onChange={(e) => handleBillDetailsChange('promoCode', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter promo code"
-                />
-              </div>
-               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Custom Unique Code
-                </label>
-                <input
-                  type="text"
-                  value={billDetails.customUniqueCode}
-                  onChange={(e) => handleBillDetailsChange('customUniqueCode', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter unique code"
-                />
-              </div>
-                 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Platform Service Charge
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={billDetails.platformServiceCharge}
-                  onChange={(e) => handleBillDetailsChange('platformServiceCharge', parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Promo Percentage (%)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={billDetails.promoPercentage}
-                  onChange={(e) => handleBillDetailsChange('promoPercentage', parseFloat(e.target.value) || 0)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="0"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Upload Image
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label htmlFor="image-upload" className="cursor-pointer">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-600">Click to upload an image</p>
+            <div className="max-w-4xl mx-auto w-full p-4 md:p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Promo Code
                   </label>
-                  {billDetails.imageUrl && (
-                    <div className="mt-4">
-                      <img 
-                        src={billDetails.imageUrl} 
-                        alt="Preview" 
-                        className="mx-auto h-32 w-32 object-cover rounded-lg"
-                      />
-                    </div>
-                  )}
+                  <input
+                    type="text"
+                    value={billDetails.promoCode}
+                    onChange={(e) => handleBillDetailsChange('promoCode', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter promo code"
+                  />
                 </div>
-              </div>
-            
-              {/* Maximum payment Duration */}
-              <div className="col-span-2">
-                <h4 className="font-semibold mb-2">Maximum payment Duration</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                    <input
-                      type="date"
-                      value={billDetails.startDate}
-                      onChange={e => handleBillDetailsChange('startDate', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
+                 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Custom Unique Code
+                  </label>
+                  <input
+                    type="text"
+                    value={billDetails.customUniqueCode}
+                    onChange={(e) => handleBillDetailsChange('customUniqueCode', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter unique code"
+                  />
+                </div>
+                 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Platform Service Charge
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={billDetails.platformServiceCharge}
+                    onChange={(e) => handleBillDetailsChange('platformServiceCharge', parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Promo Percentage (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={billDetails.promoPercentage}
+                    onChange={(e) => handleBillDetailsChange('promoPercentage', parseFloat(e.target.value) || 0)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Upload Image
+                  </label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                     <input
-                      type="time"
-                      value={billDetails.startTime}
-                      onChange={e => handleBillDetailsChange('startTime', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="image-upload"
                     />
+                    <label htmlFor="image-upload" className="cursor-pointer">
+                      <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                      <p className="mt-2 text-sm text-gray-600">Click to upload an image</p>
+                    </label>
+                    {billDetails.billImageUrl && (
+                      <div className="mt-4">
+                        <img 
+                          src={billDetails.billImageUrl} 
+                          alt="Preview" 
+                          className="mx-auto h-32 w-32 object-cover rounded-lg"
+                        />
+                      </div>
+                    )}
                   </div>
+                </div>
+              
+                {/* Maximum payment Duration */}
+                <div className="col-span-2">
+                  <h4 className="font-semibold mb-2">Maximum payment Duration</h4>
+                  <div className="max-w-4xl mx-auto w-full p-4 md:p-8">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                        <input
+                          type="date"
+                          value={billDetails.startDate}
+                          onChange={e => handleBillDetailsChange('startDate', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                    <input
-                      type="date"
-                      value={billDetails.endDate}
-                      onChange={e => handleBillDetailsChange('endDate', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                        <input
+                          type="time"
+                          value={billDetails.startTime}
+                          onChange={e => handleBillDetailsChange('startTime', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
-                    <input
-                      type="time"
-                      value={billDetails.endTime}
-                      onChange={e => handleBillDetailsChange('endTime', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                        <input
+                          type="date"
+                          value={billDetails.endDate}
+                          onChange={e => handleBillDetailsChange('endDate', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                        <input
+                          type="time"
+                          value={billDetails.endTime}
+                          onChange={e => handleBillDetailsChange('endTime', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -715,10 +721,10 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
               type="button"
               onClick={prevStep}
               disabled={currentStep === 1 || isCreatingBill}
-              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors text-white ${
                 currentStep === 1
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  : 'bg-gray-200 hover:bg-gray-300'
               }`}
             >
               <ChevronLeft size={20} />
