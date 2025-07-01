@@ -158,7 +158,7 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
 
       // Bill Items - send as JSON string
       const billItemsData = billItems.map(({ id, category, ...rest }) => {
-        const selectedCategory = categoriesData?.find(cat => cat.id === category || cat._id === category);
+        const selectedCategory = categoriesData?.find(cat => cat.id === category);
         return {
           billName: rest.purposeName,
           category, // ID
