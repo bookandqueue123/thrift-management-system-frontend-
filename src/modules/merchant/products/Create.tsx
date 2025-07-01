@@ -17,7 +17,6 @@ interface Promo {
   endDate?: string;
   minimumPurchase: number;
   maxUsage?: number;
- 
 }
 
 interface Product {
@@ -40,49 +39,47 @@ interface Product {
 type ProductFormData = {
   name: string;
   description: string;
+  stock: string;
   price: string;
-  costBeforeDiscount: string;
-  discount: string;
   category: string;
   brand: string;
-  sku: string;
-  size: string;
-  memory: string;
-  
+  costBeforeDiscount?: string;
+  discount?: string;
+  sku?: string;
+  size?: string;
+  memory?: string;
   firstProductImage?: File;
   secondProductImage?: File;
   thirdProductImage?: File;
   productImage?: File;
-  stock: string;
- 
-  maximumRepaymentTimeline: string;
-  repaymentPeriodInMonths: string;
-  minimumRepaymentAmount: string;
-  minimumDepositPercentage: string;
-  interestRatePercentage: string;
-  platformFee: string;
-  doorDeliveryTerms: string;
-  pickupTerms: string;
-  doorDeliveryTermsAndCondition: string;
-  pickupCentreTermsAndCondition: string;
-  storageOutdoor: {
-    height: string;
-    length: string;
-    breadth: string;
+  maximumRepaymentTimeline?: string;
+  repaymentPeriodInMonths?: string;
+  minimumRepaymentAmount?: string;
+  minimumDepositPercentage?: string;
+  interestRatePercentage?: string;
+  platformFee?: string;
+  doorDeliveryTerms?: string;
+  pickupTerms?: string;
+  doorDeliveryTermsAndCondition?: string;
+  pickupCentreTermsAndCondition?: string;
+  storageOutdoor?: {
+    height?: string;
+    length?: string;
+    breadth?: string;
   };
-  storageRefrigerated: {
-    height: string;
-    length: string;
-    breadth: string;
+  storageRefrigerated?: {
+    height?: string;
+    length?: string;
+    breadth?: string;
   };
-  promo: {
-    code: string;
-    percentage: string;
-    status: 'active' | 'inactive';
-    startDate: string;
-    endDate: string;
-    minimumPurchase: string;
-    maxUsage: string;
+  promo?: {
+    code?: string;
+    percentage?: string;
+    status?: 'active' | 'inactive';
+    startDate?: string;
+    endDate?: string;
+    minimumPurchase?: string;
+    maxUsage?: string;
   };
 };
 
@@ -105,47 +102,18 @@ const Create = () => {
   const initialFormData: ProductFormData = {
     name: '',
     description: '',
+    stock: '',
     price: '',
-    costBeforeDiscount: '',
-    discount: '0',
     category: '',
     brand: '',
-    sku: '',
-    size: '',
-    memory: '',
-    firstProductImage: undefined,
-    secondProductImage: undefined,
-    thirdProductImage: undefined,
-    productImage: undefined,
-    stock: '',
-  
-    maximumRepaymentTimeline: '',
-    repaymentPeriodInMonths: '',
-    minimumRepaymentAmount: '',
-    minimumDepositPercentage: '',
-    interestRatePercentage: '',
-    platformFee: '',
-    doorDeliveryTerms: '',
-    pickupTerms: '',
-    doorDeliveryTermsAndCondition: '',
-    pickupCentreTermsAndCondition: '',
-    storageOutdoor: { height: '', length: '', breadth: '' },
-    storageRefrigerated: { height: '', length: '', breadth: '' },
-    promo: {
-      code: '',
-      percentage: '',
-      status: 'active',
-      startDate: '',
-      endDate: '',
-      minimumPurchase: '',
-      maxUsage: '',
-    },
   };
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
   const [imagePreviews, setImagePreviews] = useState<(string | undefined)[]>([undefined, undefined, undefined]);
   const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
   const [errors, setErrors] = useState<FormErrors>({});
-
+  const [platformChargeValue, setPlatformChargeValue] = useState('');
+  const [actualPrice, setActualPrice] = useState('');
+  const [minimumDepositValue, setMinimumDepositValue] = useState('');
 
   const { data: products, isLoading, refetch: refetchProducts } = useQuery<Product[]>({
     queryKey: ['products'],
@@ -154,7 +122,6 @@ const Create = () => {
       return res.data;
     },
   });
-
 
   const { data: singleProduct, isLoading: isLoadingSingleProduct } = useQuery<Product>({
     queryKey: ['product', selectedProductId],
@@ -166,35 +133,34 @@ const Create = () => {
     enabled: !!selectedProductId && (modalType === 'view' || modalType === 'edit'),
   });
 
-
   const createProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
       const form = new FormData();
       form.append('name', data.name);
       form.append('description', data.description);
-      form.append('price', data.price);
-      form.append('costBeforeDiscount', data.costBeforeDiscount);
-      form.append('discount', data.discount);
-      form.append('category', data.category);
-      form.append('brand', data.brand);
-      form.append('sku', data.sku);
-      form.append('size', data.size);
-      form.append('memory', data.memory);
+      form.append('price', data.price || '');
+      form.append('costBeforeDiscount', data.costBeforeDiscount || '');
+      form.append('discount', data.discount || '');
+      form.append('category', data.category || '');
+      form.append('brand', data.brand || '');
+      form.append('sku', data.sku || '');
+      form.append('size', data.size || '');
+      form.append('memory', data.memory || '');
       form.append('stock', data.stock);
      
-      form.append('maximumRepaymentTimeline', data.maximumRepaymentTimeline);
-      form.append('repaymentPeriodInMonths', data.repaymentPeriodInMonths);
-      form.append('minimumRepaymentAmount', data.minimumRepaymentAmount);
-      form.append('minimumDepositPercentage', data.minimumDepositPercentage);
-      form.append('interestRatePercentage', data.interestRatePercentage);
-      form.append('platformFee', data.platformFee);
-      form.append('doorDeliveryTerms', data.doorDeliveryTerms);
-      form.append('pickupTerms', data.pickupTerms);
-      form.append('doorDeliveryTermsAndCondition', data.doorDeliveryTermsAndCondition);
-      form.append('pickupCentreTermsAndCondition', data.pickupCentreTermsAndCondition);
-      form.append('storageOutdoor', JSON.stringify(data.storageOutdoor));
-      form.append('storageRefrigerated', JSON.stringify(data.storageRefrigerated));
-      form.append('promo', JSON.stringify(data.promo));
+      form.append('maximumRepaymentTimeline', data.maximumRepaymentTimeline || '');
+      form.append('repaymentPeriodInMonths', data.repaymentPeriodInMonths || '');
+      form.append('minimumRepaymentAmount', data.minimumRepaymentAmount || '');
+      form.append('minimumDepositPercentage', data.minimumDepositPercentage || '');
+      form.append('interestRatePercentage', data.interestRatePercentage || '');
+      form.append('platformFee', data.platformFee || '');
+      form.append('doorDeliveryTerms', data.doorDeliveryTerms || '');
+      form.append('pickupTerms', data.pickupTerms || '');
+      form.append('doorDeliveryTermsAndCondition', data.doorDeliveryTermsAndCondition || '');
+      form.append('pickupCentreTermsAndCondition', data.pickupCentreTermsAndCondition || '');
+      form.append('storageOutdoor', JSON.stringify(data.storageOutdoor || {}));
+      form.append('storageRefrigerated', JSON.stringify(data.storageRefrigerated || {}));
+      form.append('promo', JSON.stringify(data.promo || {}));
       if (data.firstProductImage) form.append('firstProductImage', data.firstProductImage);
       if (data.secondProductImage) form.append('secondProductImage', data.secondProductImage);
       if (data.thirdProductImage) form.append('thirdProductImage', data.thirdProductImage);
@@ -214,35 +180,34 @@ const Create = () => {
     },
   });
 
- 
   const updateProductMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string, data: ProductFormData }) => {
       const form = new FormData();
       form.append('name', data.name);
       form.append('description', data.description);
-      form.append('price', data.price);
-      form.append('costBeforeDiscount', data.costBeforeDiscount);
-      form.append('discount', data.discount);
-      form.append('category', data.category);
-      form.append('brand', data.brand);
-      form.append('sku', data.sku);
-      form.append('size', data.size);
-      form.append('memory', data.memory);
+      form.append('price', data.price || '');
+      form.append('costBeforeDiscount', data.costBeforeDiscount || '');
+      form.append('discount', data.discount || '');
+      form.append('category', data.category || '');
+      form.append('brand', data.brand || '');
+      form.append('sku', data.sku || '');
+      form.append('size', data.size || '');
+      form.append('memory', data.memory || '');
       form.append('stock', data.stock);
       
-      form.append('maximumRepaymentTimeline', data.maximumRepaymentTimeline);
-      form.append('repaymentPeriodInMonths', data.repaymentPeriodInMonths);
-      form.append('minimumRepaymentAmount', data.minimumRepaymentAmount);
-      form.append('minimumDepositPercentage', data.minimumDepositPercentage);
-      form.append('interestRatePercentage', data.interestRatePercentage);
-      form.append('platformFee', data.platformFee);
-      form.append('doorDeliveryTerms', data.doorDeliveryTerms);
-      form.append('pickupTerms', data.pickupTerms);
-      form.append('doorDeliveryTermsAndCondition', data.doorDeliveryTermsAndCondition);
-      form.append('pickupCentreTermsAndCondition', data.pickupCentreTermsAndCondition);
-      form.append('storageOutdoor', JSON.stringify(data.storageOutdoor));
-      form.append('storageRefrigerated', JSON.stringify(data.storageRefrigerated));
-      form.append('promo', JSON.stringify(data.promo));
+      form.append('maximumRepaymentTimeline', data.maximumRepaymentTimeline || '');
+      form.append('repaymentPeriodInMonths', data.repaymentPeriodInMonths || '');
+      form.append('minimumRepaymentAmount', data.minimumRepaymentAmount || '');
+      form.append('minimumDepositPercentage', data.minimumDepositPercentage || '');
+      form.append('interestRatePercentage', data.interestRatePercentage || '');
+      form.append('platformFee', data.platformFee || '');
+      form.append('doorDeliveryTerms', data.doorDeliveryTerms || '');
+      form.append('pickupTerms', data.pickupTerms || '');
+      form.append('doorDeliveryTermsAndCondition', data.doorDeliveryTermsAndCondition || '');
+      form.append('pickupCentreTermsAndCondition', data.pickupCentreTermsAndCondition || '');
+      form.append('storageOutdoor', JSON.stringify(data.storageOutdoor || {}));
+      form.append('storageRefrigerated', JSON.stringify(data.storageRefrigerated || {}));
+      form.append('promo', JSON.stringify(data.promo || {}));
       if (data.productImage) form.append('productImage', data.productImage);
       return client.put(`/api/products/${id}`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -260,7 +225,6 @@ const Create = () => {
     },
   });
 
- 
   const deleteProductMutation = useMutation({
     mutationFn: async (id: string) => {
       return client.delete(`/api/products/${id}`);
@@ -322,9 +286,39 @@ const Create = () => {
         price = (cost - (cost * disc / 100)).toFixed(2);
       }
       setFormData((prev) => ({ ...prev, [name]: value, price }));
+      const platformFee = parseFloat(formData.platformFee || '0');
+      const discountedPrice = parseFloat(price || '0');
+      const platformCharge = !isNaN(platformFee) && !isNaN(discountedPrice) ? ((platformFee / 100) * discountedPrice) : 0;
+      setPlatformChargeValue(platformCharge.toFixed(2));
+      setActualPrice((discountedPrice + platformCharge).toFixed(2));
+      const minDepositPercent = parseFloat(formData.minimumDepositPercentage || '0');
+      const minDepositValue = !isNaN(minDepositPercent) && !isNaN(discountedPrice) ? ((minDepositPercent / 100) * (discountedPrice + platformCharge)) : 0;
+      setMinimumDepositValue(minDepositValue.toFixed(2));
       return;
     }
-
+    if (name === 'platformFee') {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      const platformFee = parseFloat(value);
+      const discountedPrice = parseFloat(formData.price || '0');
+      const platformCharge = !isNaN(platformFee) && !isNaN(discountedPrice) ? ((platformFee / 100) * discountedPrice) : 0;
+      setPlatformChargeValue(platformCharge.toFixed(2));
+      setActualPrice((discountedPrice + platformCharge).toFixed(2));
+      const minDepositPercent = parseFloat(formData.minimumDepositPercentage || '0');
+      const minDepositValue = !isNaN(minDepositPercent) && !isNaN(discountedPrice) ? ((minDepositPercent / 100) * (discountedPrice + platformCharge)) : 0;
+      setMinimumDepositValue(minDepositValue.toFixed(2));
+      return;
+    }
+    if (name === 'minimumDepositPercentage') {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      const minDepositPercent = parseFloat(value);
+      const discountedPrice = parseFloat(formData.price || '0');
+      const platformFee = parseFloat(formData.platformFee || '0');
+      const platformCharge = !isNaN(platformFee) && !isNaN(discountedPrice) ? ((platformFee / 100) * discountedPrice) : 0;
+      const actual = discountedPrice + platformCharge;
+      const minDepositValue = !isNaN(minDepositPercent) && !isNaN(actual) ? ((minDepositPercent / 100) * actual) : 0;
+      setMinimumDepositValue(minDepositValue.toFixed(2));
+      return;
+    }
     if (name.startsWith('promo.')) {
       const promoField = name.split('.')[1];
       setFormData(prev => ({
@@ -356,7 +350,6 @@ const Create = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
- 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
@@ -366,42 +359,33 @@ const Create = () => {
     setFormData((prev) => ({ ...prev, promo: { ...prev.promo, code } }));
   };
 
- 
   const handleCreateSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
-    if (!formData.name || !formData.description || !formData.price || !formData.costBeforeDiscount || 
-        !formData.discount || !formData.category || !formData.brand || !formData.sku || 
-        !formData.size || !formData.memory || !formData.stock  || !formData.repaymentPeriodInMonths || !formData.minimumRepaymentAmount || !formData.minimumDepositPercentage || !formData.interestRatePercentage || !formData.platformFee) {
-      setErrors({ general: 'Please fill all required fields.' });
+    if (!formData.name || !formData.description || !formData.stock || !formData.price || !formData.category || !formData.brand) {
+      setErrors({ general: 'Please fill all required fields (name, description, stock, price, category, and brand).' });
       return;
     }
     createProductMutation.mutate(formData);
   };
 
-
   const handleEditSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
     if (!selectedProductId || !singleProduct) return;
-
-    if (!formData.name || !formData.description || !formData.price || !formData.costBeforeDiscount || 
-        !formData.discount || !formData.category || !formData.brand || !formData.sku || 
-        !formData.size || !formData.memory || !formData.stock  || !formData.maximumRepaymentTimeline || !formData.repaymentPeriodInMonths || !formData.minimumRepaymentAmount || !formData.minimumDepositPercentage || !formData.interestRatePercentage || !formData.platformFee) {
-      setErrors({ general: 'Please fill all required fields.' });
+    if (!formData.name || !formData.description || !formData.stock || !formData.price || !formData.category || !formData.brand) {
+      setErrors({ general: 'Please fill all required fields (name, description, stock, price, category, and brand).' });
       return;
     }
     updateProductMutation.mutate({ id: selectedProductId, data: formData });
   };
 
-  
   const handleDeleteConfirm = () => {
     if (selectedProductId) {
       deleteProductMutation.mutate(selectedProductId);
     }
   };
 
-  
   const toggleDropdown = (val: number) => {
     if (openDropdown === val) {
       setOpenDropdown(0);
@@ -409,7 +393,6 @@ const Create = () => {
       setOpenDropdown(val);
     }
   };
-
 
   const headers = [
     'S/N',
@@ -526,7 +509,7 @@ const Create = () => {
             className="w-[27%] rounded-2xl border px-3 py-2 text-black"
           />
         </div>
-        {showCreateModal && (
+        {showCreateModal ? (
           <Modal title="Create Product" setModalState={setShowCreateModal}>
             <form onSubmit={handleCreateSubmit} className="space-y-4 p-6 border border-gray-700 rounded-lg">
               <div>
@@ -562,30 +545,28 @@ const Create = () => {
                 />
               </div>
                <div>
-                <label className="block text-white">Discount (%)</label>
+                <label className="block text-white">Discount (%) (optional)</label>
                 <input
                   type="number"
                   name="discount"
                   value={formData.discount}
                   onChange={handleInputChange}
                   className="w-full rounded border px-3 py-2 text-black"
-                  required
                 />
               </div>
               <div>
-                <label className="block text-white">Discounted Price</label>
+                <label className="block text-white">Discounted Price (optional)</label>
                 <input
                   type="number"
                   name="price"
                   value={formData.price}
                   disabled
                   className="w-full rounded border px-3 py-2 text-black bg-gray-200 cursor-not-allowed"
-                  required
                 />
               </div>
               
               <div className="mb-4">
-                <label htmlFor="platformFee" className="block text-sm font-medium text-white">Platform Charge %</label>
+                <label htmlFor="platformFee" className="block text-sm font-medium text-white">Platform Charge % (optional)</label>
                 <input
                   type="number"
                   id="platformFee"
@@ -596,28 +577,26 @@ const Create = () => {
                 />
               </div>
                <div>
-                <label className="block text-white">Platform charge value </label>
+                <label className="block text-white">Platform charge value (optional)</label>
                 <input
                   type="number"
                   name=""
                   onChange={handleInputChange}
                   className="w-full rounded border px-3 py-2 text-black"
-                 
                 />
               </div>
               <div>
-                <label className="block text-white">Actual price</label>
+                <label className="block text-white">Actual price (optional)</label>
                 <input
                   type="number"
                   name=""
                   onChange={handleInputChange}
                   className="w-full rounded border px-3 py-2 text-black"
-                 
                 />
               </div>
               
               <div className="mb-4">
-                <label htmlFor="interestRatePercentage" className="block text-sm font-medium text-white">Interest rate (%) for little-by-little payment</label>
+                <label htmlFor="interestRatePercentage" className="block text-sm font-medium text-white">Interest rate (%) for little-by-little payment (optional)</label>
                 <input
                   type="number"
                   id="interestRatePercentage"
@@ -628,7 +607,7 @@ const Create = () => {
                 />
               </div>
                <div className="mb-4">
-                <label htmlFor="minimumDepositPercentage" className="block text-sm font-medium text-white">Minimum Deposit </label>
+                <label htmlFor="minimumDepositPercentage" className="block text-sm font-medium text-white">Minimum Deposit %</label>
                 <input
                   type="number"
                   id="minimumDepositPercentage"
@@ -640,7 +619,19 @@ const Create = () => {
               </div>
               
                <div className="mb-4">
-                <label htmlFor="repaymentPeriodInMonths" className="block text-sm font-medium text-white">Repayment Period In Months</label>
+                <label htmlFor="minimumDepositValue" className="block text-sm font-medium text-white">Minimum Deposit Value</label>
+                <input
+                  type="number"
+                  id="minimumDepositValue"
+                  name="minimumDepositValue"
+                  value={minimumDepositValue}
+                  disabled
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                />
+              </div>
+              
+               <div className="mb-4">
+                <label htmlFor="repaymentPeriodInMonths" className="block text-sm font-medium text-white">Repayment Period In Months (optional)</label>
                 <input
                   type="number"
                   id="repaymentPeriodInMonths"
@@ -651,7 +642,7 @@ const Create = () => {
                 />
               </div>
                <div className="mb-4">
-                <label htmlFor="minimumRepaymentAmount" className="block text-sm font-medium text-white">Minimum Repayment Amount</label>
+                <label htmlFor="minimumRepaymentAmount" className="block text-sm font-medium text-white">Minimum Repayment Amount (optional)</label>
                 <input
                   type="number"
                   id="minimumRepaymentAmount"
@@ -698,37 +689,34 @@ const Create = () => {
               </div>
              
               <div>
-                <label className="block text-white">SKU</label>
+                <label className="block text-white">SKU (optional)</label>
                 <input
                   type="text"
                   name="sku"
                   value={formData.sku}
                   onChange={handleInputChange}
                   className="w-full rounded border px-3 py-2 text-black"
-                  required
                 />
               </div>
               
               <div>
-                <label className="block text-white">Size</label>
+                <label className="block text-white">Size (optional)</label>
                 <input
                   type="number"
                   name="size"
                   value={formData.size}
                   onChange={handleInputChange}
                   className="w-full rounded border px-3 py-2 text-black"
-                  required
                 />
               </div>
               <div>
-                <label className="block text-white">Memory</label>
+                <label className="block text-white">Memory (optional)</label>
                 <input
                   type="number"
                   name="memory"
                   value={formData.memory}
                   onChange={handleInputChange}
                   className="w-full rounded border px-3 py-2 text-black"
-                  required
                 />
               </div>
             
@@ -754,7 +742,7 @@ const Create = () => {
                 ))}
               </div>
               <div>
-                <label className="block text-white">Door Delivery Terms &amp; Condition</label>
+                <label className="block text-white">Door Delivery Terms &amp; Condition (optional)</label>
                 <textarea
                   name="doorDeliveryTermsAndCondition"
                   value={formData.doorDeliveryTermsAndCondition}
@@ -763,7 +751,7 @@ const Create = () => {
                 />
               </div>
               <div>
-                <label className="block text-white">Pickup Centre Terms &amp; Condition</label>
+                <label className="block text-white">Pickup Centre Terms &amp; Condition (optional)</label>
                 <textarea
                   name="pickupCentreTermsAndCondition"
                   value={formData.pickupCentreTermsAndCondition}
@@ -772,72 +760,72 @@ const Create = () => {
                 />
               </div>
               <div>
-                <label className="block text-white">Storage Outdoor (Height, Length, Breadth)</label>
+                <label className="block text-white">Storage Outdoor (Height, Length, Breadth) (optional)</label>
                 <div className="flex gap-2">
                   <input
                     type="number"
                     name="storageOutdoor.height"
-                    placeholder="Height"
-                    value={formData.storageOutdoor.height}
+                    placeholder="Height (optional)"
+                    value={formData.storageOutdoor?.height}
                     onChange={handleInputChange}
                     className="w-1/3 rounded border px-3 py-2 text-black"
                   />
                   <input
                     type="number"
                     name="storageOutdoor.length"
-                    placeholder="Length"
-                    value={formData.storageOutdoor.length}
+                    placeholder="Length (optional)"
+                    value={formData.storageOutdoor?.length}
                     onChange={handleInputChange}
                     className="w-1/3 rounded border px-3 py-2 text-black"
                   />
                   <input
                     type="number"
                     name="storageOutdoor.breadth"
-                    placeholder="Breadth"
-                    value={formData.storageOutdoor.breadth}
+                    placeholder="Breadth (optional)"
+                    value={formData.storageOutdoor?.breadth}
                     onChange={handleInputChange}
                     className="w-1/3 rounded border px-3 py-2 text-black"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-white">Storage Refrigerated (Height, Length, Breadth)</label>
+                <label className="block text-white">Storage Refrigerated (Height, Length, Breadth) (optional)</label>
                 <div className="flex gap-2">
                   <input
                     type="number"
                     name="storageRefrigerated.height"
-                    placeholder="Height"
-                    value={formData.storageRefrigerated.height}
+                    placeholder="Height (optional)"
+                    value={formData.storageRefrigerated?.height}
                     onChange={handleInputChange}
                     className="w-1/3 rounded border px-3 py-2 text-black"
                   />
                   <input
                     type="number"
                     name="storageRefrigerated.length"
-                    placeholder="Length"
-                    value={formData.storageRefrigerated.length}
+                    placeholder="Length (optional)"
+                    value={formData.storageRefrigerated?.length}
                     onChange={handleInputChange}
                     className="w-1/3 rounded border px-3 py-2 text-black"
                   />
                   <input
                     type="number"
                     name="storageRefrigerated.breadth"
-                    placeholder="Breadth"
-                    value={formData.storageRefrigerated.breadth}
+                    placeholder="Breadth (optional)"
+                    value={formData.storageRefrigerated?.breadth}
                     onChange={handleInputChange}
                     className="w-1/3 rounded border px-3 py-2 text-black"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-gray-600 p-4 rounded-md">
-                <h3 className="col-span-1 md:col-span-2 text-lg font-semibold text-white">Promotion</h3>
+                <h3 className="col-span-1 md:col-span-2 text-lg font-semibold text-white">Promotion (optional)</h3>
                 <div className="">
-                  <label className="m-0 text-xs font-medium text-white">Promo code</label>
+                  <label className="m-0 text-xs font-medium text-white">Promo code (or referral bonus code) (optional)</label>
                   <div className="relative w-full">
                     <input
                       name="promo.code"
                       type="text"
-                      value={formData.promo.code}
+                      value={formData.promo?.code}
                       onChange={handleInputChange}
                       className="w-full rounded border px-3 py-2 text-black"
                     />
@@ -851,41 +839,41 @@ const Create = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-white">Promo percentage</label>
+                  <label className="block text-white">Promo percentage (or referral bonus %) (optional)</label>
                   <input
                     type="number"
                     name="promo.percentage"
-                    value={formData.promo.percentage}
+                    value={formData.promo?.percentage}
                     onChange={handleInputChange}
                     className="w-full rounded border px-3 py-2 text-black"
                   />
                 </div>
                  <div>
-                  <label className="block text-white">Start date</label>
+                  <label className="block text-white">Start date (optional)</label>
                   <input
                     type="date"
                     name="promo.startDate"
-                    value={formData.promo.startDate}
+                    value={formData.promo?.startDate}
                     onChange={handleInputChange}
                     className="w-full rounded border px-3 py-2 text-black"
                   />
                 </div>
                  <div>
-                  <label className="block text-white">End date</label>
+                  <label className="block text-white">End date (optional)</label>
                   <input
                     type="date"
                     name="promo.endDate"
-                    value={formData.promo.endDate}
+                    value={formData.promo?.endDate}
                     onChange={handleInputChange}
                     className="w-full rounded border px-3 py-2 text-black"
                   />
                 </div>
                 
                  <div>
-                  <label className="block text-white">Status</label>
+                  <label className="block text-white">Status (optional)</label>
                   <select
                     name="promo.status"
-                    value={formData.promo.status}
+                    value={formData.promo?.status}
                     onChange={handleInputChange}
                     className="w-full rounded border px-3 py-2 text-black"
                   >
@@ -894,36 +882,26 @@ const Create = () => {
                   </select>
                 </div>
                  <div>
-                  <label className="block text-white">Minimum purchase</label>
+                  <label className="block text-white">Minimum purchase (optional)</label>
                   <input
                     type="number"
                     name="promo.minimumPurchase"
-                    value={formData.promo.minimumPurchase}
+                    value={formData.promo?.minimumPurchase}
                     onChange={handleInputChange}
                     className="w-full rounded border px-3 py-2 text-black"
                   />
                 </div>
                
                 <div>
-                  <label className="block text-white">Max usage</label>
+                  <label className="block text-white">Max usage (optional)</label>
                   <input
                     type="number"
                     name="promo.maxUsage"
-                    value={formData.promo.maxUsage}
+                    value={formData.promo?.maxUsage}
                     onChange={handleInputChange}
                     className="w-full rounded border px-3 py-2 text-black"
                   />
                 </div>
-                <div>
-                <label className="block text-white">Referral bonus %</label>
-                <input
-                  type="number"
-                  name=""
-                  onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-black"
-                 
-                />
-              </div>
               </div>
               {errors.general && <div className="text-red-500">{errors.general}</div>}
               <button
@@ -935,606 +913,114 @@ const Create = () => {
               </button>
             </form>
           </Modal>
-        )}
-
-        {showViewEditModal && (
-          <Modal
-            title={
-              modalType === 'view' ? 'Product Details' :
-              modalType === 'edit' ? 'Edit Product' :
-              'Confirm Deletion'
-            }
-            setModalState={setShowViewEditModal}
-          >
-            {modalType === 'view' && singleProduct && (
-              isLoadingSingleProduct ? (
-                <div className="text-white p-6">Loading product details...</div>
-              ) : (
-                <div className="text-white p-6 space-y-4 border border-gray-700 rounded-lg">
-                  <h3 className="text-2xl font-bold text-ajo_offWhite mb-4">{singleProduct.name}</h3>
-                  {singleProduct.imageUrl && singleProduct.imageUrl.length > 0 && (
-                    <div className="flex gap-2 mb-4">
-                      {singleProduct.imageUrl.map((src, idx) => (
-                        <Image key={idx} src={src} alt={singleProduct.name + '-' + idx} width={100} height={100} className="object-cover rounded" />
-                      ))}
-                    </div>
-                  )}
-                  <div className="space-y-4">
-                    <p className="flex items-start">
-                      <span className="w-32 font-semibold text-ajo_offWhite">Description:</span>
-                      <span className="flex-1">{singleProduct.description}</span>
-                    </p>
-                    <p className="flex items-center">
-                      <span className="w-32 font-semibold text-ajo_offWhite">SKU:</span>
-                      <span className="flex-1">{singleProduct.sku}</span>
-                    </p>
-                    <p className="flex items-center">
-                      <span className="w-32 font-semibold text-ajo_offWhite">Price:</span>
-                      <span className="flex-1 font-bold text-lg">₦ {AmountFormatter(singleProduct.price)}</span>
-                      {singleProduct.discount > 0 && (
-                        <span className="ml-2 bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded">-{singleProduct.discount}%</span>
-                      )}
-                      {singleProduct.costBeforeDiscount > singleProduct.price && (
-                        <span className="ml-2 text-xs text-gray-400 line-through">₦ {AmountFormatter(singleProduct.costBeforeDiscount)}</span>
-                      )}
-                    </p>
-                    <p className="flex items-center">
-                      <span className="w-32 font-semibold text-ajo_offWhite">Category:</span>
-                      <span className="flex-1">{singleProduct.category}</span>
-                    </p>
-                    <p className="flex items-center">
-                      <span className="w-32 font-semibold text-ajo_offWhite">Brand:</span>
-                      <span className="flex-1">{singleProduct.brand}</span>
-                    </p>
-                    <p className="flex items-center">
-                      <span className="w-32 font-semibold text-ajo_offWhite">Stock:</span>
-                      <span className="flex-1">{singleProduct.stock} items left</span>
-                    </p>
-                    <p className="flex items-center">
-                      <span className="w-32 font-semibold text-ajo_offWhite">Size:</span>
-                      <span className="flex-1">{singleProduct.size}</span>
-                    </p>
-                    <p className="flex items-center">
-                      <span className="w-32 font-semibold text-ajo_offWhite">Memory:</span>
-                      <span className="flex-1">{singleProduct.memory}</span>
-                    </p>
-                    {singleProduct.promo && (
-                      <div className="border-t border-gray-600 pt-4 mt-4">
-                        <h4 className="text-lg font-semibold text-ajo_offWhite mb-3">Promotion details</h4>
-                        <p className="flex items-center">
-                          <span className="w-32 font-semibold text-ajo_offWhite">Status:</span>
-                          <span className="flex-1">
-                            <span className={singleProduct.promo.status === 'active' 
+        ) : (
+          <>
+            <div className="mt-8">
+              <TransactionsTable
+                headers={headers}
+                content={
+                  isLoading ? (
+                    <tr><td colSpan={headers.length} className="text-center text-white">Loading products...</td></tr>
+                  ) : paginatedProducts && paginatedProducts.length > 0 ? (
+                    paginatedProducts.map((product: Product, idx: number) => (
+                      <tr key={product._id} className="hover:bg-gray-800">
+                        <td className="px-6 py-4 whitespace-nowrap">{(currentPage - 1) * productsPerPage + idx + 1}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{product.description}</td>
+                        <td className="px-6 py-4 whitespace-nowrap font-bold text-lg">₦ {AmountFormatter(product.price)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{product.discount}%</td>
+                        <td className="px-6 py-4 whitespace-nowrap line-through text-gray-400">₦ {AmountFormatter(product.costBeforeDiscount)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{product.sku}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{product.size}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{product.memory}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{product.brand}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{product.stock} items left</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{(product as any).repaymentPeriodInMonths || '-'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{(product as any).interestRatePercentage || '-'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{(product as any).platformFee || '-'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{(product as any).doorDeliveryTermsAndCondition || '-'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{(product as any).pickupCentreTermsAndCondition || '-'}</td>
+                        <td className="px-6 py-4">
+                          {product.imageUrl && product.imageUrl.length > 0 ? (
+                            <Image src={product.imageUrl[0]} alt={product.name + '-0'} width={50} height={50} className="object-cover rounded" />
+                          ) : (
+                            <div className="flex justify-center">
+                              <span className="text-xs text-gray-400">No Image</span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {product.promo ? (
+                            <span className={product.promo.status === 'active' 
                               ? 'px-2 py-1 rounded text-xs bg-green-100 text-green-600' 
                               : 'px-2 py-1 rounded text-xs bg-red-100 text-red-600'}>
-                              {singleProduct.promo.status}
+                              {product.promo.status}
                             </span>
-                          </span>
-                        </p>
-                        {singleProduct.promo.code && (
-                          <p className="flex items-center">
-                            <span className="w-32 font-semibold text-ajo_offWhite">Promo Code:</span>
-                            <span className="flex-1 font-mono bg-gray-100 text-gray-800 px-2 py-1 rounded">{singleProduct.promo.code}</span>
-                          </p>
-                        )}
-                        {singleProduct.promo.percentage && (
-                          <p className="flex items-center">
-                            <span className="w-32 font-semibold text-ajo_offWhite">Discount:</span>
-                            <span className="flex-1">{singleProduct.promo.percentage}%</span>
-                          </p>
-                        )}
-                        {singleProduct.promo.startDate && (
-                          <p className="flex items-center">
-                            <span className="w-32 font-semibold text-ajo_offWhite">Start date:</span>
-                            <span className="flex-1">{new Date(singleProduct.promo.startDate).toLocaleDateString()}</span>
-                          </p>
-                        )}
-                        {singleProduct.promo.endDate && (
-                          <p className="flex items-center">
-                            <span className="w-32 font-semibold text-ajo_offWhite">End date:</span>
-                            <span className="flex-1">{new Date(singleProduct.promo.endDate).toLocaleDateString()}</span>
-                          </p>
-                        )}
-                        <p className="flex items-center">
-                          <span className="w-32 font-semibold text-ajo_offWhite">Min purchase:</span>
-                          <span className="flex-1">₦ {AmountFormatter(singleProduct.promo.minimumPurchase)}</span>
-                        </p>
-                        {singleProduct.promo.maxUsage && (
-                          <p className="flex items-center">
-                            <span className="w-32 font-semibold text-ajo_offWhite">Max usage:</span>
-                            <span className="flex-1">{singleProduct.promo.maxUsage}</span>
-                          </p>
-                        )}
-                        
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )
-            )}
-            {modalType === 'edit' && singleProduct && (
-              isLoadingSingleProduct ? (
-                <div className="text-white p-6">Loading product for edit...</div>
-              ) : (
-                <form onSubmit={handleEditSubmit} className="space-y-4 p-6 border border-gray-700 rounded-lg">
-                  <div>
-                    <label className="block text-white">Name</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">Description</label>
-                    <textarea
-                      name="description"
-                      value={formData.description}
-                      onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">Price</label>
-                    <input
-                      type="number"
-                      name="price"
-                      value={formData.price}
-                      disabled
-                      className="w-full rounded border px-3 py-2 text-black bg-gray-200 cursor-not-allowed"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">Category</label>
-                    <input
-                      type="text"
-                      name="category"
-                      value={formData.category}
-                      onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">Brand</label>
-                    <input
-                      type="text"
-                      name="brand"
-                      value={formData.brand}
-                      onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">Stock</label>
-                    <input
-                      type="text"
-                      id="stock"
-                      name="stock"
-                      value={formData.stock}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
-                  </div>
-                   <div>
-                <label className="block text-white">SKU</label>
-                <input
-                  type="text"
-                  name="sku"
-                  value={formData.sku}
-                  onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-black"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-white">Size</label>
-                <input
-                  type="number"
-                  name="size"
-                  value={formData.size}
-                  onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-black"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-white">Memory</label>
-                <input
-                  type="number"
-                  name="memory"
-                  value={formData.memory}
-                  onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-black"
-                  required
-                />
-              </div>
-                  <div className="mb-4">
-                    <label htmlFor="repaymentPeriodInMonths" className="block text-sm font-medium text-white">Repayment Period In Months</label>
-                    <input
-                      type="number"
-                      id="repaymentPeriodInMonths"
-                      name="repaymentPeriodInMonths"
-                      value={formData.repaymentPeriodInMonths}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label htmlFor="minimumRepaymentAmount" className="block text-sm font-medium text-white">Minimum Repayment Amount</label>
-                    <input
-                      type="number"
-                      id="minimumRepaymentAmount"
-                      name="minimumRepaymentAmount"
-                      value={formData.minimumRepaymentAmount}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label htmlFor="minimumDepositPercentage" className="block text-sm font-medium text-white">Minimum Deposit Percentage</label>
-                    <input
-                      type="number"
-                      id="minimumDepositPercentage"
-                      name="minimumDepositPercentage"
-                      value={formData.minimumDepositPercentage}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label htmlFor="interestRatePercentage" className="block text-sm font-medium text-white">Interest Rate Percentage</label>
-                    <input
-                      type="number"
-                      id="interestRatePercentage"
-                      name="interestRatePercentage"
-                      value={formData.interestRatePercentage}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label htmlFor="platformFee" className="block text-sm font-medium text-white">Platform Fee</label>
-                    <input
-                      type="number"
-                      id="platformFee"
-                      name="platformFee"
-                      value={formData.platformFee}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">SKU</label>
-                    <input
-                      type="text"
-                      name="sku"
-                      value={formData.sku}
-                      onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">Product image</label>
-                    {imagePreview && (
-                      <div className="flex gap-2 mb-2">
-                        <img src={imagePreview} alt="Product Preview" className="w-20 h-20 object-cover rounded" />
-                      </div>
-                    )}
-                    <input
-                      type="file"
-                      name="productImage"
-                      accept="image/*"
-                      onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-gray-600 p-4 rounded-md">
-                    <h3 className="col-span-1 md:col-span-2 text-lg font-semibold text-white">Promotion</h3>
-                    <div className="">
-                      <label className="m-0 text-xs font-medium text-white">Promo code</label>
-                      <div className="relative w-full">
-                        <input
-                          name="promo.code"
-                          type="text"
-                          value={formData.promo.code}
-                          onChange={handleInputChange}
-                          className="w-full rounded border px-3 py-2 text-black"
-                        />
-                        <button
-                          type="button"
-                          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-blue-500 px-4 py-1 text-sm text-white"
-                          onClick={handlePromoCodeGeneration}
-                        >
-                          Generate
-                        </button>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-white">Promo percentage</label>
-                      <input
-                        type="number"
-                        name="promo.percentage"
-                        value={formData.promo.percentage}
-                        onChange={handleInputChange}
-                        className="w-full rounded border px-3 py-2 text-black"
-                      />
-                    </div>
-                     <div>
-                      <label className="block text-white">Status</label>
-                      <select
-                        name="promo.status"
-                        value={formData.promo.status}
-                        onChange={handleInputChange}
-                        className="w-full rounded border px-3 py-2 text-black"
-                      >
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
-                    </div>
-                     <div>
-                      <label className="block text-white">Start date</label>
-                      <input
-                        type="date"
-                        name="promo.startDate"
-                        value={formData.promo.startDate}
-                        onChange={handleInputChange}
-                        className="w-full rounded border px-3 py-2 text-black"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-white">End ate</label>
-                      <input
-                        type="date"
-                        name="promo.endDate"
-                        value={formData.promo.endDate}
-                        onChange={handleInputChange}
-                        className="w-full rounded border px-3 py-2 text-black"
-                      />
-                    </div>
-                     <div>
-                      <label className="block text-white">Minimum purchase</label>
-                      <input
-                        type="number"
-                        name="promo.minimumPurchase"
-                        value={formData.promo.minimumPurchase}
-                        onChange={handleInputChange}
-                        className="w-full rounded border px-3 py-2 text-black"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-white">Max usage</label>
-                      <input
-                        type="number"
-                        name="promo.maxUsage"
-                        value={formData.promo.maxUsage}
-                        onChange={handleInputChange}
-                        className="w-full rounded border px-3 py-2 text-black"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-white">Door Delivery Terms &amp; Condition</label>
-                    <textarea
-                      name="doorDeliveryTermsAndCondition"
-                      value={formData.doorDeliveryTermsAndCondition}
-                      onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">Pickup Centre Terms &amp; Condition</label>
-                    <textarea
-                      name="pickupCentreTermsAndCondition"
-                      value={formData.pickupCentreTermsAndCondition}
-                      onChange={handleInputChange}
-                      className="w-full rounded border px-3 py-2 text-black"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-white">Storage Outdoor (Height, Length, Breadth)</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        name="storageOutdoor.height"
-                        placeholder="Height"
-                        value={formData.storageOutdoor.height}
-                        onChange={handleInputChange}
-                        className="w-1/3 rounded border px-3 py-2 text-black"
-                      />
-                      <input
-                        type="number"
-                        name="storageOutdoor.length"
-                        placeholder="Length"
-                        value={formData.storageOutdoor.length}
-                        onChange={handleInputChange}
-                        className="w-1/3 rounded border px-3 py-2 text-black"
-                      />
-                      <input
-                        type="number"
-                        name="storageOutdoor.breadth"
-                        placeholder="Breadth"
-                        value={formData.storageOutdoor.breadth}
-                        onChange={handleInputChange}
-                        className="w-1/3 rounded border px-3 py-2 text-black"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-white">Storage Refrigerated (Height, Length, Breadth)</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        name="storageRefrigerated.height"
-                        placeholder="Height"
-                        value={formData.storageRefrigerated.height}
-                        onChange={handleInputChange}
-                        className="w-1/3 rounded border px-3 py-2 text-black"
-                      />
-                      <input
-                        type="number"
-                        name="storageRefrigerated.length"
-                        placeholder="Length"
-                        value={formData.storageRefrigerated.length}
-                        onChange={handleInputChange}
-                        className="w-1/3 rounded border px-3 py-2 text-black"
-                      />
-                      <input
-                        type="number"
-                        name="storageRefrigerated.breadth"
-                        placeholder="Breadth"
-                        value={formData.storageRefrigerated.breadth}
-                        onChange={handleInputChange}
-                        className="w-1/3 rounded border px-3 py-2 text-black"
-                      />
-                    </div>
-                  </div>
-                  {errors.general && <div className="text-red-500">{errors.general}</div>}
+                          ) : (
+                            <span className="text-xs text-gray-400">No Promo</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap relative">
+                          <StatusIndicator
+                            label="Actions"
+                            dropdownEnabled
+                            clickHandler={() => toggleDropdown((currentPage - 1) * productsPerPage + idx + 1)}
+                            openDropdown={openDropdown}
+                            toggleDropdown={toggleDropdown}
+                            currentIndex={(currentPage - 1) * productsPerPage + idx + 1}
+                            dropdownContents={{
+                              labels: ['View Product', 'Edit Product', 'Delete Product'],
+                              actions: [
+                                () => openProductModal(product._id, 'view'),
+                                () => openProductModal(product._id, 'edit'),
+                                () => openDeleteConfirmModal(product._id),
+                              ],
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr><td colSpan={headers.length} className="text-center text-white">No products found.</td></tr>
+                  )
+                }
+              />
+            </div>
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-4">
+                <button
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="p-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Prev
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <button
-                    type="submit"
-                    className="w-full bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600"
-                    disabled={updateProductMutation.isPending}
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-2 border rounded ${
+                      currentPage === page
+                        ? 'bg-orange-500 text-white border-orange-500'
+                        : 'border-gray-300 hover:bg-gray-50'
+                    }`}
                   >
-                    {updateProductMutation.isPending ? 'Updating...' : 'Update Product'}
+                    {page}
                   </button>
-                </form>
-              )
-            )}
-            {modalType === 'delete-confirm' && (
-              <div className="text-white p-6 border border-gray-700 rounded-lg">
-                <p className="mb-4">Are you sure you want to delete this product?</p>
-                <div className="flex justify-end space-x-4">
-                  <button
-                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                    onClick={() => setShowViewEditModal(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                    onClick={handleDeleteConfirm}
-                    disabled={deleteProductMutation.isPending}
-                  >
-                    {deleteProductMutation.isPending ? 'Deleting...' : 'Delete'}
-                  </button>
-                </div>
+                ))}
+                <button
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="p-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
               </div>
             )}
-          </Modal>
+          </>
         )}
-        <div className="mt-8">
-          <TransactionsTable
-            headers={headers}
-            content={
-              isLoading ? (
-                <tr><td colSpan={headers.length} className="text-center text-white">Loading products...</td></tr>
-              ) : paginatedProducts && paginatedProducts.length > 0 ? (
-                paginatedProducts.map((product: Product, idx: number) => (
-                  <tr key={product._id} className="hover:bg-gray-800">
-                    <td className="px-6 py-4 whitespace-nowrap">{(currentPage - 1) * productsPerPage + idx + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{product.description}</td>
-                    <td className="px-6 py-4 whitespace-nowrap font-bold text-lg">₦ {AmountFormatter(product.price)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{product.discount}%</td>
-                    <td className="px-6 py-4 whitespace-nowrap line-through text-gray-400">₦ {AmountFormatter(product.costBeforeDiscount)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{product.sku}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{product.size}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{product.memory}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{product.brand}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{product.stock} items left</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).repaymentPeriodInMonths || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).interestRatePercentage || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).platformFee || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).doorDeliveryTermsAndCondition || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).pickupCentreTermsAndCondition || '-'}</td>
-                    <td className="px-6 py-4">
-                      {product.imageUrl && product.imageUrl.length > 0 ? (
-                        <Image src={product.imageUrl[0]} alt={product.name + '-0'} width={50} height={50} className="object-cover rounded" />
-                      ) : (
-                        <div className="flex justify-center">
-                          <span className="text-xs text-gray-400">No Image</span>
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {product.promo ? (
-                        <span className={product.promo.status === 'active' 
-                          ? 'px-2 py-1 rounded text-xs bg-green-100 text-green-600' 
-                          : 'px-2 py-1 rounded text-xs bg-red-100 text-red-600'}>
-                          {product.promo.status}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">No Promo</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap relative">
-                      <StatusIndicator
-                        label="Actions"
-                        dropdownEnabled
-                        clickHandler={() => toggleDropdown((currentPage - 1) * productsPerPage + idx + 1)}
-                        openDropdown={openDropdown}
-                        toggleDropdown={toggleDropdown}
-                        currentIndex={(currentPage - 1) * productsPerPage + idx + 1}
-                        dropdownContents={{
-                          labels: ['View Product', 'Edit Product', 'Delete Product'],
-                          actions: [
-                            () => openProductModal(product._id, 'view'),
-                            () => openProductModal(product._id, 'edit'),
-                            () => openDeleteConfirmModal(product._id),
-                          ],
-                        }}
-                      />
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr><td colSpan={headers.length} className="text-center text-white">No products found.</td></tr>
-              )
-            }
-          />
-        </div>
       </div>
-      {/* Pagination below the container */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-4">
-          <button
-            onClick={() => setCurrentPage(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="p-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Prev
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`px-3 py-2 border rounded ${
-                currentPage === page
-                  ? 'bg-orange-500 text-white border-orange-500'
-                  : 'border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-          <button
-            onClick={() => setCurrentPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="p-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next
-          </button>
-        </div>
-      )}
     </>
   );
 };
