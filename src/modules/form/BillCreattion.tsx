@@ -157,13 +157,17 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
       }
 
       // Bill Items - send as JSON string
-      const billItemsData = billItems.map(({ id, ...rest }) => ({
-        billName: rest.purposeName,
-        category: rest.category,
-        amount: rest.amount,
-        amountWithoutCharge: rest.amountWithoutCharge,
-        quantity: rest.quantity
-      }));
+      const billItemsData = billItems.map(({ id, category, ...rest }) => {
+        const selectedCategory = categoriesData?.find(cat => cat.id === category);
+        return {
+          billName: rest.purposeName,
+          category, // ID
+          name: selectedCategory ? selectedCategory.name : "",
+          amount: rest.amount,
+          amountWithoutCharge: rest.amountWithoutCharge,
+          quantity: rest.quantity
+        };
+      });
       formData.append("billItems", JSON.stringify(billItemsData));
 
       // Max Payment Duration
@@ -298,7 +302,31 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
     }
   };
 
+  // Add formError state
+  const [formError, setFormError] = useState<string | null>(null);
+
   const handleSubmit = () => {
+    if (!billDetails.name) {
+      setFormError("Bill Name is required.");
+      return;
+    }
+    if (!billDetails.code) {
+      setFormError("Bill Code is required.");
+      return;
+    }
+    if (!billDetails.startDate || billDetails.startDate === 'Invalid Date') {
+      setFormError("Start Date is required and must be valid.");
+      return;
+    }
+    if (!billDetails.endDate || billDetails.endDate === 'Invalid Date') {
+      setFormError("End Date is required and must be valid.");
+      return;
+    }
+    if (billDetails.promoPercentage < 0 || billDetails.promoPercentage > 100) {
+      setFormError("Promo Percentage must be between 0 and 100.");
+      return;
+    }
+    setFormError(null);
     createBill({
       ...billDetails,
       billItems: billItems
@@ -329,7 +357,7 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Bill Code
+                    Bill Code <span className='text-red-500'>*</span>
                   </label>
                   <input
                     type="text"
@@ -381,7 +409,7 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                     <Calendar size={16} />
-                    Start Date
+                    Start Date <span className='text-red-500'>*</span>
                   </label>
                   <input
                     type="date"
@@ -393,7 +421,7 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    End Date
+                    End Date <span className='text-red-500'>*</span>
                   </label>
                   <input
                     type="date"
@@ -709,6 +737,13 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
               ></div>
             </div>
           </div>
+
+          {/* Above the form, display error messages */}
+          {(formError || (modalContent === "status" && !userCreated && mutationResponse)) && (
+            <div className="mb-4 text-red-600 font-semibold bg-red-100 p-2 rounded">
+              {formError || mutationResponse}
+            </div>
+          )}
 
           {/* Step Content */}
           <div className="mb-8">

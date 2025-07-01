@@ -416,32 +416,35 @@ const singleBill = singleBillResponse?.data;
         </Modal>
       )}
       {/* Bill Items Modal */}
-      {showBillItemsModal && singleBill && (
-        <Modal title="Bill Items" setModalState={setShowBillItemsModal}>
-          <div className="text-white">
-            <table className="min-w-full divide-y divide-gray-200 text-white">
-              <thead>
-                <tr>
-                  <th className="px-4 py-2">Bill Name</th>
-                  <th className="px-4 py-2">Category</th>
-                  <th className="px-4 py-2">Amount</th>
-                  <th className="px-4 py-2">Quantity</th>
-                </tr>
-              </thead>
-              <tbody>
-                {singleBill.billItems.map((item: any, idx: number) => (
-                  <tr key={idx}>
-                    <td className="px-4 py-2">{item.billName}</td>
-                    <td className="px-4 py-2">{item.categoryName || item.category}</td>
-                    <td className="px-4 py-2">{item.amount}</td>
-                    <td className="px-4 py-2">{item.quantity}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Modal>
-      )}
+     {showBillItemsModal && singleBill && (
+  <Modal title="Bill Items" setModalState={setShowBillItemsModal}>
+    <div className="overflow-x-auto">
+      <table className="min-w-full text-left text-sm text-white border-separate border-spacing-y-2">
+        <thead className="bg-transparent border-b border-gray-600">
+          <tr>
+            <th className="px-6 py-3">Bill Name</th>
+            <th className="px-6 py-3">Category</th>
+            <th className="px-6 py-3">Amount</th>
+            <th className="px-6 py-3">Quantity</th>
+          </tr>
+        </thead>
+        <tbody>
+          {singleBill.billItems.map((item: any, idx: number) => (
+            <tr key={idx} className="bg-[#0d0f29] border-b border-gray-700">
+              <td className="px-6 py-2 whitespace-nowrap">{item.billName}</td>
+              <td className="px-6 py-2 whitespace-nowrap">
+                {item.name || item.category}
+              </td>
+              <td className="px-6 py-2 whitespace-nowrap">{item.amount}</td>
+              <td className="px-6 py-2 whitespace-nowrap">{item.quantity}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </Modal>
+)}
+
       {showPaymentModal && singleBill && (
         <Modal title="Max Payment Duration" setModalState={setShowPaymentModal}>
           <div className="space-y-2 px-4 text-white">
