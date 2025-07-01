@@ -913,112 +913,269 @@ const Create = () => {
               </button>
             </form>
           </Modal>
-        ) : (
-          <>
-            <div className="mt-8">
-              <TransactionsTable
-                headers={headers}
-                content={
-                  isLoading ? (
-                    <tr><td colSpan={headers.length} className="text-center text-white">Loading products...</td></tr>
-                  ) : paginatedProducts && paginatedProducts.length > 0 ? (
-                    paginatedProducts.map((product: Product, idx: number) => (
-                      <tr key={product._id} className="hover:bg-gray-800">
-                        <td className="px-6 py-4 whitespace-nowrap">{(currentPage - 1) * productsPerPage + idx + 1}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{product.description}</td>
-                        <td className="px-6 py-4 whitespace-nowrap font-bold text-lg">₦ {AmountFormatter(product.price)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{product.discount}%</td>
-                        <td className="px-6 py-4 whitespace-nowrap line-through text-gray-400">₦ {AmountFormatter(product.costBeforeDiscount)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{product.sku}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{product.size}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{product.memory}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{product.brand}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{product.stock} items left</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{(product as any).repaymentPeriodInMonths || '-'}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{(product as any).interestRatePercentage || '-'}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{(product as any).platformFee || '-'}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{(product as any).doorDeliveryTermsAndCondition || '-'}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{(product as any).pickupCentreTermsAndCondition || '-'}</td>
-                        <td className="px-6 py-4">
-                          {product.imageUrl && product.imageUrl.length > 0 ? (
-                            <Image src={product.imageUrl[0]} alt={product.name + '-0'} width={50} height={50} className="object-cover rounded" />
-                          ) : (
-                            <div className="flex justify-center">
-                              <span className="text-xs text-gray-400">No Image</span>
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {product.promo ? (
-                            <span className={product.promo.status === 'active' 
-                              ? 'px-2 py-1 rounded text-xs bg-green-100 text-green-600' 
-                              : 'px-2 py-1 rounded text-xs bg-red-100 text-red-600'}>
-                              {product.promo.status}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-gray-400">No Promo</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap relative">
-                          <StatusIndicator
-                            label="Actions"
-                            dropdownEnabled
-                            clickHandler={() => toggleDropdown((currentPage - 1) * productsPerPage + idx + 1)}
-                            openDropdown={openDropdown}
-                            toggleDropdown={toggleDropdown}
-                            currentIndex={(currentPage - 1) * productsPerPage + idx + 1}
-                            dropdownContents={{
-                              labels: ['View Product', 'Edit Product', 'Delete Product'],
-                              actions: [
-                                () => openProductModal(product._id, 'view'),
-                                () => openProductModal(product._id, 'edit'),
-                                () => openDeleteConfirmModal(product._id),
-                              ],
-                            }}
-                          />
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr><td colSpan={headers.length} className="text-center text-white">No products found.</td></tr>
-                  )
-                }
-              />
+        ) : null}
+
+        {/* View Product Modal */}
+        {showViewEditModal && modalType === 'view' && singleProduct && (
+          <Modal title="View Product" setModalState={setShowViewEditModal}>
+            <div className="space-y-4 p-6 border border-gray-700 rounded-lg">
+              <div>
+                <label className="block text-white">Name</label>
+                <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">{singleProduct.name}</div>
+              </div>
+              <div>
+                <label className="block text-white">Description</label>
+                <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">{singleProduct.description}</div>
+              </div>
+              <div>
+                <label className="block text-white">Price</label>
+                <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">₦ {AmountFormatter(singleProduct.price)}</div>
+              </div>
+              <div>
+                <label className="block text-white">Discount</label>
+                <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">{singleProduct.discount}%</div>
+              </div>
+              <div>
+                <label className="block text-white">Cost Before Discount</label>
+                <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">₦ {AmountFormatter(singleProduct.costBeforeDiscount)}</div>
+              </div>
+              <div>
+                <label className="block text-white">Category</label>
+                <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">{singleProduct.category}</div>
+              </div>
+              <div>
+                <label className="block text-white">Brand</label>
+                <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">{singleProduct.brand}</div>
+              </div>
+              <div>
+                <label className="block text-white">Stock</label>
+                <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">{singleProduct.stock}</div>
+              </div>
+              <div>
+                <label className="block text-white">Image</label>
+                {singleProduct.imageUrl && singleProduct.imageUrl.length > 0 ? (
+                  <img src={singleProduct.imageUrl[0]} alt={singleProduct.name} className="w-32 h-32 object-cover rounded" />
+                ) : (
+                  <span className="text-xs text-gray-400">No Image</span>
+                )}
+              </div>
+              {/* Add more fields as needed */}
             </div>
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-2 mt-4">
+          </Modal>
+        )}
+
+        {/* Edit Product Modal */}
+        {showViewEditModal && modalType === 'edit' && singleProduct && (
+          <Modal title="Edit Product" setModalState={setShowViewEditModal}>
+            <form onSubmit={handleEditSubmit} className="space-y-4 p-6 border border-gray-700 rounded-lg">
+              {/* Reuse the create form fields, but bind to formData and handleInputChange */}
+              <div>
+                <label className="block text-white">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-white">Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-white">Price</label>
+                <input
+                  type="number"
+                  name="costBeforeDiscount"
+                  value={formData.costBeforeDiscount}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-white">Discount (%) (optional)</label>
+                <input
+                  type="number"
+                  name="discount"
+                  value={formData.discount}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                />
+              </div>
+              <div>
+                <label className="block text-white">Discounted Price (optional)</label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  disabled
+                  className="w-full rounded border px-3 py-2 text-black bg-gray-200 cursor-not-allowed"
+                />
+              </div>
+              {/* Add other fields as in the create form, or refactor to reuse the form */}
+              <div>
+                <label className="block text-white">Product Image (optional)</label>
+                {imagePreview && (
+                  <div className="flex gap-2 mb-2">
+                    <img src={imagePreview} alt="Product Preview" className="w-20 h-20 object-cover rounded" />
+                  </div>
+                )}
+                <input
+                  type="file"
+                  name="productImage"
+                  accept="image/*"
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                />
+              </div>
+              {errors.general && <div className="text-red-500">{errors.general}</div>}
+              <button
+                type="submit"
+                className="w-full bg-blue-500 text-white py-2 rounded-xl hover:bg-blue-600"
+                disabled={updateProductMutation.isPending}
+              >
+                {updateProductMutation.isPending ? 'Updating...' : 'Update Product'}
+              </button>
+            </form>
+          </Modal>
+        )}
+
+        {/* Delete Product Modal */}
+        {showViewEditModal && modalType === 'delete-confirm' && (
+          <Modal title="Delete Product" setModalState={setShowViewEditModal}>
+            <div className="p-6 border border-gray-700 rounded-lg">
+              <p className="text-white mb-4">Are you sure you want to delete this product?</p>
+              {errors.general && <div className="text-red-500 mb-2">{errors.general}</div>}
+              <div className="flex gap-4">
                 <button
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="p-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleDeleteConfirm}
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  disabled={deleteProductMutation.isPending}
                 >
-                  Prev
+                  {deleteProductMutation.isPending ? 'Deleting...' : 'Yes, Delete'}
                 </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-2 border rounded ${
-                      currentPage === page
-                        ? 'bg-orange-500 text-white border-orange-500'
-                        : 'border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
                 <button
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="p-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => setShowViewEditModal(false)}
+                  className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
                 >
-                  Next
+                  Cancel
                 </button>
               </div>
-            )}
-          </>
+            </div>
+          </Modal>
+        )}
+
+        <div className="mt-8">
+          <TransactionsTable
+            headers={headers}
+            content={
+              isLoading ? (
+                <tr><td colSpan={headers.length} className="text-center text-white">Loading products...</td></tr>
+              ) : paginatedProducts && paginatedProducts.length > 0 ? (
+                paginatedProducts.map((product: Product, idx: number) => (
+                  <tr key={product._id} className="hover:bg-gray-800">
+                    <td className="px-6 py-4 whitespace-nowrap">{(currentPage - 1) * productsPerPage + idx + 1}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{product.description}</td>
+                    <td className="px-6 py-4 whitespace-nowrap font-bold text-lg">₦ {AmountFormatter(product.price)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{product.discount}%</td>
+                    <td className="px-6 py-4 whitespace-nowrap line-through text-gray-400">₦ {AmountFormatter(product.costBeforeDiscount)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{product.sku}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{product.size}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{product.memory}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{product.brand}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{product.stock} items left</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).repaymentPeriodInMonths || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).interestRatePercentage || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).platformFee || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).doorDeliveryTermsAndCondition || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{(product as any).pickupCentreTermsAndCondition || '-'}</td>
+                    <td className="px-6 py-4">
+                      {product.imageUrl && product.imageUrl.length > 0 ? (
+                        <Image src={product.imageUrl[0]} alt={product.name + '-0'} width={50} height={50} className="object-cover rounded" />
+                      ) : (
+                        <div className="flex justify-center">
+                          <span className="text-xs text-gray-400">No Image</span>
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {product.promo ? (
+                        <span className={product.promo.status === 'active' 
+                          ? 'px-2 py-1 rounded text-xs bg-green-100 text-green-600' 
+                          : 'px-2 py-1 rounded text-xs bg-red-100 text-red-600'}>
+                          {product.promo.status}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">No Promo</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap relative">
+                      <StatusIndicator
+                        label="Actions"
+                        dropdownEnabled
+                        clickHandler={() => toggleDropdown((currentPage - 1) * productsPerPage + idx + 1)}
+                        openDropdown={openDropdown}
+                        toggleDropdown={toggleDropdown}
+                        currentIndex={(currentPage - 1) * productsPerPage + idx + 1}
+                        dropdownContents={{
+                          labels: ['View Product', 'Edit Product', 'Delete Product'],
+                          actions: [
+                            () => openProductModal(product._id, 'view'),
+                            () => openProductModal(product._id, 'edit'),
+                            () => openDeleteConfirmModal(product._id),
+                          ],
+                        }}
+                      />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr><td colSpan={headers.length} className="text-center text-white">No products found.</td></tr>
+              )
+            }
+          />
+        </div>
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-4">
+            <button
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="p-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Prev
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-2 border rounded ${
+                  currentPage === page
+                    ? 'bg-orange-500 text-white border-orange-500'
+                    : 'border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="p-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
         )}
       </div>
     </>
