@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import TransactionsTable from "@/components/Tables";
 import Modal from "@/components/Modal";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -62,6 +62,10 @@ const Create = () => {
   const billsPerPage = 10;
   const [billForm, setBillForm] = useState<any>(initialBillForm);
   const [editMode, setEditMode] = useState(false);
+  const [showBillItemsModal, setShowBillItemsModal] = useState(false);
+  const [actionDropdownOpen, setActionDropdownOpen] = useState<string | null>(null);
+  const actionDropdownRef = useRef<any>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Fetch all bills
 const { data: billsResponse, isLoading: billsLoading, isError: billsError } = useQuery<ApiResponse<Bill[]>>({
@@ -273,10 +277,14 @@ const singleBill = singleBillResponse?.data;
     "S/N",
     "Bill Name",
     "Bill Code",
+    "Promo Code",
+    "Unique Code",
+    "Platform Service Charge",
+    "Platform Percentage",
+    "Bill Image",
+    "Max Payment Duration",
     "Total Amount",
-    "Status",
-    "Start Date",
-    "End Date",
+    "Bill Items",
     "Actions",
   ];
 
@@ -330,26 +338,42 @@ const singleBill = singleBillResponse?.data;
         headers={headers}
         content={paginatedBills.map((bill: Bill, idx: number) => (
           <tr key={bill._id}>
-            <td>{(currentPage - 1) * billsPerPage + idx + 1}</td>
-            <td>{bill.billName}</td>
-            <td>{bill.billCode}</td>
-            <td>{bill.totalAmount}</td>
-            <td>{bill.status}</td>
-            <td>{bill.startDate?.slice(0, 10)}</td>
-            <td>{bill.endDate?.slice(0, 10)}</td>
-            <td>
-              <button className="text-blue-600 mr-2" onClick={() => openBillModal(String(bill._id), 'view')}>View</button>
-              <button className="text-yellow-600 mr-2" onClick={() => openBillModal(String(bill._id), 'edit')}>Edit</button>
-              <button className="text-red-600" onClick={() => openDeleteConfirmModal(String(bill._id))}>Delete</button>
+            <td className="px-4">{(currentPage - 1) * billsPerPage + idx + 1}</td>
+            <td className="px-4">{bill.billName}</td>
+            <td className="px-4">{bill.billCode}</td>
+            <td className="px-4">{bill.promoCode}</td>
+            <td className="px-4">{bill.customUniqueCode}</td>
+            <td className="px-4">{bill.platformServiceCharge}</td>
+            <td className="px-4">{bill.promoPercentage}</td>
+            <td className="px-4">{bill.billImage ? "Yes" : "No"}</td>
+            <td className="px-4"><button className="text-blue-600 underline" onClick={() => { setSelectedBillId(bill._id); setShowPaymentModal(true); }}>View Payment</button></td>
+            <td className="px-4">{bill.totalAmount}</td>
+            <td className="px-4"><button className="text-blue-600 underline" onClick={() => { setSelectedBillId(bill._id); setShowBillItemsModal(true); }}>View Bill Items</button></td>
+            <td className="px-4">
+              <div className="relative">
+                <button
+                  className="bg-[#2d254c] text-white px-4 py-2 rounded font-semibold flex items-center gap-2 focus:outline-none"
+                  onClick={() => setActionDropdownOpen(bill._id)}
+                >
+                  Actions <span className="ml-1">▼</span>
+                </button>
+                {actionDropdownOpen === bill._id && (
+                  <div className="absolute z-10 mt-2 w-40 bg-[#221c3e] rounded shadow-lg text-white">
+                    <button className="block w-full text-left px-4 py-2 hover:bg-[#3b2f73]" onClick={() => { openBillModal(String(bill._id), 'view'); setActionDropdownOpen(null); }}>View Bill</button>
+                    <button className="block w-full text-left px-4 py-2 hover:bg-[#3b2f73]" onClick={() => { openBillModal(String(bill._id), 'edit'); setActionDropdownOpen(null); }}>Edit Bill</button>
+                    <button className="block w-full text-left px-4 py-2 hover:bg-[#3b2f73]" onClick={() => { openDeleteConfirmModal(String(bill._id)); setActionDropdownOpen(null); }}>Delete Bill</button>
+                  </div>
+                )}
+              </div>
             </td>
           </tr>
         ))}
       />
       {/* Pagination */}
       <div className="flex justify-end mt-4 gap-2">
-        <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-1 border rounded disabled:opacity-50">Prev</button>
-        <span>Page {currentPage} of {totalPages}</span>
-        <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-3 py-1 border rounded disabled:opacity-50">Next</button>
+        <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-1 text-white border rounded disabled:opacity-50">Prev</button>
+        <span className="text-white">Page {currentPage} of {totalPages}</span>
+        <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-3 py-1 text-white border rounded disabled:opacity-50">Next</button>
       </div>
       {/* Create Modal */}
       {showCreateModal && (
@@ -360,18 +384,72 @@ const singleBill = singleBillResponse?.data;
       {/* View/Edit/Delete Modal */}
       {showViewEditModal && modalType === 'view' && singleBill && (
         <Modal title="View Bill" setModalState={setShowViewEditModal}>
-          <pre>{JSON.stringify(singleBill, null, 2)}</pre>
+          <div className="space-y-4 text-white">
+            <div className="px-4"><strong>Bill Name:</strong> {singleBill.billName}</div>
+            <div className="px-4"><strong>Bill Code:</strong> {singleBill.billCode}</div>
+            <div className="px-4"><strong>Promo Code:</strong> {singleBill.promoCode}</div>
+            <div className="px-4"><strong>Unique Code:</strong> {singleBill.customUniqueCode}</div>
+            <div className="px-4"><strong>Platform Service Charge:</strong> {singleBill.platformServiceCharge}</div>
+            <div className="px-4"><strong>Platform Percentage:</strong> {singleBill.promoPercentage}</div>
+            <div className="px-4"><strong>Bill Image:</strong> {singleBill.billImage ? (<img src={singleBill.billImage} alt="Bill" className="h-24 w-24 object-cover rounded" />) : 'No Image'}</div>
+            <div className="px-4"><strong>Max Payment Duration:</strong> <button className="text-blue-600 underline" onClick={() => setShowPaymentModal(true)}>View Payment</button></div>
+            <div className="px-4"><strong>Total Amount:</strong> {singleBill.totalAmount}</div>
+            <div className="px-4">
+              <strong>Bill Items:</strong> <button className="ml-2 text-blue-600 underline" onClick={() => setShowBillItemsModal(true)}>View Bill Items</button>
+            </div>
+          </div>
         </Modal>
       )}
       {showViewEditModal && modalType === 'edit' && singleBill && (
         <Modal title="Edit Bill" setModalState={setShowViewEditModal}>
-          <div>Edit bill form for ID: {selectedBillId}</div>
+          <div className="text-white">
+            <div>Edit bill form for ID: {selectedBillId}</div>
+          </div>
         </Modal>
       )}
       {showViewEditModal && modalType === 'delete-confirm' && (
         <Modal title="Delete Bill" setModalState={setShowViewEditModal}>
-          <div>Are you sure you want to delete this bill?</div>
-          <button className="bg-red-600 text-white px-4 py-2 rounded mt-4" onClick={() => selectedBillId && deleteBillMutation.mutate(selectedBillId)}>Delete</button>
+          <div className="flex flex-col items-center justify-center text-white p-4">
+            <div className="mb-4">Are you sure you want to delete this bill?</div>
+            <button className="bg-red-600 text-white px-4 py-2 rounded mt-4" onClick={() => selectedBillId && deleteBillMutation.mutate(selectedBillId)}>Delete</button>
+          </div>
+        </Modal>
+      )}
+      {/* Bill Items Modal */}
+      {showBillItemsModal && singleBill && (
+        <Modal title="Bill Items" setModalState={setShowBillItemsModal}>
+          <div className="text-white">
+            <table className="min-w-full divide-y divide-gray-200 text-white">
+              <thead>
+                <tr>
+                  <th className="px-4 py-2">Bill Name</th>
+                  <th className="px-4 py-2">Category</th>
+                  <th className="px-4 py-2">Amount</th>
+                  <th className="px-4 py-2">Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {singleBill.billItems.map((item: any, idx: number) => (
+                  <tr key={idx}>
+                    <td className="px-4 py-2">{item.billName}</td>
+                    <td className="px-4 py-2">{item.categoryName || item.category}</td>
+                    <td className="px-4 py-2">{item.amount}</td>
+                    <td className="px-4 py-2">{item.quantity}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Modal>
+      )}
+      {showPaymentModal && singleBill && (
+        <Modal title="Max Payment Duration" setModalState={setShowPaymentModal}>
+          <div className="space-y-2 px-4 text-white">
+            <div><strong>Start Date:</strong> {singleBill.maxPaymentDuration?.startDate}</div>
+            <div><strong>Start Time:</strong> {singleBill.maxPaymentDuration?.startTime}</div>
+            <div><strong>End Date:</strong> {singleBill.maxPaymentDuration?.endDate}</div>
+            <div><strong>End Time:</strong> {singleBill.maxPaymentDuration?.endTime}</div>
+          </div>
         </Modal>
       )}
     </div>

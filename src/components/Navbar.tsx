@@ -693,12 +693,12 @@ export const Sidebar = ({
                       >
                         Create Bill
                       </Link>
-                      <Link
+                      {/* <Link
                         href="/merchant/view-edit"
                         className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
                       >
                         View and Edit
-                      </Link>
+                      </Link> */}
                       <Link
                         href="/merchant/account-statement"
                         className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
