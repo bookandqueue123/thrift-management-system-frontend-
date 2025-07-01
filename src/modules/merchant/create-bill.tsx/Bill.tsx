@@ -6,6 +6,7 @@ import Modal from "@/components/Modal";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import BillCreationForm from "@/modules/form/BillCreattion";
 import { useAuth } from "@/api/hooks/useAuth";
+import EditBillForm from "@/modules/form/EditBillForm";
 
 // Bill type based on your API
 export interface Bill {
@@ -187,11 +188,10 @@ const singleBill = singleBillResponse?.data;
     });
     createBillMutation.mutate(formData);
   };
-  const handleEdit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEdit = (updatedBillData: any) => {
     if (!selectedBillId) return;
     const formData = new FormData();
-    Object.entries(billForm).forEach(([key, value]) => {
+    Object.entries(updatedBillData).forEach(([key, value]) => {
       if (key === "billItems") {
         if (Array.isArray(value)) {
           formData.append(
@@ -346,9 +346,9 @@ const singleBill = singleBillResponse?.data;
             <td className="px-4">{bill.platformServiceCharge}</td>
             <td className="px-4">{bill.promoPercentage}</td>
             <td className="px-4">{bill.billImage ? "Yes" : "No"}</td>
-            <td className="px-4"><button className="text-blue-600 underline" onClick={() => { setSelectedBillId(bill._id); setShowPaymentModal(true); }}>View Payment</button></td>
+            <td className="px-4"><button className="text-blue-600 underline" onClick={() => { setSelectedBillId(bill._id); setShowPaymentModal(true); }}>View </button></td>
             <td className="px-4">{bill.totalAmount}</td>
-            <td className="px-4"><button className="text-blue-600 underline" onClick={() => { setSelectedBillId(bill._id); setShowBillItemsModal(true); }}>View Bill Items</button></td>
+            <td className="px-4"><button className="text-blue-600 underline" onClick={() => { setSelectedBillId(bill._id); setShowBillItemsModal(true); }}>View</button></td>
             <td className="px-4">
               <div className="relative">
                 <button
@@ -402,9 +402,32 @@ const singleBill = singleBillResponse?.data;
       )}
       {showViewEditModal && modalType === 'edit' && singleBill && (
         <Modal title="Edit Bill" setModalState={setShowViewEditModal}>
-          <div className="text-white">
-            <div>Edit bill form for ID: {selectedBillId}</div>
-          </div>
+          <EditBillForm
+            initialData={{
+              billName: singleBill.billName || '',
+              billCode: singleBill.billCode || '',
+              startDate: singleBill.startDate ? singleBill.startDate.slice(0, 10) : '',
+              endDate: singleBill.endDate ? singleBill.endDate.slice(0, 10) : '',
+              startTime: singleBill.startTime || '',
+              endTime: singleBill.endTime || '',
+              promoCode: singleBill.promoCode || '',
+              promoPercentage: singleBill.promoPercentage || 0,
+              billImage: null,
+              billImageUrl: singleBill.billImage || '',
+              customUniqueCode: singleBill.customUniqueCode || '',
+              platformServiceCharge: singleBill.platformServiceCharge || 0,
+              maxPaymentDuration: {
+                startDate: singleBill.maxPaymentDuration?.startDate ? singleBill.maxPaymentDuration.startDate.slice(0, 10) : '',
+                endDate: singleBill.maxPaymentDuration?.endDate ? singleBill.maxPaymentDuration.endDate.slice(0, 10) : '',
+                startTime: singleBill.maxPaymentDuration?.startTime || '',
+                endTime: singleBill.maxPaymentDuration?.endTime || '',
+              },
+              billItems: singleBill.billItems || [],
+              // Add any other fields as needed
+            }}
+            onSubmit={handleEdit}
+            onCancel={() => setShowViewEditModal(false)}
+          />
         </Modal>
       )}
       {showViewEditModal && modalType === 'delete-confirm' && (
