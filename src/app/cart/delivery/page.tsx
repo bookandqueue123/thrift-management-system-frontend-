@@ -342,26 +342,6 @@ const DeliveryPage = () => {
         </div>
         <Footer />
       </div>
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Delivery Dashboard</h1>
-        <TransactionsTable
-          headers={deliveryHeaders}
-          content={mockDeliveries.map((item, idx) => (
-            <tr key={item.orderId} className="border-b border-ajo_offWhite/10">
-              <td className="px-6 py-3 whitespace-nowrap">{item.sn}</td>
-              <td className="px-6 py-3 whitespace-nowrap">{item.product}</td>
-              <td className="px-6 py-3 whitespace-nowrap">{item.description}</td>
-              <td className="px-6 py-3 whitespace-nowrap">{item.productId}</td>
-              <td className="px-6 py-3 whitespace-nowrap">{item.orderId}</td>
-              <td className="px-6 py-3 whitespace-nowrap">{item.dateOrdered}</td>
-              <td className="px-6 py-3 whitespace-nowrap"><button className="bg-blue-500 text-white px-3 py-1 rounded">Check</button></td>
-              <td className="px-6 py-3 whitespace-nowrap"><input type="file" accept="image/*" className="block" /></td>
-              <td className="px-6 py-3 whitespace-nowrap"><input type="file" accept="image/*" className="block" /></td>
-              <td className="px-6 py-3 whitespace-nowrap"><button className="bg-green-500 text-white px-3 py-1 rounded">Check</button></td>
-            </tr>
-          ))}
-        />
-      </div>
       {showTermsModal && (
         <Modal
           setModalState={setShowTermsModal}
