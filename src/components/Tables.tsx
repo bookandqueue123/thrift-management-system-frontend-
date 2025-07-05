@@ -22,7 +22,15 @@ const TransactionsTable = ({
           </tr>
         </thead>
         <tbody className="bg-[#1b1634] text-white">
-          {content}
+          {React.Children.map(content, (child, index) => {
+            if (React.isValidElement(child)) {
+              return React.cloneElement(child, {
+                ...child.props,
+                className: `${child.props.className || ''} border-b border-gray-600`.trim()
+              });
+            }
+            return child;
+          })}
         </tbody>
       </table>
       {belowText}

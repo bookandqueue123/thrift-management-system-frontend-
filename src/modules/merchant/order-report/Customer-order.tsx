@@ -118,7 +118,7 @@ const headers = [
   'Customer Name',
   'Customer Email',
   'Product',
-  'Description',
+  // 'Description',
   'Quantity',
   'Amount',
   'Product ID',
@@ -247,7 +247,7 @@ const AdminOrderReport = () => {
         customerName: `${order.user.firstName} ${order.user.lastName}`,
         customerEmail: order.user.email,
         product: item.product?.name || item.name || 'N/A',
-        description: `${item.product?.brand || 'Unknown Brand'} - ${item.product?.category || 'No Category'}`,
+        // description: `${item.product?.brand || 'Unknown Brand'} - ${item.product?.category || 'No Category'}`,
         quantity: item.quantity,
         amount: formatCurrency(item.price),
         productId: item.product?.productId || item.product?._id || 'N/A',
@@ -377,7 +377,7 @@ const AdminOrderReport = () => {
             <td className="px-6 py-3 whitespace-nowrap font-medium">{row.customerName}</td>
             <td className="px-6 py-3 whitespace-nowrap text-sm text-ajo_offWhite/80">{row.customerEmail}</td>
             <td className="px-6 py-3 whitespace-nowrap">{row.product}</td>
-            <td className="px-6 py-3 whitespace-nowrap">{row.description}</td>
+            {/* <td className="px-6 py-3 whitespace-nowrap">{row.description}</td> */}
             <td className="px-6 py-3 whitespace-nowrap">{row.quantity}</td>
             <td className="px-6 py-3 whitespace-nowrap">{row.amount}</td>
             <td className="px-6 py-3 whitespace-nowrap">{row.productId}</td>

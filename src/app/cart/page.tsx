@@ -298,6 +298,15 @@ export default function CartPage() {
 
   // Handler for checkout
   const handleCheckout = () => {
+    // Save the selected payment mode to localStorage for the confirmation page
+    localStorage.setItem(
+      "orderDetails",
+      JSON.stringify({
+        paymentMode: paymentMode === "bits" ? "Pay In Bits" : "100% Full Payment",
+        // You can add other details here if needed, e.g. cart items, total, etc.
+      })
+    );
+
     if (paymentMode === "bits") {
       const item = Array.isArray(cartItems) && cartItems.length > 0 ? convertToFormItem(cartItems[0]) : null;
       setSelectedItem(item);
@@ -539,7 +548,9 @@ export default function CartPage() {
                             </div>
                           </div>
                         </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-500">{item.product._id}</td>
+                     <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-500">
+  {item.product && item.product._id ? item.product._id : "N/A"}
+</td>
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="flex items-center border border-gray-300 rounded w-24">
                             <button
@@ -587,7 +598,7 @@ export default function CartPage() {
       <PayInBitsForm
         isOpen={showPayInBitsForm}
         onClose={() => setShowPayInBitsForm(false)}
-        selectedItem={selectedItem || undefined}
+        cartItems={safeCartItems}
         previewData={previewData}
         previewLoading={previewLoading}
         previewError={previewError}
@@ -596,3 +607,4 @@ export default function CartPage() {
     </div>
   );
 } 
+

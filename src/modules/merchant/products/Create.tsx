@@ -132,6 +132,29 @@ const Create = () => {
     },
     enabled: !!selectedProductId && (modalType === 'view' || modalType === 'edit'),
   });
+  
+  //  const { data: brandsData, isLoading } = useQuery({
+  //     queryKey: ['brands'],
+  //     queryFn: async () => {
+  //       const res = await client.get('/api/brands', { params: { t: Date.now() } });
+  //       return res.data;
+  //     },
+  //   });
+
+  //    const { data: categoriesData, isLoading } = useQuery({
+  //       queryKey: ['product-categories'],
+  //       queryFn: async () => {
+  //         const res = await client.get('/api/products-categories');
+  //         return res.data;
+  //       },
+  //     });
+  //      const { data: tagsData, isLoading } = useQuery({
+  //         queryKey: ['tags'],
+  //         queryFn: async () => {
+  //           const res = await client.get('/api/tags');
+  //           return res.data;
+  //         },
+  //       });
 
   const createProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {

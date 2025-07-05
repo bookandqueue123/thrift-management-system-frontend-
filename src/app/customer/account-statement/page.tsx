@@ -596,14 +596,7 @@ const AccountStatement = () => {
               <span className="font-semibold text-gray-800 w-32">Customer Group:</span>
               <span className="text-gray-600">Premium</span>
             </div>
-            <div className="flex">
-              <span className="font-semibold text-gray-800 w-32">Organisation:</span>
-              <span className="text-gray-600">Raoatech Technologies</span>
-            </div>
-            <div className="flex">
-              <span className="font-semibold text-gray-800 w-32">Address:</span>
-              <span className="text-gray-600">6, Iyaode Road, Idiroko, Lagos State.</span>
-            </div>
+           
           </div>
           <div className="space-y-2">
             <div className="flex">
