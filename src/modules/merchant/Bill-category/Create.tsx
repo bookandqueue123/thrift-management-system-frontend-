@@ -4,80 +4,76 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/api/hooks/useAuth';
 import TransactionsTable from '@/components/Tables';
-import { FiEdit2, FiTrash2, FiEye } from 'react-icons/fi';
-import { useRouter } from 'next/navigation';
+import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 
-const CreateBrand = () => {
+const Create = () => {
   const { client } = useAuth();
   const queryClient = useQueryClient();
-  const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', description: '' });
   const [search, setSearch] = useState('');
-  const [viewModal, setViewModal] = useState(false);
-  const [viewBrand, setViewBrand] = useState<any>(null);
-  const [viewLoading, setViewLoading] = useState(false);
+  const [filter, setFilter] = useState('');
 
-  // Fetch all brands
-  const { data: brandsData, isLoading } = useQuery({
-    queryKey: ['brands'],
+  // Fetch all categories
+  const { data: categoriesData, isLoading } = useQuery({
+    queryKey: ['bill-categories'],
     queryFn: async () => {
-      const res = await client.get('/api/brands', { params: { t: Date.now() } });
+      const res = await client.get('/api/bill-categories', { params: { t: Date.now() } });
       return res.data;
     },
   });
 
-  // Create brand
+  // Create category
   const createMutation = useMutation({
     mutationFn: async (data: { name: string; description: string }) => {
-      return client.post('/api/brands', data);
+      return client.post('/api/bill-categories', data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['brands'] });
+      queryClient.invalidateQueries({ queryKey: ['bill-categories'] });
       setShowModal(false);
       setForm({ name: '', description: '' });
     },
   });
 
-  // Update brand
+  // Update category
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: { name: string; description: string } }) => {
-      return client.put(`/api/brands/${id}`, data);
+      return client.put(`/api/bill-categories/${id}`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['brands'] });
+      queryClient.invalidateQueries({ queryKey: ['bill-categories'] });
       setShowModal(false);
       setEditId(null);
       setForm({ name: '', description: '' });
     },
   });
 
-  // Delete brand
+  // Delete category
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return client.delete(`/api/brands/${id}`);
+      return client.delete(`/api/bill-categories/${id}`);
     },
     onSuccess: () => {
-      queryClient.refetchQueries({ queryKey: ['brands'] });
+      queryClient.refetchQueries({ queryKey: ['bill-categories'] });
     },
   });
 
   // Edit handler
-  const handleEdit = (brand: any) => {
-    setEditId(brand._id);
-    setForm({ name: brand.name, description: brand.description });
+  const handleEdit = (cat: any) => {
+    setEditId(cat._id);
+    setForm({ name: cat.name, description: cat.description });
     setShowModal(true);
   };
 
   // Delete handler
   const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this brand?')) {
+    if (window.confirm('Are you sure you want to delete this category?')) {
       deleteMutation.mutate(id);
     }
   };
 
- 
+  // Submit handler
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editId) {
@@ -87,30 +83,27 @@ const CreateBrand = () => {
     }
   };
 
-  // View handler (open modal and fetch brand details)
-  const handleView = async (id: string) => {
-    setViewLoading(true);
-    setViewModal(true);
-    try {
-      const res = await client.get(`/api/brands/${id}`);
-      setViewBrand(res.data?.data);
-    } catch (err) {
-      setViewBrand(null);
-    } finally {
-      setViewLoading(false);
-    }
-  };
-
-  // Filtered brands
-  const filtered = brandsData?.data?.filter((brand: any) =>
-    brand.name.toLowerCase().includes(search.toLowerCase()) ||
-    brand.description.toLowerCase().includes(search.toLowerCase())
+  // Filtered categories
+  const filtered = categoriesData?.data?.filter((cat: any) =>
+    cat.name.toLowerCase().includes(search.toLowerCase()) ||
+    cat.description.toLowerCase().includes(search.toLowerCase())
   ) || [];
+
+  // Debug: log categoriesData to verify updates
+  console.log('categoriesData:', categoriesData);
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold text-ajo_offWhite mb-4">Brands</h2>
+      <h2 className="text-2xl font-bold text-ajo_offWhite mb-4">Bill item categories</h2>
       <div className="flex gap-4 mb-4">
+        <select
+          className="rounded px-3 py-2 bg-[#2d2545] text-white border border-[#3b2f73] w-32"
+          value={filter}
+          onChange={e => setFilter(e.target.value)}
+        >
+          <option value="">Filter</option>
+          {/* Add filter options if needed */}
+        </select>
         <div className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
           <input
             type="text"
@@ -127,27 +120,26 @@ const CreateBrand = () => {
           className="ml-auto bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
           onClick={() => { setShowModal(true); setEditId(null); setForm({ name: '', description: '' }); }}
         >
-          Create a Brand
+          Create a Category
         </button>
       </div>
       <div className="mt-6">
         <TransactionsTable
-          key={filtered.map((brand: { _id: any; }) => brand._id).join(',')}
-          headers={["S/N", "Brand Name", "Description", "Action"]}
+          key={filtered.map((cat: { _id: any; }) => cat._id).join(',')}
+          headers={["S/N", "Category Name", "Description", "Action"]}
           content={isLoading ? (
             <tr><td colSpan={4} className="text-center text-white">Loading...</td></tr>
           ) : filtered.length === 0 ? (
-            <tr><td colSpan={4} className="text-center text-white">No brands found.</td></tr>
+            <tr><td colSpan={4} className="text-center text-white">No categories found.</td></tr>
           ) : (
-            filtered.map((brand: any, idx: number) => (
-              <tr key={brand._id}>
+            filtered.map((cat: any, idx: number) => (
+              <tr key={cat._id}>
                 <td className="text-left px-6">{idx + 1}</td>
-                <td className="text-left px-6">{brand.name}</td>
-                <td className="text-left px-6">{brand.description}</td>
+                <td className="text-left px-6">{cat.name}</td>
+                <td className="text-left px-6">{cat.description}</td>
                 <td className="flex gap-2 items-center">
-                  <button onClick={() => handleView(brand._id)} className="p-1 hover:text-blue-400"><FiEye /></button>
-                  <button onClick={() => handleEdit(brand)} className="p-1 hover:text-yellow-400"><FiEdit2 /></button>
-                  <button onClick={() => handleDelete(brand._id)} className="p-1 hover:text-red-500" disabled={deleteMutation.isPending}>
+                  <button onClick={() => handleEdit(cat)} className="p-1 hover:text-yellow-400"><FiEdit2 /></button>
+                  <button onClick={() => handleDelete(cat._id)} className="p-1 hover:text-red-500" disabled={deleteMutation.isPending}>
                     {deleteMutation.isPending ? "Deleting..." : <FiTrash2 />}
                   </button>
                 </td>
@@ -160,10 +152,10 @@ const CreateBrand = () => {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-[#221c3e] p-8 rounded-lg w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4 text-white">{editId ? 'Edit Brand' : 'Create Brand'}</h3>
+            <h3 className="text-xl font-bold mb-4 text-white">{editId ? 'Edit Category' : 'Create Category'}</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-white mb-1">Brand Name</label>
+                <label className="block text-white mb-1">Category Name</label>
                 <input
                   type="text"
                   value={form.name}
@@ -192,35 +184,8 @@ const CreateBrand = () => {
           </div>
         </div>
       )}
-      {/* Modal for view brand */}
-      {viewModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-[#221c3e] p-8 rounded-lg w-full max-w-md min-w-[300px]">
-            <h3 className="text-xl font-bold mb-4 text-white">Brand Details</h3>
-            {viewLoading ? (
-              <div className="text-white">Loading...</div>
-            ) : viewBrand ? (
-              <div className="space-y-4">
-                <div>
-                  <span className="block text-white font-semibold">Name:</span>
-                  <span className="block text-white">{viewBrand.name}</span>
-                </div>
-                <div>
-                  <span className="block text-white font-semibold">Description:</span>
-                  <span className="block text-white">{viewBrand.description}</span>
-                </div>
-              </div>
-            ) : (
-              <div className="text-red-400">Failed to load brand details.</div>
-            )}
-            <div className="flex justify-end gap-2 mt-6">
-              <button type="button" className="px-4 py-2 rounded bg-gray-500 text-white" onClick={() => setViewModal(false)}>Close</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
-export default CreateBrand;
+export default Create;

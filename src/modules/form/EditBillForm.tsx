@@ -182,7 +182,7 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Debit Amount</label>
                         <input type="number" min="0" step="0.01" value={item.amount} onChange={e => handleItemChange(idx, 'amount', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Enter total amount" />
                       </div>
                       <div>
