@@ -75,7 +75,7 @@ const BillPaymentsTable = () => {
       if (status) {
         params.append("status", status);
       }
-      console.log(apiUrl);
+
       // Simulate API call - replace with actual API endpoint
       const response = await fetch(
         `${apiUrl}api/bills/customer/bill/payment?${params}`,
@@ -134,7 +134,7 @@ const BillPaymentsTable = () => {
   const formatCurrency = (amount: number | undefined) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
     }).format(amount || 0);
   };
 
