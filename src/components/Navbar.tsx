@@ -712,6 +712,12 @@ export const Sidebar = ({
                     >
                       Account Statement
                     </Link>
+                    <Link
+                      href="/merchant/bill-payment-report"
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      Bill Payment Report
+                    </Link>
                   </div>
                 )}
 
@@ -1052,6 +1058,7 @@ export const SuperAdminSidebar = ({
     "users",
     "account-statement",
     "superadminfee",
+    "bill-payment-reports",
   ];
 
   const MenuBtn = ({
@@ -1122,9 +1129,11 @@ export const SuperAdminSidebar = ({
                   ? "Account Statement"
                   : route === "superadminfee"
                     ? "Superadmin Fee"
-                    : route === "customer-bill"
-                      ? "Customer Bill"
-                      : route}
+                    : route === "bill-payment-reports"
+                      ? "Bill Payment Reports"
+                      : route === "customer-bill"
+                        ? "Customer Bill"
+                        : route}
               </Link>
             ))}
           </div>
