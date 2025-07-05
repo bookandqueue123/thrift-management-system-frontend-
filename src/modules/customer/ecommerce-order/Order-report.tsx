@@ -219,7 +219,7 @@ const headers = [
   'Delivery Status',
   'Delivery Cost',
   'Total Cost',
-  'Action',
+  
 ];
 
 // Define types for order and order item

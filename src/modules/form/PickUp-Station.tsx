@@ -583,7 +583,7 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
               </div>
             </div>
               <div>
-        <label className="block text-base font-semibold text-gray-800 mb-2 mt-6">Storage capacity</label>
+       
            <div className="grid  gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Pickup centre fee ($)</label>
@@ -599,7 +599,7 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
             </div>
            
           </div>
-        {/* Indoor Products Storage */}
+{/*      
         <div className="mb-4">
           <h3 className="text-sm font-semibold  mb-2">Indoor products storage</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4  p-4 rounded-lg border ">
@@ -649,10 +649,11 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
-        {/* Outdoor Products Storage */}
-        <div className="mb-4">
+        
+      
+        {/* <div className="mb-4">
           <h3 className="text-sm font-semibold  mb-2">Outdoor Products storage</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4  p-4 rounded-lg border border-green-200">
             <div>
@@ -701,10 +702,10 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Refrigerated Products Storage */}
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <h3 className="text-sm font-semibold mb-2">Refrigerated products storage</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4  p-4 rounded-lg border border-purple-200">
             <div>
@@ -753,7 +754,7 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
       
 

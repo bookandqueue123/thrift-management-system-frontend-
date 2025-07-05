@@ -1,10 +1,9 @@
 import React from 'react'
-import Bill from '@/modules/merchant/create-bill.tsx/Bill'
-
+import CreateProduct from '@/modules/superAdmin/product-category/CreateProduct'
 const page = () => {
   return (
     <div>
-      <Bill />
+        <CreateProduct/>
     </div>
   )
 }
