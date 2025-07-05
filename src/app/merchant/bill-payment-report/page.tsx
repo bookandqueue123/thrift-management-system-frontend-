@@ -217,9 +217,7 @@ const OrganizationBillPayments: React.FC = () => {
           <h1 className="mb-2 text-3xl font-bold text-gray-900">
             Bill Payments
           </h1>
-          <p className="text-gray-600">
-            View and manage your organization's bill payments
-          </p>
+          <p className="text-gray-600">View and manage bills payments</p>
         </div>
 
         {/* Summary Cards */}
