@@ -225,7 +225,7 @@ const PlatformChargeManager = () => {
             Platform Charge Management
           </h1>
           <p className="text-gray-600">
-            Manage your platform's commission percentage
+            Manage your platform&apos;s commission percentage
           </p>
         </div>
 
