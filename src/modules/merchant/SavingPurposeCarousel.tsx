@@ -491,22 +491,7 @@ const App = ({ categoryToshow, merchantNumber }: categoryToSHowProps) => {
     });
   }
 
-  // const handleSearch = useCallback(() => {
-  //   if (allPurpose && merchantNumber) {
-  //     const filtered = allPurpose.filter((item) =>
-  //       item.organisation.accountNumber.includes(merchantNumber),
-  //     );
 
-  //     // Only update the state if filtered results are different
-  //     if (JSON.stringify(filtered) !== JSON.stringify(filteredPurposes)) {
-  //       setFilteredPurposes(filtered);
-  //     }
-  //   }
-  // }, [allPurpose, merchantNumber, filteredPurposes]);
-
-  // useEffect(() => {
-  //   handleSearch();
-  // }, [merchantNumber]);
 
   const groupedPurposes = filteredPurposes?.reduce(
     (acc: { [x: string]: any[] }, purpose: { category: { name: any } }) => {

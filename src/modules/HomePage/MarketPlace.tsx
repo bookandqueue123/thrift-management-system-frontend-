@@ -11,7 +11,7 @@ interface Product {
   name: string;
   description: string;
   price: number;
-  category: string;
+  category: string | { _id: string; name: string };
   brand: string;
   imageUrl?: string | string[];
   stock: number;
@@ -274,7 +274,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Category Badge */}
         <div className="mt-2">
           <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-            {product.category}
+            {typeof product.category === 'object'
+              ? product.category?.name || product.category?._id || ''
+              : product.category}
           </span>
         </div>
       </div>
@@ -335,14 +337,20 @@ const MarketplaceInterface: React.FC = () => {
       filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchQuery.toLowerCase())
+        (typeof product.category === 'object'
+          ? product.category.name.toLowerCase().includes(searchQuery.toLowerCase())
+          : product.category.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
 
     // Category filter
     if (selectedCategories.length > 0) {
       filtered = filtered.filter(product =>
-        selectedCategories.includes(product.category)
+        selectedCategories.includes(
+          typeof product.category === 'object'
+            ? product.category._id
+            : product.category
+        )
       );
     }
 
