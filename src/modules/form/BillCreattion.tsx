@@ -56,6 +56,7 @@ interface Customer {
   firstName: string;
   lastName: string;
   email: string;
+  accountNumber: string;
 }
 
 const generatePromoCode = () => nanoid(8).toUpperCase();
@@ -86,10 +87,10 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
     customerId: "",
     customerGroupId: "",
     startDate: "",
+    startTime: "",
+    endTime: "",
     endDate: "",
     promoCode: "",
-    startTime: '',
-    endTime: '',
     promoPercentage: 0,
     billImage: null,
     billImageUrl: null,
@@ -158,6 +159,15 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
       });
   },
   staleTime: 5000,
+});
+
+// Add after other useQuery hooks
+const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuery({
+  queryKey: ['platform-charge'],
+  queryFn: async () => {
+    const res = await client.get('/api/platform-charge');
+    return res.data;
+  },
 });
 
   // Click outside handler for customer dropdown
@@ -262,8 +272,8 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
       formData.append("billName", values.name);
       formData.append("billCode", values.code);
       formData.append("organisation", organizationId);
-      formData.append("assignToCustomer", billDetails.customerId);
-      formData.append("assignToCustomerGroup", billDetails.customerGroupId);  
+      formData.append("assignToCustomer", values.customerId);
+      formData.append("assignToCustomerGroup", values.customerGroupId);  
       formData.append("startDate", values.startDate);
       formData.append("startTime", values.startTime);
       formData.append("endDate", values.endDate);
@@ -487,9 +497,8 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
         return (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Bill Details</h2>
-            
-            <div className="max-w-4xl mx-auto w-full p-4 md:p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="w-full px-2 py-2 sm:px-4 sm:py-4 sm:p-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Bill Name <span className='text-red-500'>*</span>
@@ -516,7 +525,7 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
                   />
                 </div>
 
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                     <User size={16} />
                     Assign to Customers (Multiple Selection)
@@ -570,7 +579,7 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
                                     {customer.firstName} {customer.lastName}
                                   </div>
                                   <div className="text-sm text-gray-500">
-                                    ID: {customer._id} | Email: {customer.email}
+                                    Account Number: {customer.accountNumber} | Email: {customer.email}
                                   </div>
                                   {isSelected && <span className="text-blue-600 ml-2">✓ Selected</span>}
                                 </div>
@@ -601,7 +610,7 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
                                 {customer.firstName} {customer.lastName}
                               </div>
                               <div className="text-sm text-gray-600">
-                                ID: {customer._id} | Email: {customer.email}
+                                Account Number: {customer.accountNumber} | Email: {customer.email}
                               </div>
                             </div>
                             <button
@@ -709,8 +718,8 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
                       <label htmlFor={`mandatory-no-${item.id}`}>No</label>
                     </div>
                   </div>
-                  <div className="max-w-4xl mx-auto w-full p-4 md:p-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="w-full px-2 sm:px-4 py-2 sm:p-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Bill Name <span className='text-red-500'>*</span>
@@ -754,6 +763,43 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
                           placeholder="Enter debit amount"
                         />
                       </div>
+                      {/* Platform charge fields */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge (%)</label>
+                        <input
+                          type="number"
+                          value={platformChargeData?.data?.percentage || ''}
+                          disabled
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                        />
+                        {isLoadingPlatformCharge && <span className="text-xs text-gray-400">Loading platform charge...</span>}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge value</label>
+                        <input
+                          type="number"
+                          value={
+                            platformChargeData?.data?.percentage
+                              ? ((platformChargeData.data.percentage / 100) * item.amount).toFixed(2)
+                              : ''
+                          }
+                          disabled
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Actual debit amount</label>
+                        <input
+                          type="number"
+                          value={
+                            platformChargeData?.data?.percentage
+                              ? (item.amount + (platformChargeData.data.percentage / 100) * item.amount).toFixed(2)
+                              : item.amount
+                          }
+                          disabled
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                        />
+                      </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Quantity
@@ -786,9 +832,8 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
         return (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Additional Settings</h2>
-              
-            <div className="max-w-4xl mx-auto w-full p-4 md:p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="w-full px-2 py-2 sm:px-4 sm:py-4 sm:p-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Promo Code</label>
                   <div className="flex gap-2">
@@ -879,9 +924,9 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
                 </div>
               
                 {/* Maximum payment Duration */}
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <h4 className="font-semibold mb-2">Maximum payment Duration</h4>
-                  <div className="max-w-4xl mx-auto w-full p-4 md:p-8">
+                  <div className="w-full px-2 sm:px-4 py-2 sm:p-8">
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
@@ -968,24 +1013,24 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
   }
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-2 sm:p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white rounded-lg shadow-lg p-2 sm:p-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">
               <FileText className="text-blue-600" size={32} />
               Bill Creation
             </h1>
-            <p className="text-gray-600">Create a new bill with detailed information</p>
+            <p className="text-gray-600 text-sm sm:text-base">Create a new bill with detailed information</p>
           </div>
 
           {/* Progress Bar */}
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-medium text-gray-700">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+              <span className="text-xs sm:text-sm font-medium text-gray-700">
                 Step {currentStep} of {totalSteps}
               </span>
-              <span className="text-sm text-gray-500">
+              <span className="text-xs sm:text-sm text-gray-500">
                 {Math.round((currentStep / totalSteps) * 100)}% Complete
               </span>
             </div>
@@ -999,7 +1044,7 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
 
           {/* Above the form, display error messages */}
           {(formError || (modalContent === "status" && !userCreated && mutationResponse)) && (
-            <div className="mb-4 text-red-600 font-semibold bg-red-100 p-2 rounded">
+            <div className="mb-4 text-red-600 font-semibold bg-red-100 p-2 rounded text-xs sm:text-base">
               {formError || mutationResponse}
             </div>
           )}
@@ -1010,12 +1055,12 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
           </div>
 
           {/* Navigation Buttons */}
-          <div className="flex justify-between">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-between">
             <button
               type="button"
               onClick={prevStep}
               disabled={currentStep === 1 || isCreatingBill}
-              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors text-white ${
+              className={`w-full sm:w-auto flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-colors text-white ${
                 currentStep === 1
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-gray-200 hover:bg-gray-300'
@@ -1030,7 +1075,7 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
                 type="button"
                 onClick={nextStep}
                 disabled={isCreatingBill}
-                className="flex items-center gap-2 px-6 py-3 bg-[#221c3e] text-white rounded-lg font-medium hover:bg-[#3b2f73] transition-colors"
+                className="w-full sm:w-auto flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#221c3e] text-white rounded-lg font-medium hover:bg-[#3b2f73] transition-colors"
               >
                 Next
                 <ChevronRight size={20} />
@@ -1040,7 +1085,7 @@ const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } =
                 type="button"
                 onClick={handleSubmit}
                 disabled={isCreatingBill}
-                className="px-8 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+                className="w-full sm:w-auto px-4 sm:px-8 py-2 sm:py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
               >
                 {isCreatingBill ? 'Creating Bill...' : 'Create Bill'}
               </button>

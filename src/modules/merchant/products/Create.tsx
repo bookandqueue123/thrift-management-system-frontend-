@@ -55,8 +55,8 @@ type ProductFormData = {
   productImage?: File;
   maximumRepaymentTimeline?: string;
   repaymentPeriodInMonths?: string;
-  minimumRepaymentAmount?: string;
-  minimumDepositPercentage?: string;
+  mininumRepaymentAmount?: string;
+  mininumDepositPercentage?: string;
   interestRatePercentage?: string;
   platformFee?: string;
   doorDeliveryTerms?: string;
@@ -159,6 +159,14 @@ const Create = () => {
     },
   });
 
+  const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuery({
+    queryKey: ['platform-charge'],
+    queryFn: async () => {
+      const res = await client.get('/api/platform-charge');
+      return res.data;
+    },
+  });
+
   const createProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
       const form = new FormData();
@@ -176,8 +184,8 @@ const Create = () => {
      
       form.append('maximumRepaymentTimeline', data.maximumRepaymentTimeline || '');
       form.append('repaymentPeriodInMonths', data.repaymentPeriodInMonths || '');
-      form.append('minimumRepaymentAmount', data.minimumRepaymentAmount || '');
-      form.append('minimumDepositPercentage', data.minimumDepositPercentage || '');
+      form.append('mininumRepaymentAmount', data.mininumRepaymentAmount || '');
+      form.append('mininumDepositPercentage', data.mininumDepositPercentage || '');
       form.append('interestRatePercentage', data.interestRatePercentage || '');
       form.append('platformFee', data.platformFee || '');
       form.append('doorDeliveryTerms', data.doorDeliveryTerms || '');
@@ -226,8 +234,8 @@ const Create = () => {
       
       form.append('maximumRepaymentTimeline', data.maximumRepaymentTimeline || '');
       form.append('repaymentPeriodInMonths', data.repaymentPeriodInMonths || '');
-      form.append('minimumRepaymentAmount', data.minimumRepaymentAmount || '');
-      form.append('minimumDepositPercentage', data.minimumDepositPercentage || '');
+      form.append('minimumRepaymentAmount', data.mininumRepaymentAmount || '');
+      form.append('mininumDepositPercentage', data.mininumDepositPercentage|| '');
       form.append('interestRatePercentage', data.interestRatePercentage || '');
       form.append('platformFee', data.platformFee || '');
       form.append('doorDeliveryTerms', data.doorDeliveryTerms || '');
@@ -309,44 +317,38 @@ const Create = () => {
       }
       return;
     }
-    if (name === 'costBeforeDiscount' || name === 'discount') {
+    if (name === 'costBeforeDiscount' || name === 'discount' || name === 'interestRatePercentage') {
       const newFormData = { ...formData, [name]: value };
-      const cost = parseFloat(name === 'costBeforeDiscount' ? value : newFormData.costBeforeDiscount || '0');
-      const disc = parseFloat(name === 'discount' ? value : newFormData.discount || '0');
+      const cost = parseFloat(newFormData.costBeforeDiscount || '0');
+      const disc = parseFloat(newFormData.discount || '0');
+      const interest = parseFloat(newFormData.interestRatePercentage || '0');
       let price = '';
       if (!isNaN(cost) && !isNaN(disc)) {
         price = (cost - (cost * disc / 100)).toFixed(2);
       }
       setFormData((prev) => ({ ...prev, [name]: value, price }));
-      const platformFee = parseFloat(formData.platformFee || '0');
+      const platformPercent = parseFloat(platformChargeData?.data?.percentage || '0');
       const discountedPrice = parseFloat(price || '0');
-      const platformCharge = !isNaN(platformFee) && !isNaN(discountedPrice) ? ((platformFee / 100) * discountedPrice) : 0;
+      const platformCharge = !isNaN(platformPercent) && !isNaN(discountedPrice) ? ((platformPercent / 100) * discountedPrice) : 0;
+      const interestAmount = !isNaN(interest) && !isNaN(discountedPrice) ? ((interest / 100) * discountedPrice) : 0;
       setPlatformChargeValue(platformCharge.toFixed(2));
-      setActualPrice((discountedPrice + platformCharge).toFixed(2));
-      const minDepositPercent = parseFloat(formData.minimumDepositPercentage || '0');
-      const minDepositValue = !isNaN(minDepositPercent) && !isNaN(discountedPrice) ? ((minDepositPercent / 100) * (discountedPrice + platformCharge)) : 0;
+      setActualPrice((discountedPrice + platformCharge + interestAmount).toFixed(2));
+      const minDepositPercent = parseFloat(formData.mininumDepositPercentage || '0');
+      const minDepositValue = !isNaN(minDepositPercent) && !isNaN(discountedPrice)
+        ? ((minDepositPercent / 100) * (discountedPrice + platformCharge + interestAmount))
+        : 0;
       setMinimumDepositValue(minDepositValue.toFixed(2));
       return;
     }
-    if (name === 'platformFee') {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-      const platformFee = parseFloat(value);
-      const discountedPrice = parseFloat(formData.price || '0');
-      const platformCharge = !isNaN(platformFee) && !isNaN(discountedPrice) ? ((platformFee / 100) * discountedPrice) : 0;
-      setPlatformChargeValue(platformCharge.toFixed(2));
-      setActualPrice((discountedPrice + platformCharge).toFixed(2));
-      const minDepositPercent = parseFloat(formData.minimumDepositPercentage || '0');
-      const minDepositValue = !isNaN(minDepositPercent) && !isNaN(discountedPrice) ? ((minDepositPercent / 100) * (discountedPrice + platformCharge)) : 0;
-      setMinimumDepositValue(minDepositValue.toFixed(2));
-      return;
-    }
-    if (name === 'minimumDepositPercentage') {
+    if (name === 'mininumDepositPercentage') {
       setFormData((prev) => ({ ...prev, [name]: value }));
       const minDepositPercent = parseFloat(value);
       const discountedPrice = parseFloat(formData.price || '0');
-      const platformFee = parseFloat(formData.platformFee || '0');
-      const platformCharge = !isNaN(platformFee) && !isNaN(discountedPrice) ? ((platformFee / 100) * discountedPrice) : 0;
-      const actual = discountedPrice + platformCharge;
+      const platformPercent = parseFloat(platformChargeData?.data?.percentage || '0');
+      const interest = parseFloat(formData.interestRatePercentage || '0');
+      const platformCharge = !isNaN(platformPercent) && !isNaN(discountedPrice) ? ((platformPercent / 100) * discountedPrice) : 0;
+      const interestAmount = !isNaN(interest) && !isNaN(discountedPrice) ? ((interest / 100) * discountedPrice) : 0;
+      const actual = discountedPrice + platformCharge + interestAmount;
       const minDepositValue = !isNaN(minDepositPercent) && !isNaN(actual) ? ((minDepositPercent / 100) * actual) : 0;
       setMinimumDepositValue(minDepositValue.toFixed(2));
       return;
@@ -503,8 +505,8 @@ const Create = () => {
           stock: String(productToEdit.stock),
           maximumRepaymentTimeline: (productToEdit as any).maximumRepaymentTimeline?.toString() || '',
           repaymentPeriodInMonths: (productToEdit as any).repaymentPeriodInMonths?.toString() || '',
-          minimumRepaymentAmount: (productToEdit as any).minimumRepaymentAmount?.toString() || '',
-          minimumDepositPercentage: (productToEdit as any).minimumDepositPercentage?.toString() || '',
+          mininumRepaymentAmount: (productToEdit as any).mininumRepaymentAmount?.toString() || '',
+          mininumDepositPercentage: (productToEdit as any).mininumDepositPercentage?.toString() || '',
           interestRatePercentage: (productToEdit as any).interestRatePercentage?.toString() || '',
           platformFee: (productToEdit as any).platformFee?.toString() || '',
           doorDeliveryTerms: (productToEdit as any).doorDeliveryTerms || '',
@@ -636,32 +638,35 @@ const Create = () => {
               </div>
               
               <div className="mb-4">
-                <label htmlFor="platformFee" className="block text-sm font-medium text-white">Platform Charge % (optional)</label>
+                <label htmlFor="platformFee" className="block text-sm font-medium text-white">Platform Charge %</label>
                 <input
                   type="number"
                   id="platformFee"
                   name="platformFee"
-                  value={formData.platformFee}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={platformChargeData?.data?.percentage || ''}
+                  disabled
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-200 cursor-not-allowed sm:text-sm"
                 />
+                {isLoadingPlatformCharge && <span className="text-xs text-gray-400">Loading platform charge...</span>}
               </div>
-               <div>
-                <label className="block text-white">Platform charge value (optional)</label>
+              <div>
+                <label className="block text-white">Platform charge value</label>
                 <input
                   type="number"
-                  name=""
-                  onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-black"
+                  name="platformChargeValue"
+                  value={platformChargeValue}
+                  disabled
+                  className="w-full rounded border px-3 py-2 text-black bg-gray-200 cursor-not-allowed"
                 />
               </div>
               <div>
-                <label className="block text-white">Actual price (optional)</label>
+                <label className="block text-white">Actual price</label>
                 <input
                   type="number"
-                  name=""
-                  onChange={handleInputChange}
-                  className="w-full rounded border px-3 py-2 text-black"
+                  name="actualPrice"
+                  value={actualPrice}
+                  disabled
+                  className="w-full rounded border px-3 py-2 text-black bg-gray-200 cursor-not-allowed"
                 />
               </div>
               
@@ -677,12 +682,12 @@ const Create = () => {
                 />
               </div>
                <div className="mb-4">
-                <label htmlFor="minimumDepositPercentage" className="block text-sm font-medium text-white">Minimum Deposit %</label>
+                <label htmlFor="mininumDepositPercentage" className="block text-sm font-medium text-white">Minimum Deposit %</label>
                 <input
                   type="number"
-                  id="minimumDepositPercentage"
-                  name="minimumDepositPercentage"
-                  value={formData.minimumDepositPercentage}
+                  id="mininumDepositPercentage"
+                  name="mininumDepositPercentage"
+                  value={formData.mininumDepositPercentage}
                   onChange={handleInputChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
@@ -700,7 +705,7 @@ const Create = () => {
                 />
               </div>
               
-               <div className="mb-4">
+               {/* <div className="mb-4">
                 <label htmlFor="repaymentPeriodInMonths" className="block text-sm font-medium text-white">Repayment Period In Months (optional)</label>
                 <input
                   type="number"
@@ -710,19 +715,19 @@ const Create = () => {
                   onChange={handleInputChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
-              </div>
-               <div className="mb-4">
+              </div> */}
+               {/* <div className="mb-4">
                 <label htmlFor="minimumRepaymentAmount" className="block text-sm font-medium text-white">Minimum Repayment Amount (optional)</label>
                 <input
                   type="number"
-                  id="minimumRepaymentAmount"
-                  name="minimumRepaymentAmount"
-                  value={formData.minimumRepaymentAmount}
+                  id="mininumRepaymentAmount"
+                  name="mininumRepaymentAmount"
+                  value={formData.mininumRepaymentAmount}
                   onChange={handleInputChange}
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
-             
+              */}
              
               <div>
                 <label className="block text-white">Category</label>
