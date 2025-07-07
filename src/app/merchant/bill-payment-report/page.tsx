@@ -7,7 +7,6 @@ import {
   ChevronRight,
   CreditCard,
   DollarSign,
-  Eye,
   Filter,
   RefreshCw,
   TrendingUp,
@@ -417,6 +416,7 @@ const OrganizationBillPayments: React.FC = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Bill item 3
                     </th>
+
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Mode of Payment
                     </th>
@@ -434,9 +434,9 @@ const OrganizationBillPayments: React.FC = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Date
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                    {/* <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Actions
-                    </th>
+                    </th> */}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
@@ -528,14 +528,14 @@ const OrganizationBillPayments: React.FC = () => {
                       <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                         {formatDate(payment.createdAt)}
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                      {/* <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                         <button
                           className="text-blue-600 hover:text-blue-900"
                           onClick={() => handleViewPayment(payment._id)}
                         >
                           <Eye className="h-4 w-4" />
                         </button>
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>
