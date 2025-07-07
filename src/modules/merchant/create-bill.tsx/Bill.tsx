@@ -7,6 +7,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import BillCreationForm from "@/modules/form/BillCreattion";
 import { useAuth } from "@/api/hooks/useAuth";
 import EditBillForm from "@/modules/form/EditBillForm";
+import { useSelector } from "react-redux";
+import { selectOrganizationId } from "@/slices/OrganizationIdSlice";
 
 // Bill type based on your API
 export interface Bill {
@@ -53,7 +55,8 @@ const initialBillForm = {
 
 const Create = () => {
   const queryClient = useQueryClient();
-   const { client } = useAuth();
+  const { client } = useAuth();
+  const organizationId = useSelector(selectOrganizationId);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showViewEditModal, setShowViewEditModal] = useState(false);
   const [modalType, setModalType] = useState<'view' | 'edit' | 'delete-confirm' | null>(null);
@@ -378,7 +381,7 @@ const singleBill = singleBillResponse?.data;
       {/* Create Modal */}
       {showCreateModal && (
         <Modal title="Create Bill" setModalState={setShowCreateModal}>
-          <BillCreationForm organizationId="YOUR_ORG_ID_HERE" />
+          <BillCreationForm organizationId={organizationId} />
         </Modal>
       )}
       {/* View/Edit/Delete Modal */}

@@ -6,8 +6,10 @@ import { useAuth } from '@/api/hooks/useAuth';
 
 const headers = [
   'S/N',
-  'Image',
+  'Customer',
+  'Customer ID',
   'Product',
+  "Product's Description",
   'Product ID',
   'Order ID',
   'Total Little-by-Little Payment Amount',
@@ -15,9 +17,10 @@ const headers = [
   'Minimum Deposit',
   'Total Amount Paid So Far',
   'Total Balance',
+  'Pay My Debts',
+  'View Breakdown',
   'Payment Start Date',
   'Payment End Date',
-  'View Breakdown',
 ];
 
 // Define types for the order data structure based on API response
@@ -104,6 +107,10 @@ interface PaymentBreakdownModalProps {
 }
 
 const PaymentBreakdownModal: React.FC<PaymentBreakdownModalProps> = ({ order, isOpen, onClose }) => {
+  const { client } = useAuth();
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+
   if (!isOpen || !order) return null;
 
   const formatDate = (dateString: string): string => {
@@ -112,6 +119,33 @@ const PaymentBreakdownModal: React.FC<PaymentBreakdownModalProps> = ({ order, is
 
   const formatCurrency = (amount: number): string => {
     return `₦${amount.toLocaleString()}`;
+  };
+
+  const handleMakePayment = async () => {
+    setPaying(true);
+    setPayError(null);
+    try {
+      // For this example, pay the remaining balance for all items in the order
+      const billItems = order.orderItems.map(item => ({
+        billItemId: item._id,
+        amountToPay: item.price * item.quantity // or use remainingBalance if available
+      }));
+      const res = await client.post('/api/payments/bills', {
+        billId: order._id,
+        billItems,
+        paymentMethod: 'card',
+        notes: 'Little by little payment',
+      });
+      const link = res?.data?.data?.data?.link;
+      if (link) {
+        window.location.href = link;
+        return;
+      }
+    } catch (e: any) {
+      setPayError(e.message || 'Payment failed');
+    } finally {
+      setPaying(false);
+    }
   };
 
   return (
@@ -264,6 +298,15 @@ const PaymentBreakdownModal: React.FC<PaymentBreakdownModalProps> = ({ order, is
               </tbody>
             </table>
           </div>
+        </div>
+
+        <div className="flex justify-end mt-6">
+          <button
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded text-base font-semibold transition-colors"
+            onClick={handleMakePayment}
+          >
+            Make Payment
+          </button>
         </div>
 
         <div className="flex justify-end">
@@ -427,49 +470,50 @@ const LittleByLittlePayment = () => {
               filteredOrders.map((order: Order, idx: number) => (
                 <tr key={order._id} className="border-b border-gray-700 hover:bg-[#23263a]">
                   <td className="px-6 py-3 whitespace-nowrap">{idx + 1}</td>
-                  <td className="px-6 py-3 whitespace-nowrap">
-                    {order.orderItems[0]?.imageUrl && order.orderItems[0]?.imageUrl[0] ? (
-                      <img
-                        src={order.orderItems[0].imageUrl[0]}
-                        alt={order.orderItems[0].name}
-                        className="h-12 w-12 object-contain rounded"
-                      />
-                    ) : order.orderItems[0]?.product?.imageUrl && order.orderItems[0]?.product?.imageUrl[0] ? (
-                      <img
-                        src={order.orderItems[0].product.imageUrl[0]}
-                        alt={order.orderItems[0].name}
-                        className="h-12 w-12 object-contain rounded"
-                      />
-                    ) : (
-                      <span className="text-gray-400">No Image</span>
-                    )}
-                  </td>
+                  <td className="px-6 py-3 whitespace-nowrap">{order.user.firstName} {order.user.lastName}</td>
+                  <td className="px-6 py-3 whitespace-nowrap text-xs">{order.user._id || 'N/A'}</td>
                   <td className="px-6 py-3 whitespace-nowrap">{order.orderItems[0]?.name || 'N/A'}</td>
-                  <td className="px-6 py-3 whitespace-nowrap">{order.orderItems[0]?.product?.productId || 'N/A'}</td>
-                  <td className="px-6 py-3 whitespace-nowrap">{order.orderId || 'N/A'}</td>
-                  <td className="px-6 py-3 whitespace-nowrap font-bold">
+                  <td className="px-6 py-3 whitespace-nowrap text-xs max-w-xs truncate" title={order.orderItems[0]?.name || 'N/A'}>
+                    {order.orderItems[0]?.name || 'N/A'}
+                  </td>
+                  <td className="px-6 py-3 whitespace-nowrap text-xs">{order.orderItems[0]?.product?.productId || 'N/A'}</td>
+                  <td className="px-6 py-3 whitespace-nowrap font-mono text-xs">{order.orderId || 'N/A'}</td>
+                  <td className="px-6 py-3 whitespace-nowrap font-bold text-white">
                     ₦{(order.totalPrice || 0).toLocaleString()}
                   </td>
-                  <td className="px-6 py-3 whitespace-nowrap">{order.productPaymentTerms.repaymentPeriodInMonths} months</td>
-                  <td className="px-6 py-3 whitespace-nowrap">
-                    ₦{calculateMinimumDeposit(order.totalPrice, order.productPaymentTerms.mininumDepositPercentage).toLocaleString()}
+                  <td className="px-6 py-3 whitespace-nowrap text-white">
+                    {order.productPaymentTerms?.repaymentPeriodInMonths || 'N/A'} months
                   </td>
-                  <td className="px-6 py-3 whitespace-nowrap">
+                  <td className="px-6 py-3 whitespace-nowrap text-white">
+                    ₦{calculateMinimumDeposit(
+                      order.totalPrice || 0, 
+                      order.productPaymentTerms?.mininumDepositPercentage || 0
+                    ).toLocaleString()}
+                  </td>
+                  <td className="px-6 py-3 whitespace-nowrap text-white">
                     ₦{(order.amountPaid || 0).toLocaleString()}
                   </td>
-                  <td className="px-6 py-3 whitespace-nowrap">
+                  <td className="px-6 py-3 whitespace-nowrap text-white">
                     ₦{(order.remainingBalance || 0).toLocaleString()}
                   </td>
-                  <td className="px-6 py-3 whitespace-nowrap">{formatDate(order.createdAt)}</td>
-                  <td className="px-6 py-3 whitespace-nowrap">{getPaymentEndDate(order.paymentPlan)}</td>
                   <td className="px-6 py-3 whitespace-nowrap">
                     <button 
+                      className="bg-blue-600 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors"
                       onClick={() => handleViewBreakdown(order)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
+                    >
+                      Pay My Debts
+                    </button>
+                  </td>
+                  <td className="px-6 py-3 whitespace-nowrap">
+                    <button 
+                      className="bg-blue-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-xs transition-colors"
+                      onClick={() => handleViewBreakdown(order)}
                     >
                       View Breakdown
                     </button>
                   </td>
+                  <td className="px-6 py-3 whitespace-nowrap">{formatDate(order.createdAt)}</td>
+                  <td className="px-6 py-3 whitespace-nowrap">{getPaymentEndDate(order.paymentPlan)}</td>
                 </tr>
               ))
             )}

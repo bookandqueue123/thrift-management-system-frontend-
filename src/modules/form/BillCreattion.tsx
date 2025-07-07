@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, ChangeEvent } from 'react';
-import { Plus, Trash2, Calendar, User, Users, FileText, DollarSign, ChevronRight, ChevronLeft, Upload } from 'lucide-react';
+import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
+import { Plus, Trash2, Calendar, User, Users, FileText, DollarSign, ChevronRight, ChevronLeft, Upload, Search, X } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/api/hooks/useAuth';
 import { nanoid } from 'nanoid';
@@ -47,7 +47,15 @@ interface BillDetails {
 
 interface Category {
   id: string;
+  _id?: string;
   name: string;
+}
+
+interface Customer {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
 }
 
 const generatePromoCode = () => nanoid(8).toUpperCase();
@@ -62,6 +70,13 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
   const [modalContent, setModalContent] = useState("form");
   const [mutationResponse, setMutationResponse] = useState("");
   const [closeModal, setCloseModal] = useState(true);
+
+  // Customer search and selection state
+  const [customerSearchTerm, setCustomerSearchTerm] = useState("");
+  const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const [selectedCustomers, setSelectedCustomers] = useState<Customer[]>([]);
+  const customerSearchRef = useRef<HTMLDivElement>(null);
 
   // Bill Details
   const [billDetails, setBillDetails] = useState<BillDetails>({
@@ -115,6 +130,129 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
   },
 });
 
+// Fetch groups for the customer group dropdown
+const { data: groupsData, isLoading: isGroupsLoading } = useQuery({
+  queryKey: ['groups'],
+  queryFn: async () => {
+    const res = await client.get('/api/groups');
+    return res.data.data;
+  },
+});
+
+  // Fetch customer organization data
+const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } = useQuery({
+  queryKey: ["organisation"],
+  queryFn: async () => {
+    return client
+      .get(
+        `/api/user?role=customer&organisation=${organizationId}&userType=individual`,
+        {},
+      )
+      .then((response) => {
+        console.log('Customer data loaded:', response.data);
+        return response.data;
+      })
+      .catch((error: any) => {
+        console.error('Error loading customers:', error);
+        throw error;
+      });
+  },
+  staleTime: 5000,
+});
+
+  // Click outside handler for customer dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (customerSearchRef.current && !customerSearchRef.current.contains(event.target as Node)) {
+        setShowCustomerDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Customer search functionality
+  const handleCustomerSearch = (searchTerm: string) => {
+    setCustomerSearchTerm(searchTerm);
+    
+    if (!customerOrganisation || !searchTerm.trim()) {
+      setFilteredCustomers([]);
+      setShowCustomerDropdown(false);
+      return;
+    }
+
+    console.log('Searching customers:', { searchTerm, customerOrganisation });
+
+    const filtered = customerOrganisation.filter((customer: Customer) => {
+      const fullName = `${customer.firstName} ${customer.lastName}`.toLowerCase();
+      const email = customer.email.toLowerCase();
+      const customerId = customer._id.toLowerCase();
+      const searchLower = searchTerm.toLowerCase();
+
+      const matches = (
+        fullName.includes(searchLower) ||
+        email.includes(searchLower) ||
+        customerId.includes(searchLower)
+      );
+
+      console.log('Customer match check:', { 
+        customer: `${customer.firstName} ${customer.lastName}`,
+        fullName,
+        email,
+        customerId,
+        searchLower,
+        matches
+      });
+
+      return matches;
+    });
+
+    console.log('Filtered customers:', filtered);
+    setFilteredCustomers(filtered);
+    setShowCustomerDropdown(filtered.length > 0);
+  };
+
+  // Handle customer selection
+  const handleCustomerSelect = (customer: Customer) => {
+    console.log('Customer selected:', customer);
+    
+    const isAlreadySelected = selectedCustomers.some(c => c._id === customer._id);
+    console.log('Is already selected:', isAlreadySelected);
+    
+    if (isAlreadySelected) {
+      setSelectedCustomers(prev => prev.filter(c => c._id !== customer._id));
+    } else {
+      setSelectedCustomers(prev => [...prev, customer]);
+    }
+    
+    // Update billDetails assignedCustomers
+    const customerIds = isAlreadySelected 
+      ? selectedCustomers.filter(c => c._id !== customer._id).map(c => c._id)
+      : [...selectedCustomers, customer].map(c => c._id);
+    
+    console.log('Updated customer IDs:', customerIds);
+    
+    setBillDetails(prev => ({
+      ...prev,
+      assignedCustomers: customerIds
+    }));
+    
+    setCustomerSearchTerm("");
+    setShowCustomerDropdown(false);
+  };
+
+  // Remove selected customer
+  const removeSelectedCustomer = (customerId: string) => {
+    setSelectedCustomers(prev => prev.filter(c => c._id !== customerId));
+    setBillDetails(prev => ({
+      ...prev,
+      assignedCustomers: prev.assignedCustomers.filter(id => id !== customerId)
+    }));
+  };
+
   // React Query mutation
   const { mutate: createBill, isPending: isCreatingBill } = useMutation({
     mutationFn: async (values: any) => {
@@ -124,8 +262,8 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
       formData.append("billName", values.name);
       formData.append("billCode", values.code);
       formData.append("organisation", organizationId);
-      formData.append("assignToCustomer", "");
-       formData.append("assignToCustomerGroup", "");  
+      formData.append("assignToCustomer", billDetails.customerId);
+      formData.append("assignToCustomerGroup", billDetails.customerGroupId);  
       formData.append("startDate", values.startDate);
       formData.append("startTime", values.startTime);
       formData.append("endDate", values.endDate);
@@ -159,7 +297,13 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
 
       // Bill Items - send as JSON string
       const billItemsData = billItems.map(({ id, category, mandatory, ...rest }) => {
-        const selectedCategory = categoriesData?.find(cat => cat.id === category);
+        console.log('Processing bill item:', { category, categoriesData });
+        const selectedCategory = categoriesData?.find(cat => cat.id === category || cat._id === category);
+        console.log('Category lookup result:', { 
+          category, 
+          categoriesData: categoriesData?.map(c => ({ id: c.id, _id: c._id, name: c.name })),
+          selectedCategory: selectedCategory ? { id: selectedCategory.id, _id: selectedCategory._id, name: selectedCategory.name } : null
+        });
         return {
           billName: rest.purposeName,
           category, // ID
@@ -372,26 +516,109 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
                   />
                 </div>
 
-                {/* <div>
+                <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                     <User size={16} />
-                    Assign to Customer
+                    Assign to Customers (Multiple Selection)
                   </label>
-                  <select
-                    value={billDetails.customerId}
-                    onChange={(e) => handleBillDetailsChange('customerId', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="">Select customer</option>
-                    {customersData?.map(customer => (
-                      <option key={customer.id} value={customer.id}>
-                        {customer.name}
-                      </option>
-                    ))}
-                  </select>
-                </div> */}
+                  <div className="relative" ref={customerSearchRef}>
+                    <div
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg cursor-pointer bg-white"
+                      onClick={() => setShowCustomerDropdown((prev) => !prev)}
+                    >
+                      {selectedCustomers.length === 0
+                        ? "Select customers..."
+                        : selectedCustomers.map((c) => `${c.firstName} ${c.lastName}`).join(", ")}
+                    </div>
+                    {showCustomerDropdown && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        <div className="sticky top-0 bg-white z-10 p-2 border-b border-gray-200">
+                          <input
+                            type="text"
+                            value={customerSearchTerm}
+                            onChange={e => setCustomerSearchTerm(e.target.value)}
+                            placeholder="Search customers..."
+                            className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            autoFocus
+                          />
+                        </div>
+                        {customerOrganisation?.length > 0 ? (
+                          customerOrganisation
+                            .filter((customer: Customer) => {
+                              if (!customerSearchTerm.trim()) return true;
+                              const fullName = `${customer.firstName} ${customer.lastName}`.toLowerCase();
+                              const email = customer.email.toLowerCase();
+                              const customerId = customer._id.toLowerCase();
+                              const searchLower = customerSearchTerm.toLowerCase();
+                              return (
+                                fullName.includes(searchLower) ||
+                                email.includes(searchLower) ||
+                                customerId.includes(searchLower)
+                              );
+                            })
+                            .map((customer: Customer) => {
+                              const isSelected = selectedCustomers.some((c) => c._id === customer._id);
+                              return (
+                                <div
+                                  key={customer._id}
+                                  onClick={() => handleCustomerSelect(customer)}
+                                  className={`px-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${
+                                    isSelected ? "bg-blue-50" : ""
+                                  }`}
+                                >
+                                  <div className="font-medium text-gray-900">
+                                    {customer.firstName} {customer.lastName}
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    ID: {customer._id} | Email: {customer.email}
+                                  </div>
+                                  {isSelected && <span className="text-blue-600 ml-2">✓ Selected</span>}
+                                </div>
+                              );
+                            })
+                        ) : (
+                          <div className="px-4 py-3 text-gray-500 text-center">
+                            {isLoadingCustomerOrganisation ? 'Loading customers...' : 'No customers available'}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {/* Selected Customers Display */}
+                  {selectedCustomers.length > 0 && (
+                    <div className="space-y-2 mt-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Selected Customers ({selectedCustomers.length}):
+                      </label>
+                      <div className="space-y-2">
+                        {selectedCustomers.map((customer) => (
+                          <div
+                            key={customer._id}
+                            className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg"
+                          >
+                            <div>
+                              <div className="font-medium text-gray-900">
+                                {customer.firstName} {customer.lastName}
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                ID: {customer._id} | Email: {customer.email}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeSelectedCustomer(customer._id)}
+                              className="text-red-600 hover:text-red-800 p-1"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-                {/* <div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                     <Users size={16} />
                     Assign to Customer Group
@@ -402,13 +629,13 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">Select customer group</option>
-                    {customerGroupsData?.map(group => (
-                      <option key={group.id} value={group.id}>
+                    {groupsData?.map((group: any) => (
+                      <option key={group._id} value={group._id}>
                         {group.name}
                       </option>
                     ))}
                   </select>
-                </div> */}
+                </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
@@ -825,4 +1052,4 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
   );
 };
 
-export default BillCreationForm;
+export default BillCreationForm; 
