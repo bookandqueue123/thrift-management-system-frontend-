@@ -38,8 +38,16 @@ interface SidebarProps {
   onClose: () => void;
   selectedCategories: string[];
   selectedSubcategories: string[];
+  selectedBrands: string[];
   onCategoryChange: (category: string) => void;
   onSubcategoryChange: (subcategory: string) => void;
+  onBrandChange: (brandId: string) => void;
+  categoriesData: any[];
+  isLoadingCategories: boolean;
+  brandsData: any[];
+  isLoadingBrands: boolean;
+  tagsData: any[];
+  isLoadingTags: boolean;
 }
 
 interface ProductCardProps {
@@ -57,49 +65,22 @@ const Header: React.FC = () => {
 };
 
 // Sidebar Component
-const Sidebar: React.FC<SidebarProps> = ({ 
-  isOpen, 
-  onClose, 
-  selectedCategories, 
-  selectedSubcategories, 
-  onCategoryChange, 
-  onSubcategoryChange 
+const Sidebar: React.FC<SidebarProps> = ({
+  isOpen,
+  onClose,
+  selectedCategories,
+  selectedSubcategories,
+  selectedBrands,
+  onCategoryChange,
+  onSubcategoryChange,
+  onBrandChange,
+  categoriesData,
+  isLoadingCategories,
+  brandsData,
+  isLoadingBrands,
+  tagsData,
+  isLoadingTags,
 }) => {
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
-    'Electronic Devices': true
-  });
-
-  const categories: Category[] = [
-    { name: 'Electronic Devices', subcategories: [
-      'COMPUTER & LAPTOP',
-      'COMPUTER ACCESSORIES', 
-      'SMARTPHONE',
-      'HEADPHONE',
-      'MOBILE ACCESSORIES',
-      'GAMING CONSOLE',
-      'CAMERA & PHOTO',
-      'TV & HOMES APPLIANCES',
-      'WATCHES & ACCESSORIES',
-      'GPS & NAVIGATION',
-      'WARABLE TECHNOLOGY',
-      'TOZO T6 TRUE WIRELESS EARBUDS BLUETOOTH HEADPHONE'
-    ]},
-    { name: 'Home & Garden', subcategories: [
-      'FURNITURE',
-      'HOME DECOR',
-      'KITCHEN APPLIANCES',
-      'CLEANING SUPPLIES',
-      'GARDEN TOOLS'
-    ]},
-    { name: 'Fashion', subcategories: [
-      'CLOTHING',
-      'SHOES',
-      'ACCESSORIES',
-      'JEWELRY',
-      'BAGS'
-    ]}
-  ];
-
   const priceRanges: string[] = [
     'ALL PRICE',
     'UNDER $20',
@@ -110,38 +91,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     '$1,000 TO $10,000'
   ];
 
-  const brands: Brand[] = [
-    { name: 'APPLE', checked: true },
-    { name: 'GOOGLE', checked: true },
-    { name: 'MICROSOFT', checked: false },
-    { name: 'SAMSUNG', checked: false },
-    { name: 'DELL', checked: false },
-    { name: 'HP', checked: true },
-    { name: 'SYMPHONY', checked: false },
-    { name: 'XIAOMI', checked: false },
-    { name: 'SONY', checked: false },
-    { name: 'PANASONIC', checked: true },
-    { name: 'LG', checked: false },
-    { name: 'INTEL', checked: false },
-    { name: 'ONE PLUS', checked: false }
-  ];
-
-  const tags: string[] = [
-    'GAME', 'IPHONE', 'TV',
-    'ASUS LAPTOPS', 'MACBOOK',
-    'SSD', 'GRAPHICS CARD',
-    'POWER BANK', 'SMART TV',
-    'SPEAKER', 'TABLET',
-    'MICROWAVE', 'SAMSUNG'
-  ];
-
-  const toggleCategory = (categoryName: string): void => {
-    setExpandedCategories(prev => ({
-      ...prev,
-      [categoryName]: !prev[categoryName]
-    }));
-  };
-
   return (
     <>
       {/* Mobile Overlay */}
@@ -151,7 +100,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           onClick={onClose}
         />
       )}
-      
       {/* Sidebar */}
       <div className={`
         fixed lg:static inset-y-0 left-0 z-50
@@ -166,59 +114,32 @@ const Sidebar: React.FC<SidebarProps> = ({
             <X className="h-6 w-6" />
           </button>
         </div>
-
         <div className="p-4 space-y-6">
           {/* Categories */}
           <div>
             <h3 className="font-semibold text-gray-800 mb-3">CATEGORY</h3>
-            {categories.map((category) => (
-              <div key={category.name} className="mb-3">
-                 <div 
-                  className={`flex items-center justify-between px-3 py-2 rounded cursor-pointer transition-colors ${
-                    category.name === 'Electronic Devices' 
-                      ? 'bg-[#EAAB40] text-white' 
-                      : selectedCategories.includes(category.name) 
-                        ? 'bg-orange-400 text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                  onClick={() => toggleCategory(category.name)}
-                >
-                  <span className="text-sm font-medium">{category.name}</span>
-                  <ChevronDown className={`h-4 w-4 transform transition-transform ${
-                    expandedCategories[category.name] ? 'rotate-180' : ''
-                  }`} />
-                </div>
-           
-                <label className="flex items-center mt-2 px-3 cursor-pointer">
-                  <input 
-                    type="checkbox"
-                    checked={selectedCategories.includes(category.name)}
-                    onChange={() => onCategoryChange(category.name)}
-                    className="mr-2 rounded"
-                  />
-                  <span className="text-sm text-gray-600">Select entire category</span>
-                </label>
-
-                {expandedCategories[category.name] && (
-                  <div className="mt-2 space-y-1">
-                    {category.subcategories.map((sub) => (
-                      <label key={sub} className="flex items-center px-3 cursor-pointer">
-                        <input 
-                          type="checkbox"
-                          checked={selectedSubcategories.includes(sub)}
-                          onChange={() => onSubcategoryChange(sub)}
-                          className="mr-2 rounded"
-                        />
-                        <span className="text-sm text-gray-600">{sub}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
+            {isLoadingCategories ? (
+              <div>Loading categories...</div>
+            ) : categoriesData?.map((category: any, idx: number) => (
+              <label
+                key={category._id}
+                className={`flex items-center px-3 py-2 rounded cursor-pointer mb-1 transition-colors ${
+                  idx === 0
+                    ? 'bg-[#EAAB40] text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedCategories.includes(category._id)}
+                  onChange={() => onCategoryChange(category._id)}
+                  className="mr-2 rounded"
+                />
+                <span className="text-sm font-medium">{category.name}</span>
+              </label>
             ))}
           </div>
-
-          {/* Price Range */}
+          {/* Price Range (unchanged, hardcoded) */}
           <div>
             <h3 className="font-semibold text-gray-800 mb-3">PRICE RANGE</h3>
             <div className="space-y-2">
@@ -234,34 +155,35 @@ const Sidebar: React.FC<SidebarProps> = ({
               ))}
             </div>
           </div>
-
           {/* Brands */}
           <div>
             <h3 className="font-semibold text-gray-800 mb-3">BRANDS</h3>
-            <div className="space-y-2">
-              {brands.map((brand) => (
-                <label key={brand.name} className="flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox"
-                    checked={brand.checked}
-                    className="mr-2 rounded"
-                  />
-                  <span className="text-sm text-gray-600">{brand.name}</span>
-                </label>
-              ))}
-            </div>
+            {isLoadingBrands ? (
+              <div>Loading brands...</div>
+            ) : brandsData?.map((brand: any) => (
+              <label key={brand._id} className="flex items-center px-3 py-2 cursor-pointer mb-1">
+                <input
+                  type="checkbox"
+                  checked={selectedBrands.includes(brand._id)}
+                  onChange={() => onBrandChange(brand._id)}
+                  className="mr-2 rounded"
+                />
+                <span className="text-sm text-gray-600">{brand.name}</span>
+              </label>
+            ))}
           </div>
-
           {/* Tags */}
           <div>
             <h3 className="font-semibold text-gray-800 mb-3">TAGS</h3>
             <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <span 
-                  key={tag}
+              {isLoadingTags ? (
+                <div>Loading tags...</div>
+              ) : tagsData?.map((tag: any) => (
+                <span
+                  key={tag._id}
                   className="px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full cursor-pointer hover:bg-gray-200"
                 >
-                  {tag}
+                  {tag.name}
                 </span>
               ))}
             </div>
@@ -367,6 +289,7 @@ const MarketplaceInterface: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Fetch products from API
@@ -375,6 +298,29 @@ const MarketplaceInterface: React.FC = () => {
     queryFn: async () => {
       const res = await client.get('/api/products');
       return res.data;
+    },
+  });
+
+  // Fetch categories, brands, tags from API
+  const { data: categoriesData = [], isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['product-categories'],
+    queryFn: async () => {
+      const res = await client.get('/api/products-categories');
+      return res.data.data;
+    },
+  });
+  const { data: brandsData = [], isLoading: isLoadingBrands } = useQuery({
+    queryKey: ['brands'],
+    queryFn: async () => {
+      const res = await client.get('/api/brands');
+      return res.data.data;
+    },
+  });
+  const { data: tagsData = [], isLoading: isLoadingTags } = useQuery({
+    queryKey: ['tags'],
+    queryFn: async () => {
+      const res = await client.get('/api/tags');
+      return res.data.data;
     },
   });
 
@@ -407,8 +353,15 @@ const MarketplaceInterface: React.FC = () => {
       );
     }
 
+    // Brand filter
+    if (selectedBrands.length > 0) {
+      filtered = filtered.filter(product =>
+        selectedBrands.includes(product.brand)
+      );
+    }
+
     return filtered;
-  }, [products, searchQuery, selectedCategories, selectedSubcategories]);
+  }, [products, searchQuery, selectedCategories, selectedSubcategories, selectedBrands]);
 
   // Pagination
   const productsPerPage = 12;
@@ -435,18 +388,30 @@ const MarketplaceInterface: React.FC = () => {
     setCurrentPage(1);
   };
 
+  const handleBrandChange = (brandId: string) => {
+    setSelectedBrands(prev =>
+      prev.includes(brandId)
+        ? prev.filter(b => b !== brandId)
+        : [...prev, brandId]
+    );
+    setCurrentPage(1);
+  };
+
   const clearAllFilters = () => {
     setSelectedCategories([]);
     setSelectedSubcategories([]);
+    setSelectedBrands([]);
     setSearchQuery('');
     setCurrentPage(1);
   };
 
-  const removeFilter = (type: 'category' | 'subcategory', value: string) => {
+  const removeFilter = (type: 'category' | 'subcategory' | 'brand', value: string) => {
     if (type === 'category') {
       setSelectedCategories(prev => prev.filter(c => c !== value));
-    } else {
+    } else if (type === 'subcategory') {
       setSelectedSubcategories(prev => prev.filter(s => s !== value));
+    } else {
+      setSelectedBrands(prev => prev.filter(b => b !== value));
     }
     setCurrentPage(1);
   };
@@ -488,8 +453,16 @@ const MarketplaceInterface: React.FC = () => {
           onClose={() => setSidebarOpen(false)}
           selectedCategories={selectedCategories}
           selectedSubcategories={selectedSubcategories}
+          selectedBrands={selectedBrands}
           onCategoryChange={handleCategoryChange}
           onSubcategoryChange={handleSubcategoryChange}
+          onBrandChange={handleBrandChange}
+          categoriesData={categoriesData}
+          isLoadingCategories={isLoadingCategories}
+          brandsData={brandsData}
+          isLoadingBrands={isLoadingBrands}
+          tagsData={tagsData}
+          isLoadingTags={isLoadingTags}
         />
 
         {/* Main Content */}
@@ -518,7 +491,7 @@ const MarketplaceInterface: React.FC = () => {
             </button>
 
             {/* Clear Filters Button */}
-            {(selectedCategories.length > 0 || selectedSubcategories.length > 0 || searchQuery) && (
+            {(selectedCategories.length > 0 || selectedSubcategories.length > 0 || selectedBrands.length > 0 || searchQuery) && (
               <button
                 onClick={clearAllFilters}
                 className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
@@ -529,36 +502,66 @@ const MarketplaceInterface: React.FC = () => {
           </div>
 
           {/* Active Filters */}
-          {(selectedCategories.length > 0 || selectedSubcategories.length > 0) && (
+          {(selectedCategories.length > 0 || selectedSubcategories.length > 0 || selectedBrands.length > 0) && (
             <div className="flex flex-wrap gap-2 mb-6">
-              {selectedCategories.map(category => (
-                <span
-                  key={category}
-                  className="flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-800 text-sm rounded-full"
-                >
-                  {category}
-                  <button
-                    onClick={() => removeFilter('category', category)}
-                    className="ml-1 hover:text-orange-600"
+              {selectedCategories.map(categoryId => {
+                const cat = categoriesData.find((c: any) => c._id === categoryId);
+                return (
+                  <span
+                    key={categoryId}
+                    className="flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-800 text-sm rounded-full"
                   >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
-              {selectedSubcategories.map(subcategory => (
-                <span
-                  key={subcategory}
-                  className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
-                >
-                  {subcategory}
-                  <button
-                    onClick={() => removeFilter('subcategory', subcategory)}
-                    className="ml-1 hover:text-blue-600"
+                    {cat ? cat.name : categoryId}
+                    <button
+                      onClick={() => removeFilter('category', categoryId)}
+                      className="ml-1 hover:text-orange-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                );
+              })}
+              {selectedSubcategories.map(subId => {
+                let subName = subId;
+                for (const cat of categoriesData) {
+                  const found = cat.children?.find((sub: any) => sub._id === subId);
+                  if (found) {
+                    subName = found.name;
+                    break;
+                  }
+                }
+                return (
+                  <span
+                    key={subId}
+                    className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
                   >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
+                    {subName}
+                    <button
+                      onClick={() => removeFilter('subcategory', subId)}
+                      className="ml-1 hover:text-blue-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                );
+              })}
+              {selectedBrands.map(brandId => {
+                const brand = brandsData.find((b: any) => b._id === brandId);
+                return (
+                  <span
+                    key={brandId}
+                    className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full"
+                  >
+                    {brand ? brand.name : brandId}
+                    <button
+                      onClick={() => removeFilter('brand', brandId)}
+                      className="ml-1 hover:text-green-600"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                );
+              })}
             </div>
           )}
 

@@ -43,6 +43,7 @@ type ProductFormData = {
   price: string;
   category: string;
   brand: string;
+  tags?: string[];
   costBeforeDiscount?: string;
   discount?: string;
   sku?: string;
@@ -106,6 +107,7 @@ const Create = () => {
     price: '',
     category: '',
     brand: '',
+    tags: [],
   };
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
   const [imagePreviews, setImagePreviews] = useState<(string | undefined)[]>([undefined, undefined, undefined]);
@@ -133,28 +135,29 @@ const Create = () => {
     enabled: !!selectedProductId && (modalType === 'view' || modalType === 'edit'),
   });
   
-  //  const { data: brandsData, isLoading } = useQuery({
-  //     queryKey: ['brands'],
-  //     queryFn: async () => {
-  //       const res = await client.get('/api/brands', { params: { t: Date.now() } });
-  //       return res.data;
-  //     },
-  //   });
+  const { data: brandsData, isLoading: isLoadingBrands } = useQuery({
+    queryKey: ['brands'],
+    queryFn: async () => {
+      const res = await client.get('/api/brands', { params: { t: Date.now() } });
+      return res.data.data;
+    },
+  });
 
-  //    const { data: categoriesData, isLoading } = useQuery({
-  //       queryKey: ['product-categories'],
-  //       queryFn: async () => {
-  //         const res = await client.get('/api/products-categories');
-  //         return res.data;
-  //       },
-  //     });
-  //      const { data: tagsData, isLoading } = useQuery({
-  //         queryKey: ['tags'],
-  //         queryFn: async () => {
-  //           const res = await client.get('/api/tags');
-  //           return res.data;
-  //         },
-  //       });
+  const { data: categoriesData, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['product-categories'],
+    queryFn: async () => {
+      const res = await client.get('/api/products-categories');
+      return res.data.data;
+    },
+  });
+
+  const { data: tagsData, isLoading: isLoadingTags } = useQuery({
+    queryKey: ['tags'],
+    queryFn: async () => {
+      const res = await client.get('/api/tags');
+      return res.data.data;
+    },
+  });
 
   const createProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
@@ -184,6 +187,9 @@ const Create = () => {
       form.append('storageOutdoor', JSON.stringify(data.storageOutdoor || {}));
       form.append('storageRefrigerated', JSON.stringify(data.storageRefrigerated || {}));
       form.append('promo', JSON.stringify(data.promo || {}));
+      if (data.tags && data.tags.length > 0) {
+        form.append('tags', JSON.stringify(data.tags));
+      }
       if (data.firstProductImage) form.append('firstProductImage', data.firstProductImage);
       if (data.secondProductImage) form.append('secondProductImage', data.secondProductImage);
       if (data.thirdProductImage) form.append('thirdProductImage', data.thirdProductImage);
@@ -231,6 +237,9 @@ const Create = () => {
       form.append('storageOutdoor', JSON.stringify(data.storageOutdoor || {}));
       form.append('storageRefrigerated', JSON.stringify(data.storageRefrigerated || {}));
       form.append('promo', JSON.stringify(data.promo || {}));
+      if (data.tags && data.tags.length > 0) {
+        form.append('tags', JSON.stringify(data.tags));
+      }
       if (data.productImage) form.append('productImage', data.productImage);
       return client.put(`/api/products/${id}`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -370,6 +379,13 @@ const Create = () => {
       }));
       return;
     }
+    if (name === 'tags') {
+      // Handle multiple select for tags
+      const select = e.target as HTMLSelectElement;
+      const selectedOptions = Array.from(select.selectedOptions).map(option => option.value);
+      setFormData((prev) => ({ ...prev, tags: selectedOptions }));
+      return;
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -456,14 +472,27 @@ const Create = () => {
     if (type === 'edit' && products) {
       const productToEdit = products.find(p => p._id === id);
       if (productToEdit) {
+        // Find category ID by name
+        const categoryId = categoriesData?.find((cat: any) => cat.name === productToEdit.category)?._id || productToEdit.category;
+        
+        // Find brand ID by name
+        const brandId = brandsData?.find((brand: any) => brand.name === productToEdit.brand)?._id || productToEdit.brand;
+        
+        // Find tag IDs by names (assuming product has tags array)
+        const tagIds = (productToEdit as any).tags ? 
+          (productToEdit as any).tags.map((tagName: string) => {
+            const tag = tagsData?.find((t: any) => t.name === tagName);
+            return tag?._id || tagName;
+          }) : [];
+
         setFormData({
           name: productToEdit.name,
           description: productToEdit.description,
           price: String(productToEdit.price),
           costBeforeDiscount: String(productToEdit.costBeforeDiscount),
           discount: String(productToEdit.discount),
-          category: productToEdit.category,
-          brand: productToEdit.brand,
+          category: categoryId,
+          brand: brandId,
           sku: productToEdit.sku,
           size: String(productToEdit.size),
           memory: String(productToEdit.memory),
@@ -504,6 +533,24 @@ const Create = () => {
     setSelectedProductId(id);
     setModalType('delete-confirm');
     setShowViewEditModal(true);
+  };
+
+  const getCategoryName = (category: any) => {
+    if (!category) return 'N/A';
+    if (typeof category === 'object' && category !== null) {
+      return category.name || category._id || 'N/A';
+    }
+    const found = categoriesData?.find((cat: any) => cat._id === category);
+    return found?.name || category;
+  };
+
+  const getBrandName = (brand: any) => {
+    if (!brand) return 'N/A';
+    if (typeof brand === 'object' && brand !== null) {
+      return brand.name || brand._id || 'N/A';
+    }
+    const found = brandsData?.find((b: any) => b._id === brand);
+    return found?.name || brand;
   };
 
   return (
@@ -679,25 +726,39 @@ const Create = () => {
              
               <div>
                 <label className="block text-white">Category</label>
-                <input
-                  type="text"
+                <select
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
                   className="w-full rounded border px-3 py-2 text-black"
                   required
-                />
+                >
+                  <option value="">Select a category</option>
+                  {categoriesData?.map((category: any) => (
+                    <option key={category._id} value={category._id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                {isLoadingCategories && <span className="text-xs text-gray-400">Loading categories...</span>}
               </div>
               <div>
                 <label className="block text-white">Brand</label>
-                <input
-                  type="text"
+                <select
                   name="brand"
                   value={formData.brand}
                   onChange={handleInputChange}
                   className="w-full rounded border px-3 py-2 text-black"
                   required
-                />
+                >
+                  <option value="">Select a brand</option>
+                  {brandsData?.map((brand: any) => (
+                    <option key={brand._id} value={brand._id}>
+                      {brand.name}
+                    </option>
+                  ))}
+                </select>
+                {isLoadingBrands && <span className="text-xs text-gray-400">Loading brands...</span>}
               </div>
               <div>
                 <label className="block text-white">Stock</label>
@@ -711,7 +772,7 @@ const Create = () => {
                 />
               </div>
              
-              <div>
+              {/* <div>
                 <label className="block text-white">SKU (optional)</label>
                 <input
                   type="text"
@@ -720,7 +781,7 @@ const Create = () => {
                   onChange={handleInputChange}
                   className="w-full rounded border px-3 py-2 text-black"
                 />
-              </div>
+              </div> */}
               
               <div>
                 <label className="block text-white">Size (optional)</label>
@@ -964,11 +1025,15 @@ const Create = () => {
               </div>
               <div>
                 <label className="block text-white">Category</label>
-                <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">{singleProduct.category}</div>
+                <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">
+                  {getCategoryName(singleProduct.category)}
+                </div>
               </div>
               <div>
                 <label className="block text-white">Brand</label>
-                <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">{singleProduct.brand}</div>
+                <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">
+                  {getBrandName(singleProduct.brand)}
+                </div>
               </div>
               <div>
                 <label className="block text-white">Stock</label>
@@ -991,7 +1056,6 @@ const Create = () => {
         {showViewEditModal && modalType === 'edit' && singleProduct && (
           <Modal title="Edit Product" setModalState={setShowViewEditModal}>
             <form onSubmit={handleEditSubmit} className="space-y-4 p-6 border border-gray-700 rounded-lg">
-              {/* Reuse the create form fields, but bind to formData and handleInputChange */}
               <div>
                 <label className="block text-white">Name</label>
                 <input
@@ -1044,7 +1108,42 @@ const Create = () => {
                   className="w-full rounded border px-3 py-2 text-black bg-gray-200 cursor-not-allowed"
                 />
               </div>
-              {/* Add other fields as in the create form, or refactor to reuse the form */}
+              <div>
+                <label className="block text-white">Category</label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                  required
+                >
+                  <option value="">Select a category</option>
+                  {categoriesData?.map((category: any) => (
+                    <option key={category._id} value={category._id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                {isLoadingCategories && <span className="text-xs text-gray-400">Loading categories...</span>}
+              </div>
+              <div>
+                <label className="block text-white">Brand</label>
+                <select
+                  name="brand"
+                  value={formData.brand}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                  required
+                >
+                  <option value="">Select a brand</option>
+                  {brandsData?.map((brand: any) => (
+                    <option key={brand._id} value={brand._id}>
+                      {brand.name}
+                    </option>
+                  ))}
+                </select>
+                {isLoadingBrands && <span className="text-xs text-gray-400">Loading brands...</span>}
+              </div>
               <div>
                 <label className="block text-white">Product Image (optional)</label>
                 {imagePreview && (
@@ -1115,8 +1214,8 @@ const Create = () => {
                     <td className="px-6 py-4 whitespace-nowrap">{product.sku}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{product.size}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{product.memory}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{product.brand}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{getCategoryName(product.category)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{getBrandName(product.brand)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{product.stock} items left</td>
                     <td className="px-6 py-4 whitespace-nowrap">{(product as any).repaymentPeriodInMonths || '-'}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{(product as any).interestRatePercentage || '-'}</td>

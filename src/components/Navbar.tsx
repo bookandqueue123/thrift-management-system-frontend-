@@ -1012,8 +1012,6 @@ export const Sidebar = ({
 };
 
 
-
-
 export const SuperAdminSidebar = ({
   onShow,
   setShow,
@@ -1031,6 +1029,7 @@ export const SuperAdminSidebar = ({
   const [pickupStationDropdownIsOpen, setPickupStationDropdownIsOpen] = useState(false);
   const [productCategoryDropdownIsOpen, setProductCategoryDropdownIsOpen] = useState(false);
   const [customerBillDropdownIsOpen, setCustomerBillDropdownIsOpen] = useState(false);
+  const [customerGroupDropdownIsOpen, setCustomerGroupDropdownIsOpen] = useState(false);
 
   const toggleSidebar = () => (onShow ? 'visible' : 'invisible');
   const toggleLeftPadding = () => onShow && 'pl-4 md:pl-12';
@@ -1112,6 +1111,7 @@ export const SuperAdminSidebar = ({
               'pick-up-station',
               'product-category',
               'customer-bill',
+              'customer-group',
               'settings',
               'sign out',
             ].map((label) => (
@@ -1170,6 +1170,16 @@ export const SuperAdminSidebar = ({
                   >
                     customer bill
                   </Link>
+                ) : label === 'customer-group' ? (
+                  <Link
+                    href="/superadmin/customer-group"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCustomerGroupDropdownIsOpen(!customerGroupDropdownIsOpen);
+                    }}
+                  >
+                    customer group
+                  </Link>
                 ) : label === 'subscription-report' ? (
                   <Link
                     href=""
@@ -1191,7 +1201,7 @@ export const SuperAdminSidebar = ({
                 )}
 
                 {/* Dropdown toggles */}
-                {['subscription-report', 'settings', 'item/purpose', 'pick-up-station', 'product-category', 'customer-bill'].includes(label) && (
+                {['subscription-report', 'settings', 'item/purpose', 'pick-up-station', 'product-category', 'customer-bill', 'customer-group'].includes(label) && (
                   <Image src="/arrow_down.svg" alt="arrow down" width={8} height={6} />
                 )}
 
@@ -1251,6 +1261,20 @@ export const SuperAdminSidebar = ({
                   </div>
                 )}
 
+                {label === 'customer-group' && customerGroupDropdownIsOpen && (
+                  <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+                    {/* <Link href="/superadmin/customer-group" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
+                      All Customer Groups
+                    </Link> */}
+                    <Link href="/superadmin/customer-group" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
+                      Create Customer Group
+                    </Link>
+                    {/* <Link href="/superadmin/customer-group/manage" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
+                      Manage Groups
+                    </Link> */}
+                  </div>
+                )}
+
                 {label === 'subscription-report' && subscriptionDropdownIsOpen && (
                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
                     <Link href="/superadmin/subscription-report/merchant" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
@@ -1289,7 +1313,6 @@ export const SuperAdminSidebar = ({
   );
 };
 
-
 // export const SuperAdminSidebar = ({
 //   onShow,
 //   setShow,
@@ -1306,6 +1329,7 @@ export const SuperAdminSidebar = ({
 //   const [subscriptionDropdownIsOpen, setSubscriptionDropdownIsOpen] = useState(false);
 //   const [pickupStationDropdownIsOpen, setPickupStationDropdownIsOpen] = useState(false);
 //   const [productCategoryDropdownIsOpen, setProductCategoryDropdownIsOpen] = useState(false);
+//   const [customerBillDropdownIsOpen, setCustomerBillDropdownIsOpen] = useState(false);
 
 //   const toggleSidebar = () => (onShow ? 'visible' : 'invisible');
 //   const toggleLeftPadding = () => onShow && 'pl-4 md:pl-12';
@@ -1373,6 +1397,8 @@ export const SuperAdminSidebar = ({
 //                   ? 'Account Statement'
 //                   : route === 'superadminfee'
 //                   ? 'Superadmin Fee'
+//                   : route === 'customer-bill'
+//                   ? 'Customer Bill'
 //                   : route}
 //               </Link>
 //             ))}
@@ -1384,6 +1410,7 @@ export const SuperAdminSidebar = ({
 //               'item/purpose',
 //               'pick-up-station',
 //               'product-category',
+//               'customer-bill',
 //               'settings',
 //               'sign out',
 //             ].map((label) => (
@@ -1432,6 +1459,16 @@ export const SuperAdminSidebar = ({
 //                   >
 //                     {label}
 //                   </Link>
+//                 ) : label === 'customer-bill' ? (
+//                   <Link
+//                     href="/superadmin/customer-bill"
+//                     onClick={(e) => {
+//                       e.preventDefault();
+//                       setCustomerBillDropdownIsOpen(!customerBillDropdownIsOpen);
+//                     }}
+//                   >
+//                     customer bill
+//                   </Link>
 //                 ) : label === 'subscription-report' ? (
 //                   <Link
 //                     href=""
@@ -1453,7 +1490,7 @@ export const SuperAdminSidebar = ({
 //                 )}
 
 //                 {/* Dropdown toggles */}
-//                 {['subscription-report', 'settings', 'item/purpose', 'pick-up-station', 'product-category'].includes(label) && (
+//                 {['subscription-report', 'settings', 'item/purpose', 'pick-up-station', 'product-category', 'customer-bill'].includes(label) && (
 //                   <Image src="/arrow_down.svg" alt="arrow down" width={8} height={6} />
 //                 )}
 
@@ -1505,6 +1542,14 @@ export const SuperAdminSidebar = ({
 //                   </div>
 //                 )}
 
+//                 {label === 'customer-bill' && customerBillDropdownIsOpen && (
+//                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+//                     <Link href="/superadmin/customer-bill" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
+//                       Create User Bill
+//                     </Link>
+//                   </div>
+//                 )}
+
 //                 {label === 'subscription-report' && subscriptionDropdownIsOpen && (
 //                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
 //                     <Link href="/superadmin/subscription-report/merchant" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
@@ -1542,3 +1587,4 @@ export const SuperAdminSidebar = ({
 //     </aside>
 //   );
 // };
+
