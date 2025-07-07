@@ -593,51 +593,7 @@ const MutateUser = ({
           <label className="m-0 w-[16%] text-xs font-medium text-white">
             Organisation Type:{" "}
           </label>
-          <div>
-            {/* <input
-              type="radio"
-              name="organisationType"
-              value="groupOfOrganisation"
-              onChange={handleInputChange}
-              checked={formValues.organisationType === "groupOfOrganisation"}
-              className="border-1 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
-            /> */}
-            {/* <label
-              htmlFor="groupOfOrganisation"
-              className="ml-2 cursor-pointer whitespace-nowrap text-sm font-medium capitalize text-ajo_offWhite"
-            >
-              Group of Organisation
-            </label>
-            <input
-              type="radio"
-              name="organisationType"
-              value="anOrganisation"
-              onChange={handleInputChange}
-              checked={formValues.organisationType === "anOrganisation"}
-              className="border-1 ml-4 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
-            /> */}
-            {/* <label
-              className="ml-2 cursor-pointer whitespace-nowrap text-sm font-medium capitalize text-ajo_offWhite"
-              htmlFor="anOrganisation"
-            >
-              An Organisation
-            </label> */}
-
-            {/* <input
-              type="radio"
-              name="organisationType"
-              value="all"
-              onChange={handleInputChange}
-              checked={formValues.organisationType === "all"}
-              className="border-1 ml-4 h-4 w-4 cursor-pointer border-ajo_offWhite bg-transparent"
-            />
-            <label
-              className="ml-2 cursor-pointer whitespace-nowrap text-sm font-medium capitalize text-ajo_offWhite"
-              htmlFor="all"
-            >
-              All
-            </label> */}
-          </div>
+          <div></div>
           {/* {errors.organisationType && (
             <div className="text-red-500">{errors.organisationType}</div>
           )} */}
