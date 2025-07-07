@@ -15,13 +15,20 @@ import { useSelector } from "react-redux";
 
 const PlatformChargeManager = () => {
   const token = useSelector(selectToken);
-  const [platformCharge, setPlatformCharge] = useState(null);
+  interface PlatformCharge {
+    percentage: number;
+    createdAt: string;
+    updatedAt: string;
+  }
+  const [platformCharge, setPlatformCharge] = useState<PlatformCharge | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [modalMode, setModalMode] = useState("create"); // 'create' or 'edit'
   const [formData, setFormData] = useState({ percentage: "" });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<{ percentage?: string }>({});
   const [notification, setNotification] = useState({
     show: false,
     message: "",
@@ -36,7 +43,7 @@ const PlatformChargeManager = () => {
   const fetchPlatformCharge = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${apiUrl}api/superadmin/platform-charge`, {
+      const response = await fetch(`${apiUrl}api/platform-charge`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -59,7 +66,7 @@ const PlatformChargeManager = () => {
   };
 
   const validateForm = () => {
-    const newErrors = {};
+    const newErrors: { percentage?: string } = {};
     const percentage = parseFloat(formData.percentage);
 
     if (!formData.percentage) {
@@ -74,7 +81,7 @@ const PlatformChargeManager = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
 
     if (!validateForm()) return;
@@ -83,8 +90,8 @@ const PlatformChargeManager = () => {
     try {
       const url =
         modalMode === "create"
-          ? `${apiUrl}api/superadmin/platform-charge`
-          : `${apiUrl}api/superadmin/platform-charge`;
+          ? `${apiUrl}api/platform-charge`
+          : `${apiUrl}api/platform-charge`;
 
       const method = modalMode === "create" ? "POST" : "PUT";
 
@@ -113,7 +120,10 @@ const PlatformChargeManager = () => {
         throw new Error(errorData.message || "Operation failed");
       }
     } catch (error) {
-      showNotification(error.message, "error");
+      showNotification(
+        error instanceof Error ? error.message : String(error),
+        "error",
+      );
     } finally {
       setLoading(false);
     }
@@ -122,7 +132,7 @@ const PlatformChargeManager = () => {
   const handleDelete = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${apiUrl}api/superadmin/platform-charge`, {
+      const response = await fetch(`${apiUrl}api/platform-charge`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -139,13 +149,32 @@ const PlatformChargeManager = () => {
         throw new Error(errorData.message || "Delete failed");
       }
     } catch (error) {
-      showNotification(error.message, "error");
+      showNotification(
+        error instanceof Error ? error.message : String(error),
+        "error",
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const openModal = (mode) => {
+  interface PlatformCharge {
+    percentage: number;
+    createdAt: string;
+    updatedAt: string;
+  }
+
+  type ModalMode = "create" | "edit";
+
+  interface FormData {
+    percentage: string;
+  }
+
+  interface Errors {
+    percentage?: string;
+  }
+
+  const openModal = (mode: ModalMode) => {
     setModalMode(mode);
     if (mode === "edit" && platformCharge) {
       setFormData({ percentage: platformCharge.percentage.toString() });
@@ -162,21 +191,29 @@ const PlatformChargeManager = () => {
     setErrors({});
   };
 
-  const showNotification = (message, type) => {
+  interface Notification {
+    show: boolean;
+    message: string;
+    type: "success" | "error" | string;
+  }
+
+  const showNotification = (message: string, type: Notification["type"]) => {
     setNotification({ show: true, message, type });
     setTimeout(() => {
       setNotification({ show: false, message: "", type: "" });
     }, 3000);
   };
 
-  const formatDate = (dateString) => {
+  interface FormatDateOptions extends Intl.DateTimeFormatOptions {}
+
+  const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    });
+    } as FormatDateOptions);
   };
 
   return (

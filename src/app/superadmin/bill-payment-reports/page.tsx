@@ -37,11 +37,14 @@ interface BillPayment {
     name: string;
     email: string;
     phone: string;
+    accountNumber: string;
   };
   organisationId: {
     _id: string;
     name: string;
     email: string;
+    organisationName: string;
+    accountNumber: string;
   };
   paymentStatus: "pending" | "completed" | "failed" | "cancelled";
   paymentMethod: string;
@@ -394,10 +397,13 @@ const OrganizationBillPayments: React.FC = () => {
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
+                    {" "}
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Organisation
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Customer
                     </th>
-
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Bill Name
                     </th>
@@ -407,7 +413,6 @@ const OrganizationBillPayments: React.FC = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Bill end date
                     </th>
-
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Bill item 1
                     </th>
@@ -420,11 +425,9 @@ const OrganizationBillPayments: React.FC = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Mode of Payment
                     </th>
-
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Transaction Reference
                     </th>
-
                     <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Amount
                     </th>
@@ -442,6 +445,17 @@ const OrganizationBillPayments: React.FC = () => {
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {payments.map((payment) => (
                     <tr key={payment._id} className="hover:bg-gray-50">
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {payment.organisationId?.organisationName}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {payment.organisationId.accountNumber || "N/A"}
+                          </div>
+                        </div>
+                      </td>
+
                       <td className="whitespace-nowrap px-6 py-4">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
@@ -449,10 +463,11 @@ const OrganizationBillPayments: React.FC = () => {
                             {payment.customerId.lastName}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {payment.customerId.email}
+                            {payment.customerId.accountNumber || "N/A"}
                           </div>
                         </div>
                       </td>
+
                       <td className="whitespace-nowrap px-6 py-4">
                         <div className="flex items-center">
                           <div className="">

@@ -224,48 +224,48 @@ const BillPaymentsTable = () => {
         <div className="overflow-hidden rounded-lg bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className=" bg-gray-50 ">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="text-md border border-gray-300 px-6 py-3 text-left font-bold uppercase tracking-wider text-black">
                     Bill Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="text-md border border-gray-300 px-6 py-3 text-left font-bold uppercase tracking-wider text-black">
                     Bill start date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="text-md border border-gray-300 px-6 py-3 text-left font-bold uppercase tracking-wider text-black">
                     Bill end date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="text-md border border-gray-300 px-6 py-3 text-left font-bold uppercase tracking-wider text-black">
                     Bill item 1
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="text-md border border-gray-300 px-6 py-3 text-left font-bold uppercase tracking-wider text-black">
                     Bill item 2
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="text-md border border-gray-300 px-6 py-3 text-left font-bold uppercase tracking-wider text-black">
                     Bill item 3
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="text-md border border-gray-300 px-6 py-3 text-left font-bold uppercase tracking-wider text-black">
                     Mode of Payment
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="text-md border border-gray-300 px-6 py-3 text-left font-bold uppercase tracking-wider text-black">
                     Transaction Reference
                   </th>
 
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="text-md border border-gray-300 px-6 py-3 text-left font-bold uppercase tracking-wider text-black">
                     Amount
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="text-md border border-gray-300 px-6 py-3 text-left font-bold uppercase tracking-wider text-black">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="text-md border border-gray-300 px-6 py-3 text-left font-bold uppercase tracking-wider text-black">
                     Date and time of payment
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
+              <tbody className=" divide-y divide-gray-200 bg-white">
                 {payments.map((payment) => (
                   <tr key={payment._id} className="hover:bg-gray-50">
-                    <td className="whitespace-nowrap px-6 py-4">
+                    <td className="whitespace-nowrap border border-gray-300 px-6 py-4">
                       <div className="flex items-center">
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
@@ -278,38 +278,38 @@ const BillPaymentsTable = () => {
                       </div>
                     </td>
 
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                    <td className="whitespace-nowrap border border-gray-300 px-6 py-4 text-sm text-gray-900">
                       <span className="font-medium">
                         {formatDate(payment.billId?.startDate)}
                       </span>
                     </td>
 
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                    <td className="whitespace-nowrap border  border-gray-300 px-6 py-4 text-sm text-gray-900">
                       <span className="font-medium">
                         {formatDate(payment.billId?.endDate)}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                    <td className="whitespace-nowrap border  border-gray-300 px-6 py-4 text-sm text-gray-900">
                       <span className="font-medium">
                         {payment.billItems[0]?.billName || "N/A"}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                    <td className="whitespace-nowrap border  border-gray-300 px-6 py-4 text-sm text-gray-900">
                       <span className="font-medium">
                         {payment.billItems[1]?.billName || "N/A"}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                    <td className="whitespace-nowrap border  border-gray-300 px-6 py-4 text-sm text-gray-900">
                       <span className="font-medium">
                         {payment.billItems[2]?.billName || "N/A"}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                    <td className="whitespace-nowrap border  border-gray-300 px-6 py-4 text-sm text-gray-900">
                       <span className="font-medium">
                         {payment.paymentMethod || "N/A"}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4">
+                    <td className="whitespace-nowrap border  border-gray-300 px-6 py-4">
                       <div className="flex flex-col">
                         <div className="text-sm font-medium text-gray-900">
                           {payment.paymentReference}
@@ -325,19 +325,19 @@ const BillPaymentsTable = () => {
                       </div>
                     </td>
 
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                    <td className="whitespace-nowrap border  border-gray-300 px-6 py-4 text-sm text-gray-900">
                       <span className="font-medium">
                         {formatCurrency(payment.totalAmountPaid)}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4">
+                    <td className="whitespace-nowrap border  border-gray-300 px-6 py-4">
                       <span
                         className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${statusColors[payment.paymentStatus as keyof typeof statusColors] || "bg-gray-100 text-gray-800"}`}
                       >
                         {payment.paymentStatus || "N/A"}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
+                    <td className="whitespace-nowrap border  border-gray-300 px-6 py-4 text-sm text-gray-900">
                       <div className="flex items-center">
                         <Calendar className="mr-1 h-4 w-4 text-gray-400" />
                         {formatDate(payment.paymentDate || payment.createdAt)}
