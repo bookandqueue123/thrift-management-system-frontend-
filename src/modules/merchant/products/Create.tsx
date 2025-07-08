@@ -406,13 +406,12 @@ const Create = () => {
       if (sanitizedData.tags && sanitizedData.tags.length > 0) {
         form.append("tags", JSON.stringify(sanitizedData.tags));
       }
+
       // For update, send all three images if present
-      if (sanitizedData.firstProductImage)
-        form.append("firstProductImage", sanitizedData.firstProductImage);
-      if (sanitizedData.secondProductImage)
-        form.append("secondProductImage", sanitizedData.secondProductImage);
-      if (sanitizedData.thirdProductImage)
-        form.append("thirdProductImage", sanitizedData.thirdProductImage);
+      if (sanitizedData.firstProductImage) form.append('firstProductImage', sanitizedData.firstProductImage);
+      if (sanitizedData.secondProductImage) form.append('secondProductImage', sanitizedData.secondProductImage);
+      if (sanitizedData.thirdProductImage) form.append('thirdProductImage', sanitizedData.thirdProductImage);
+
       return client.put(`/api/products/${id}`, form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -455,12 +454,9 @@ const Create = () => {
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value, files } = e.target as HTMLInputElement;
-    if (
-      (showCreateModal || showViewEditModal) &&
-      (name === "firstProductImage" ||
-        name === "secondProductImage" ||
-        name === "thirdProductImage")
-    ) {
+
+    if ((showCreateModal || showViewEditModal) && (name === 'firstProductImage' || name === 'secondProductImage' || name === 'thirdProductImage')) {
+
       if (files && files.length > 0) {
         const file = files[0];
         setFormData((prev) => ({ ...prev, [name]: file }));
@@ -491,6 +487,7 @@ const Create = () => {
       }
       return;
     }
+
     if (showViewEditModal && name === "productImage") {
       if (files && files.length > 0) {
         const file = files[0];
@@ -1643,30 +1640,197 @@ const Create = () => {
                   </span>
                 )}
               </div>
-              <div>
-                <label className="block text-white">
-                  Product Image (optional)
-                </label>
-                {imagePreview && (
-                  <div className="mb-2 flex gap-2">
-                    <img
-                      src={imagePreview}
-                      alt="Product Preview"
-                      className="h-20 w-20 rounded object-cover"
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[0, 1, 2].map((idx) => (
+                  <div key={idx}>
+                    <label className="block text-white">Product image {idx + 1} (optional)</label>
+                    {/* Show preview: if new image selected, show preview, else show existing image */}
+                    {imagePreviews[idx] ? (
+                      <div className="flex gap-2 mb-2">
+                        <img src={imagePreviews[idx]} alt={`Product Preview ${idx + 1}`} className="w-20 h-20 object-cover rounded" />
+                      </div>
+                    ) : singleProduct.imageUrl && singleProduct.imageUrl[idx] ? (
+                      <div className="flex gap-2 mb-2">
+                        <img src={singleProduct.imageUrl[idx]} alt={`Product Preview ${idx + 1}`} className="w-20 h-20 object-cover rounded" />
+                      </div>
+                    ) : null}
+                    <input
+                      type="file"
+                      name={idx === 0 ? 'firstProductImage' : idx === 1 ? 'secondProductImage' : 'thirdProductImage'}
+                      accept="image/*"
+                      onChange={handleInputChange}
+                      className="w-full rounded border px-3 py-2 text-black"
+
                     />
                   </div>
-                )}
-                <input
-                  type="file"
-                  name="productImage"
-                  accept="image/*"
+                ))}
+              </div>
+              <div>
+                <label className="block text-white">Door Delivery Terms &amp; Condition (optional)</label>
+                <textarea
+                  name="doorDeliveryTermsAndCondition"
+                  value={formData.doorDeliveryTermsAndCondition}
+                  onChange={handleInputChange}
+                  className="w-full rounded border px-3 py-2 text-black"
+                />
+
+
+              <div>
+                <label className="block text-white">Pickup Centre Terms &amp; Condition (optional)</label>
+                <textarea
+                  name="pickupCentreTermsAndCondition"
+                  value={formData.pickupCentreTermsAndCondition}
                   onChange={handleInputChange}
                   className="w-full rounded border px-3 py-2 text-black"
                 />
               </div>
-              {errors.general && (
-                <div className="text-red-500">{errors.general}</div>
-              )}
+              <div>
+                <label className="block text-white">Storage Outdoor (Height, Length, Breadth) (optional)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    name="storageOutdoor.height"
+                    placeholder="Height (optional)"
+                    value={formData.storageOutdoor?.height}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                  <input
+                    type="number"
+                    name="storageOutdoor.length"
+                    placeholder="Length (optional)"
+                    value={formData.storageOutdoor?.length}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                  <input
+                    type="number"
+                    name="storageOutdoor.breadth"
+                    placeholder="Breadth (optional)"
+                    value={formData.storageOutdoor?.breadth}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-white">Storage Refrigerated (Height, Length, Breadth) (optional)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    name="storageRefrigerated.height"
+                    placeholder="Height (optional)"
+                    value={formData.storageRefrigerated?.height}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                  <input
+                    type="number"
+                    name="storageRefrigerated.length"
+                    placeholder="Length (optional)"
+                    value={formData.storageRefrigerated?.length}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                  <input
+                    type="number"
+                    name="storageRefrigerated.breadth"
+                    placeholder="Breadth (optional)"
+                    value={formData.storageRefrigerated?.breadth}
+                    onChange={handleInputChange}
+                    className="w-1/3 rounded border px-3 py-2 text-black"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-gray-600 p-4 rounded-md">
+                <h3 className="col-span-1 md:col-span-2 text-lg font-semibold text-white">Promotion (optional)</h3>
+                <div className="">
+                  <label className="m-0 text-xs font-medium text-white">Promo code (or referral bonus code) (optional)</label>
+                  <div className="relative w-full">
+                    <input
+                      name="promo.code"
+                      type="text"
+                      value={formData.promo?.code}
+                      onChange={handleInputChange}
+                      className="w-full rounded border px-3 py-2 text-black"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-blue-500 px-4 py-1 text-sm text-white"
+                      onClick={handlePromoCodeGeneration}
+                    >
+                      Generate
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-white">Promo percentage (or referral bonus %) (optional)</label>
+                  <input
+                    type="number"
+                    name="promo.percentage"
+                    value={formData.promo?.percentage}
+                    onChange={handleInputChange}
+                    className="w-full rounded border px-3 py-2 text-black"
+                  />
+                </div>
+                 <div>
+                  <label className="block text-white">Start date (optional)</label>
+                  <input
+                    type="date"
+                    name="promo.startDate"
+                    value={formData.promo?.startDate}
+                    onChange={handleInputChange}
+                    className="w-full rounded border px-3 py-2 text-black"
+                  />
+                </div>
+                 <div>
+                  <label className="block text-white">End date (optional)</label>
+                  <input
+                    type="date"
+                    name="promo.endDate"
+                    value={formData.promo?.endDate}
+                    onChange={handleInputChange}
+                    className="w-full rounded border px-3 py-2 text-black"
+                  />
+                </div>
+                
+                 <div>
+                  <label className="block text-white">Status (optional)</label>
+                  <select
+                    name="promo.status"
+                    value={formData.promo?.status}
+                    onChange={handleInputChange}
+                    className="w-full rounded border px-3 py-2 text-black"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+                 <div>
+                  <label className="block text-white">Minimum purchase (optional)</label>
+                  <input
+                    type="number"
+                    name="promo.minimumPurchase"
+                    value={formData.promo?.minimumPurchase}
+                    onChange={handleInputChange}
+                    className="w-full rounded border px-3 py-2 text-black"
+                  />
+                </div>
+               
+                <div>
+                  <label className="block text-white">Max usage (optional)</label>
+                  <input
+                    type="number"
+                    name="promo.maxUsage"
+                    value={formData.promo?.maxUsage}
+                    onChange={handleInputChange}
+                    className="w-full rounded border px-3 py-2 text-black"
+                  />
+                </div>
+              </div>
+              {errors.general && <div className="text-red-500">{errors.general}</div>}
+
               <button
                 type="submit"
                 className="w-full rounded-xl bg-blue-500 py-2 text-white hover:bg-blue-600"
