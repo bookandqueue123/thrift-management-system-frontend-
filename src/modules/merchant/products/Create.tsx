@@ -408,9 +408,12 @@ const Create = () => {
       }
 
       // For update, send all three images if present
-      if (sanitizedData.firstProductImage) form.append('firstProductImage', sanitizedData.firstProductImage);
-      if (sanitizedData.secondProductImage) form.append('secondProductImage', sanitizedData.secondProductImage);
-      if (sanitizedData.thirdProductImage) form.append('thirdProductImage', sanitizedData.thirdProductImage);
+      if (sanitizedData.firstProductImage)
+        form.append("firstProductImage", sanitizedData.firstProductImage);
+      if (sanitizedData.secondProductImage)
+        form.append("secondProductImage", sanitizedData.secondProductImage);
+      if (sanitizedData.thirdProductImage)
+        form.append("thirdProductImage", sanitizedData.thirdProductImage);
 
       return client.put(`/api/products/${id}`, form, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -455,8 +458,12 @@ const Create = () => {
   ) => {
     const { name, value, files } = e.target as HTMLInputElement;
 
-    if ((showCreateModal || showViewEditModal) && (name === 'firstProductImage' || name === 'secondProductImage' || name === 'thirdProductImage')) {
-
+    if (
+      (showCreateModal || showViewEditModal) &&
+      (name === "firstProductImage" ||
+        name === "secondProductImage" ||
+        name === "thirdProductImage")
+    ) {
       if (files && files.length > 0) {
         const file = files[0];
         setFormData((prev) => ({ ...prev, [name]: file }));
@@ -1641,43 +1648,63 @@ const Create = () => {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 {[0, 1, 2].map((idx) => (
                   <div key={idx}>
-                    <label className="block text-white">Product image {idx + 1} (optional)</label>
+                    <label className="block text-white">
+                      Product image {idx + 1} (optional)
+                    </label>
                     {/* Show preview: if new image selected, show preview, else show existing image */}
                     {imagePreviews[idx] ? (
-                      <div className="flex gap-2 mb-2">
-                        <img src={imagePreviews[idx]} alt={`Product Preview ${idx + 1}`} className="w-20 h-20 object-cover rounded" />
+                      <div className="mb-2 flex gap-2">
+                        <img
+                          src={imagePreviews[idx]}
+                          alt={`Product Preview ${idx + 1}`}
+                          className="h-20 w-20 rounded object-cover"
+                        />
                       </div>
-                    ) : singleProduct.imageUrl && singleProduct.imageUrl[idx] ? (
-                      <div className="flex gap-2 mb-2">
-                        <img src={singleProduct.imageUrl[idx]} alt={`Product Preview ${idx + 1}`} className="w-20 h-20 object-cover rounded" />
+                    ) : singleProduct.imageUrl &&
+                      singleProduct.imageUrl[idx] ? (
+                      <div className="mb-2 flex gap-2">
+                        <img
+                          src={singleProduct.imageUrl[idx]}
+                          alt={`Product Preview ${idx + 1}`}
+                          className="h-20 w-20 rounded object-cover"
+                        />
                       </div>
                     ) : null}
                     <input
                       type="file"
-                      name={idx === 0 ? 'firstProductImage' : idx === 1 ? 'secondProductImage' : 'thirdProductImage'}
+                      name={
+                        idx === 0
+                          ? "firstProductImage"
+                          : idx === 1
+                            ? "secondProductImage"
+                            : "thirdProductImage"
+                      }
                       accept="image/*"
                       onChange={handleInputChange}
                       className="w-full rounded border px-3 py-2 text-black"
-
                     />
                   </div>
                 ))}
               </div>
               <div>
-                <label className="block text-white">Door Delivery Terms &amp; Condition (optional)</label>
+                <label className="block text-white">
+                  Door Delivery Terms &amp; Condition (optional)
+                </label>
                 <textarea
                   name="doorDeliveryTermsAndCondition"
                   value={formData.doorDeliveryTermsAndCondition}
                   onChange={handleInputChange}
                   className="w-full rounded border px-3 py-2 text-black"
                 />
-
+              </div>
 
               <div>
-                <label className="block text-white">Pickup Centre Terms &amp; Condition (optional)</label>
+                <label className="block text-white">
+                  Pickup Centre Terms &amp; Condition (optional)
+                </label>
                 <textarea
                   name="pickupCentreTermsAndCondition"
                   value={formData.pickupCentreTermsAndCondition}
@@ -1686,7 +1713,9 @@ const Create = () => {
                 />
               </div>
               <div>
-                <label className="block text-white">Storage Outdoor (Height, Length, Breadth) (optional)</label>
+                <label className="block text-white">
+                  Storage Outdoor (Height, Length, Breadth) (optional)
+                </label>
                 <div className="flex gap-2">
                   <input
                     type="number"
@@ -1715,7 +1744,9 @@ const Create = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-white">Storage Refrigerated (Height, Length, Breadth) (optional)</label>
+                <label className="block text-white">
+                  Storage Refrigerated (Height, Length, Breadth) (optional)
+                </label>
                 <div className="flex gap-2">
                   <input
                     type="number"
@@ -1743,10 +1774,14 @@ const Create = () => {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-gray-600 p-4 rounded-md">
-                <h3 className="col-span-1 md:col-span-2 text-lg font-semibold text-white">Promotion (optional)</h3>
+              <div className="grid grid-cols-1 gap-4 rounded-md border border-gray-600 p-4 md:grid-cols-2">
+                <h3 className="col-span-1 text-lg font-semibold text-white md:col-span-2">
+                  Promotion (optional)
+                </h3>
                 <div className="">
-                  <label className="m-0 text-xs font-medium text-white">Promo code (or referral bonus code) (optional)</label>
+                  <label className="m-0 text-xs font-medium text-white">
+                    Promo code (or referral bonus code) (optional)
+                  </label>
                   <div className="relative w-full">
                     <input
                       name="promo.code"
@@ -1765,7 +1800,9 @@ const Create = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-white">Promo percentage (or referral bonus %) (optional)</label>
+                  <label className="block text-white">
+                    Promo percentage (or referral bonus %) (optional)
+                  </label>
                   <input
                     type="number"
                     name="promo.percentage"
@@ -1774,8 +1811,10 @@ const Create = () => {
                     className="w-full rounded border px-3 py-2 text-black"
                   />
                 </div>
-                 <div>
-                  <label className="block text-white">Start date (optional)</label>
+                <div>
+                  <label className="block text-white">
+                    Start date (optional)
+                  </label>
                   <input
                     type="date"
                     name="promo.startDate"
@@ -1784,8 +1823,10 @@ const Create = () => {
                     className="w-full rounded border px-3 py-2 text-black"
                   />
                 </div>
-                 <div>
-                  <label className="block text-white">End date (optional)</label>
+                <div>
+                  <label className="block text-white">
+                    End date (optional)
+                  </label>
                   <input
                     type="date"
                     name="promo.endDate"
@@ -1794,8 +1835,8 @@ const Create = () => {
                     className="w-full rounded border px-3 py-2 text-black"
                   />
                 </div>
-                
-                 <div>
+
+                <div>
                   <label className="block text-white">Status (optional)</label>
                   <select
                     name="promo.status"
@@ -1807,8 +1848,10 @@ const Create = () => {
                     <option value="inactive">Inactive</option>
                   </select>
                 </div>
-                 <div>
-                  <label className="block text-white">Minimum purchase (optional)</label>
+                <div>
+                  <label className="block text-white">
+                    Minimum purchase (optional)
+                  </label>
                   <input
                     type="number"
                     name="promo.minimumPurchase"
@@ -1817,9 +1860,11 @@ const Create = () => {
                     className="w-full rounded border px-3 py-2 text-black"
                   />
                 </div>
-               
+
                 <div>
-                  <label className="block text-white">Max usage (optional)</label>
+                  <label className="block text-white">
+                    Max usage (optional)
+                  </label>
                   <input
                     type="number"
                     name="promo.maxUsage"
@@ -1829,7 +1874,9 @@ const Create = () => {
                   />
                 </div>
               </div>
-              {errors.general && <div className="text-red-500">{errors.general}</div>}
+              {errors.general && (
+                <div className="text-red-500">{errors.general}</div>
+              )}
 
               <button
                 type="submit"
