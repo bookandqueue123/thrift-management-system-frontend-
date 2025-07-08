@@ -130,10 +130,10 @@ export default function PayInBitsForm({
       }),
     )
 
-    // TODO: POST paymentPayload to /api/payments
+   
     console.log("Submitting payment:", paymentPayload)
 
-    // Clear the cart after successful payment
+   
     try {
       const response = await fetch("/api/cart/clear/all", {
         method: "POST",
@@ -156,7 +156,7 @@ export default function PayInBitsForm({
     router.push("/cart/delivery")
   }
 
-  // FIXED: Helper function to get image URL - handles the actual data structure
+ 
   const getImageUrl = (item: CartItem) => {
     if (item.imageUrl) {
       return item.imageUrl

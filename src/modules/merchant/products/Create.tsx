@@ -88,6 +88,68 @@ interface FormErrors {
   general?: string;
 }
 
+// Utility function to sanitize form data before sending to backend
+const sanitizeProductFormData = (data: ProductFormData) => {
+  const sanitized: any = { ...data };
+
+  // Convert empty string or 'null' to undefined for number fields
+  const numberFields = [
+    'discount',
+    'size',
+    'memory',
+    'costBeforeDiscount',
+    'price',
+    'maximumRepaymentTimeline',
+    'repaymentPeriodInMonths',
+    'mininumRepaymentAmount',
+    'mininumDepositPercentage',
+    'interestRatePercentage',
+    'platformFee',
+    'promo.percentage',
+    'promo.minimumPurchase',
+    'promo.maxUsage',
+    'stock',
+  ];
+
+  numberFields.forEach((field) => {
+    // Handle nested promo fields
+    if (field.startsWith('promo.')) {
+      const promoField = field.split('.')[1];
+      if (
+        sanitized.promo &&
+        (sanitized.promo[promoField] === '' || sanitized.promo[promoField] === 'null' || sanitized.promo[promoField] === undefined)
+      ) {
+        delete sanitized.promo[promoField];
+      }
+    } else {
+      if (sanitized[field] === '' || sanitized[field] === 'null' || sanitized[field] === undefined) {
+        delete sanitized[field];
+      }
+    }
+  });
+
+  // Remove promo if all fields are empty, '0', or 'inactive'
+  if (sanitized.promo) {
+    const promoFields = Object.entries(sanitized.promo).filter(
+      ([key, v]) => {
+        if (v === '' || v === undefined || v === 'null') return false;
+        if (key === 'status' && v === 'inactive') return false;
+        if ((key === 'percentage' || key === 'minimumPurchase' || key === 'maxUsage') && (v === '0' || v === 0)) return false;
+        return true;
+      }
+    );
+    if (promoFields.length === 0) {
+      delete sanitized.promo;
+    }
+  }
+
+  // Remove brand/category if not selected
+  if (!sanitized.brand) delete sanitized.brand;
+  if (!sanitized.category) delete sanitized.category;
+
+  return sanitized;
+};
+
 const Create = () => {
   const { client } = useAuth();
   const queryClient = useQueryClient();
@@ -170,38 +232,41 @@ const Create = () => {
 
   const createProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
+      const sanitizedData = sanitizeProductFormData(data);
       const form = new FormData();
-      form.append('name', data.name);
-      form.append('description', data.description);
-      form.append('price', data.price || '');
-      form.append('costBeforeDiscount', data.costBeforeDiscount || '');
-      form.append('discount', data.discount || '');
-      form.append('category', data.category || '');
-      form.append('brand', data.brand || '');
-      form.append('sku', data.sku || '');
-      form.append('size', data.size || '');
-      form.append('memory', data.memory || '');
-      form.append('stock', data.stock);
+      form.append('name', sanitizedData.name);
+      form.append('description', sanitizedData.description);
+      form.append('price', sanitizedData.price || '');
+      form.append('costBeforeDiscount', sanitizedData.costBeforeDiscount || '');
+      form.append('discount', sanitizedData.discount || '');
+      form.append('category', sanitizedData.category || '');
+      form.append('brand', sanitizedData.brand || '');
+      form.append('sku', sanitizedData.sku || '');
+      form.append('size', sanitizedData.size || '');
+      form.append('memory', sanitizedData.memory || '');
+      form.append('stock', sanitizedData.stock);
      
-      form.append('maximumRepaymentTimeline', data.maximumRepaymentTimeline || '');
-      form.append('repaymentPeriodInMonths', data.repaymentPeriodInMonths || '');
-      form.append('mininumRepaymentAmount', data.mininumRepaymentAmount || '');
-      form.append('mininumDepositPercentage', data.mininumDepositPercentage || '');
-      form.append('interestRatePercentage', data.interestRatePercentage || '');
-      form.append('platformFee', data.platformFee || '');
-      form.append('doorDeliveryTerms', data.doorDeliveryTerms || '');
-      form.append('pickupTerms', data.pickupTerms || '');
-      form.append('doorDeliveryTermsAndCondition', data.doorDeliveryTermsAndCondition || '');
-      form.append('pickupCentreTermsAndCondition', data.pickupCentreTermsAndCondition || '');
-      form.append('storageOutdoor', JSON.stringify(data.storageOutdoor || {}));
-      form.append('storageRefrigerated', JSON.stringify(data.storageRefrigerated || {}));
-      form.append('promo', JSON.stringify(data.promo || {}));
-      if (data.tags && data.tags.length > 0) {
-        form.append('tags', JSON.stringify(data.tags));
+      form.append('maximumRepaymentTimeline', sanitizedData.maximumRepaymentTimeline || '');
+      form.append('repaymentPeriodInMonths', sanitizedData.repaymentPeriodInMonths || '');
+      form.append('mininumRepaymentAmount', sanitizedData.mininumRepaymentAmount || '');
+      form.append('mininumDepositPercentage', sanitizedData.mininumDepositPercentage || '');
+      form.append('interestRatePercentage', sanitizedData.interestRatePercentage || '');
+      form.append('platformFee', sanitizedData.platformFee || '');
+      form.append('doorDeliveryTerms', sanitizedData.doorDeliveryTerms || '');
+      form.append('pickupTerms', sanitizedData.pickupTerms || '');
+      form.append('doorDeliveryTermsAndCondition', sanitizedData.doorDeliveryTermsAndCondition || '');
+      form.append('pickupCentreTermsAndCondition', sanitizedData.pickupCentreTermsAndCondition || '');
+      form.append('storageOutdoor', JSON.stringify(sanitizedData.storageOutdoor || {}));
+      form.append('storageRefrigerated', JSON.stringify(sanitizedData.storageRefrigerated || {}));
+      if (sanitizedData.promo) {
+        form.append('promo', JSON.stringify(sanitizedData.promo));
       }
-      if (data.firstProductImage) form.append('firstProductImage', data.firstProductImage);
-      if (data.secondProductImage) form.append('secondProductImage', data.secondProductImage);
-      if (data.thirdProductImage) form.append('thirdProductImage', data.thirdProductImage);
+      if (sanitizedData.tags && sanitizedData.tags.length > 0) {
+        form.append('tags', JSON.stringify(sanitizedData.tags));
+      }
+      if (sanitizedData.firstProductImage) form.append('firstProductImage', sanitizedData.firstProductImage);
+      if (sanitizedData.secondProductImage) form.append('secondProductImage', sanitizedData.secondProductImage);
+      if (sanitizedData.thirdProductImage) form.append('thirdProductImage', sanitizedData.thirdProductImage);
       return client.post('/api/products', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
@@ -222,45 +287,55 @@ const Create = () => {
 
   const updateProductMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string, data: ProductFormData }) => {
+      const sanitizedData = sanitizeProductFormData(data);
       const form = new FormData();
-      form.append('name', data.name);
-      form.append('description', data.description);
-      form.append('price', data.price || '');
-      form.append('costBeforeDiscount', data.costBeforeDiscount || '');
-      form.append('discount', data.discount || '');
-      form.append('category', data.category || '');
-      form.append('brand', data.brand || '');
-      form.append('sku', data.sku || '');
-      form.append('size', data.size || '');
-      form.append('memory', data.memory || '');
-      form.append('stock', data.stock);
+      form.append('name', sanitizedData.name);
+      form.append('description', sanitizedData.description);
+      form.append('price', sanitizedData.price || '');
+      form.append('costBeforeDiscount', sanitizedData.costBeforeDiscount || '');
+      form.append('discount', sanitizedData.discount || '');
+      form.append('category', sanitizedData.category || '');
+      form.append('brand', sanitizedData.brand || '');
+      form.append('sku', sanitizedData.sku || '');
+      form.append('size', sanitizedData.size || '');
+      form.append('memory', sanitizedData.memory || '');
+      form.append('stock', sanitizedData.stock);
       
-      form.append('maximumRepaymentTimeline', data.maximumRepaymentTimeline || '');
-      form.append('repaymentPeriodInMonths', data.repaymentPeriodInMonths || '');
-      form.append('minimumRepaymentAmount', data.mininumRepaymentAmount || '');
-      form.append('mininumDepositPercentage', data.mininumDepositPercentage|| '');
-      form.append('interestRatePercentage', data.interestRatePercentage || '');
-      form.append('platformFee', data.platformFee || '');
-      form.append('doorDeliveryTerms', data.doorDeliveryTerms || '');
-      form.append('pickupTerms', data.pickupTerms || '');
-      form.append('doorDeliveryTermsAndCondition', data.doorDeliveryTermsAndCondition || '');
-      form.append('pickupCentreTermsAndCondition', data.pickupCentreTermsAndCondition || '');
-      form.append('storageOutdoor', JSON.stringify(data.storageOutdoor || {}));
-      form.append('storageRefrigerated', JSON.stringify(data.storageRefrigerated || {}));
-      form.append('promo', JSON.stringify(data.promo || {}));
-      if (data.tags && data.tags.length > 0) {
-        form.append('tags', JSON.stringify(data.tags));
+      form.append('maximumRepaymentTimeline', sanitizedData.maximumRepaymentTimeline || '');
+      form.append('repaymentPeriodInMonths', sanitizedData.repaymentPeriodInMonths || '');
+      form.append('minimumRepaymentAmount', sanitizedData.mininumRepaymentAmount || '');
+      form.append('mininumDepositPercentage', sanitizedData.mininumDepositPercentage|| '');
+      form.append('interestRatePercentage', sanitizedData.interestRatePercentage || '');
+      form.append('platformFee', sanitizedData.platformFee || '');
+      form.append('doorDeliveryTerms', sanitizedData.doorDeliveryTerms || '');
+      form.append('pickupTerms', sanitizedData.pickupTerms || '');
+      form.append('doorDeliveryTermsAndCondition', sanitizedData.doorDeliveryTermsAndCondition || '');
+      form.append('pickupCentreTermsAndCondition', sanitizedData.pickupCentreTermsAndCondition || '');
+      form.append('storageOutdoor', JSON.stringify(sanitizedData.storageOutdoor || {}));
+      form.append('storageRefrigerated', JSON.stringify(sanitizedData.storageRefrigerated || {}));
+      if (sanitizedData.promo) {
+        form.append('promo', JSON.stringify(sanitizedData.promo));
       }
-      if (data.productImage) form.append('productImage', data.productImage);
+      if (sanitizedData.tags && sanitizedData.tags.length > 0) {
+        form.append('tags', JSON.stringify(sanitizedData.tags));
+      }
+      // For update, if a new image is selected, send it as firstProductImage (to match create logic)
+      if (sanitizedData.productImage) {
+        form.append('firstProductImage', sanitizedData.productImage);
+      }
       return client.put(`/api/products/${id}`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      setShowViewEditModal(false);
-      setSelectedProductId(null);
-      setModalType(null);
+      setSuccessMessage('Product updated successfully!');
+      setTimeout(() => {
+        setShowViewEditModal(false);
+        setSelectedProductId(null);
+        setModalType(null);
+        setSuccessMessage(null);
+      }, 1000);
     },
     onError: (error: any) => {
       const errorMessage = error?.response?.data?.message || 'Failed to update product.';
@@ -461,13 +536,24 @@ const Create = () => {
     'Actions',
   ];
 
+  // Helper to get brand name for search and display
+  const getBrandName = (brand: any) => {
+    if (!brand) return '';
+    if (typeof brand === 'object' && brand !== null) {
+      return brand.name || '';
+    }
+    // For display, try to find the name from brandsData if it's an id
+    const found = brandsData?.find((b: any) => b._id === brand);
+    return found?.name || brand;
+  };
+
   const paginatedProducts = products ? products.filter(product =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.brand.toLowerCase().includes(searchQuery.toLowerCase())
+    getBrandName(product.brand).toLowerCase().includes(searchQuery.toLowerCase())
   ).slice((currentPage - 1) * productsPerPage, currentPage * productsPerPage) : [];
   const totalPages = products ? Math.ceil(products.filter(product =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.brand.toLowerCase().includes(searchQuery.toLowerCase())
+    getBrandName(product.brand).toLowerCase().includes(searchQuery.toLowerCase())
   ).length / productsPerPage) : 1;
 
   const openProductModal = (id: string, type: 'view' | 'edit') => {
@@ -477,16 +563,30 @@ const Create = () => {
     if (type === 'edit' && products) {
       const productToEdit = products.find(p => p._id === id);
       if (productToEdit) {
-        // Find category ID by name
-        const categoryId = categoriesData?.find((cat: any) => cat.name === productToEdit.category)?._id || productToEdit.category;
-        
-        // Find brand ID by name
-        const brandId = brandsData?.find((brand: any) => brand.name === productToEdit.brand)?._id || productToEdit.brand;
-        
+        // Robustly find category ID
+        let categoryId = '';
+        const cats: any[] = categoriesData || [];
+        if (typeof productToEdit.category === 'object' && productToEdit.category !== null) {
+          categoryId = (productToEdit.category as any)._id || '';
+        } else if (typeof productToEdit.category === 'string') {
+          const foundCat = cats.find((cat) => cat._id === productToEdit.category || cat.name === productToEdit.category);
+          categoryId = foundCat?._id || productToEdit.category;
+        }
+
+        // Robustly find brand ID
+        let brandId = '';
+        const brands: any[] = brandsData || [];
+        if (typeof productToEdit.brand === 'object' && productToEdit.brand !== null) {
+          brandId = (productToEdit.brand as any)._id || '';
+        } else if (typeof productToEdit.brand === 'string') {
+          const foundBrand = brands.find((brand) => brand._id === productToEdit.brand || brand.name === productToEdit.brand);
+          brandId = foundBrand?._id || productToEdit.brand;
+        }
+
         // Find tag IDs by names (assuming product has tags array)
         const tagIds = (productToEdit as any).tags ? 
           (productToEdit as any).tags.map((tagName: string) => {
-            const tag = tagsData?.find((t: any) => t.name === tagName);
+            const tag = tagsData?.find((t: any) => t.name === tagName || t._id === tagName);
             return tag?._id || tagName;
           }) : [];
 
@@ -527,6 +627,7 @@ const Create = () => {
             minimumPurchase: productToEdit.promo?.minimumPurchase?.toString() || '0',
             maxUsage: productToEdit.promo?.maxUsage?.toString() || '0',
           },
+          tags: tagIds,
         });
         setImagePreview(productToEdit.imageUrl && productToEdit.imageUrl[0] ? productToEdit.imageUrl[0] : undefined);
         setImagePreviews([undefined, undefined, undefined]);
@@ -547,15 +648,6 @@ const Create = () => {
     }
     const found = categoriesData?.find((cat: any) => cat._id === category);
     return found?.name || category;
-  };
-
-  const getBrandName = (brand: any) => {
-    if (!brand) return 'N/A';
-    if (typeof brand === 'object' && brand !== null) {
-      return brand.name || brand._id || 'N/A';
-    }
-    const found = brandsData?.find((b: any) => b._id === brand);
-    return found?.name || brand;
   };
 
   return (
@@ -1082,6 +1174,22 @@ const Create = () => {
         {/* Edit Product Modal */}
         {showViewEditModal && modalType === 'edit' && singleProduct && (
           <Modal title="Edit Product" setModalState={setShowViewEditModal}>
+            {updateProductMutation.isPending && (
+              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                <div className="flex flex-col items-center">
+                  <svg className="animate-spin h-8 w-8 text-white mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                  </svg>
+                  <span className="text-white">Updating...</span>
+                </div>
+              </div>
+            )}
+            {successMessage && (
+              <div className="mb-4 p-3 rounded bg-green-100 text-green-800 border border-green-300 text-center">
+                {successMessage}
+              </div>
+            )}
             <form onSubmit={handleEditSubmit} className="space-y-4 p-6 border border-gray-700 rounded-lg">
               <div>
                 <label className="block text-white">Name</label>

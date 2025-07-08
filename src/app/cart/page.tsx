@@ -35,7 +35,7 @@ interface CartResponse {
   __v: number;
 }
 
-// Define the CartItem type that PayInBitsForm expects
+
 interface CartItemForForm {
   _id: string;
   productId: string;
@@ -66,25 +66,18 @@ export default function CartPage() {
   const [showPayInBitsForm, setShowPayInBitsForm] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CartItemForForm | null>(null);
   const token = useSelector(selectToken);
-  // Promo code state
+ 
   const [showPromo, setShowPromo] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState("");
   const [promoError, setPromoError] = useState("");
-  // Add state for preview data
+  
   const [previewData, setPreviewData] = useState<any>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState("");
-  const [repaymentMonths, setRepaymentMonths] = useState(2); // default to 2
+  const [repaymentMonths, setRepaymentMonths] = useState<number | null>(null); 
 
-  // Redirect to /signin if no token
-  // useEffect(() => {
-  //   if (!token) {
-  //     router.push('/signin');
-  //   }
-  // }, [token, router]);
-
-  // Fetch cart items from backend
+  
   const { 
     data: cartData, 
     isLoading, 
@@ -97,10 +90,10 @@ export default function CartPage() {
     },
   });
 
-  // Extract cart items from the response
+  
   const cartItems = cartData?.items || [];
 
-  // Helper function to convert CartItemFromAPI to CartItemForForm
+ 
   const convertToFormItem = (item: CartItemFromAPI): CartItemForForm => {
     return {
       _id: item._id,
@@ -108,12 +101,12 @@ export default function CartPage() {
       product: {
         _id: item.product._id,
         name: item.name,
-        description: item.name, // Using name as description since we don't have description
+        description: item.name, 
         price: item.price,
-        category: "General", // Default category
-        brand: "Unknown", // Default brand
+        category: "General", 
+        brand: "Unknown",
         imageUrl: item.imageUrl,
-        stock: item.quantity, // Using quantity as stock
+        stock: item.quantity, 
         rating: 0,
         reviews: 0,
         badge: null,
@@ -125,7 +118,7 @@ export default function CartPage() {
     };
   };
 
-  // Update cart item quantity mutation
+  
   const updateQuantityMutation = useMutation({
     mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
       const res = await client.put(`/api/cart/${productId}`, {
@@ -141,7 +134,7 @@ export default function CartPage() {
     }
   });
 
-  // Increase quantity mutation
+ 
   const increaseQuantityMutation = useMutation({
     mutationFn: async (productId: string) => {
       const res = await client.patch(`/api/cart/${productId}/increase`);
@@ -155,7 +148,7 @@ export default function CartPage() {
     }
   });
 
-  // Decrease quantity mutation
+  
   const decreaseQuantityMutation = useMutation({
     mutationFn: async (productId: string) => {
       const res = await client.patch(`/api/cart/${productId}/decrease`);
@@ -169,7 +162,7 @@ export default function CartPage() {
     }
   });
 
-  // Remove item from cart mutation
+ 
   const removeItemMutation = useMutation({
     mutationFn: async (productId: string) => {
       const res = await client.delete(`/api/cart/${productId}`);
@@ -183,7 +176,7 @@ export default function CartPage() {
     }
   });
 
-  // Clear cart mutation
+
   const clearCartMutation = useMutation({
     mutationFn: async () => {
       const res = await client.delete('/api/cart/clear/all');
@@ -268,13 +261,13 @@ export default function CartPage() {
     clearCartMutation.mutate();
   };
    
-  const handlePayInBitsPreview = async (selectedItem: CartItemForForm) => {
+  const handlePayInBitsPreview = async (selectedItem: CartItemForForm, months: number) => {
     setPreviewLoading(true);
     setPreviewError("");
     setPreviewData(null);
     try {
       const res = await client.get(
-        `/api/payments/payment-preview?productId=${selectedItem.productId}&repaymentMonths=${repaymentMonths}`,
+        `/api/payments/payment-preview?productId=${selectedItem.productId}&repaymentMonths=${months}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setPreviewData(res.data);
@@ -290,9 +283,20 @@ export default function CartPage() {
   const handlePaymentModeChange = (mode: "full" | "bits") => {
     setPaymentMode(mode);
     if (mode === "bits") {
+      setRepaymentMonths(null); // Reset repayment period
       const item = Array.isArray(cartItems) && cartItems.length > 0 ? convertToFormItem(cartItems[0]) : null;
       setSelectedItem(item);
-      if (item) handlePayInBitsPreview(item);
+      setPreviewData(null);
+      setShowPayInBitsForm(false);
+    }
+  };
+
+  // Handler for repayment period change
+  const handleRepaymentMonthsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const months = Number(e.target.value);
+    setRepaymentMonths(months);
+    if (selectedItem && months) {
+      handlePayInBitsPreview(selectedItem, months);
     }
   };
 
@@ -308,9 +312,8 @@ export default function CartPage() {
     );
 
     if (paymentMode === "bits") {
-      const item = Array.isArray(cartItems) && cartItems.length > 0 ? convertToFormItem(cartItems[0]) : null;
-      setSelectedItem(item);
-      if (item) handlePayInBitsPreview(item);
+      if (!repaymentMonths || !selectedItem) return; // Prevent if not selected
+      handlePayInBitsPreview(selectedItem, repaymentMonths);
     } else {
       router.push('/cart/delivery');
     }
@@ -474,10 +477,13 @@ export default function CartPage() {
                       Repayment Period
                     </label>
                     <select
-                      value={repaymentMonths}
-                      onChange={e => setRepaymentMonths(Number(e.target.value))}
+                      value={repaymentMonths ?? ''}
+                      onChange={handleRepaymentMonthsChange}
                       className="border rounded p-2 w-full"
                     >
+                      <option value="" disabled>
+                        Select repayment period
+                      </option>
                       {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
                         <option key={month} value={month}>{month} Month{month > 1 ? 's' : ''}</option>
                       ))}
@@ -500,6 +506,7 @@ export default function CartPage() {
               <button 
                 onClick={handleCheckout}
                 className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition"
+                disabled={paymentMode === "bits" && !repaymentMonths}
               >
                 {paymentMode === "bits" ? "Proceed to Checkout" : "Checkout"}
               </button>
@@ -588,6 +595,7 @@ export default function CartPage() {
                           </button>
                         </td>
                       </tr>
+                      
                     ))}
                   </tbody>
                 </table>
