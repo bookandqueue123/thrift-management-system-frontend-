@@ -406,10 +406,13 @@ const Create = () => {
       if (sanitizedData.tags && sanitizedData.tags.length > 0) {
         form.append("tags", JSON.stringify(sanitizedData.tags));
       }
-      // For update, if a new image is selected, send it as firstProductImage (to match create logic)
-      if (sanitizedData.productImage) {
-        form.append("firstProductImage", sanitizedData.productImage);
-      }
+      // For update, send all three images if present
+      if (sanitizedData.firstProductImage)
+        form.append("firstProductImage", sanitizedData.firstProductImage);
+      if (sanitizedData.secondProductImage)
+        form.append("secondProductImage", sanitizedData.secondProductImage);
+      if (sanitizedData.thirdProductImage)
+        form.append("thirdProductImage", sanitizedData.thirdProductImage);
       return client.put(`/api/products/${id}`, form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -453,7 +456,7 @@ const Create = () => {
   ) => {
     const { name, value, files } = e.target as HTMLInputElement;
     if (
-      showCreateModal &&
+      (showCreateModal || showViewEditModal) &&
       (name === "firstProductImage" ||
         name === "secondProductImage" ||
         name === "thirdProductImage")
