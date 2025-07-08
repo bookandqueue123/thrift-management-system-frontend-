@@ -99,6 +99,7 @@ const Create = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 10;
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const initialFormData: ProductFormData = {
     name: '',
@@ -210,6 +211,8 @@ const Create = () => {
       setShowCreateModal(false);
       setFormData(initialFormData);
       setImagePreviews([undefined, undefined, undefined]);
+      setSuccessMessage('Product created successfully!');
+      setTimeout(() => setSuccessMessage(null), 3000);
     },
     onError: (error: any) => {
       const errorMessage = error?.response?.data?.message || 'Failed to create product.';
@@ -558,6 +561,11 @@ const Create = () => {
   return (
     <>
       <div className="container mx-auto max-w-7xl px-4 py-2 md:px-6 md:py-8 lg:px-8">
+        {successMessage && (
+          <div className="mb-4 p-3 rounded bg-green-100 text-green-800 border border-green-300 text-center">
+            {successMessage}
+          </div>
+        )}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-ajo_offWhite">Products</h2>
           <button
@@ -1027,6 +1035,20 @@ const Create = () => {
               <div>
                 <label className="block text-white">Cost Before Discount</label>
                 <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">₦ {AmountFormatter(singleProduct.costBeforeDiscount)}</div>
+              </div>
+              <div>
+                <label className="block text-white">Platform Charge (%)</label>
+                <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">
+                  {platformChargeData?.data?.percentage ? `${platformChargeData.data.percentage}%` : 'N/A'}
+                </div>
+              </div>
+              <div>
+                <label className="block text-white">Platform Charge Value</label>
+                <div className="w-full rounded border px-3 py-2 text-black bg-gray-200">
+                  {platformChargeData?.data?.percentage && singleProduct.price
+                    ? `₦ ${AmountFormatter((singleProduct.price * platformChargeData.data.percentage) / 100)}`
+                    : 'N/A'}
+                </div>
               </div>
               <div>
                 <label className="block text-white">Category</label>
