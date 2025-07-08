@@ -1,9 +1,17 @@
 "use client";
-import React, { useState, useMemo } from 'react';
-import { Search, Star, Heart, ShoppingCart, Grid, Filter, X, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import Link from 'next/link';
-import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/api/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Heart,
+  Search,
+  Star,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import React, { useMemo, useState } from "react";
 
 // Updated Type Definitions to match API response
 interface Product {
@@ -57,9 +65,11 @@ interface ProductCardProps {
 // Header Component
 const Header: React.FC = () => {
   return (
-    <div className=" rounded-2xl bg-gradient-to-br from-[#2C2648] to-[#000000]  text-white p-6 m-4">
-      <h1 className="text-2xl font-bold mb-2">MarketPlace</h1>
-      <p className="text-white">Discover products, brands, categories. Any and Everything.</p>
+    <div className=" m-4 rounded-2xl bg-gradient-to-br from-[#2C2648]  to-[#000000] p-6 text-white">
+      <h1 className="mb-2 text-2xl font-bold">MarketPlace</h1>
+      <p className="text-white">
+        Discover products, brands, categories. Any and Everything.
+      </p>
     </div>
   );
 };
@@ -82,74 +92,74 @@ const Sidebar: React.FC<SidebarProps> = ({
   isLoadingTags,
 }) => {
   const priceRanges: string[] = [
-    'ALL PRICE',
-    'UNDER $20',
-    '$25 TO $100',
-    '$100 TO $300',
-    '$300 TO $500',
-    '$500 TO $1,000',
-    '$1,000 TO $10,000'
+    "ALL PRICE",
+    "UNDER $20",
+    "$25 TO $100",
+    "$100 TO $300",
+    "$300 TO $500",
+    "$500 TO $1,000",
+    "$1,000 TO $10,000",
   ];
 
   return (
     <>
       {/* Mobile Overlay */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        <div
+          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
           onClick={onClose}
         />
       )}
       {/* Sidebar */}
-      <div className={`
-        fixed lg:static inset-y-0 left-0 z-50
-        w-80 bg-white border-r border-gray-200 overflow-y-auto
-        transform transition-transform duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
+      <div
+        className={`
+        fixed inset-y-0 left-0 z-50 w-80
+        transform overflow-y-auto border-r border-gray-200 bg-white
+        transition-transform duration-300 ease-in-out lg:static
+        ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+      `}
+      >
         {/* Mobile Close Button */}
-        <div className="lg:hidden flex justify-between items-center p-4 border-b">
+        <div className="flex items-center justify-between border-b p-4 lg:hidden">
           <h2 className="font-semibold">Filters</h2>
           <button onClick={onClose}>
             <X className="h-6 w-6" />
           </button>
         </div>
-        <div className="p-4 space-y-6">
+        <div className="space-y-6 p-4">
           {/* Categories */}
           <div>
-            <h3 className="font-semibold text-gray-800 mb-3">CATEGORY</h3>
+            <h3 className="mb-3 font-semibold text-gray-800">CATEGORY</h3>
             {isLoadingCategories ? (
               <div>Loading categories...</div>
-            ) : categoriesData?.map((category: any, idx: number) => (
-              <label
-                key={category._id}
-                className={`flex items-center px-3 py-2 rounded cursor-pointer mb-1 transition-colors ${
-                  idx === 0
-                    ? 'bg-[#EAAB40] text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedCategories.includes(category._id)}
-                  onChange={() => onCategoryChange(category._id)}
-                  className="mr-2 rounded"
-                />
-                <span className="text-sm font-medium">{category.name}</span>
-              </label>
-            ))}
+            ) : (
+              categoriesData?.map((category: any, idx: number) => (
+                <label
+                  key={category._id}
+                  className={`mb-1 flex cursor-pointer items-center rounded px-3 py-2 transition-colors ${
+                    idx === 0
+                      ? "bg-[#EAAB40] text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(category._id)}
+                    onChange={() => onCategoryChange(category._id)}
+                    className="mr-2 rounded"
+                  />
+                  <span className="text-sm font-medium">{category.name}</span>
+                </label>
+              ))
+            )}
           </div>
           {/* Price Range (unchanged, hardcoded) */}
           <div>
-            <h3 className="font-semibold text-gray-800 mb-3">PRICE RANGE</h3>
+            <h3 className="mb-3 font-semibold text-gray-800">PRICE RANGE</h3>
             <div className="space-y-2">
               {priceRanges.map((range) => (
-                <label key={range} className="flex items-center cursor-pointer">
-                  <input 
-                    type="radio"
-                    name="priceRange"
-                    className="mr-2"
-                  />
+                <label key={range} className="flex cursor-pointer items-center">
+                  <input type="radio" name="priceRange" className="mr-2" />
                   <span className="text-sm text-gray-600">{range}</span>
                 </label>
               ))}
@@ -157,35 +167,42 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
           {/* Brands */}
           <div>
-            <h3 className="font-semibold text-gray-800 mb-3">BRANDS</h3>
+            <h3 className="mb-3 font-semibold text-gray-800">BRANDS</h3>
             {isLoadingBrands ? (
               <div>Loading brands...</div>
-            ) : brandsData?.map((brand: any) => (
-              <label key={brand._id} className="flex items-center px-3 py-2 cursor-pointer mb-1">
-                <input
-                  type="checkbox"
-                  checked={selectedBrands.includes(brand._id)}
-                  onChange={() => onBrandChange(brand._id)}
-                  className="mr-2 rounded"
-                />
-                <span className="text-sm text-gray-600">{brand.name}</span>
-              </label>
-            ))}
+            ) : (
+              brandsData?.map((brand: any) => (
+                <label
+                  key={brand._id}
+                  className="mb-1 flex cursor-pointer items-center px-3 py-2"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedBrands.includes(brand._id)}
+                    onChange={() => onBrandChange(brand._id)}
+                    className="mr-2 rounded"
+                  />
+                  <span className="text-sm text-gray-600">{brand.name}</span>
+                </label>
+              ))
+            )}
           </div>
           {/* Tags */}
           <div>
-            <h3 className="font-semibold text-gray-800 mb-3">TAGS</h3>
+            <h3 className="mb-3 font-semibold text-gray-800">TAGS</h3>
             <div className="flex flex-wrap gap-2">
               {isLoadingTags ? (
                 <div>Loading tags...</div>
-              ) : tagsData?.map((tag: any) => (
-                <span
-                  key={tag._id}
-                  className="px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full cursor-pointer hover:bg-gray-200"
-                >
-                  {tag.name}
-                </span>
-              ))}
+              ) : (
+                tagsData?.map((tag: any) => (
+                  <span
+                    key={tag._id}
+                    className="cursor-pointer rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600 hover:bg-gray-200"
+                  >
+                    {tag.name}
+                  </span>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -200,10 +217,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     const stars = [];
     for (let i = 0; i < 5; i++) {
       stars.push(
-        <Star 
-          key={i} 
-          className={`h-4 w-4 ${i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
-        />
+        <Star
+          key={i}
+          className={`h-4 w-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
+        />,
       );
     }
     return stars;
@@ -218,68 +235,75 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-shadow">
+    <div className="rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-lg">
       {/* Product Image */}
-      <div className="relative mb-4">
-        <Link href={`/product/${product._id}`} className="block">
-          <div className="w-full h-48 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity">
+      <Link href={`/product/${product._id}`} className="block">
+        <div className="relative mb-4">
+          <div className="flex h-48 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-gray-100 transition-opacity hover:opacity-90">
             {product.imageUrl ? (
               <img
-                src={Array.isArray(product.imageUrl) ? product.imageUrl[0] : product.imageUrl}
+                src={
+                  Array.isArray(product.imageUrl)
+                    ? product.imageUrl[0]
+                    : product.imageUrl
+                }
                 alt={product.name}
-                className="w-full h-full object-contain"
+                className="h-full w-full object-contain"
                 onError={handleImageError}
                 onLoad={handleImageLoad}
               />
             ) : (
-              <div className="text-gray-400 text-sm">No image available</div>
+              <div className="text-sm text-gray-400">No image available</div>
             )}
           </div>
-        </Link>
-        {/* Discount Badge */}
-        {product.discount && product.discount > 0 && (
-          <div className="absolute top-2 left-2">
-            <span className="px-2 py-1 text-xs font-semibold rounded bg-orange-100 text-orange-600">
-              -{product.discount}%
+
+          {/* Discount Badge */}
+          {product.discount && product.discount > 0 && (
+            <div className="absolute left-2 top-2">
+              <span className="rounded bg-orange-100 px-2 py-1 text-xs font-semibold text-orange-600">
+                -{product.discount}%
+              </span>
+            </div>
+          )}
+          {/* Wishlist Button */}
+          <button className="absolute right-2 top-2 rounded-full bg-white p-1 shadow-md hover:bg-gray-50">
+            <Heart className="h-4 w-4 text-gray-400" />
+          </button>
+        </div>
+        {/* Product Info */}
+        <div>
+          <Link href={`/product/${product._id}`} className="block">
+            <h3 className="mb-2 line-clamp-2 font-medium text-gray-800 hover:text-orange-600">
+              {product.name}
+            </h3>
+          </Link>
+          {/* Price and Discount */}
+          <div className="mb-2 flex items-center gap-2">
+            <span className="text-lg font-bold text-orange-600">
+              ₦{product.price.toLocaleString()}
+            </span>
+            {product.discount &&
+              product.discount > 0 &&
+              product.costBeforeDiscount && (
+                <span className="text-sm text-gray-400 line-through">
+                  ₦{product.costBeforeDiscount.toLocaleString()}
+                </span>
+              )}
+          </div>
+          {/* Stock Left */}
+          <div className="mb-1 text-xs text-gray-500">
+            {product.stock} items left
+          </div>
+          {/* Category Badge */}
+          <div className="mt-2">
+            <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">
+              {typeof product.category === "object"
+                ? product.category?.name || product.category?._id || ""
+                : product.category}
             </span>
           </div>
-        )}
-        {/* Wishlist Button */}
-        <button className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-md hover:bg-gray-50">
-          <Heart className="h-4 w-4 text-gray-400" />
-        </button>
-      </div>
-      {/* Product Info */}
-      <div>
-        <Link href={`/product/${product._id}`} className="block">
-          <h3 className="font-medium text-gray-800 mb-2 line-clamp-2 hover:text-orange-600">
-            {product.name}
-          </h3>
-        </Link>
-        {/* Price and Discount */}
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-lg font-bold text-orange-600">
-            ₦{product.price.toLocaleString()}
-          </span>
-          {product.discount && product.discount > 0 && product.costBeforeDiscount && (
-            <span className="text-sm text-gray-400 line-through">
-              ₦{product.costBeforeDiscount.toLocaleString()}
-            </span>
-          )}
-        </div>
-        {/* Stock Left */}
-        <div className="text-xs text-gray-500 mb-1">
-          {product.stock} items left
-        </div>
-        {/* Category Badge */}
-        <div className="mt-2">
-          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-            {typeof product.category === 'object'
-              ? product.category?.name || product.category?._id || ''
-              : product.category}
-          </span>
-        </div>
-      </div>
+        </div>{" "}
+      </Link>
     </div>
   );
 };
@@ -290,38 +314,45 @@ const MarketplaceInterface: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(
+    [],
+  );
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Fetch products from API
-  const { data: products, isLoading, error } = useQuery<Product[]>({
-    queryKey: ['products'],
+  const {
+    data: products,
+    isLoading,
+    error,
+  } = useQuery<Product[]>({
+    queryKey: ["products"],
     queryFn: async () => {
-      const res = await client.get('/api/products');
+      const res = await client.get("/api/products");
       return res.data;
     },
   });
 
   // Fetch categories, brands, tags from API
-  const { data: categoriesData = [], isLoading: isLoadingCategories } = useQuery({
-    queryKey: ['product-categories'],
-    queryFn: async () => {
-      const res = await client.get('/api/products-categories');
-      return res.data.data;
-    },
-  });
+  const { data: categoriesData = [], isLoading: isLoadingCategories } =
+    useQuery({
+      queryKey: ["product-categories"],
+      queryFn: async () => {
+        const res = await client.get("/api/products-categories");
+        return res.data.data;
+      },
+    });
   const { data: brandsData = [], isLoading: isLoadingBrands } = useQuery({
-    queryKey: ['brands'],
+    queryKey: ["brands"],
     queryFn: async () => {
-      const res = await client.get('/api/brands');
+      const res = await client.get("/api/brands");
       return res.data.data;
     },
   });
   const { data: tagsData = [], isLoading: isLoadingTags } = useQuery({
-    queryKey: ['tags'],
+    queryKey: ["tags"],
     queryFn: async () => {
-      const res = await client.get('/api/tags');
+      const res = await client.get("/api/tags");
       return res.data.data;
     },
   });
@@ -334,42 +365,53 @@ const MarketplaceInterface: React.FC = () => {
 
     // Search filter
     if (searchQuery) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (typeof product.category === 'object'
-          ? product.category.name.toLowerCase().includes(searchQuery.toLowerCase())
-          : product.category.toLowerCase().includes(searchQuery.toLowerCase()))
+      filtered = filtered.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (typeof product.category === "object"
+            ? product.category.name
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase())
+            : product.category
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase())),
       );
     }
 
     // Category filter
     if (selectedCategories.length > 0) {
-      filtered = filtered.filter(product =>
+      filtered = filtered.filter((product) =>
         selectedCategories.includes(
-          typeof product.category === 'object'
+          typeof product.category === "object"
             ? product.category._id
-            : product.category
-        )
+            : product.category,
+        ),
       );
     }
 
     // Subcategory filter
     if (selectedSubcategories.length > 0) {
-      filtered = filtered.filter(product =>
-        selectedSubcategories.includes(product.subcategory || '')
+      filtered = filtered.filter((product) =>
+        selectedSubcategories.includes(product.subcategory || ""),
       );
     }
 
     // Brand filter
     if (selectedBrands.length > 0) {
-      filtered = filtered.filter(product =>
-        selectedBrands.includes(product.brand)
+      filtered = filtered.filter((product) =>
+        selectedBrands.includes(product.brand),
       );
     }
 
     return filtered;
-  }, [products, searchQuery, selectedCategories, selectedSubcategories, selectedBrands]);
+  }, [
+    products,
+    searchQuery,
+    selectedCategories,
+    selectedSubcategories,
+    selectedBrands,
+  ]);
 
   // Pagination
   const productsPerPage = 12;
@@ -379,28 +421,28 @@ const MarketplaceInterface: React.FC = () => {
   const currentProducts = filteredProducts.slice(startIndex, endIndex);
 
   const handleCategoryChange = (category: string) => {
-    setSelectedCategories(prev => 
-      prev.includes(category) 
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
+    setSelectedCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category],
     );
     setCurrentPage(1);
   };
 
   const handleSubcategoryChange = (subcategory: string) => {
-    setSelectedSubcategories(prev => 
-      prev.includes(subcategory) 
-        ? prev.filter(s => s !== subcategory)
-        : [...prev, subcategory]
+    setSelectedSubcategories((prev) =>
+      prev.includes(subcategory)
+        ? prev.filter((s) => s !== subcategory)
+        : [...prev, subcategory],
     );
     setCurrentPage(1);
   };
 
   const handleBrandChange = (brandId: string) => {
-    setSelectedBrands(prev =>
+    setSelectedBrands((prev) =>
       prev.includes(brandId)
-        ? prev.filter(b => b !== brandId)
-        : [...prev, brandId]
+        ? prev.filter((b) => b !== brandId)
+        : [...prev, brandId],
     );
     setCurrentPage(1);
   };
@@ -409,17 +451,20 @@ const MarketplaceInterface: React.FC = () => {
     setSelectedCategories([]);
     setSelectedSubcategories([]);
     setSelectedBrands([]);
-    setSearchQuery('');
+    setSearchQuery("");
     setCurrentPage(1);
   };
 
-  const removeFilter = (type: 'category' | 'subcategory' | 'brand', value: string) => {
-    if (type === 'category') {
-      setSelectedCategories(prev => prev.filter(c => c !== value));
-    } else if (type === 'subcategory') {
-      setSelectedSubcategories(prev => prev.filter(s => s !== value));
+  const removeFilter = (
+    type: "category" | "subcategory" | "brand",
+    value: string,
+  ) => {
+    if (type === "category") {
+      setSelectedCategories((prev) => prev.filter((c) => c !== value));
+    } else if (type === "subcategory") {
+      setSelectedSubcategories((prev) => prev.filter((s) => s !== value));
     } else {
-      setSelectedBrands(prev => prev.filter(b => b !== value));
+      setSelectedBrands((prev) => prev.filter((b) => b !== value));
     }
     setCurrentPage(1);
   };
@@ -432,7 +477,7 @@ const MarketplaceInterface: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="flex items-center justify-center h-64">
+        <div className="flex h-64 items-center justify-center">
           <div className="text-lg text-gray-600">Loading products...</div>
         </div>
       </div>
@@ -443,8 +488,10 @@ const MarketplaceInterface: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg text-red-600">Error loading products. Please try again.</div>
+        <div className="flex h-64 items-center justify-center">
+          <div className="text-lg text-red-600">
+            Error loading products. Please try again.
+          </div>
         </div>
       </div>
     );
@@ -453,7 +500,7 @@ const MarketplaceInterface: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <div className="flex">
         {/* Sidebar */}
         <Sidebar
@@ -476,30 +523,33 @@ const MarketplaceInterface: React.FC = () => {
         {/* Main Content */}
         <div className="flex-1 p-4">
           {/* Search and Filters Bar */}
-          <div className="flex flex-col lg:flex-row gap-4 mb-6">
+          <div className="mb-6 flex flex-col gap-4 lg:flex-row">
             {/* Search Bar */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
               <input
                 type="text"
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
             </div>
 
             {/* Mobile Filter Button */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 hover:bg-gray-50 lg:hidden"
             >
               <Filter className="h-5 w-5" />
               Filters
             </button>
 
             {/* Clear Filters Button */}
-            {(selectedCategories.length > 0 || selectedSubcategories.length > 0 || selectedBrands.length > 0 || searchQuery) && (
+            {(selectedCategories.length > 0 ||
+              selectedSubcategories.length > 0 ||
+              selectedBrands.length > 0 ||
+              searchQuery) && (
               <button
                 onClick={clearAllFilters}
                 className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
@@ -510,18 +560,22 @@ const MarketplaceInterface: React.FC = () => {
           </div>
 
           {/* Active Filters */}
-          {(selectedCategories.length > 0 || selectedSubcategories.length > 0 || selectedBrands.length > 0) && (
-            <div className="flex flex-wrap gap-2 mb-6">
-              {selectedCategories.map(categoryId => {
-                const cat = categoriesData.find((c: any) => c._id === categoryId);
+          {(selectedCategories.length > 0 ||
+            selectedSubcategories.length > 0 ||
+            selectedBrands.length > 0) && (
+            <div className="mb-6 flex flex-wrap gap-2">
+              {selectedCategories.map((categoryId) => {
+                const cat = categoriesData.find(
+                  (c: any) => c._id === categoryId,
+                );
                 return (
                   <span
                     key={categoryId}
-                    className="flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-800 text-sm rounded-full"
+                    className="flex items-center gap-1 rounded-full bg-orange-100 px-3 py-1 text-sm text-orange-800"
                   >
                     {cat ? cat.name : categoryId}
                     <button
-                      onClick={() => removeFilter('category', categoryId)}
+                      onClick={() => removeFilter("category", categoryId)}
                       className="ml-1 hover:text-orange-600"
                     >
                       <X className="h-3 w-3" />
@@ -529,10 +583,12 @@ const MarketplaceInterface: React.FC = () => {
                   </span>
                 );
               })}
-              {selectedSubcategories.map(subId => {
+              {selectedSubcategories.map((subId) => {
                 let subName = subId;
                 for (const cat of categoriesData) {
-                  const found = cat.children?.find((sub: any) => sub._id === subId);
+                  const found = cat.children?.find(
+                    (sub: any) => sub._id === subId,
+                  );
                   if (found) {
                     subName = found.name;
                     break;
@@ -541,11 +597,11 @@ const MarketplaceInterface: React.FC = () => {
                 return (
                   <span
                     key={subId}
-                    className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                    className="flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800"
                   >
                     {subName}
                     <button
-                      onClick={() => removeFilter('subcategory', subId)}
+                      onClick={() => removeFilter("subcategory", subId)}
                       className="ml-1 hover:text-blue-600"
                     >
                       <X className="h-3 w-3" />
@@ -553,16 +609,16 @@ const MarketplaceInterface: React.FC = () => {
                   </span>
                 );
               })}
-              {selectedBrands.map(brandId => {
+              {selectedBrands.map((brandId) => {
                 const brand = brandsData.find((b: any) => b._id === brandId);
                 return (
                   <span
                     key={brandId}
-                    className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full"
+                    className="flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-sm text-green-800"
                   >
                     {brand ? brand.name : brandId}
                     <button
-                      onClick={() => removeFilter('brand', brandId)}
+                      onClick={() => removeFilter("brand", brandId)}
                       className="ml-1 hover:text-green-600"
                     >
                       <X className="h-3 w-3" />
@@ -574,13 +630,14 @@ const MarketplaceInterface: React.FC = () => {
           )}
 
           {/* Results Count */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <p className="text-gray-600">
-              Showing {filteredProducts.length} of {products?.length || 0} products
+              Showing {filteredProducts.length} of {products?.length || 0}{" "}
+              products
             </p>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">Sort by:</span>
-              <select className="text-sm border border-gray-300 rounded px-2 py-1">
+              <select className="rounded border border-gray-300 px-2 py-1 text-sm">
                 <option>Featured</option>
                 <option>Price: Low to High</option>
                 <option>Price: High to Low</option>
@@ -591,46 +648,50 @@ const MarketplaceInterface: React.FC = () => {
 
           {/* Products Grid */}
           {currentProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {currentProducts.map((product) => (
                 <ProductCard key={product._id} product={product} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
+            <div className="py-12 text-center">
+              <p className="text-lg text-gray-500">
+                No products found matching your criteria.
+              </p>
             </div>
           )}
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 mt-8">
+            <div className="mt-8 flex items-center justify-center gap-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="p-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded border border-gray-300 p-2 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => handlePageChange(page)}
-                  className={`px-3 py-2 border rounded ${
-                    currentPage === page
-                      ? 'bg-orange-500 text-white border-orange-500'
-                      : 'border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`rounded border px-3 py-2 ${
+                      currentPage === page
+                        ? "border-orange-500 bg-orange-500 text-white"
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ),
+              )}
+
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="p-2 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded border border-gray-300 p-2 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -643,4 +704,4 @@ const MarketplaceInterface: React.FC = () => {
 };
 
 export default MarketplaceInterface;
-export { ProductCard }; 
+export { ProductCard };
