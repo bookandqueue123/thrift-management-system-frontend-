@@ -224,6 +224,7 @@ const PaymentBreakdownModal: React.FC<PaymentBreakdownModalProps> = ({ order, is
                     <th className="border border-gray-600 px-3 py-2 text-left text-white">Principal</th>
                     <th className="border border-gray-600 px-3 py-2 text-left text-white">Interest</th>
                     <th className="border border-gray-600 px-3 py-2 text-left text-white">Remaining Balance</th>
+                    <th className="border border-gray-600 px-3 py-2 text-left text-white">Pay My Debts</th> {/* New column */}
                     <th className="border border-gray-600 px-3 py-2 text-left text-white">Status</th>
                   </tr>
                 </thead>
@@ -236,6 +237,41 @@ const PaymentBreakdownModal: React.FC<PaymentBreakdownModalProps> = ({ order, is
                       <td className="border border-gray-600 px-3 py-2 text-gray-300">{formatCurrency(payment.principalAmount)}</td>
                       <td className="border border-gray-600 px-3 py-2 text-gray-300">{formatCurrency(payment.interestAmount)}</td>
                       <td className="border border-gray-600 px-3 py-2 text-gray-300">{formatCurrency(payment.remainingBalance)}</td>
+                      {/* Pay My Debts button for each payment row */}
+                      <td className="border border-gray-600 px-3 py-2 text-gray-300">
+                        {!payment.isPaid && payment.remainingBalance > 0 && (
+                          <button
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition-colors"
+                            onClick={async () => {
+                              setPaying(true);
+                              setPayError(null);
+                              try {
+                                const res = await client.post('/api/payments/bills', {
+                                  billId: order._id,
+                                  billItems: [{
+                                    billItemId: payment._id, // assuming payment._id is the bill item id
+                                    amountToPay: payment.remainingBalance
+                                  }],
+                                  paymentMethod: 'card',
+                                  notes: `Little by little payment for payment #${payment.paymentNumber}`,
+                                });
+                                const link = res?.data?.data?.data?.link;
+                                if (link) {
+                                  window.location.href = link;
+                                  return;
+                                }
+                              } catch (e: any) {
+                                setPayError(e.message || 'Payment failed');
+                              } finally {
+                                setPaying(false);
+                              }
+                            }}
+                            disabled={paying}
+                          >
+                            {paying ? 'Processing...' : 'Pay My Debts'}
+                          </button>
+                        )}
+                      </td>
                       <td className="border border-gray-600 px-3 py-2">
                         <span className={`px-2 py-1 rounded text-xs ${
                           payment.isPaid 
@@ -300,23 +336,15 @@ const PaymentBreakdownModal: React.FC<PaymentBreakdownModalProps> = ({ order, is
           </div>
         </div>
 
-        <div className="flex justify-end mt-6">
-          <button
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded text-base font-semibold transition-colors"
-            onClick={handleMakePayment}
-          >
-            Make Payment
-          </button>
-        </div>
-
-        <div className="flex justify-end">
+        {/* Remove the Make Payment button section at the bottom of the modal */}
+        {/* <div className="flex justify-end">
           <button
             onClick={onClose}
             className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
           >
             Close
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

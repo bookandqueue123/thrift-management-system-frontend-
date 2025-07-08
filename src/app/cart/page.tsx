@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { useSelector } from 'react-redux';
 import { selectToken } from '@/slices/OrganizationIdSlice';
 
-// Define a type for a cart item from the backend
+
 interface CartItemFromAPI {
   _id: string;
   product: {
@@ -24,7 +24,7 @@ interface CartItemFromAPI {
   imageUrl?: string;
 }
 
-// Define the cart response structure from the backend
+
 interface CartResponse {
   _id: string;
   user: string;
@@ -190,12 +190,11 @@ export default function CartPage() {
     }
   });
 
-  // Calculate subtotal for an item
   const calculateItemSubtotal = (item: CartItemFromAPI) => {
     return item.price * item.quantity;
   };
 
-  // Calculate total for all items
+
   const calculateTotal = () => {
     if (!Array.isArray(cartItems) || cartItems.length === 0) {
       return 0;
@@ -542,11 +541,13 @@ export default function CartPage() {
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-16 w-16">
-                              <img
-                                className="h-16 w-16 object-contain"
-                                src={item.imageUrl || "/market/Image8.png"}
-                                alt={item.name}
-                              />
+                              {item.imageUrl && item.imageUrl.length > 0 && (
+                                <img
+                                  className="h-16 w-16 object-contain"
+                                  src={item.imageUrl}
+                                  alt={item.name}
+                                />
+                              )}
                             </div>
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900">
