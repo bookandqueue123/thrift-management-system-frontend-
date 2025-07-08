@@ -451,7 +451,7 @@ import Footer from "@/modules/HomePage/Footer";
 import Navbar from "@/modules/HomePage/NavBar";
 import { selectToken } from "@/slices/OrganizationIdSlice";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ShoppingCart, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShoppingCart, Star } from "lucide-react";
 import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -536,6 +536,8 @@ export default function ProductDetailPage({
   const queryClient = useQueryClient();
   const [quantity, setQuantity] = useState<number>(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   const token = useSelector(selectToken);
   const paramsNode = useParams();
   console.log(params.id);
@@ -660,6 +662,34 @@ export default function ProductDetailPage({
     }
   };
 
+  // Handle different imageUrl formats
+  const getImageArray = () => {
+    if (product.imageUrl && Array.isArray(product.imageUrl)) {
+      return product.imageUrl.filter((url) => url); // Filter out empty strings
+    } else if (product.imageUrl && typeof product.imageUrl === "string") {
+      return [product.imageUrl];
+    }
+    return [];
+  };
+
+  const images = getImageArray();
+  const hasMultipleImages = images.length > 1;
+
+  const nextImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === images.length - 1 ? 0 : prevIndex + 1,
+    );
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === 0 ? images.length - 1 : prevIndex - 1,
+    );
+  };
+
+  const goToImage = (index: any) => {
+    setCurrentImageIndex(index);
+  };
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
       <Navbar />
@@ -678,23 +708,58 @@ export default function ProductDetailPage({
           {/* Left: Large Image */}
           <div className="flex items-center justify-center rounded-lg border border-gray-200 bg-white p-6">
             <div className="relative flex h-80 w-full items-center justify-center overflow-hidden rounded bg-gray-100">
-              {product.imageUrl &&
-              Array.isArray(product.imageUrl) &&
-              product.imageUrl.length > 0 ? (
-                <img
-                  src={product.imageUrl[0] || "/placeholder.svg"}
-                  alt={product.name}
-                  className="max-h-full max-w-full object-contain"
-                />
-              ) : product.imageUrl && typeof product.imageUrl === "string" ? (
-                <img
-                  src={product.imageUrl || "/placeholder.svg"}
-                  alt={product.name}
-                  className="max-h-full max-w-full object-contain"
-                />
+              {images.length > 0 ? (
+                <>
+                  <img
+                    src={images[currentImageIndex] || "/placeholder.svg"}
+                    alt={product.name}
+                    className="max-h-full max-w-full object-contain transition-opacity duration-300"
+                  />
+
+                  {/* Navigation Arrows - Only show if multiple images */}
+                  {hasMultipleImages && (
+                    <>
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-md transition-all hover:bg-white hover:shadow-lg"
+                        aria-label="Previous image"
+                      >
+                        <ChevronLeft className="h-5 w-5 text-gray-600" />
+                      </button>
+
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow-md transition-all hover:bg-white hover:shadow-lg"
+                        aria-label="Next image"
+                      >
+                        <ChevronRight className="h-5 w-5 text-gray-600" />
+                      </button>
+                    </>
+                  )}
+
+                  {/* Dot Indicators - Only show if multiple images */}
+                  {hasMultipleImages && (
+                    <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 space-x-2">
+                      {images.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => goToImage(index)}
+                          className={`h-2 w-2 rounded-full transition-all ${
+                            index === currentImageIndex
+                              ? "bg-white shadow-md"
+                              : "bg-white/50 hover:bg-white/75"
+                          }`}
+                          aria-label={`Go to image ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="text-lg text-gray-400">No image available</div>
               )}
+
+              {/* Badge */}
               {product.badge && (
                 <div
                   className={`absolute left-3 top-3 z-10 rounded px-3 py-1 text-sm font-semibold ${
