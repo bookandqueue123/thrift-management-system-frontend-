@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { FaNairaSign } from "react-icons/fa6";
 import { useSelector } from "react-redux";
 
 const PlatformChargeManager = () => {
@@ -287,7 +288,7 @@ const PlatformChargeManager = () => {
               <div className="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
                 <div className="flex items-center space-x-4">
                   <div className="rounded-full bg-blue-500 p-3">
-                    <DollarSign className="h-8 w-8 text-white" />
+                    <FaNairaSign className="h-8 w-8 text-white" />
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900">
