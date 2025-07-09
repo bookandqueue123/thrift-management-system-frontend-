@@ -265,6 +265,7 @@ export default function CartPage() {
     setPreviewError("");
     setPreviewData(null);
     try {
+      console.log(selectedItem);
       const res = await client.get(
         `/api/payments/payment-preview?productId=${selectedItem.productId}&repaymentMonths=${months}&quantity=${selectedItem.quantity}`,
         { headers: { Authorization: `Bearer ${token}` } },
