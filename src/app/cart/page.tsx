@@ -1,15 +1,13 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/api/hooks/useAuth";
-import Navbar from "@/modules/HomePage/NavBar";
 import Footer from "@/modules/HomePage/Footer";
+import Navbar from "@/modules/HomePage/NavBar";
 import PayInBitsForm from "@/modules/form/Pay-inBit";
+import { selectToken } from "@/slices/OrganizationIdSlice";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useSelector } from 'react-redux';
-import { selectToken } from '@/slices/OrganizationIdSlice';
-
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
 
 interface CartItemFromAPI {
   _id: string;
@@ -24,7 +22,6 @@ interface CartItemFromAPI {
   imageUrl?: string;
 }
 
-
 interface CartResponse {
   _id: string;
   user: string;
@@ -34,7 +31,6 @@ interface CartResponse {
   updatedAt: string;
   __v: number;
 }
-
 
 interface CartItemForForm {
   _id: string;
@@ -64,36 +60,35 @@ export default function CartPage() {
   const queryClient = useQueryClient();
   const [paymentMode, setPaymentMode] = useState<"full" | "bits">("full");
   const [showPayInBitsForm, setShowPayInBitsForm] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<CartItemForForm | null>(null);
+  const [selectedItem, setSelectedItem] = useState<CartItemForForm | null>(
+    null,
+  );
   const token = useSelector(selectToken);
- 
+
   const [showPromo, setShowPromo] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState("");
   const [promoError, setPromoError] = useState("");
-  
+
   const [previewData, setPreviewData] = useState<any>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState("");
-  const [repaymentMonths, setRepaymentMonths] = useState<number | null>(null); 
+  const [repaymentMonths, setRepaymentMonths] = useState<number | null>(null);
 
-  
-  const { 
-    data: cartData, 
-    isLoading, 
-    error 
+  const {
+    data: cartData,
+    isLoading,
+    error,
   } = useQuery<CartResponse>({
-    queryKey: ['cart'],
+    queryKey: ["cart"],
     queryFn: async () => {
-      const res = await client.get('/api/cart');
+      const res = await client.get("/api/cart");
       return res.data;
     },
   });
 
-  
   const cartItems = cartData?.items || [];
 
- 
   const convertToFormItem = (item: CartItemFromAPI): CartItemForForm => {
     return {
       _id: item._id,
@@ -101,12 +96,12 @@ export default function CartPage() {
       product: {
         _id: item.product._id,
         name: item.name,
-        description: item.name, 
+        description: item.name,
         price: item.price,
-        category: "General", 
+        category: "General",
         brand: "Unknown",
         imageUrl: item.imageUrl,
-        stock: item.quantity, 
+        stock: item.quantity,
         rating: 0,
         reviews: 0,
         badge: null,
@@ -118,91 +113,91 @@ export default function CartPage() {
     };
   };
 
-  
   const updateQuantityMutation = useMutation({
-    mutationFn: async ({ productId, quantity }: { productId: string; quantity: number }) => {
+    mutationFn: async ({
+      productId,
+      quantity,
+    }: {
+      productId: string;
+      quantity: number;
+    }) => {
       const res = await client.put(`/api/cart/${productId}`, {
-        quantity
+        quantity,
       });
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
     onError: (error) => {
-      console.error('Error updating quantity:', error);
-    }
+      console.error("Error updating quantity:", error);
+    },
   });
 
- 
   const increaseQuantityMutation = useMutation({
     mutationFn: async (productId: string) => {
       const res = await client.patch(`/api/cart/${productId}/increase`);
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
     onError: (error) => {
-      console.error('Error increasing quantity:', error);
-    }
+      console.error("Error increasing quantity:", error);
+    },
   });
 
-  
   const decreaseQuantityMutation = useMutation({
     mutationFn: async (productId: string) => {
       const res = await client.patch(`/api/cart/${productId}/decrease`);
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
     onError: (error) => {
-      console.error('Error decreasing quantity:', error);
-    }
+      console.error("Error decreasing quantity:", error);
+    },
   });
 
- 
   const removeItemMutation = useMutation({
     mutationFn: async (productId: string) => {
       const res = await client.delete(`/api/cart/${productId}`);
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
     onError: (error) => {
-      console.error('Error removing item:', error);
-    }
+      console.error("Error removing item:", error);
+    },
   });
-
 
   const clearCartMutation = useMutation({
     mutationFn: async () => {
-      const res = await client.delete('/api/cart/clear/all');
+      const res = await client.delete("/api/cart/clear/all");
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
     },
     onError: (error) => {
-      console.error('Error clearing cart:', error);
-    }
+      console.error("Error clearing cart:", error);
+    },
   });
 
   const calculateItemSubtotal = (item: CartItemFromAPI) => {
     return item.price * item.quantity;
   };
 
-
   const calculateTotal = () => {
     if (!Array.isArray(cartItems) || cartItems.length === 0) {
       return 0;
     }
-    
+
     const itemsTotal = cartItems.reduce(
       (sum, item) => sum + calculateItemSubtotal(item),
-      0
+      0,
     );
     return itemsTotal;
   };
@@ -225,12 +220,14 @@ export default function CartPage() {
   // Handlers for quantity changes
   const handleQuantityChange = (productId: string, delta: number) => {
     if (!Array.isArray(cartItems)) return;
-    
-    const currentItem = cartItems.find(item => item.product._id === productId);
+
+    const currentItem = cartItems.find(
+      (item) => item.product._id === productId,
+    );
     if (!currentItem) return;
 
     const newQuantity = currentItem.quantity + delta;
-    
+
     if (newQuantity <= 0) {
       // Remove item if quantity becomes 0 or negative
       removeItemMutation.mutate(productId);
@@ -259,15 +256,18 @@ export default function CartPage() {
   const handleClearCart = () => {
     clearCartMutation.mutate();
   };
-   
-  const handlePayInBitsPreview = async (selectedItem: CartItemForForm, months: number) => {
+
+  const handlePayInBitsPreview = async (
+    selectedItem: CartItemForForm,
+    months: number,
+  ) => {
     setPreviewLoading(true);
     setPreviewError("");
     setPreviewData(null);
     try {
       const res = await client.get(
-        `/api/payments/payment-preview?productId=${selectedItem.productId}&repaymentMonths=${months}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `/api/payments/payment-preview?productId=${selectedItem.productId}&repaymentMonths=${months}&quantity=${selectedItem.quantity}`,
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setPreviewData(res.data);
       setShowPayInBitsForm(true);
@@ -283,7 +283,11 @@ export default function CartPage() {
     setPaymentMode(mode);
     if (mode === "bits") {
       setRepaymentMonths(null); // Reset repayment period
-      const item = Array.isArray(cartItems) && cartItems.length > 0 ? convertToFormItem(cartItems[0]) : null;
+      const item =
+        Array.isArray(cartItems) && cartItems.length > 0
+          ? convertToFormItem(cartItems[0])
+          : null;
+      console.log(item);
       setSelectedItem(item);
       setPreviewData(null);
       setShowPayInBitsForm(false);
@@ -291,7 +295,9 @@ export default function CartPage() {
   };
 
   // Handler for repayment period change
-  const handleRepaymentMonthsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleRepaymentMonthsChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
     const months = Number(e.target.value);
     setRepaymentMonths(months);
     if (selectedItem && months) {
@@ -305,16 +311,17 @@ export default function CartPage() {
     localStorage.setItem(
       "orderDetails",
       JSON.stringify({
-        paymentMode: paymentMode === "bits" ? "Pay In Bits" : "100% Full Payment",
+        paymentMode:
+          paymentMode === "bits" ? "Pay In Bits" : "100% Full Payment",
         // You can add other details here if needed, e.g. cart items, total, etc.
-      })
+      }),
     );
 
     if (paymentMode === "bits") {
       if (!repaymentMonths || !selectedItem) return; // Prevent if not selected
       handlePayInBitsPreview(selectedItem, repaymentMonths);
     } else {
-      router.push('/cart/delivery');
+      router.push("/cart/delivery");
     }
   };
 
@@ -328,13 +335,13 @@ export default function CartPage() {
     setPromoError("");
     // Add logic for validating/applying promo code here
   };
-  
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 pb-12">
         <Navbar />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex justify-center  items-center h-64">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex h-64  items-center justify-center">
             <div className="text-lg text-gray-600">Loading cart...</div>
           </div>
         </div>
@@ -347,9 +354,11 @@ export default function CartPage() {
     return (
       <div className="min-h-screen bg-gray-50 pb-12">
         <Navbar />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-lg text-red-600">Error loading cart. Please try again.</div>
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex h-64 items-center justify-center">
+            <div className="text-lg text-red-600">
+              Error loading cart. Please try again.
+            </div>
           </div>
         </div>
         <Footer />
@@ -363,71 +372,73 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
       <Navbar />
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-6">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-800">Cart</h1>
           {safeCartItems.length > 0 && (
             <button
               onClick={handleClearCart}
               disabled={clearCartMutation.isPending}
-              className="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50"
+              className="text-sm font-medium text-red-600 hover:text-red-800 disabled:opacity-50"
             >
               {clearCartMutation.isPending ? "Clearing..." : "Clear Cart"}
             </button>
           )}
         </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column: Delivery Details and Payment Mode */}
-            <div className="lg:col-span-1 space-y-6">
-              {/* Payment Mode */}
-              <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                  Payment Mode
-                </h2>
-                <div className="space-y-3">
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="full"
-                      checked={paymentMode === "full"}
-                      onChange={() => handlePaymentModeChange("full")}
-                      className="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">
-                      100% Full Payment
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          {/* Left Column: Delivery Details and Payment Mode */}
+          <div className="space-y-6 lg:col-span-1">
+            {/* Payment Mode */}
+            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-xl font-semibold text-gray-800">
+                Payment Mode
+              </h2>
+              <div className="space-y-3">
+                <label className="flex cursor-pointer items-center">
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="full"
+                    checked={paymentMode === "full"}
+                    onChange={() => handlePaymentModeChange("full")}
+                    className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">
+                    100% Full Payment
+                  </span>
+                </label>
+                <label className="flex cursor-pointer items-center">
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="bits"
+                    checked={paymentMode === "bits"}
+                    onChange={() => handlePaymentModeChange("bits")}
+                    className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
+                  />
+                  <div className="ml-2 flex items-center">
+                    <span className="text-sm text-gray-700">
+                      Pay little-by-little
                     </span>
-                  </label>
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="bits"
-                      checked={paymentMode === "bits"}
-                      onChange={() => handlePaymentModeChange("bits")}
-                      className="h-4 w-4 text-orange-600 border-gray-300 focus:ring-orange-500"
-                    />
-                    <div className="ml-2 flex items-center">
-                      <span className="text-sm text-gray-700">Pay little-by-little</span>
-                      <div className="ml-2 w-4 h-4 bg-gray-300 rounded-full flex items-center justify-center">
-                        <span className="text-xs text-white font-bold">?</span>
-                      </div>
+                    <div className="ml-2 flex h-4 w-4 items-center justify-center rounded-full bg-gray-300">
+                      <span className="text-xs font-bold text-white">?</span>
                     </div>
-                  </label>
-                </div>
+                  </div>
+                </label>
+              </div>
               {/* Promo Code Section (inside payment mode, before total) */}
-              <div className="mt-6 mb-2">
+              <div className="mb-2 mt-6">
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
                     placeholder="Enter promo code"
                     value={promoCode}
-                    onChange={e => setPromoCode(e.target.value)}
-                    className="border rounded p-2 w-full"
+                    onChange={(e) => setPromoCode(e.target.value)}
+                    className="w-full rounded border p-2"
                   />
                   <button
-                    className="bg-orange-500 text-white px-4 py-2 rounded font-semibold hover:bg-orange-600 disabled:bg-orange-300"
+                    className="rounded bg-orange-500 px-4 py-2 font-semibold text-white hover:bg-orange-600 disabled:bg-orange-300"
                     onClick={handleApplyPromo}
                     disabled={!promoCode}
                   >
@@ -435,34 +446,44 @@ export default function CartPage() {
                   </button>
                 </div>
                 {appliedPromo && (
-                  <span className="ml-2 text-green-600 font-semibold">Applied: {appliedPromo}</span>
+                  <span className="ml-2 font-semibold text-green-600">
+                    Applied: {appliedPromo}
+                  </span>
                 )}
                 {promoError && (
-                  <span className="ml-2 text-red-600 text-sm">{promoError}</span>
+                  <span className="ml-2 text-sm text-red-600">
+                    {promoError}
+                  </span>
                 )}
               </div>
-                {/* Show payment details when "Pay in Bits" is selected */}
-                {paymentMode === "bits" && (
-                  <>
-                  <div className="mt-4 p-4 bg-gray-50 rounded-lg border w-full">
-                    <div className="space-y-3 w-full">
+              {/* Show payment details when "Pay in Bits" is selected */}
+              {paymentMode === "bits" && (
+                <>
+                  <div className="mt-4 w-full rounded-lg border bg-gray-50 p-4">
+                    <div className="w-full space-y-3">
                       {previewLoading ? (
-                        <div className="text-sm text-gray-600">Loading payment details...</div>
+                        <div className="text-sm text-gray-600">
+                          Loading payment details...
+                        </div>
                       ) : previewData ? (
                         <>
-                          <div className="flex justify-between items-center w-full">
+                          <div className="flex w-full items-center justify-between">
                             <span className="text-sm text-gray-600">
-                              {previewData.depositAmount === 400 ? "Minimum Deposit Amount:" : "Deposit Amount:"}
+                              {previewData.depositAmount === 400
+                                ? "Minimum Deposit Amount:"
+                                : "Deposit Amount:"}
                             </span>
                             <span className="text-sm font-semibold text-gray-800">
                               ₦{previewData.depositAmount?.toLocaleString()}
                             </span>
                           </div>
-                          <div className="flex justify-between items-center w-full">
-                            <span className="text-sm text-gray-600 pr-2">
-                              {previewData.repaymentMonths === 3 ? "Maximum Repayment Timeline:" : "Repayment Timeline:"}
+                          <div className="flex w-full items-center justify-between">
+                            <span className="pr-2 text-sm text-gray-600">
+                              {previewData.repaymentMonths === 3
+                                ? "Maximum Repayment Timeline:"
+                                : "Repayment Timeline:"}
                             </span>
-                            <span className="text-sm font-semibold text-gray-800 text-right">
+                            <span className="text-right text-sm font-semibold text-gray-800">
                               {previewData.repaymentMonths} Months
                             </span>
                           </div>
@@ -472,137 +493,144 @@ export default function CartPage() {
                   </div>
                   {/* Repayment Period only visible for 'bits' mode */}
                   <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
                       Repayment Period
                     </label>
                     <select
-                      value={repaymentMonths ?? ''}
+                      value={repaymentMonths ?? ""}
                       onChange={handleRepaymentMonthsChange}
-                      className="border rounded p-2 w-full"
+                      className="w-full rounded border p-2"
                     >
                       <option value="" disabled>
                         Select repayment period
                       </option>
-                      {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
-                        <option key={month} value={month}>{month} Month{month > 1 ? 's' : ''}</option>
-                      ))}
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map(
+                        (month) => (
+                          <option key={month} value={month}>
+                            {month} Month{month > 1 ? "s" : ""}
+                          </option>
+                        ),
+                      )}
                     </select>
                   </div>
-                  </>
-                )}
-                 <div className="border-t border-gray-200 pt-4 mt-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-gray-800">
-                        Total
-                      </span>
-                      <span className="text-2xl font-extrabold text-gray-800">
-                        ₦{calculateTotal().toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
+                </>
+              )}
+              <div className="mt-4 border-t border-gray-200 pt-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-bold text-gray-800">Total</span>
+                  <span className="text-2xl font-extrabold text-gray-800">
+                    ₦{calculateTotal().toFixed(2)}
+                  </span>
+                </div>
               </div>
-
-              <button 
-                onClick={handleCheckout}
-                className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800 transition"
-                disabled={paymentMode === "bits" && !repaymentMonths}
-              >
-                {paymentMode === "bits" ? "Proceed to Checkout" : "Checkout"}
-              </button>
             </div>
 
-            {/* Right Column: Product List */}
-            <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Product
-                      </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <button
+              onClick={handleCheckout}
+              className="w-full rounded-lg bg-black py-3 font-semibold text-white transition hover:bg-gray-800"
+              disabled={paymentMode === "bits" && !repaymentMonths}
+            >
+              {paymentMode === "bits" ? "Proceed to Checkout" : "Checkout"}
+            </button>
+          </div>
+
+          {/* Right Column: Product List */}
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Product
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Product ID
                     </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Quantity
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                      Quantity
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Price (₦)
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                       Subtotal (₦)
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {safeCartItems.map((item) => (
-                      <tr key={item._id}>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-16 w-16">
-                              {item.imageUrl && item.imageUrl.length > 0 && (
-                                <img
-                                  className="h-16 w-16 object-contain"
-                                  src={item.imageUrl}
-                                  alt={item.name}
-                                />
-                              )}
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {item.name}
-                            </div>
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 bg-white">
+                  {safeCartItems.map((item) => (
+                    <tr key={item._id}>
+                      <td className="whitespace-nowrap px-4 py-4">
+                        <div className="flex items-center">
+                          <div className="h-16 w-16 flex-shrink-0">
+                            {item.imageUrl && item.imageUrl.length > 0 && (
+                              <img
+                                className="h-16 w-16 object-contain"
+                                src={item.imageUrl}
+                                alt={item.name}
+                              />
+                            )}
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {item.name}
                             </div>
                           </div>
-                        </td>
-                     <td className="px-4 py-4 whitespace-nowrap text-xs text-gray-500">
-  {item.product && item.product._id ? item.product._id : "N/A"}
-</td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="flex items-center border border-gray-300 rounded w-24">
-                            <button
-                              onClick={() => handleDecreaseQuantity(item.product._id)}
-                              disabled={decreaseQuantityMutation.isPending}
-                              className="px-2 py-1 text-sm font-medium hover:bg-gray-100 disabled:opacity-50"
-                            >
-                              −
-                            </button>
-                            <span className="flex-1 text-center text-sm font-medium">
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={() => handleIncreaseQuantity(item.product._id)}
-                              disabled={increaseQuantityMutation.isPending}
-                              className="px-2 py-1 text-sm font-medium hover:bg-gray-100 disabled:opacity-50"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                          ₦{item.price.toFixed(2)}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
-                          ₦{calculateItemSubtotal(item).toFixed(2)}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        </div>
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-4 text-xs text-gray-500">
+                        {item.product && item.product._id
+                          ? item.product._id
+                          : "N/A"}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-4">
+                        <div className="flex w-24 items-center rounded border border-gray-300">
                           <button
-                            onClick={() => handleRemoveItem(item.product._id)}
-                            disabled={removeItemMutation.isPending}
-                            className="text-gray-400 hover:text-red-600 disabled:opacity-50"
+                            onClick={() =>
+                              handleDecreaseQuantity(item.product._id)
+                            }
+                            disabled={decreaseQuantityMutation.isPending}
+                            className="px-2 py-1 text-sm font-medium hover:bg-gray-100 disabled:opacity-50"
                           >
-                            ✕ Remove
+                            −
                           </button>
-                        </td>
-                      </tr>
-                      
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                          <span className="flex-1 text-center text-sm font-medium">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() =>
+                              handleIncreaseQuantity(item.product._id)
+                            }
+                            disabled={increaseQuantityMutation.isPending}
+                            className="px-2 py-1 text-sm font-medium hover:bg-gray-100 disabled:opacity-50"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-4 text-sm text-gray-900">
+                        ₦{item.price.toFixed(2)}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-4 text-sm font-semibold text-gray-900">
+                        ₦{calculateItemSubtotal(item).toFixed(2)}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-4 text-right text-sm font-medium">
+                        <button
+                          onClick={() => handleRemoveItem(item.product._id)}
+                          disabled={removeItemMutation.isPending}
+                          className="text-gray-400 hover:text-red-600 disabled:opacity-50"
+                        >
+                          ✕ Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
+        </div>
       </div>
       <PayInBitsForm
         isOpen={showPayInBitsForm}
@@ -615,5 +643,4 @@ export default function CartPage() {
       <Footer />
     </div>
   );
-} 
-
+}
