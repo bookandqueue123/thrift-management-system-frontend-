@@ -51,6 +51,9 @@ export default function PayInBitsForm({
     },
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleInputChange = (field: string, value: string) => {
     if (field.startsWith("guarantorA.")) {
       const subField = field.split(".")[1];
@@ -67,91 +70,190 @@ export default function PayInBitsForm({
     } else {
       setFormData((prev) => ({ ...prev, [field]: value }));
     }
+
+    // Clear error for the field being edited
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    // Validate bank details
+    if (!formData.accountName.trim()) {
+      newErrors.accountName = "Account name is required";
+    }
+    if (!formData.accountNumber.trim()) {
+      newErrors.accountNumber = "Account number is required";
+    }
+    if (!formData.bankName.trim()) {
+      newErrors.bankName = "Bank name is required";
+    }
+    if (!formData.bvn.trim()) {
+      newErrors.bvn = "BVN is required";
+    }
+    if (!formData.nin.trim()) {
+      newErrors.nin = "NIN is required";
+    }
+
+    // Validate guarantor A
+    if (!formData.guarantorA.name.trim()) {
+      newErrors["guarantorA.name"] = "Guarantor A name is required";
+    }
+    if (!formData.guarantorA.phone.trim()) {
+      newErrors["guarantorA.phone"] = "Guarantor A phone is required";
+    }
+
+    // Validate guarantor B
+    if (!formData.guarantorB.name.trim()) {
+      newErrors["guarantorB.name"] = "Guarantor B name is required";
+    }
+    if (!formData.guarantorB.phone.trim()) {
+      newErrors["guarantorB.phone"] = "Guarantor B phone is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!previewData) return;
 
-    // Check authentication
-    const token =
-      localStorage.getItem("token") || localStorage.getItem("authToken");
-    if (!token) {
-      alert("Authentication required. Please log in again.");
-      window.location.href = "/signin";
+    if (!previewData) {
+      alert("Preview data is not available. Please try again.");
       return;
     }
 
-    const paymentPayload = {
-      orderItems: cartItems.map((item) => ({
-        product: item.product._id,
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-        initialDeposit: previewData.firstPayment,
-      })),
-      shippingAddress: {
-        fullName: formData.accountName,
-        address: "User address", // Replace with actual input
-        city: "User city", // Replace with actual input
-        postalCode: "User postal", // Replace with actual input
-        country: "Nigeria",
-      },
-      paymentMethod: "Card",
-      paymentMode: "Pay In Bits",
-      totalPrice: previewData.totalCost,
-      initialPaymentAmount: previewData.firstPayment,
-      paymentSchedule: previewData.paymentSchedule,
-    };
+    // Validate form before submission
+    if (!validateForm()) {
+      alert("Please fill in all required fields before submitting.");
+      return;
+    }
 
-    // Save comprehensive Pay In Bits data for OrderConfirmation and PaymentPage
-    localStorage.setItem(
-      "payInBitsData",
-      JSON.stringify({
-        initialDeposit: previewData.firstPayment,
-        paymentMode: "bits",
-        paymentSchedule: previewData.paymentSchedule,
-        totalCost: previewData.totalCost,
-        totalInterest: previewData.totalInterest,
-        platformFee: previewData.platformFee,
-        annualInterestRate: previewData.annualInterestRate,
-        repaymentMonths: previewData.repaymentMonths,
-        subsequentPayments: previewData.subsequentPayments,
-        previewData: previewData, // Store the entire preview data
-      }),
-    );
-
-    // Also save to initialDeposit for backward compatibility
-    localStorage.setItem(
-      "initialDeposit",
-      JSON.stringify({
-        initialDeposit: previewData.firstPayment,
-        paymentMode: "bits",
-      }),
-    );
-
-    console.log("Submitting payment:", paymentPayload);
+    setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/cart/clear/all", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok && response.status === 401) {
-        alert("Authentication expired. Please log in again.");
+      // Check authentication
+      const token =
+        localStorage.getItem("token") || localStorage.getItem("authToken");
+      if (!token) {
+        alert("Authentication required. Please log in again.");
         window.location.href = "/signin";
         return;
       }
-    } catch (err) {
-      console.error("Failed to clear cart:", err);
-    }
 
-    onClose();
-    router.push("/cart/delivery");
+      const paymentPayload = {
+        orderItems: cartItems.map((item) => ({
+          product: item.product._id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          initialDeposit: previewData.firstPayment,
+        })),
+        shippingAddress: {
+          fullName: formData.accountName,
+          address: "User address", // Replace with actual input
+          city: "User city", // Replace with actual input
+          postalCode: "User postal", // Replace with actual input
+          country: "Nigeria",
+        },
+        paymentMethod: "Card",
+        paymentMode: "Pay In Bits",
+        totalPrice: previewData.totalCost,
+        initialPaymentAmount: previewData.firstPayment,
+        paymentSchedule: previewData.paymentSchedule,
+        // Include bank details and guarantor information
+        bankDetails: {
+          accountName: formData.accountName,
+          accountNumber: formData.accountNumber,
+          bankName: formData.bankName,
+          bvn: formData.bvn,
+          nin: formData.nin,
+        },
+        guarantors: [
+          {
+            name: formData.guarantorA.name,
+            phone: formData.guarantorA.phone,
+          },
+          {
+            name: formData.guarantorB.name,
+            phone: formData.guarantorB.phone,
+          },
+        ],
+      };
+
+      // Save comprehensive Pay In Bits data for OrderConfirmation and PaymentPage
+      localStorage.setItem(
+        "payInBitsData",
+        JSON.stringify({
+          initialDeposit: previewData.firstPayment,
+          paymentMode: "bits",
+          paymentSchedule: previewData.paymentSchedule,
+          totalCost: previewData.totalCost,
+          totalInterest: previewData.totalInterest,
+          platformFee: previewData.platformFee,
+          annualInterestRate: previewData.annualInterestRate,
+          repaymentMonths: previewData.repaymentMonths,
+          subsequentPayments: previewData.subsequentPayments,
+          previewData: previewData, // Store the entire preview data
+          bankDetails: {
+            accountName: formData.accountName,
+            accountNumber: formData.accountNumber,
+            bankName: formData.bankName,
+            bvn: formData.bvn,
+            nin: formData.nin,
+          },
+          guarantors: [
+            {
+              name: formData.guarantorA.name,
+              phone: formData.guarantorA.phone,
+            },
+            {
+              name: formData.guarantorB.name,
+              phone: formData.guarantorB.phone,
+            },
+          ],
+        }),
+      );
+
+      // Also save to initialDeposit for backward compatibility
+      localStorage.setItem(
+        "initialDeposit",
+        JSON.stringify({
+          initialDeposit: previewData.firstPayment,
+          paymentMode: "bits",
+        }),
+      );
+
+      console.log("Submitting payment:", paymentPayload);
+
+      try {
+        const response = await fetch("/api/cart/clear/all", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok && response.status === 401) {
+          alert("Authentication expired. Please log in again.");
+          window.location.href = "/signin";
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to clear cart:", err);
+      }
+
+      onClose();
+      router.push("/cart/delivery");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("An error occurred while submitting the form. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getImageUrl = (item: CartItem) => {
@@ -161,6 +263,18 @@ export default function PayInBitsForm({
 
     console.log("Using fallback image");
     return "/market/Image8.png";
+  };
+
+  const getInputClassName = (fieldName: string) => {
+    const baseClassName =
+      "w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none focus:ring-2";
+    const hasError = errors[fieldName];
+
+    if (hasError) {
+      return `${baseClassName} border-red-500 focus:border-red-500 focus:ring-red-500`;
+    }
+
+    return `${baseClassName} border-gray-300 focus:border-blue-500 focus:ring-blue-500`;
   };
 
   if (!isOpen) return null;
@@ -360,7 +474,7 @@ export default function PayInBitsForm({
               <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
                 <div className="flex items-center gap-2 border-b border-gray-200 px-6 py-4">
                   <h3 className="text-lg font-semibold">Bank Details</h3>
-                  <span className="rounded-md bg-yellow-400 px-2 py-1 text-xs font-medium text-black">
+                  <span className="rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-800">
                     Required
                   </span>
                 </div>
@@ -370,7 +484,7 @@ export default function PayInBitsForm({
                       htmlFor="accountName"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Account Name
+                      Account Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="accountName"
@@ -380,16 +494,21 @@ export default function PayInBitsForm({
                       onChange={(e) =>
                         handleInputChange("accountName", e.target.value)
                       }
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={getInputClassName("accountName")}
                       required
                     />
+                    {errors.accountName && (
+                      <p className="text-sm text-red-600">
+                        {errors.accountName}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label
                       htmlFor="accountNumber"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Account Number
+                      Account Number <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="accountNumber"
@@ -399,16 +518,21 @@ export default function PayInBitsForm({
                       onChange={(e) =>
                         handleInputChange("accountNumber", e.target.value)
                       }
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={getInputClassName("accountNumber")}
                       required
                     />
+                    {errors.accountNumber && (
+                      <p className="text-sm text-red-600">
+                        {errors.accountNumber}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label
                       htmlFor="bankName"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Bank Name
+                      Bank Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="bankName"
@@ -418,16 +542,20 @@ export default function PayInBitsForm({
                       onChange={(e) =>
                         handleInputChange("bankName", e.target.value)
                       }
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={getInputClassName("bankName")}
                       required
                     />
+                    {errors.bankName && (
+                      <p className="text-sm text-red-600">{errors.bankName}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label
                       htmlFor="bvn"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Bank Verification Number (BVN)
+                      Bank Verification Number (BVN){" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="bvn"
@@ -435,16 +563,20 @@ export default function PayInBitsForm({
                       placeholder="Enter your BVN"
                       value={formData.bvn}
                       onChange={(e) => handleInputChange("bvn", e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={getInputClassName("bvn")}
                       required
                     />
+                    {errors.bvn && (
+                      <p className="text-sm text-red-600">{errors.bvn}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label
                       htmlFor="nin"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      National Identity Number (NIN)
+                      National Identity Number (NIN){" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       id="nin"
@@ -452,9 +584,12 @@ export default function PayInBitsForm({
                       placeholder="Enter your NIN"
                       value={formData.nin}
                       onChange={(e) => handleInputChange("nin", e.target.value)}
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={getInputClassName("nin")}
                       required
                     />
+                    {errors.nin && (
+                      <p className="text-sm text-red-600">{errors.nin}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -463,8 +598,11 @@ export default function PayInBitsForm({
             {/* Guarantor Details */}
             <div className="space-y-6">
               <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-                <div className="border-b border-gray-200 px-6 py-4">
+                <div className="flex items-center gap-2 border-b border-gray-200 px-6 py-4">
                   <h3 className="text-lg font-semibold">Guarantor Details</h3>
+                  <span className="rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-800">
+                    Required
+                  </span>
                 </div>
                 <div className="space-y-6 p-6">
                   {/* Guarantor A */}
@@ -476,7 +614,7 @@ export default function PayInBitsForm({
                           htmlFor="guarantorAName"
                           className="block text-sm font-medium text-gray-700"
                         >
-                          Guarantor Name
+                          Guarantor Name <span className="text-red-500">*</span>
                         </label>
                         <input
                           id="guarantorAName"
@@ -486,16 +624,22 @@ export default function PayInBitsForm({
                           onChange={(e) =>
                             handleInputChange("guarantorA.name", e.target.value)
                           }
-                          className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className={getInputClassName("guarantorA.name")}
                           required
                         />
+                        {errors["guarantorA.name"] && (
+                          <p className="text-sm text-red-600">
+                            {errors["guarantorA.name"]}
+                          </p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <label
                           htmlFor="guarantorAPhone"
                           className="block text-sm font-medium text-gray-700"
                         >
-                          Guarantor Telephone Number
+                          Guarantor Telephone Number{" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           id="guarantorAPhone"
@@ -508,9 +652,14 @@ export default function PayInBitsForm({
                               e.target.value,
                             )
                           }
-                          className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className={getInputClassName("guarantorA.phone")}
                           required
                         />
+                        {errors["guarantorA.phone"] && (
+                          <p className="text-sm text-red-600">
+                            {errors["guarantorA.phone"]}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -524,7 +673,7 @@ export default function PayInBitsForm({
                           htmlFor="guarantorBName"
                           className="block text-sm font-medium text-gray-700"
                         >
-                          Guarantor Name
+                          Guarantor Name <span className="text-red-500">*</span>
                         </label>
                         <input
                           id="guarantorBName"
@@ -534,16 +683,22 @@ export default function PayInBitsForm({
                           onChange={(e) =>
                             handleInputChange("guarantorB.name", e.target.value)
                           }
-                          className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className={getInputClassName("guarantorB.name")}
                           required
                         />
+                        {errors["guarantorB.name"] && (
+                          <p className="text-sm text-red-600">
+                            {errors["guarantorB.name"]}
+                          </p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <label
                           htmlFor="guarantorBPhone"
                           className="block text-sm font-medium text-gray-700"
                         >
-                          Guarantor Telephone Number
+                          Guarantor Telephone Number{" "}
+                          <span className="text-red-500">*</span>
                         </label>
                         <input
                           id="guarantorBPhone"
@@ -556,9 +711,14 @@ export default function PayInBitsForm({
                               e.target.value,
                             )
                           }
-                          className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className={getInputClassName("guarantorB.phone")}
                           required
                         />
+                        {errors["guarantorB.phone"] && (
+                          <p className="text-sm text-red-600">
+                            {errors["guarantorB.phone"]}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -572,9 +732,16 @@ export default function PayInBitsForm({
             <form onSubmit={handleSubmit} className="mt-6">
               <button
                 type="submit"
-                className="mt-4 w-full rounded-lg bg-orange-600 py-3 font-semibold text-white transition hover:bg-orange-700"
+                disabled={isSubmitting}
+                className={`mt-4 w-full rounded-lg py-3 font-semibold text-white transition ${
+                  isSubmitting
+                    ? "cursor-not-allowed bg-gray-400"
+                    : "bg-orange-600 hover:bg-orange-700"
+                }`}
               >
-                Confirm & Pay (₦{previewData?.firstPayment?.toLocaleString()})
+                {isSubmitting
+                  ? "Processing..."
+                  : `Confirm & Pay (₦${previewData?.firstPayment?.toLocaleString()})`}
               </button>
             </form>
           </div>
