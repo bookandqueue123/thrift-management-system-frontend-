@@ -74,7 +74,8 @@ const PaymentPage = () => {
     const orderDetailsRaw = localStorage.getItem("orderDetails")
     const totalAmountToPayRaw = localStorage.getItem("totalAmountToPay");
     const pickupFeeRaw = localStorage.getItem("pickupFee");
-    setTotalAmountToPay(totalAmountToPayRaw ? JSON.parse(totalAmountToPayRaw) : null);
+    const totalAmountToPay = totalAmountToPayRaw ? JSON.parse(totalAmountToPayRaw) : null;
+    setTotalAmountToPay(totalAmountToPay);
     setPickupFee(pickupFeeRaw ? JSON.parse(pickupFeeRaw) : null);
     if (!orderDetailsRaw) {
       setErrorMessage("Order details not found. Please try again.")
@@ -106,73 +107,46 @@ const PaymentPage = () => {
 
     if (orderDetails.order) {
       // New order structure from OrderConfirmation
-      const { order, amountToPay, initialDeposit } = orderDetails
-
-      // Base order items - use actual product prices
+      const { order } = orderDetails
       const orderItems: OrderItem[] = order.orderItems.map((item: any) => ({
         product: item.product,
         name: item.name,
         quantity: item.quantity,
-        price: item.price, // Use the actual product price from the order
+        price: item.price,
       }))
-
-      // Calculate actual total from product prices
-      const actualTotalPrice = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-
-      // Base shipping address
       const shippingAddress: ShippingAddress = {
         ...order.shippingAddress,
         fullName: order.shippingAddress.fullName || order.shippingAddress.address,
       }
-
       if (isPayInBits) {
-        // Pay In Bits payment structure
-        const initialPaymentAmount =
-          amountToPay ||
-          initialDeposit ||
-          payInBitsData?.initialDeposit ||
-          order.firstPayment ||
-          order.initialPaymentAmount ||
-          Math.floor(actualTotalPrice * 0.5) // 50% of actual total as fallback
-
         paymentData = {
           orderItems,
           shippingAddress,
           paymentMethod: order.paymentMethod || "Card",
           paymentMode: "Pay In Bits",
-          totalPrice: payInBitsData?.totalCost || actualTotalPrice,
-          initialPaymentAmount,
+          totalPrice: totalAmountToPay, // Use totalAmountToPay from localStorage
+          initialPaymentAmount: totalAmountToPay, // Use totalAmountToPay for initial deposit
           paymentSchedule: payInBitsData?.paymentSchedule || order.paymentPlan || [],
-          pickupFee: pickupFee || 0,
-        } as PayInBitsPaymentData & { pickupFee: number }
+        } as PayInBitsPaymentData
       } else {
-        // Full payment structure - use actual total price
         paymentData = {
           orderItems,
           shippingAddress,
-          amountPaid: actualTotalPrice, // Use actual calculated total for full payment
+          amountPaid: totalAmountToPay, // Use totalAmountToPay from localStorage
           paymentMethod: order.paymentMethod || "Credit Card",
           paymentMode: "100% Full Payment",
-          totalPrice: actualTotalPrice, // Use actual calculated total
-          pickupFee: pickupFee || 0,
-        } as FullPaymentData & { pickupFee: number }
+          totalPrice: totalAmountToPay, // Use totalAmountToPay from localStorage
+        } as FullPaymentData
       }
     } else {
       // Old cart structure (fallback)
-      const { cartItems, deliveryInfo, total, amountToPay, initialDeposit } = orderDetails
-
-      // Base order items from cart - use actual product prices
+      const { cartItems, deliveryInfo } = orderDetails
       const orderItems: OrderItem[] = cartItems.map((item: any) => ({
         product: item.product?._id || item.productId,
         name: item.name || item.product?.name,
         quantity: item.quantity,
-        price: item.product?.price || item.price, // Use actual product price
+        price: item.product?.price || item.price,
       }))
-
-      // Calculate actual total from cart item prices
-      const actualTotalPrice = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-
-      // Base shipping address from delivery info
       const shippingAddress: ShippingAddress = {
         address: deliveryInfo?.pickupStation || `${deliveryInfo?.city}, ${deliveryInfo?.state}`,
         city: deliveryInfo?.city || "Lagos",
@@ -180,33 +154,25 @@ const PaymentPage = () => {
         country: "Nigeria",
         fullName: deliveryInfo?.fullName || "Customer Name",
       }
-
       if (isPayInBits) {
-        // Pay In Bits payment structure
-        const initialPaymentAmount =
-          amountToPay || initialDeposit || payInBitsData?.initialDeposit || Math.floor(actualTotalPrice * 0.5) // 50% of actual total as fallback
-
         paymentData = {
           orderItems,
           shippingAddress,
           paymentMethod: "Card",
           paymentMode: "Pay In Bits",
-          totalPrice: payInBitsData?.totalCost || actualTotalPrice,
-          initialPaymentAmount,
+          totalPrice: totalAmountToPay, // Use totalAmountToPay from localStorage
+          initialPaymentAmount: totalAmountToPay, // Use totalAmountToPay for initial deposit
           paymentSchedule: payInBitsData?.paymentSchedule || [],
-          pickupFee: pickupFee || 0,
-        } as PayInBitsPaymentData & { pickupFee: number }
+        } as PayInBitsPaymentData
       } else {
-        // Full payment structure - use actual total price
         paymentData = {
           orderItems,
           shippingAddress,
-          amountPaid: actualTotalPrice, // Use actual calculated total for full payment
+          amountPaid: totalAmountToPay, // Use totalAmountToPay from localStorage
           paymentMethod: "Credit Card",
           paymentMode: "100% Full Payment",
-          totalPrice: actualTotalPrice, // Use actual calculated total
-          pickupFee: pickupFee || 0,
-        } as FullPaymentData & { pickupFee: number }
+          totalPrice: totalAmountToPay, // Use totalAmountToPay from localStorage
+        } as FullPaymentData
       }
     }
 
