@@ -59,6 +59,10 @@ interface PickUpStation {
   createdAt?: string;
   updatedAt?: string;
   fullAddress?: string;
+  amount?: {
+    value: number;
+    currency: string;
+  };
 }
 
 type StationsResponse = {
@@ -126,6 +130,7 @@ const GetPickStation = () => {
     'S/N',
     'Name',
     'Code',
+    'Amount',
     'Address',
     'Contact',
     'Manager',
@@ -175,6 +180,10 @@ const GetPickStation = () => {
         <td className="px-6 py-4 whitespace-nowrap">{(currentPage - 1) * PAGE_SIZE + idx + 1}</td>
         <td className="px-6 py-4 whitespace-nowrap">{station.name}</td>
         <td className="px-6 py-4 whitespace-nowrap">{station.code}</td>
+        {/* Amount column */}
+        <td className="px-6 py-4 whitespace-nowrap">
+          {station.amount ? `${station.amount.value} ${station.amount.currency}` : '--'}
+        </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <button className="btn btn-xs btn-info" onClick={() => { setSelectedStation(station); setModalType('address'); setShowModal(true); setDropdownOpen(null); }}>Address</button>
         </td>

@@ -67,9 +67,15 @@ const PaymentPage = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [successMessage, setSuccessMessage] = useState("")
   const [errorMessage, setErrorMessage] = useState("")
+  const [totalAmountToPay, setTotalAmountToPay] = useState<number | null>(null);
+  const [pickupFee, setPickupFee] = useState<number | null>(null);
 
   useEffect(() => {
     const orderDetailsRaw = localStorage.getItem("orderDetails")
+    const totalAmountToPayRaw = localStorage.getItem("totalAmountToPay");
+    const pickupFeeRaw = localStorage.getItem("pickupFee");
+    setTotalAmountToPay(totalAmountToPayRaw ? JSON.parse(totalAmountToPayRaw) : null);
+    setPickupFee(pickupFeeRaw ? JSON.parse(pickupFeeRaw) : null);
     if (!orderDetailsRaw) {
       setErrorMessage("Order details not found. Please try again.")
       setIsLoading(false)
@@ -137,7 +143,8 @@ const PaymentPage = () => {
           totalPrice: payInBitsData?.totalCost || actualTotalPrice,
           initialPaymentAmount,
           paymentSchedule: payInBitsData?.paymentSchedule || order.paymentPlan || [],
-        } as PayInBitsPaymentData
+          pickupFee: pickupFee || 0,
+        } as PayInBitsPaymentData & { pickupFee: number }
       } else {
         // Full payment structure - use actual total price
         paymentData = {
@@ -147,7 +154,8 @@ const PaymentPage = () => {
           paymentMethod: order.paymentMethod || "Credit Card",
           paymentMode: "100% Full Payment",
           totalPrice: actualTotalPrice, // Use actual calculated total
-        } as FullPaymentData
+          pickupFee: pickupFee || 0,
+        } as FullPaymentData & { pickupFee: number }
       }
     } else {
       // Old cart structure (fallback)
@@ -186,7 +194,8 @@ const PaymentPage = () => {
           totalPrice: payInBitsData?.totalCost || actualTotalPrice,
           initialPaymentAmount,
           paymentSchedule: payInBitsData?.paymentSchedule || [],
-        } as PayInBitsPaymentData
+          pickupFee: pickupFee || 0,
+        } as PayInBitsPaymentData & { pickupFee: number }
       } else {
         // Full payment structure - use actual total price
         paymentData = {
@@ -196,7 +205,8 @@ const PaymentPage = () => {
           paymentMethod: "Credit Card",
           paymentMode: "100% Full Payment",
           totalPrice: actualTotalPrice, // Use actual calculated total
-        } as FullPaymentData
+          pickupFee: pickupFee || 0,
+        } as FullPaymentData & { pickupFee: number }
       }
     }
 
@@ -284,6 +294,17 @@ const PaymentPage = () => {
         <p className="text-center text-gray-600">
           {isLoading ? "Processing your payment, please wait..." : errorMessage ? errorMessage : successMessage}
         </p>
+        {/* Show total amount to pay and pickup fee if available */}
+        {!isLoading && !errorMessage && (
+          <div className="mt-6 text-center">
+            {totalAmountToPay !== null && (
+              <div className="mb-2 text-lg font-semibold">Total Amount to Pay: ₦{totalAmountToPay.toLocaleString()}</div>
+            )}
+            {pickupFee !== null && (
+              <div className="mb-2 text-base">Pickup Station Fee: ₦{pickupFee.toLocaleString()}</div>
+            )}
+          </div>
+        )}
         {errorMessage && (
           <div className="mt-4 text-center">
             <button

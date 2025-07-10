@@ -109,6 +109,31 @@ const EditPickupStation: React.FC<EditPickupStationProps> = ({ stationId, open, 
             <label>Email:</label>
             <input name="email" value={form.contact?.email || ''} onChange={e => handleChange(e, ['contact', 'email'])} className="w-full text-black px-2 py-1 rounded" />
           </div>
+          <div>
+            <label>Amount:</label>
+            <input
+              type="number"
+              name="amountValue"
+              value={form.amount?.value || ''}
+              onChange={e => setForm((prev: any) => ({
+                ...prev,
+                amount: { ...prev.amount, value: Number(e.target.value) }
+              }))}
+              className="w-full text-black px-2 py-1 rounded"
+            />
+            <select
+              name="amountCurrency"
+              value={form.amount?.currency || 'NGN'}
+              onChange={e => setForm((prev: any) => ({
+                ...prev,
+                amount: { ...prev.amount, currency: e.target.value }
+              }))}
+              className="w-full text-black px-2 py-1 rounded mt-2"
+            >
+              <option value="NGN">NGN</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
           {/* Add more fields as needed for manager, capacity, facilities, status, operatingHours, etc. */}
           <div className="flex justify-end mt-4">
             <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded" disabled={loading}>

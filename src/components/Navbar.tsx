@@ -380,9 +380,11 @@ export default CustomerNavbar;
 export const Sidebar = ({
   onShow,
   setShow,
+    
 }: {
   onShow: boolean;
   setShow: Dispatch<SetStateAction<boolean>>;
+    
 }) => {
   const { SignOut } = useAuth();
   const { userPermissions, permissionsMap } = usePermissions();
@@ -677,22 +679,13 @@ export const Sidebar = ({
                             </Link>
                           </div>
 
-                          <div className="left-0 z-20 my-1 w-full rounded-md py-1 shadow-lg">
-                              <Link
-                                href="/merchant/Ratings-review"
-                                className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                              >
-                                Ratings And Review
-                              </Link>
-                            </div>
-                             <div className="left-0 z-20 my-1 w-full rounded-md py-1 shadow-lg">
-                              <Link
-                                href="/merchant/Faq"
-                                className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-                              >
-                                FAQ
-                              </Link>
-                            </div>
+                         <Link
+              href={"/merchant/Ratings-review"}
+             className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+              >
+  Ratings And Review
+</Link>
+                             
                         </>
                       )}
                     </div>

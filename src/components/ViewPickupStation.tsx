@@ -33,6 +33,7 @@ const ViewPickupStation: React.FC<ViewPickupStationProps> = ({ stationId, open, 
         <div className="p-4 text-white space-y-2">
           <div><b>Name:</b> {station.name}</div>
           <div><b>Code:</b> {station.code}</div>
+          <div><b>Amount:</b> {station.amount ? `${station.amount.value} ${station.amount.currency}` : '--'}</div>
           <div>
             <b>Address:</b> <button className="btn btn-xs btn-info ml-2" onClick={() => setModalType('address')}>View</button>
           </div>
