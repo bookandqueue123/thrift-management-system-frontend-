@@ -247,12 +247,12 @@ export default function CartPage() {
     decreaseQuantityMutation.mutate(productId);
   };
 
-  // Handler to remove an item
+ 
   const handleRemoveItem = (productId: string) => {
     removeItemMutation.mutate(productId);
   };
 
-  // Handler to clear entire cart
+
   const handleClearCart = () => {
     clearCartMutation.mutate();
   };
@@ -294,7 +294,7 @@ export default function CartPage() {
     }
   };
 
-  // Handler for repayment period change
+
   const handleRepaymentMonthsChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
   ) => {
@@ -313,7 +313,7 @@ export default function CartPage() {
       JSON.stringify({
         paymentMode:
           paymentMode === "bits" ? "Pay In Bits" : "100% Full Payment",
-        // You can add other details here if needed, e.g. cart items, total, etc.
+        
       }),
     );
 
@@ -366,7 +366,7 @@ export default function CartPage() {
     );
   }
 
-  // Ensure cartItems is always an array
+
   const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
 
   return (

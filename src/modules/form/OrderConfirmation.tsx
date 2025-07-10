@@ -136,6 +136,11 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
     }
   }, [])
 
+  // After loading deliveryInfo from localStorage:
+  const pickupStationAmount = deliveryInfo?.pickupStationAmount;
+  const pickupFee = pickupStationAmount?.value || 0;
+  const pickupCurrency = pickupStationAmount?.currency || "NGN";
+
   // Determine the effective payment mode from localStorage/prop ONLY
   let effectivePaymentMode = paymentMode;
 
@@ -175,6 +180,7 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
       const actualTotal = cartDetails.reduce((sum: number, item: CartItem) => {
         return sum + item.price * item.quantity
       }, 0)
+      const totalWithPickup = actualTotal + pickupFee;
 
       // Determine amount based on payment mode
       let amountToPay: number
@@ -182,7 +188,7 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
 
       if (isFullPayment) {
         // FULL PAYMENT MODE
-        amountToPay = actualTotal
+        amountToPay = totalWithPickup;
         paymentModeForStorage = "100% Full Payment"
       } else {
         // PAY IN BITS MODE
@@ -191,6 +197,12 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
       }
 
       // Save cart details for payment page
+      // Store totalAmountToPay and pickupFee in localStorage for payment page
+      const totalAmountToPay = isFullPayment
+        ? totalWithPickup
+        : (initialDepositInfo?.initialDeposit || Math.floor(actualTotal * 0.5)) + pickupFee;
+      localStorage.setItem("totalAmountToPay", JSON.stringify(totalAmountToPay));
+      localStorage.setItem("pickupFee", JSON.stringify(pickupFee));
       localStorage.setItem(
         "orderDetails",
         JSON.stringify({
@@ -211,6 +223,7 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
     // For existing orders
     const order = orderQuery[0]
     const actualTotal = order.orderItems.reduce((sum: number, item: OrderItem) => sum + item.price * item.quantity, 0)
+    const totalWithPickup = actualTotal + pickupFee;
 
     // Determine amount based on payment mode
     let amountToPay: number
@@ -218,7 +231,7 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
 
     if (isFullPayment) {
       // FULL PAYMENT MODE
-      amountToPay = actualTotal
+      amountToPay = totalWithPickup
       paymentModeForStorage = "100% Full Payment"
     } else {
       // PAY IN BITS MODE
@@ -278,11 +291,12 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
     const actualTotal = cartDetails.reduce((sum: number, item: CartItem) => {
       return sum + item.price * item.quantity
     }, 0)
+    const totalWithPickup = actualTotal + pickupFee;
 
     // Determine display amount based on payment mode
     const displayAmount = isFullPayment
-      ? actualTotal
-      : initialDepositInfo?.initialDeposit || Math.floor(actualTotal * 0.5)
+      ? totalWithPickup
+      : (initialDepositInfo?.initialDeposit || Math.floor(actualTotal * 0.5)) + pickupFee;
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -296,11 +310,19 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
             {deliveryInfo ? (
               <div>
                 <p className="font-bold">
-                  {deliveryInfo.deliveryMode === "pickup"
-                    ? `Pickup Station: ${deliveryInfo.pickupStation}`
-                    : `${deliveryInfo.city}, ${deliveryInfo.state}`}
+                  Mode: {deliveryInfo.deliveryMode === "pickup" ? "Pickup" : "Door Delivery"}
                 </p>
-                <p className="text-gray-600 text-sm">Mode: {deliveryInfo.deliveryMode}</p>
+                {/* Show state, city, and address below the mode */}
+                <div className="mt-1 text-gray-700 text-sm">
+                  <div>State: {deliveryInfo.state}</div>
+                  <div>City/LGA: {deliveryInfo.city}</div>
+                  {deliveryInfo.deliveryMode === "pickup" && deliveryInfo.pickupStation && (
+                    <div>Pickup Station: {deliveryInfo.pickupStation}</div>
+                  )}
+                  {deliveryInfo.deliveryMode === "door" && deliveryInfo.deliveryAddress && (
+                    <div>Delivery Address: {deliveryInfo.deliveryAddress}</div>
+                  )}
+                </div>
               </div>
             ) : (
               <p className="text-gray-600 text-sm">No delivery info found.</p>
@@ -370,34 +392,18 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
                     <span className="text-gray-600">Subtotal</span>
                     <span className="font-semibold">₦ {actualTotal.toLocaleString()}</span>
                   </div>
-
-                  {isPayInBits ? (
-                    <>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Payment Mode</span>
-                        <span className="text-blue-600 font-semibold">Pay In Bits</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Initial Deposit</span>
-                        <span className="text-blue-600 font-bold">₦ {displayAmount.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between items-center border-t pt-3">
-                        <span className="text-gray-600 text-lg font-semibold">Amount to Pay</span>
-                        <span className="text-2xl font-bold text-blue-600">₦ {displayAmount.toLocaleString()}</span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Payment Mode</span>
-                        <span className="text-green-600 font-semibold">Full Payment</span>
-                      </div>
-                      <div className="flex justify-between items-center border-t pt-3">
-                        <span className="text-gray-600 text-lg font-semibold">Amount to Pay</span>
-                        <span className="text-2xl font-bold text-gray-900">₦ {actualTotal.toLocaleString()}</span>
-                      </div>
-                    </>
+                  {pickupFee > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Pickup Station Fee</span>
+                      <span className="font-semibold">{pickupFee.toLocaleString()} {pickupCurrency}</span>
+                    </div>
                   )}
+                  <div className="flex justify-between items-center border-t pt-3">
+                    <span className="text-gray-600 text-lg font-semibold">Amount to Pay</span>
+                    <span className="text-2xl font-bold text-gray-900">
+                      {displayAmount.toLocaleString()} {pickupCurrency}
+                    </span>
+                  </div>
                 </div>
                 <button
                   onClick={handleProceedToPayment}
@@ -405,7 +411,7 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
                 >
                   {isPayInBits
                     ? `Pay Initial Deposit (₦ ${displayAmount.toLocaleString()})`
-                    : `Make Full Payment (₦ ${actualTotal.toLocaleString()})`}
+                    : `Make Full Payment (₦ ${totalWithPickup.toLocaleString()})`}
                 </button>
               </div>
             </div>
@@ -444,11 +450,17 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
 
   // Calculate actual total from order items
   const actualTotal = orderItems.reduce((sum: number, item: OrderItem) => sum + item.price * item.quantity, 0)
+  const totalWithPickup = actualTotal + pickupFee;
 
   // Determine amount based on payment mode
   const depositAmount =
     initialDepositInfo?.initialDeposit || firstPayment || initialPaymentAmount || Math.floor(actualTotal * 0.5)
-  const amountToPay = isFullPayment ? actualTotal : depositAmount
+  const amountToPay = isFullPayment ? totalWithPickup : depositAmount
+
+  // Determine display amount based on payment mode
+  const displayAmount = isFullPayment
+    ? totalWithPickup
+    : (initialDepositInfo?.initialDeposit || Math.floor(actualTotal * 0.5)) + pickupFee;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -465,12 +477,22 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
                 </div>
               </div>
               <div>
-                <p className="font-bold">
-                  {shippingAddress.address}, {shippingAddress.city}
-                </p>
-                <p className="text-gray-600 text-sm">
-                  {shippingAddress.postalCode}, {shippingAddress.country}
-                </p>
+                {deliveryInfo && deliveryInfo.deliveryMode === "door" && deliveryInfo.deliveryAddress ? (
+                  <>
+                    <p className="font-bold">{deliveryInfo.deliveryAddress}</p>
+                    <p className="text-gray-600 text-sm">{deliveryInfo.city}, {deliveryInfo.state}</p>
+                  </>
+                ) : deliveryInfo && deliveryInfo.deliveryMode === "pickup" && deliveryInfo.pickupStation ? (
+                  <>
+                    <p className="font-bold">{deliveryInfo.pickupStation}</p>
+                    <p className="text-gray-600 text-sm">{deliveryInfo.city}, {deliveryInfo.state}</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-bold">{shippingAddress.address}, {shippingAddress.city}</p>
+                    <p className="text-gray-600 text-sm">{shippingAddress.postalCode}, {shippingAddress.country}</p>
+                  </>
+                )}
               </div>
             </div>
 
@@ -602,7 +624,7 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Amount to Pay</span>
-                    <span className="text-gray-900 font-bold">₦{actualTotal.toLocaleString()}</span>
+                    <span className="text-gray-900 font-bold">₦{totalWithPickup.toLocaleString()}</span>
                   </div>
                 </>
               )}
@@ -622,7 +644,7 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
                 {isPayInBits ? (
                   <>Make Initial Deposit (₦{depositAmount.toLocaleString()})</>
                 ) : (
-                  <>Make Full Payment (₦{actualTotal.toLocaleString()})</>
+                  <>Make Full Payment (₦{totalWithPickup.toLocaleString()})</>
                 )}
               </button>
             </div>

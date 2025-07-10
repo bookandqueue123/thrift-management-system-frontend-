@@ -96,6 +96,10 @@ export interface PickupStationForm {
   landmarkArea: string;
   stationPicture: File | null;
   managerPicture1: File | null;
+  amount: {
+    value: number;
+    currency: string;
+  };
 }
 
 const initialState: PickupStationForm = {
@@ -159,6 +163,7 @@ const initialState: PickupStationForm = {
   landmarkArea: '',
   stationPicture: null,
   managerPicture1: null,
+  amount: { value: 0, currency: 'NGN' },
 };
 
 const facilitiesList = [
@@ -301,6 +306,10 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
 
       if (form.stationPicture) formData.append('stationPicture', form.stationPicture);
       if (form.managerPicture1) formData.append('managerPicture1', form.managerPicture1);
+
+      // Add amount
+      formData.append('amount[value]', String(form.amount.value));
+      formData.append('amount[currency]', form.amount.currency);
 
       // Use client.post instead of fetch
       return client.post('/api/pickup-stations', formData, {
@@ -585,17 +594,34 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
               <div>
        
            <div className="grid  gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Pickup centre fee ($)</label>
-              <input 
-                name="pickupCenterFee" 
-                type="number" 
-                step="0.01"
-                value={form.storageCapacity.pickupCenterFee} 
-                onChange={e => handleChange(e, ['storageCapacity', 'pickupCenterFee'])} 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500" 
-                placeholder="Enter fee amount"
+              <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
+              <input
+                type="number"
+                name="amountValue"
+                value={form.amount.value}
+                onChange={e => setForm(prev => ({
+                  ...prev,
+                  amount: { ...prev.amount, value: Number(e.target.value) }
+                }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                placeholder="Enter amount value"
+                required
               />
+              <select
+                name="amountCurrency"
+                value={form.amount.currency}
+                onChange={e => setForm(prev => ({
+                  ...prev,
+                  amount: { ...prev.amount, currency: e.target.value }
+                }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md mt-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                required
+              >
+                <option value="NGN">NGN</option>
+                <option value="USD">USD</option>
+              </select>
             </div>
            
           </div>
