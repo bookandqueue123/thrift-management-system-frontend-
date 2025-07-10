@@ -1,3 +1,5 @@
+
+
 // "use client";
 // import { X } from "lucide-react";
 // import { useRouter } from "next/navigation";
@@ -51,6 +53,9 @@
 //     },
 //   });
 
+//   const [errors, setErrors] = useState<Record<string, string>>({});
+//   const [isSubmitting, setIsSubmitting] = useState(false);
+
 //   const handleInputChange = (field: string, value: string) => {
 //     if (field.startsWith("guarantorA.")) {
 //       const subField = field.split(".")[1];
@@ -67,91 +72,190 @@
 //     } else {
 //       setFormData((prev) => ({ ...prev, [field]: value }));
 //     }
+
+//     // Clear error for the field being edited
+//     if (errors[field]) {
+//       setErrors((prev) => ({ ...prev, [field]: "" }));
+//     }
+//   };
+
+//   const validateForm = () => {
+//     const newErrors: Record<string, string> = {};
+
+//     // Validate bank details
+//     if (!formData.accountName.trim()) {
+//       newErrors.accountName = "Account name is required";
+//     }
+//     if (!formData.accountNumber.trim()) {
+//       newErrors.accountNumber = "Account number is required";
+//     }
+//     if (!formData.bankName.trim()) {
+//       newErrors.bankName = "Bank name is required";
+//     }
+//     if (!formData.bvn.trim()) {
+//       newErrors.bvn = "BVN is required";
+//     }
+//     if (!formData.nin.trim()) {
+//       newErrors.nin = "NIN is required";
+//     }
+
+//     // Validate guarantor A
+//     if (!formData.guarantorA.name.trim()) {
+//       newErrors["guarantorA.name"] = "Guarantor A name is required";
+//     }
+//     if (!formData.guarantorA.phone.trim()) {
+//       newErrors["guarantorA.phone"] = "Guarantor A phone is required";
+//     }
+
+//     // Validate guarantor B
+//     if (!formData.guarantorB.name.trim()) {
+//       newErrors["guarantorB.name"] = "Guarantor B name is required";
+//     }
+//     if (!formData.guarantorB.phone.trim()) {
+//       newErrors["guarantorB.phone"] = "Guarantor B phone is required";
+//     }
+
+//     setErrors(newErrors);
+//     return Object.keys(newErrors).length === 0;
 //   };
 
 //   const handleSubmit = async (e: React.FormEvent) => {
 //     e.preventDefault();
-//     if (!previewData) return;
 
-//     // Check authentication
-//     const token =
-//       localStorage.getItem("token") || localStorage.getItem("authToken");
-//     if (!token) {
-//       alert("Authentication required. Please log in again.");
-//       window.location.href = "/signin";
+//     if (!previewData) {
+//       alert("Preview data is not available. Please try again.");
 //       return;
 //     }
 
-//     const paymentPayload = {
-//       orderItems: cartItems.map((item) => ({
-//         product: item.product._id,
-//         name: item.name,
-//         quantity: item.quantity,
-//         price: item.price,
-//         initialDeposit: previewData.firstPayment,
-//       })),
-//       shippingAddress: {
-//         fullName: formData.accountName,
-//         address: "User address", // Replace with actual input
-//         city: "User city", // Replace with actual input
-//         postalCode: "User postal", // Replace with actual input
-//         country: "Nigeria",
-//       },
-//       paymentMethod: "Card",
-//       paymentMode: "Pay In Bits",
-//       totalPrice: previewData.totalCost,
-//       initialPaymentAmount: previewData.firstPayment,
-//       paymentSchedule: previewData.paymentSchedule,
-//     };
+//     // Validate form before submission
+//     if (!validateForm()) {
+//       alert("Please fill in all required fields before submitting.");
+//       return;
+//     }
 
-//     // Save comprehensive Pay In Bits data for OrderConfirmation and PaymentPage
-//     localStorage.setItem(
-//       "payInBitsData",
-//       JSON.stringify({
-//         initialDeposit: previewData.firstPayment,
-//         paymentMode: "bits",
-//         paymentSchedule: previewData.paymentSchedule,
-//         totalCost: previewData.totalCost,
-//         totalInterest: previewData.totalInterest,
-//         platformFee: previewData.platformFee,
-//         annualInterestRate: previewData.annualInterestRate,
-//         repaymentMonths: previewData.repaymentMonths,
-//         subsequentPayments: previewData.subsequentPayments,
-//         previewData: previewData, // Store the entire preview data
-//       }),
-//     );
-
-//     // Also save to initialDeposit for backward compatibility
-//     localStorage.setItem(
-//       "initialDeposit",
-//       JSON.stringify({
-//         initialDeposit: previewData.firstPayment,
-//         paymentMode: "bits",
-//       }),
-//     );
-
-//     console.log("Submitting payment:", paymentPayload);
+//     setIsSubmitting(true);
 
 //     try {
-//       const response = await fetch("/api/cart/clear/all", {
-//         method: "POST",
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           "Content-Type": "application/json",
-//         },
-//       });
-
-//       if (!response.ok && response.status === 401) {
-//         alert("Authentication expired. Please log in again.");
+//       // Check authentication
+//       const token =
+//         localStorage.getItem("token") || localStorage.getItem("authToken");
+//       if (!token) {
+//         alert("Authentication required. Please log in again.");
 //         window.location.href = "/signin";
 //         return;
 //       }
-//     } catch (err) {
-//       console.error("Failed to clear cart:", err);
-//     }
 
-//     onClose();
-//     router.push("/cart/delivery");
+//       const paymentPayload = {
+//         orderItems: cartItems.map((item) => ({
+//           product: item.product._id,
+//           name: item.name,
+//           quantity: item.quantity,
+//           price: item.price,
+//           initialDeposit: previewData.firstPayment,
+//         })),
+//         shippingAddress: {
+//           fullName: formData.accountName,
+//           address: "User address", // Replace with actual input
+//           city: "User city", // Replace with actual input
+//           postalCode: "User postal", // Replace with actual input
+//           country: "Nigeria",
+//         },
+//         paymentMethod: "Card",
+//         paymentMode: "Pay In Bits",
+//         totalPrice: previewData.totalCost,
+//         initialPaymentAmount: previewData.firstPayment,
+//         paymentSchedule: previewData.paymentSchedule,
+//         // Include bank details and guarantor information
+//         bankDetails: {
+//           accountName: formData.accountName,
+//           accountNumber: formData.accountNumber,
+//           bankName: formData.bankName,
+//           bvn: formData.bvn,
+//           nin: formData.nin,
+//         },
+//         guarantors: [
+//           {
+//             name: formData.guarantorA.name,
+//             phone: formData.guarantorA.phone,
+//           },
+//           {
+//             name: formData.guarantorB.name,
+//             phone: formData.guarantorB.phone,
+//           },
+//         ],
+//       };
+
+//       // Save comprehensive Pay In Bits data for OrderConfirmation and PaymentPage
+//       localStorage.setItem(
+//         "payInBitsData",
+//         JSON.stringify({
+//           initialDeposit: previewData.firstPayment,
+//           paymentMode: "bits",
+//           paymentSchedule: previewData.paymentSchedule,
+//           totalCost: previewData.totalCost,
+//           totalInterest: previewData.totalInterest,
+//           platformFee: previewData.platformFee,
+//           annualInterestRate: previewData.annualInterestRate,
+//           repaymentMonths: previewData.repaymentMonths,
+//           subsequentPayments: previewData.subsequentPayments,
+//           previewData: previewData, // Store the entire preview data
+//           bankDetails: {
+//             accountName: formData.accountName,
+//             accountNumber: formData.accountNumber,
+//             bankName: formData.bankName,
+//             bvn: formData.bvn,
+//             nin: formData.nin,
+//           },
+//           guarantors: [
+//             {
+//               name: formData.guarantorA.name,
+//               phone: formData.guarantorA.phone,
+//             },
+//             {
+//               name: formData.guarantorB.name,
+//               phone: formData.guarantorB.phone,
+//             },
+//           ],
+//         }),
+//       );
+
+//       // Also save to initialDeposit for backward compatibility
+//       localStorage.setItem(
+//         "initialDeposit",
+//         JSON.stringify({
+//           initialDeposit: previewData.firstPayment,
+//           paymentMode: "bits",
+//         }),
+//       );
+
+//       console.log("Submitting payment:", paymentPayload);
+
+//       try {
+//         const response = await fetch("/api/cart/clear/all", {
+//           method: "POST",
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//             "Content-Type": "application/json",
+//           },
+//         });
+
+//         if (!response.ok && response.status === 401) {
+//           alert("Authentication expired. Please log in again.");
+//           window.location.href = "/signin";
+//           return;
+//         }
+//       } catch (err) {
+//         console.error("Failed to clear cart:", err);
+//       }
+
+//       onClose();
+//       router.push("/cart/delivery");
+//     } catch (error) {
+//       console.error("Error submitting form:", error);
+//       alert("An error occurred while submitting the form. Please try again.");
+//     } finally {
+//       setIsSubmitting(false);
+//     }
 //   };
 
 //   const getImageUrl = (item: CartItem) => {
@@ -161,6 +265,14 @@
 
 //     console.log("Using fallback image");
 //     return "/market/Image8.png";
+//   };
+
+//   // Helper function to safely format currency
+//   const formatCurrency = (amount: number | null | undefined): string => {
+//     if (amount === null || amount === undefined || isNaN(amount)) {
+//       return "0";
+//     }
+//     return amount.toLocaleString();
 //   };
 
 //   if (!isOpen) return null;
@@ -187,6 +299,10 @@
 //         </div>
 //       </div>
 //     );
+//   }
+
+//   function getInputClassName(arg0: string): string | undefined {
+//     throw new Error("Function not implemented.");
 //   }
 
 //   return (
@@ -231,7 +347,7 @@
 //                           {previewData && previewData.firstPayment && (
 //                             <p className="text-sm font-semibold text-blue-600">
 //                               Initial Deposit: ₦
-//                               {previewData.firstPayment?.toLocaleString()}
+//                               {formatCurrency(previewData.firstPayment)}
 //                             </p>
 //                           )}
 //                         </div>
@@ -239,24 +355,24 @@
 //                           {previewData && previewData.firstPayment ? (
 //                             <>
 //                               <p className="font-semibold text-blue-600">
-//                                 ₦{previewData.firstPayment.toLocaleString()}{" "}
+//                                 ₦{formatCurrency(previewData.firstPayment)}{" "}
 //                                 <span className="text-xs">
 //                                   (Initial Payment)
 //                                 </span>
 //                               </p>
 //                               <p className="text-xs text-gray-400 line-through">
-//                                 ₦{item.price.toLocaleString()}{" "}
+//                                 ₦{formatCurrency(item.price)}{" "}
 //                                 <span className="text-xs">(Full Price)</span>
 //                               </p>
 //                             </>
 //                           ) : (
 //                             <p className="font-semibold">
-//                               ₦{item.price.toLocaleString()}
+//                               ₦{formatCurrency(item.price)}
 //                             </p>
 //                           )}
 //                         </div>
 //                       </div>
-//                       {previewData && previewData.paymentSchedule && (
+//                       {previewData && previewData.paymentSchedule && Array.isArray(previewData.paymentSchedule) && (
 //                         <div className="mt-2">
 //                           <h4 className="mb-1 font-semibold">
 //                             Payment Schedule
@@ -280,15 +396,13 @@
 //                                 (schedule: any, sidx: number) => (
 //                                   <tr key={sidx}>
 //                                     <td className="px-2 py-1 text-center">
-//                                       {schedule.paymentNumber}
+//                                       {schedule.paymentNumber || sidx + 1}
 //                                     </td>
 //                                     <td className="px-1 py-1 text-center">
-//                                       {new Date(
-//                                         schedule.dueDate,
-//                                       ).toLocaleDateString()}
+//                                       {schedule.dueDate ? new Date(schedule.dueDate).toLocaleDateString() : "N/A"}
 //                                     </td>
 //                                     <td className="px-1 py-1 text-center">
-//                                       ₦{schedule.totalPayment?.toLocaleString()}
+//                                       ₦{formatCurrency(schedule.totalPayment)}
 //                                     </td>
 //                                   </tr>
 //                                 ),
@@ -302,13 +416,13 @@
 //                                 </td>
 //                                 <td className="text-center font-bold">
 //                                   ₦
-//                                   {previewData.paymentSchedule
-//                                     .reduce(
+//                                   {formatCurrency(
+//                                     previewData.paymentSchedule.reduce(
 //                                       (sum: number, s: any) =>
-//                                         sum + s.totalPayment,
+//                                         sum + (s.totalPayment || 0),
 //                                       0,
 //                                     )
-//                                     .toLocaleString()}
+//                                   )}
 //                                 </td>
 //                               </tr>
 //                             </tbody>
@@ -320,9 +434,9 @@
 //                             <ul className="mb-2">
 //                               <li>
 //                                 <b>Initial Payment:</b> ₦
-//                                 {previewData.firstPayment?.toLocaleString()}{" "}
+//                                 {formatCurrency(previewData.firstPayment)}{" "}
 //                                 (Due:{" "}
-//                                 {previewData.paymentSchedule[0]
+//                                 {previewData.paymentSchedule[0]?.dueDate
 //                                   ? new Date(
 //                                       previewData.paymentSchedule[0].dueDate,
 //                                     ).toLocaleDateString()
@@ -337,12 +451,10 @@
 //                               {previewData.paymentSchedule.map(
 //                                 (schedule: any, sidx: number) => (
 //                                   <li key={sidx}>
-//                                     Payment {schedule.paymentNumber}: ₦
-//                                     {schedule.totalPayment.toLocaleString()}{" "}
+//                                     Payment {schedule.paymentNumber || sidx + 1}: ₦
+//                                     {formatCurrency(schedule.totalPayment)}{" "}
 //                                     (Due:{" "}
-//                                     {new Date(
-//                                       schedule.dueDate,
-//                                     ).toLocaleDateString()}
+//                                     {schedule.dueDate ? new Date(schedule.dueDate).toLocaleDateString() : "N/A"}
 //                                     )
 //                                   </li>
 //                                 ),
@@ -360,7 +472,7 @@
 //               <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
 //                 <div className="flex items-center gap-2 border-b border-gray-200 px-6 py-4">
 //                   <h3 className="text-lg font-semibold">Bank Details</h3>
-//                   <span className="rounded-md bg-yellow-400 px-2 py-1 text-xs font-medium text-black">
+//                   <span className="rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-800">
 //                     Required
 //                   </span>
 //                 </div>
@@ -370,7 +482,7 @@
 //                       htmlFor="accountName"
 //                       className="block text-sm font-medium text-gray-700"
 //                     >
-//                       Account Name
+//                       Account Name <span className="text-red-500">*</span>
 //                     </label>
 //                     <input
 //                       id="accountName"
@@ -380,16 +492,21 @@
 //                       onChange={(e) =>
 //                         handleInputChange("accountName", e.target.value)
 //                       }
-//                       className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                       className={getInputClassName("accountName")}
 //                       required
 //                     />
+//                     {errors.accountName && (
+//                       <p className="text-sm text-red-600">
+//                         {errors.accountName}
+//                       </p>
+//                     )}
 //                   </div>
 //                   <div className="space-y-2">
 //                     <label
 //                       htmlFor="accountNumber"
 //                       className="block text-sm font-medium text-gray-700"
 //                     >
-//                       Account Number
+//                       Account Number <span className="text-red-500">*</span>
 //                     </label>
 //                     <input
 //                       id="accountNumber"
@@ -399,16 +516,21 @@
 //                       onChange={(e) =>
 //                         handleInputChange("accountNumber", e.target.value)
 //                       }
-//                       className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                       className={getInputClassName("accountNumber")}
 //                       required
 //                     />
+//                     {errors.accountNumber && (
+//                       <p className="text-sm text-red-600">
+//                         {errors.accountNumber}
+//                       </p>
+//                     )}
 //                   </div>
 //                   <div className="space-y-2">
 //                     <label
 //                       htmlFor="bankName"
 //                       className="block text-sm font-medium text-gray-700"
 //                     >
-//                       Bank Name
+//                       Bank Name <span className="text-red-500">*</span>
 //                     </label>
 //                     <input
 //                       id="bankName"
@@ -418,16 +540,20 @@
 //                       onChange={(e) =>
 //                         handleInputChange("bankName", e.target.value)
 //                       }
-//                       className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                       className={getInputClassName("bankName")}
 //                       required
 //                     />
+//                     {errors.bankName && (
+//                       <p className="text-sm text-red-600">{errors.bankName}</p>
+//                     )}
 //                   </div>
 //                   <div className="space-y-2">
 //                     <label
 //                       htmlFor="bvn"
 //                       className="block text-sm font-medium text-gray-700"
 //                     >
-//                       Bank Verification Number (BVN)
+//                       Bank Verification Number (BVN){" "}
+//                       <span className="text-red-500">*</span>
 //                     </label>
 //                     <input
 //                       id="bvn"
@@ -435,16 +561,20 @@
 //                       placeholder="Enter your BVN"
 //                       value={formData.bvn}
 //                       onChange={(e) => handleInputChange("bvn", e.target.value)}
-//                       className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                       className={getInputClassName("bvn")}
 //                       required
 //                     />
+//                     {errors.bvn && (
+//                       <p className="text-sm text-red-600">{errors.bvn}</p>
+//                     )}
 //                   </div>
 //                   <div className="space-y-2">
 //                     <label
 //                       htmlFor="nin"
 //                       className="block text-sm font-medium text-gray-700"
 //                     >
-//                       National Identity Number (NIN)
+//                       National Identity Number (NIN){" "}
+//                       <span className="text-red-500">*</span>
 //                     </label>
 //                     <input
 //                       id="nin"
@@ -452,9 +582,12 @@
 //                       placeholder="Enter your NIN"
 //                       value={formData.nin}
 //                       onChange={(e) => handleInputChange("nin", e.target.value)}
-//                       className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                       className={getInputClassName("nin")}
 //                       required
 //                     />
+//                     {errors.nin && (
+//                       <p className="text-sm text-red-600">{errors.nin}</p>
+//                     )}
 //                   </div>
 //                 </div>
 //               </div>
@@ -463,8 +596,11 @@
 //             {/* Guarantor Details */}
 //             <div className="space-y-6">
 //               <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-//                 <div className="border-b border-gray-200 px-6 py-4">
+//                 <div className="flex items-center gap-2 border-b border-gray-200 px-6 py-4">
 //                   <h3 className="text-lg font-semibold">Guarantor Details</h3>
+//                   <span className="rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-800">
+//                     Required
+//                   </span>
 //                 </div>
 //                 <div className="space-y-6 p-6">
 //                   {/* Guarantor A */}
@@ -476,7 +612,7 @@
 //                           htmlFor="guarantorAName"
 //                           className="block text-sm font-medium text-gray-700"
 //                         >
-//                           Guarantor Name
+//                           Guarantor Name <span className="text-red-500">*</span>
 //                         </label>
 //                         <input
 //                           id="guarantorAName"
@@ -486,16 +622,22 @@
 //                           onChange={(e) =>
 //                             handleInputChange("guarantorA.name", e.target.value)
 //                           }
-//                           className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                           className={getInputClassName("guarantorA.name")}
 //                           required
 //                         />
+//                         {errors["guarantorA.name"] && (
+//                           <p className="text-sm text-red-600">
+//                             {errors["guarantorA.name"]}
+//                           </p>
+//                         )}
 //                       </div>
 //                       <div className="space-y-2">
 //                         <label
 //                           htmlFor="guarantorAPhone"
 //                           className="block text-sm font-medium text-gray-700"
 //                         >
-//                           Guarantor Telephone Number
+//                           Guarantor Telephone Number{" "}
+//                           <span className="text-red-500">*</span>
 //                         </label>
 //                         <input
 //                           id="guarantorAPhone"
@@ -508,9 +650,14 @@
 //                               e.target.value,
 //                             )
 //                           }
-//                           className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                           className={getInputClassName("guarantorA.phone")}
 //                           required
 //                         />
+//                         {errors["guarantorA.phone"] && (
+//                           <p className="text-sm text-red-600">
+//                             {errors["guarantorA.phone"]}
+//                           </p>
+//                         )}
 //                       </div>
 //                     </div>
 //                   </div>
@@ -524,7 +671,7 @@
 //                           htmlFor="guarantorBName"
 //                           className="block text-sm font-medium text-gray-700"
 //                         >
-//                           Guarantor Name
+//                           Guarantor Name <span className="text-red-500">*</span>
 //                         </label>
 //                         <input
 //                           id="guarantorBName"
@@ -534,16 +681,22 @@
 //                           onChange={(e) =>
 //                             handleInputChange("guarantorB.name", e.target.value)
 //                           }
-//                           className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                           className={getInputClassName("guarantorB.name")}
 //                           required
 //                         />
+//                         {errors["guarantorB.name"] && (
+//                           <p className="text-sm text-red-600">
+//                             {errors["guarantorB.name"]}
+//                           </p>
+//                         )}
 //                       </div>
 //                       <div className="space-y-2">
 //                         <label
 //                           htmlFor="guarantorBPhone"
 //                           className="block text-sm font-medium text-gray-700"
 //                         >
-//                           Guarantor Telephone Number
+//                           Guarantor Telephone Number{" "}
+//                           <span className="text-red-500">*</span>
 //                         </label>
 //                         <input
 //                           id="guarantorBPhone"
@@ -556,9 +709,14 @@
 //                               e.target.value,
 //                             )
 //                           }
-//                           className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//                           className={getInputClassName("guarantorB.phone")}
 //                           required
 //                         />
+//                         {errors["guarantorB.phone"] && (
+//                           <p className="text-sm text-red-600">
+//                             {errors["guarantorB.phone"]}
+//                           </p>
+//                         )}
 //                       </div>
 //                     </div>
 //                   </div>
@@ -572,9 +730,14 @@
 //             <form onSubmit={handleSubmit} className="mt-6">
 //               <button
 //                 type="submit"
-//                 className="mt-4 w-full rounded-lg bg-orange-600 py-3 font-semibold text-white transition hover:bg-orange-700"
+//                 disabled={isSubmitting}
+//                 className={`mt-4 w-full rounded-lg py-3 font-semibold text-white transition ${
+//                   isSubmitting
+//                     ? "cursor-not-allowed bg-gray-400"
+//                     : "bg-orange-600 hover:bg-orange-700"
+//                 }`}
 //               >
-//                 Confirm & Pay (₦{previewData?.firstPayment?.toLocaleString()})
+//                 Confirm & Pay (₦{formatCurrency(previewData?.firstPayment)})
 //               </button>
 //             </form>
 //           </div>
@@ -583,6 +746,7 @@
 //     </div>
 //   );
 // }
+
 
 "use client";
 import { X } from "lucide-react";
@@ -859,6 +1023,14 @@ export default function PayInBitsForm({
     return amount.toLocaleString();
   };
 
+  // Helper function to get input className based on field and error state
+  const getInputClassName = (fieldName: string): string => {
+    const baseClasses = "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent";
+    const errorClasses = "border-red-500 focus:ring-red-500";
+    
+    return errors[fieldName] ? `${baseClasses} ${errorClasses}` : baseClasses;
+  };
+
   if (!isOpen) return null;
 
   if (previewLoading) {
@@ -883,10 +1055,6 @@ export default function PayInBitsForm({
         </div>
       </div>
     );
-  }
-
-  function getInputClassName(arg0: string): string | undefined {
-    throw new Error("Function not implemented.");
   }
 
   return (
