@@ -380,11 +380,9 @@ export default CustomerNavbar;
 export const Sidebar = ({
   onShow,
   setShow,
-    
 }: {
   onShow: boolean;
   setShow: Dispatch<SetStateAction<boolean>>;
-    
 }) => {
   const { SignOut } = useAuth();
   const { userPermissions, permissionsMap } = usePermissions();
@@ -679,13 +677,12 @@ export const Sidebar = ({
                             </Link>
                           </div>
 
-                         <Link
-              href={"/merchant/Ratings-review"}
-             className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
-              >
-  Ratings And Review
-</Link>
-                             
+                          <Link
+                            href={"/merchant/Ratings-review"}
+                            className="block cursor-pointer whitespace-nowrap bg-white px-2 py-1 text-sm capitalize text-black hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                          >
+                            Ratings And Review
+                          </Link>
                         </>
                       )}
                     </div>
@@ -1034,6 +1031,8 @@ export const SuperAdminSidebar = ({
   const { userPermissions, permissionsMap } = usePermissions();
   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
   const [itemsDropdownIsOpen, setItemsDropdownIsOpen] = useState(false);
+  const [commissionDropdownIsOpen, setCommissionDropdownIsOpen] =
+    useState(false);
   const [subscriptionDropdownIsOpen, setSubscriptionDropdownIsOpen] =
     useState(false);
   const [pickupStationDropdownIsOpen, setPickupStationDropdownIsOpen] =
@@ -1054,7 +1053,7 @@ export const SuperAdminSidebar = ({
     "customers",
     "group",
     "services",
-    "commission",
+
     "roles",
     "industry",
     "category",
@@ -1143,6 +1142,7 @@ export const SuperAdminSidebar = ({
 
           <div className="space-y-2">
             {[
+              "commission",
               "subscription-report",
               "item/purpose",
               "pick-up-station",
@@ -1163,6 +1163,16 @@ export const SuperAdminSidebar = ({
                     onClick={(e) => {
                       e.preventDefault();
                       setSettingsDropdownIsOpen(!settingsDropdownIsOpen);
+                    }}
+                  >
+                    {label}
+                  </Link>
+                ) : label === "commission" ? (
+                  <Link
+                    href="/superadmin/commission"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCommissionDropdownIsOpen(!commissionDropdownIsOpen);
                     }}
                   >
                     {label}
@@ -1249,6 +1259,7 @@ export const SuperAdminSidebar = ({
 
                 {/* Dropdown toggles */}
                 {[
+                  "commission",
                   "subscription-report",
                   "settings",
                   "item/purpose",
@@ -1266,6 +1277,30 @@ export const SuperAdminSidebar = ({
                 )}
 
                 {/* Dropdown content */}
+
+                {label === "commission" && commissionDropdownIsOpen && (
+                  <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+                    <Link
+                      href="/superadmin/commission"
+                      className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      Organisation Commission
+                    </Link>
+                    <Link
+                      href="/superadmin/commission/ecommerce-charge"
+                      className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      Ecommerce commission
+                    </Link>
+                    <Link
+                      href="/superadmin/commission/bill-charge"
+                      className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      Bill Charge
+                    </Link>
+                  </div>
+                )}
+
                 {label === "settings" && settingsDropdownIsOpen && (
                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
                     <Link
