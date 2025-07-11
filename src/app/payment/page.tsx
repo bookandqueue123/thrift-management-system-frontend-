@@ -54,7 +54,8 @@ interface PayInBitsPaymentData {
   paymentMethod: string
   paymentMode: "Pay In Bits"
   totalPrice: number
-  initialPaymentAmount: number // The initial deposit amount
+  initialPaymentAmount: number 
+  amountPaid: number
   paymentSchedule: PaymentScheduleItem[]
 }
 

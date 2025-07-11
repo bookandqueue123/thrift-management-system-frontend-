@@ -68,6 +68,8 @@ interface PaymentPlanItem {
   isUnscheduledPayment: boolean;
   isEarlyPayment: boolean;
   _id: string;
+  transactionReference?: string;
+  transactionDate?: string;
 }
 
 interface ProductPaymentTerms {
@@ -198,15 +200,7 @@ const PaymentBreakdownModal: React.FC<PaymentBreakdownModalProps> = ({ order, is
             <div>
               <span className="font-medium text-white">Repayment Period:</span> {order.productPaymentTerms.repaymentPeriodInMonths} months
             </div>
-            <div>
-              <span className="font-medium text-white">Interest Rate:</span> {order.productPaymentTerms.interestRatePercentage}%
-            </div>
-            <div>
-              <span className="font-medium text-white">Minimum Deposit:</span> {order.productPaymentTerms.mininumDepositPercentage}%
-            </div>
-            <div>
-              <span className="font-medium text-white">Platform Fee:</span> {formatCurrency(order.productPaymentTerms.platformFee)}
-            </div>
+           
           </div>
         </div>
 
@@ -224,67 +218,80 @@ const PaymentBreakdownModal: React.FC<PaymentBreakdownModalProps> = ({ order, is
                     <th className="border border-gray-600 px-3 py-2 text-left text-white">Principal</th>
                     <th className="border border-gray-600 px-3 py-2 text-left text-white">Interest</th>
                     <th className="border border-gray-600 px-3 py-2 text-left text-white">Remaining Balance</th>
-                    <th className="border border-gray-600 px-3 py-2 text-left text-white">Pay My Debts</th> {/* New column */}
+                    <th className="border border-gray-600 px-3 py-2 text-left text-white">Transaction Reference</th>
+                    <th className="border border-gray-600 px-3 py-2 text-left text-white">Date & Time of Transaction</th>
+                    <th className="border border-gray-600 px-3 py-2 text-left text-white">Pay My Debts</th>
                     <th className="border border-gray-600 px-3 py-2 text-left text-white">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {order.paymentPlan.map((payment) => (
-                    <tr key={payment._id} className="hover:bg-gray-800">
-                      <td className="border border-gray-600 px-3 py-2 text-gray-300">{payment.paymentNumber}</td>
-                      <td className="border border-gray-600 px-3 py-2 text-gray-300">{formatDate(payment.dueDate)}</td>
-                      <td className="border border-gray-600 px-3 py-2 text-gray-300">{formatCurrency(payment.totalPayment)}</td>
-                      <td className="border border-gray-600 px-3 py-2 text-gray-300">{formatCurrency(payment.principalAmount)}</td>
-                      <td className="border border-gray-600 px-3 py-2 text-gray-300">{formatCurrency(payment.interestAmount)}</td>
-                      <td className="border border-gray-600 px-3 py-2 text-gray-300">{formatCurrency(payment.remainingBalance)}</td>
-                      {/* Pay My Debts button for each payment row */}
-                      <td className="border border-gray-600 px-3 py-2 text-gray-300">
-                        {!payment.isPaid && payment.remainingBalance > 0 && (
-                          <button
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition-colors"
-                            onClick={async () => {
-                              setPaying(true);
-                              setPayError(null);
-                              try {
-                                const res = await client.post('/api/payments/bills', {
-                                  billId: order._id,
-                                  billItems: [{
-                                    billItemId: payment._id, // assuming payment._id is the bill item id
-                                    amountToPay: payment.remainingBalance
-                                  }],
-                                  paymentMethod: 'card',
-                                  notes: `Little by little payment for payment #${payment.paymentNumber}`,
-                                });
-                                const link = res?.data?.data?.data?.link;
-                                if (link) {
-                                  window.location.href = link;
-                                  return;
+                  {order.paymentPlan.map((payment) => {
+                    // For each payment row:
+                    const orderItem = order.orderItems[0];
+                    const productId = orderItem?.product?._id;
+                    const quantity = orderItem?.quantity || 1;
+                    const months = order.productPaymentTerms.repaymentPeriodInMonths;
+                    const validMonths = months >= 1 && months <= 60 ? months : 1;
+                    return (
+                      <tr key={payment._id} className="hover:bg-gray-800">
+                        <td className="border border-gray-600 px-3 py-2 text-gray-300">{payment.paymentNumber}</td>
+                        <td className="border border-gray-600 px-3 py-2 text-gray-300">{formatDate(payment.dueDate)}</td>
+                        <td className="border border-gray-600 px-3 py-2 text-gray-300">{formatCurrency(payment.totalPayment)}</td>
+                        <td className="border border-gray-600 px-3 py-2 text-gray-300">{formatCurrency(payment.principalAmount)}</td>
+                        <td className="border border-gray-600 px-3 py-2 text-gray-300">{formatCurrency(payment.interestAmount)}</td>
+                        <td className="border border-gray-600 px-3 py-2 text-gray-300">{formatCurrency(payment.remainingBalance)}</td>
+                        {/* Transaction Reference column */}
+                        <td className="border border-gray-600 px-3 py-2 text-gray-300">{payment.transactionReference || 'N/A'}</td>
+                        {/* Date & Time of Transaction column */}
+                        <td className="border border-gray-600 px-3 py-2 text-gray-300">{payment.transactionDate ? new Date(payment.transactionDate).toLocaleString() : 'N/A'}</td>
+                        {/* Pay My Debts button for each payment row */}
+                        <td className="border border-gray-600 px-3 py-2 text-gray-300">
+                          {!payment.isPaid && payment.remainingBalance > 0 && (
+                            <button
+                              className={`bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition-colors ${!productId ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              onClick={async () => {
+                                setPaying(true);
+                                setPayError(null);
+                                try {
+                                  const res = await client.post(
+                                    '/api/payments/bits',
+                                    {
+                                      orderId: order._id,
+                                      amount: payment.totalPayment
+                                    }
+                                  );
+                                  const link = res?.data?.data?.data?.link;
+                                  if (link) {
+                                    window.location.href = link;
+                                    return;
+                                  }
+                                } catch (e: any) {
+                                  setPayError(e.message || 'Payment failed');
+                                } finally {
+                                  setPaying(false);
                                 }
-                              } catch (e: any) {
-                                setPayError(e.message || 'Payment failed');
-                              } finally {
-                                setPaying(false);
-                              }
-                            }}
-                            disabled={paying}
-                          >
-                            {paying ? 'Processing...' : 'Pay My Debts'}
-                          </button>
-                        )}
-                      </td>
-                      <td className="border border-gray-600 px-3 py-2">
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          payment.isPaid 
-                            ? 'bg-green-600 text-white' 
-                            : payment.isOverdue 
-                            ? 'bg-red-600 text-white' 
-                            : 'bg-yellow-600 text-white'
-                        }`}>
-                          {payment.isPaid ? 'Paid' : payment.isOverdue ? 'Overdue' : 'Pending'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                              }}
+                              disabled={paying || !productId}
+                              title={!productId ? 'Product not found for this payment row' : ''}
+                            >
+                              {paying ? 'Processing...' : !productId ? 'Product not found' : 'Pay My Debts'}
+                            </button>
+                          )}
+                        </td>
+                        <td className="border border-gray-600 px-3 py-2">
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            payment.isPaid 
+                              ? 'bg-green-600 text-white' 
+                              : payment.isOverdue 
+                              ? 'bg-red-600 text-white' 
+                              : 'bg-yellow-600 text-white'
+                          }`}>
+                            {payment.isPaid ? 'Paid' : payment.isOverdue ? 'Overdue' : 'Pending'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
