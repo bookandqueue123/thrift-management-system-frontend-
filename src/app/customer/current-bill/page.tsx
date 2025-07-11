@@ -1,3 +1,5 @@
+
+
 "use client"
 
 import React, { useState, useEffect } from "react"
@@ -18,6 +20,7 @@ interface BillItemApi {
   totalPaidForItem: number
   remainingBalance: number | null
   paymentStatus: string
+  isMandatory?: boolean
 }
 
 interface BillApi {
@@ -88,7 +91,7 @@ const CurrentBill = () => {
     enabled: !!client,
   })
 
-  // Helper to get category name (if needed)
+  
   const { data: categoriesData } = useQuery({
     queryKey: ['bill-categories'],
     queryFn: async () => {
@@ -116,9 +119,9 @@ const CurrentBill = () => {
     return groups
   }
 
-  // Find the current bill (latest by startDate)
+  // Find the current bill - using createdAt instead of startDate for more accurate sorting
   const allBills: BillApi[] = data?.data || []
-  const sortedBills = [...allBills].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
+  const sortedBills = [...allBills].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   const currentBill = sortedBills[0]
   const previousBills = sortedBills.slice(1)
 
@@ -161,6 +164,38 @@ const CurrentBill = () => {
     return { totalDebit, totalCredit, grandTotal }
   }
 
+  // Helper: calculate total subtotal for a category (user input + mandatory amounts)
+  const calcTotalSubtotal = (items: TableBillItem[]) => {
+    return items.reduce((sum, item) => {
+      // If mandatory, use the full outstanding amount; else use selectedPayments or 0
+      if (item.isMandatory) {
+        return sum + (item.amount - (item.totalPaidForItem || 0));
+      } else {
+        return sum + (Number(selectedPayments[item._id]) || 0);
+      }
+    }, 0);
+  };
+
+  // Helper: calculate total of all inputted amounts
+  const calcTotalInput = () => {
+    // Only sum for items that are currently payable (payableItems)
+    return payableItems.reduce((sum, item) => {
+      if (item.isMandatory) {
+        return sum + (item.amount - (item.totalPaidForItem || 0));
+      } else {
+        return sum + (Number(selectedPayments[item._id]) || 0);
+      }
+    }, 0);
+  };
+
+  // Helper: calculate grand total as sum of category subtotals
+  const calcGrandTotalFromSubtotals = (items: TableBillItem[]) => {
+    const grouped = groupByCategory(items)
+    return Object.values(grouped).reduce((total, categoryItems) => {
+      return total + calcTotalSubtotal(categoryItems)
+    }, 0)
+  }
+
   const formatCurrency = (amount: number | null) => {
     if (amount === null) return "-"
     return `NGN ${amount.toLocaleString()}`
@@ -176,20 +211,31 @@ const CurrentBill = () => {
     setPayError(null)
     // Group selected payments by billId
     const paymentsByBill: Record<string, { billId: string; billItems: { billItemId: string; amountToPay: number }[] }> = {}
+    
     payableItems.forEach((item: TableBillItem) => {
-      const amount = selectedPayments[item._id]
+      let amount = 0
+      
+      if (item.isMandatory) {
+        // For mandatory items, use the full outstanding amount
+        amount = item.amount - (item.totalPaidForItem || 0)
+      } else {
+        // For non-mandatory items, use the user-selected amount
+        amount = selectedPayments[item._id] || 0
+      }
+      
       if (amount && amount > 0) {
         if (!paymentsByBill[item.billId]) paymentsByBill[item.billId] = { billId: item.billId, billItems: [] }
         paymentsByBill[item.billId].billItems.push({ billItemId: item._id, amountToPay: amount })
       }
     })
+    
     if (Object.keys(paymentsByBill).length === 0) {
       setPayError("Please enter an amount to pay for at least one item.")
       setPaying(false)
       return
     }
+    
     try {
-      // For each bill, make a payment request
       for (const billId in paymentsByBill) {
         const { billItems } = paymentsByBill[billId]
         const res = await client.post('/api/payments/bills', {
@@ -214,14 +260,14 @@ const CurrentBill = () => {
 
   return (
     <div className="min-h-screen bg-white p-8 rounded">
-      {/* Centered company info header */}
+     
       <div className="flex flex-col items-center justify-center mb-8">
         <div className="text-3xl font-bold text-gray-800 mb-2">{COMPANY_NAME}</div>
         <div className="text-gray-600 mb-1">{COMPANY_ADDRESS}</div>
         <div className="text-gray-600">{COMPANY_CONTACT}</div>
       </div>
       <div className="max-w-7xl mx-auto">
-        {/* Toggle buttons */}
+       
         <div className="flex gap-4 mb-6">
           <button
             className={`px-4 py-2 rounded font-semibold ${viewType === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
@@ -257,7 +303,7 @@ const CurrentBill = () => {
                   <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Debit Amount</th>
                   <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Credit Amount</th>
                   <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Paid Amount</th>
-                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Balance</th>
+                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Remaining Balance</th>
                 </tr>
               </thead>
               <tbody>
@@ -267,7 +313,7 @@ const CurrentBill = () => {
                     {/* Previous Debts Section */}
                     {previousDebtItems.length > 0 && (
                       <>
-                        <tr><td colSpan={12} className="text-lg  text-blue-500 w-[40%] font-bold px-3 py-2">Previous Debts</td></tr>
+                        <tr><td colSpan={12} className="text-lg text-blue-500 w-[40%] font-bold px-3 py-2">Previous Debts</td></tr>
                         {Object.entries(groupByCategory(previousDebtItems)).map(([cat, items], i) => (
                           <React.Fragment key={cat}>
                             <tr><td colSpan={12} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
@@ -283,45 +329,60 @@ const CurrentBill = () => {
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                                  {item.amount - (item.totalPaidForItem || 0) > 0
-                                    ? <input
+                                  {item.amount - (item.totalPaidForItem || 0) > 0 ? (
+                                    item.isMandatory ? (
+                                      <span className="text-blue-900 font-semibold">
+                                        {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                                      </span>
+                                    ) : (
+                                      <input
                                         type="number"
                                         placeholder="Amount"
                                         className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
                                         value={selectedPayments[item._id] || ""}
                                         onChange={(e) => handlePaymentInput(item._id, e.target.value)}
                                       />
-                                    : formatCurrency(item.totalPaidForItem || 0)
-                                  }
+                                    )
+                                  ) : (
+                                    <span>-</span>
+                                  )}
                                 </td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.totalPaidForItem || 0)}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount - (item.totalPaidForItem || 0))}</td>
+                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                                  {formatCurrency(item.totalPaidForItem || 0)}
+                                </td>
+                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                                  {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                                </td>
                               </tr>
                             ))}
-                            {/* Category sub-total */}
-                            <tr className="text-gray-500">
-                              <td colSpan={8} className="font-bold text-right px-3 py-2">Sub-total for {cat}</td>
-                              <td className="font-bold">{formatCurrency(calcTotals(items).totalDebit)}</td>
-                              <td className="font-bold">{formatCurrency(calcTotals(items).totalCredit)}</td>
-                              <td className="font-bold">{formatCurrency(calcTotals(items).grandTotal)}</td>
+                            {/* Dynamic Total row under Credit Amount column */}
+                            <tr>
+                              <td colSpan={9}></td>
+                              <td className="text-blue-900 font-bold text-lg" style={{ textAlign: 'center' }}>
+                                Total: NGN {calcTotalSubtotal(items).toLocaleString()}
+                              </td>
+                              <td></td><td></td>
+                            </tr>
+                            {/* Sub-total row for this category */}
+                            <tr>
+                              <td colSpan={9} className="text-right font-semibold px-3 py-2">Sub-total for {cat}:</td>
                               <td></td>
+                              <td></td><td></td>
                             </tr>
                           </React.Fragment>
                         ))}
                         {/* Section grand total */}
                         <tr className="text-gray-500">
-                          <td colSpan={8} className="font-bold text-right px-3 py-2">Grand Total (Previous Debts)</td>
-                          <td className="font-bold">{formatCurrency(calcTotals(previousDebtItems).totalDebit)}</td>
-                          <td className="font-bold">{formatCurrency(calcTotals(previousDebtItems).totalCredit)}</td>
-                          <td className="font-bold">{formatCurrency(calcTotals(previousDebtItems).grandTotal)}</td>
-                          <td></td>
+                          <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Previous Debts):</td>
+                          <td className="font-bold text-blue-900 text-lg">{formatCurrency(calcGrandTotalFromSubtotals(previousDebtItems))}</td>
+                          <td></td><td></td>
                         </tr>
                       </>
                     )}
                     {/* Current Bill Section */}
                     {currentBillItems.length > 0 && (
                       <>
-                        <tr><td colSpan={12} className=" text-blue-500 text-lg font-bold px-3 py-2">Current Bill</td></tr>
+                        <tr><td colSpan={12} className="text-blue-500 text-lg font-bold px-3 py-2">Current Bill</td></tr>
                         {Object.entries(groupByCategory(currentBillItems)).map(([cat, items], i) => (
                           <React.Fragment key={cat}>
                             <tr><td colSpan={12} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
@@ -337,48 +398,53 @@ const CurrentBill = () => {
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                                  {item.amount - (item.totalPaidForItem || 0) > 0
-                                    ? <input
-                                        type="number"
-                                        placeholder="Amount"
-                                        className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                                        value={selectedPayments[item._id] || ""}
-                                        onChange={(e) => handlePaymentInput(item._id, e.target.value)}
-                                      />
-                                    : formatCurrency(item.totalPaidForItem || 0)
-                                  }
+                                  {item.isMandatory ? (
+                                    <span className="text-blue-900 font-semibold">
+                                      {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                                    </span>
+                                  ) : (
+                                    <input
+                                      type="number"
+                                      placeholder="Amount"
+                                      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                                      value={selectedPayments[item._id] || ""}
+                                      onChange={(e) => handlePaymentInput(item._id, e.target.value)}
+                                    />
+                                  )}
                                 </td>
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.totalPaidForItem || 0)}</td>
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount - (item.totalPaidForItem || 0))}</td>
                               </tr>
                             ))}
-                            {/* Category sub-total */}
-                            <tr className="text-gray-500">
-                              <td colSpan={8} className="font-bold text-right px-3 py-2">Sub-total for {cat}</td>
-                              <td className="font-bold">{formatCurrency(calcTotals(items).totalDebit)}</td>
-                              <td className="font-bold">{formatCurrency(calcTotals(items).totalCredit)}</td>
-                              <td className="font-bold">{formatCurrency(calcTotals(items).grandTotal)}</td>
+                            {/* Dynamic Total row under Credit Amount column */}
+                            <tr>
+                              <td colSpan={9}></td>
+                              <td className="text-blue-900 font-bold text-lg" style={{ textAlign: 'center' }}>
+                                Total: NGN {calcTotalSubtotal(items).toLocaleString()}
+                              </td>
+                              <td></td><td></td>
+                            </tr>
+                            {/* Sub-total row for this category */}
+                            <tr>
+                              <td colSpan={9} className="text-right font-semibold px-3 py-2">Sub-total for {cat}:</td>
                               <td></td>
+                              <td></td><td></td>
                             </tr>
                           </React.Fragment>
                         ))}
                         {/* Section grand total */}
                         <tr className="text-gray-500">
-                          <td colSpan={8} className="font-bold text-right px-3 py-2">Grand Total (Current Bill)</td>
-                          <td className="font-bold">{formatCurrency(calcTotals(currentBillItems).totalDebit)}</td>
-                          <td className="font-bold">{formatCurrency(calcTotals(currentBillItems).totalCredit)}</td>
-                          <td className="font-bold">{formatCurrency(calcTotals(currentBillItems).grandTotal)}</td>
-                          <td></td>
+                          <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Current Bill):</td>
+                          <td className="font-bold text-blue-900 text-lg">{formatCurrency(calcGrandTotalFromSubtotals(currentBillItems))}</td>
+                          <td></td><td></td>
                         </tr>
                       </>
                     )}
                     {/* Overall grand total */}
                     <tr className="text-gray-500">
-                      <td colSpan={8} className="font-bold text-right px-3 py-2">Overall Grand Total</td>
-                      <td className="font-bold">{formatCurrency(calcTotals([...previousDebtItems, ...currentBillItems]).totalDebit)}</td>
-                      <td className="font-bold">{formatCurrency(calcTotals([...previousDebtItems, ...currentBillItems]).totalCredit)}</td>
-                      <td className="font-bold">{formatCurrency(calcTotals([...previousDebtItems, ...currentBillItems]).grandTotal)}</td>
-                      <td></td>
+                      <td colSpan={9} className="font-bold text-right px-3 py-2">Overall Grand Total:</td>
+                      <td className="font-bold text-blue-900 text-xl">{formatCurrency(calcGrandTotalFromSubtotals([...previousDebtItems, ...currentBillItems]))}</td>
+                      <td></td><td></td>
                     </tr>
                   </>
                 )}
@@ -400,38 +466,45 @@ const CurrentBill = () => {
                             <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
                             <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
                             <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                              {item.amount - (item.totalPaidForItem || 0) > 0
-                                ? <input
-                                    type="number"
-                                    placeholder="Amount"
-                                    className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                                    value={selectedPayments[item._id] || ""}
-                                    onChange={(e) => handlePaymentInput(item._id, e.target.value)}
-                                  />
-                                : formatCurrency(item.totalPaidForItem || 0)
-                              }
+                              {item.isMandatory ? (
+                                <span className="text-blue-900 font-semibold">
+                                  {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                                </span>
+                              ) : (
+                                <input
+                                  type="number"
+                                  placeholder="Amount"
+                                  className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                                  value={selectedPayments[item._id] || ""}
+                                  onChange={(e) => handlePaymentInput(item._id, e.target.value)}
+                                />
+                              )}
                             </td>
                             <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.totalPaidForItem || 0)}</td>
                             <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount - (item.totalPaidForItem || 0))}</td>
                           </tr>
                         ))}
-                        {/* Category sub-total */}
-                        <tr className="text-gray-500">
-                          <td colSpan={8} className="font-bold text-right px-3 py-2">Sub-total for {cat}</td>
-                          <td className="font-bold">{formatCurrency(calcTotals(items).totalDebit)}</td>
-                          <td className="font-bold">{formatCurrency(calcTotals(items).totalCredit)}</td>
-                          <td className="font-bold">{formatCurrency(calcTotals(items).grandTotal)}</td>
+                        {/* Dynamic Total row under Credit Amount column */}
+                        <tr>
+                          <td colSpan={9}></td>
+                          <td className="text-blue-900 font-bold text-lg" style={{ textAlign: 'center' }}>
+                            Total: NGN {calcTotalSubtotal(items).toLocaleString()}
+                          </td>
+                          <td></td><td></td>
+                        </tr>
+                        {/* Sub-total row for this category */}
+                        <tr>
+                          <td colSpan={9} className="text-right font-semibold px-3 py-2">Sub-total for {cat}:</td>
                           <td></td>
+                          <td></td><td></td>
                         </tr>
                       </React.Fragment>
                     ))}
                     {/* Section grand total */}
                     <tr className="text-gray-500">
-                      <td colSpan={8} className="font-bold text-right px-3 py-2">Grand Total (Current Bill)</td>
-                      <td className="font-bold">{formatCurrency(calcTotals(currentBillItems).totalDebit)}</td>
-                      <td className="font-bold">{formatCurrency(calcTotals(currentBillItems).totalCredit)}</td>
-                      <td className="font-bold">{formatCurrency(calcTotals(currentBillItems).grandTotal)}</td>
-                      <td></td>
+                      <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Current Bill):</td>
+                      <td className="font-bold text-blue-900 text-xl">{formatCurrency(calcGrandTotalFromSubtotals(currentBillItems))}</td>
+                      <td></td><td></td>
                     </tr>
                   </>
                 )}
@@ -439,7 +512,6 @@ const CurrentBill = () => {
             </table>
           </div>
         </div>
-        {/* Single payment button below table */}
         <div className="flex justify-end mt-6">
           <button
             onClick={handleMakePayment}
@@ -459,4 +531,3 @@ const CurrentBill = () => {
 }
 
 export default CurrentBill
-
