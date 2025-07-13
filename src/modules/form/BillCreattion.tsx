@@ -14,7 +14,13 @@ interface BillItem {
   amountWithoutCharge: number;
   quantity: number;
   isMandatory: boolean;
+  promoType?: 'promo' | 'custom';
+  promoCode?: string;
   customPromoCode?: string;
+  startDate?: string;
+  startTime?: string;
+  endDate?: string;
+  endTime?: string;
 }
 
 interface BillDetails {
@@ -119,7 +125,13 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
     amountWithoutCharge: 0,
     quantity: 1,
     isMandatory: false,
-    customPromoCode: "",
+    promoType: 'promo',
+    promoCode: '',
+    customPromoCode: '',
+    startDate: '',
+    startTime: '',
+    endDate: '',
+    endTime: '',
   }]);
 
   
@@ -382,7 +394,13 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
         amountWithoutCharge: 0,
         quantity: 1,
         isMandatory: false,
-        customPromoCode: "",
+        promoType: 'promo',
+        promoCode: '',
+        customPromoCode: '',
+        startDate: '',
+        startTime: '',
+        endDate: '',
+        endTime: '',
       }]);
       setTimeout(() => {
         setCloseModal(false);
@@ -420,7 +438,13 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
       amountWithoutCharge: 0,
       quantity: 1,
       isMandatory: false,
-      customPromoCode: "",
+      promoType: 'promo',
+      promoCode: '',
+      customPromoCode: '',
+      startDate: '',
+      startTime: '',
+      endDate: '',
+      endTime: '',
     }]);
   };
 
@@ -451,6 +475,12 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
           : [...prev.assignedCustomers, customerId]
       };
     });
+  };
+
+  const handleItemPromoChange = (itemId: number, field: keyof BillItem, value: any) => {
+    setBillItems(prev => prev.map(item =>
+      item.id === itemId ? { ...item, [field]: value } : item
+    ));
   };
 
   const nextStep = () => {
@@ -659,8 +689,7 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <Calendar size={16} />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Start Date <span className='text-red-500'>*</span>
                   </label>
                   <input
@@ -714,175 +743,236 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
 
       case 2: // Bill Items
         return (
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 mb-6">
-              <DollarSign className="text-green-600" size={20} />
-              Bill Items
-            </h2>
-            <div className="space-y-4">
-              {billItems.map((item, index) => (
-                <div key={item.id} className="bg-white rounded-lg p-4 border border-gray-200">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-medium text-gray-800">Bill Item {index + 1}</h3>
-                    {billItems.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeBillItem(item.id)}
-                        className="text-red-600 hover:text-red-800 p-1"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Make bill item mandatory for payment</label>
-                    <div className="flex items-center gap-4">
-                      <input
-                        type="radio"
-                        id={`isMandatory-yes-${item.id}`}
-                        name={`isMandatory-${item.id}`}
-                        checked={item.isMandatory}
-                        onChange={() => handleItemChange(item.id, 'isMandatory', true)}
-                      />
-                      <label htmlFor={`isMandatory-yes-${item.id}`}>Yes</label>
-                      <input
-                        type="radio"
-                        id={`isMandatory-no-${item.id}`}
-                        name={`isMandatory-${item.id}`}
-                        checked={!item.isMandatory}
-                        onChange={() => handleItemChange(item.id, 'isMandatory', false)}
-                      />
-                      <label htmlFor={`isMandatory-no-${item.id}`}>No</label>
-                    </div>
-                  </div>
-                  <div className="w-full px-2 sm:px-4 py-2 sm:p-8">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Bill Name <span className='text-red-500'>*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={item.purposeName}
-                          onChange={(e) => handleItemChange(item.id, 'purposeName', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                          placeholder="Enter item name"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Category
-                        </label>
-                        <select
-                          value={item.category}
-                          onChange={(e) => handleItemChange(item.id, 'category', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        >
-                          <option value="">Select category</option>
-                          {categoriesData?.map(category => (
-                            <option key={category.id} value={category.id}>
-                              {category.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          DEBIT AMOUNT
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={item.amount}
-                          onChange={(e) => handleItemChange(item.id, 'amount', parseFloat(e.target.value) || 0)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                          placeholder="Enter debit amount"
-                        />
-                      </div>
-                      {/* Platform charge fields */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge (%)</label>
-                        <input
-                          type="number"
-                          value={platformChargeData?.data?.percentage || ''}
-                          disabled
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-                        />
-                        {isLoadingPlatformCharge && <span className="text-xs text-gray-400">Loading platform charge...</span>}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge value</label>
-                        <input
-                          type="number"
-                          value={
-                            platformChargeData?.data?.percentage
-                              ? ((platformChargeData.data.percentage / 100) * item.amount).toFixed(2)
-                              : ''
-                          }
-                          disabled
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Actual debit amount</label>
-                        <input
-                          type="number"
-                          value={
-                            platformChargeData?.data?.percentage
-                              ? (item.amount + (platformChargeData.data.percentage / 100) * item.amount).toFixed(2)
-                              : item.amount
-                          }
-                          disabled
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Quantity
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        />
-                      </div>
-                      {/* Custom Promo Code for this item */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Custom Promo Code</label>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={item.customPromoCode || ''}
-                            readOnly
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 cursor-not-allowed"
-                            placeholder="Custom promo code"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleItemChange(item.id, 'customPromoCode', generatePromoCode())}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                          >
-                            Generate
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+         <div className="space-y-6">
+  <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 mb-6">
+    <DollarSign className="text-green-600" size={20} />
+    Bill Items
+  </h2>
+  <div className="space-y-4">
+    {billItems.map((item, index) => (
+      <div key={item.id} className="bg-white rounded-lg p-4 border border-gray-200">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-medium text-gray-800">Bill Item {index + 1}</h3>
+          {billItems.length > 1 && (
             <button
               type="button"
-              onClick={addBillItem}
-              className="flex items-center gap-2 px-4 py-2 bg-[#221c3e] text-white rounded-lg hover:bg-[#3b2f73] transition-colors mt-4"
+              onClick={() => removeBillItem(item.id)}
+              className="text-red-600 hover:text-red-800 p-1"
             >
-              <Plus size={16} />
-              Add Bill Item
+              <Trash2 size={16} />
             </button>
+          )}
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Make bill item mandatory for payment</label>
+          <div className="flex items-center gap-4">
+            <input
+              type="radio"
+              id={`isMandatory-yes-${item.id}`}
+              name={`isMandatory-${item.id}`}
+              checked={item.isMandatory}
+              onChange={() => handleItemChange(item.id, 'isMandatory', true)}
+            />
+            <label htmlFor={`isMandatory-yes-${item.id}`}>Yes</label>
+            <input
+              type="radio"
+              id={`isMandatory-no-${item.id}`}
+              name={`isMandatory-${item.id}`}
+              checked={!item.isMandatory}
+              onChange={() => handleItemChange(item.id, 'isMandatory', false)}
+            />
+            <label htmlFor={`isMandatory-no-${item.id}`}>No</label>
           </div>
+        </div>
+        <div className="w-full px-2 sm:px-4 py-2 sm:p-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Bill Name <span className='text-red-500'>*</span>
+              </label>
+              <input
+                type="text"
+                value={item.purposeName}
+                onChange={(e) => handleItemChange(item.id, 'purposeName', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Enter item name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Category
+              </label>
+              <select
+                value={item.category}
+                onChange={(e) => handleItemChange(item.id, 'category', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="">Select category</option>
+                {categoriesData?.map(category => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                DEBIT AMOUNT
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={item.amount}
+                onChange={(e) => handleItemChange(item.id, 'amount', parseFloat(e.target.value) || 0)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Enter debit amount"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Quantity
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={item.quantity}
+                onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+            {/* Platform charge fields */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge (%)</label>
+              <input
+                type="number"
+                value={platformChargeData?.data?.percentage || ''}
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+              />
+              {isLoadingPlatformCharge && <span className="text-xs text-gray-400">Loading platform charge...</span>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge value</label>
+              <input
+                type="number"
+                value={
+                  platformChargeData?.data?.percentage
+                    ? ((platformChargeData.data.percentage / 100) * item.amount).toFixed(2)
+                    : ''
+                }
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Actual debit amount</label>
+              <input
+                type="number"
+                value={
+                  platformChargeData?.data?.percentage
+                    ? (item.amount + (platformChargeData.data.percentage / 100) * item.amount).toFixed(2)
+                    : item.amount
+                }
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+              />
+            </div>
+          </div>
+          
+          {/* Promo Code Settings - Full width section */}
+          <div className="mt-6">
+            <div className="p-4 w-full border border-gray-200 rounded-lg bg-gray-50">
+              <label className="block text-base font-semibold mb-4">Promo Code Settings</label>
+              <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={`promoType-${item.id}`}
+                    checked={item.promoType === 'promo' || !item.promoType}
+                    onChange={() => handleItemChange(item.id, 'promoType', 'promo')}
+                  />
+                  Promo Code
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={`promoType-${item.id}`}
+                    checked={item.promoType === 'custom'}
+                    onChange={() => handleItemChange(item.id, 'promoType', 'custom')}
+                  />
+                  Custom Promo Code
+                </label>
+              </div>
+              <div className="flex flex-col md:flex-row gap-2 mb-4 w-full">
+                <input
+                  type="text"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded"
+                  placeholder={item.promoType === 'custom' ? 'Enter custom promo code' : 'Enter promo code'}
+                  value={item.promoType === 'custom' ? (item.customPromoCode || '') : (item.promoCode || '')}
+                  onChange={e => handleItemChange(item.id, item.promoType === 'custom' ? 'customPromoCode' : 'promoCode', e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="w-32 px-4 py-2 bg-gray-200 rounded text-gray-700 font-semibold hover:bg-gray-300 transition-colors"
+                  onClick={() => handleItemChange(item.id, item.promoType === 'custom' ? 'customPromoCode' : 'promoCode', generatePromoCode())}
+                >
+                  Generate
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Start Date</label>
+                  <input
+                    type="date"
+                    className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    value={item.startDate || ''}
+                    onChange={e => handleItemChange(item.id, 'startDate', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">Start Time</label>
+                  <input
+                    type="time"
+                    className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    value={item.startTime || ''}
+                    onChange={e => handleItemChange(item.id, 'startTime', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">End Date</label>
+                  <input
+                    type="date"
+                    className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    value={item.endDate || ''}
+                    onChange={e => handleItemChange(item.id, 'endDate', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-600 mb-1">End Time</label>
+                  <input
+                    type="time"
+                    className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    value={item.endTime || ''}
+                    onChange={e => handleItemChange(item.id, 'endTime', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+  <button
+    type="button"
+    onClick={addBillItem}
+    className="flex items-center gap-2 px-4 py-2 bg-[#221c3e] text-white rounded-lg hover:bg-[#3b2f73] transition-colors mt-4"
+  >
+    <Plus size={16} />
+    Add Bill Item
+  </button>
+</div>
         );
 
       case 3: // Additional Settings
@@ -892,27 +982,7 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
             <div className="w-full px-2 py-2 sm:px-4 sm:py-4 sm:p-8">
               {/* Use grid for perfect alignment */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
-                {/* Row 1: Promo Code & Platform Service Charge */}
-                <div className="flex flex-col">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Promo Code</label>
-                  <div className="flex w-full">
-                    <input
-                      type="text"
-                      value={billDetails.promoCode}
-                      readOnly
-                      className="flex-1 px-2 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 cursor-not-allowed text-sm h-11"
-                      placeholder="Promo code"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setBillDetails(prev => ({ ...prev, promoCode: generatePromoCode() }))}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors text-sm h-11"
-                      style={{ marginLeft: '-1px' }}
-                    >
-                      Generate
-                    </button>
-                  </div>
-                </div>
+                {/* Remove promo code input here */}
                 <div className="flex flex-col">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Platform Service Charge</label>
                   <input
@@ -921,19 +991,6 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
                     value={billDetails.platformServiceCharge}
                     onChange={(e) => handleBillDetailsChange('platformServiceCharge', parseFloat(e.target.value) || 0)}
                     className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm h-11"
-                  />
-                </div>
-                {/* Row 2: Promo Percentage & Custom Unique Code */}
-                <div className="flex flex-col">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Promo Percentage (%)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={billDetails.promoPercentage}
-                    onChange={(e) => handleBillDetailsChange('promoPercentage', parseFloat(e.target.value) || 0)}
-                    className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm h-11"
-                    placeholder="0"
                   />
                 </div>
                 <div className="flex flex-col">

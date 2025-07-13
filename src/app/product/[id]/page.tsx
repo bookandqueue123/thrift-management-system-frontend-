@@ -425,9 +425,9 @@ export default function ProductDetailPage({
                   : "Add to cart"}
               </button>
 
-              <button className="flex h-12 items-center justify-center rounded-lg border border-[#fedc57] px-6 font-medium text-[#fedc57] transition hover:bg-yellow-50 sm:flex-1">
+              {/* <button className="flex h-12 items-center justify-center rounded-lg border border-[#fedc57] px-6 font-medium text-[#fedc57] transition hover:bg-yellow-50 sm:flex-1">
                 Buy now
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
