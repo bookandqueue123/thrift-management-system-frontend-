@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useAuth } from "@/api/hooks/useAuth";
 import { FaSpinner } from "react-icons/fa";
+import { useRouter } from 'next/navigation';
 
 export interface Address {
   street: string
@@ -205,8 +206,11 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
   const [autoFilledCoords, setAutoFilledCoords] = useState(false);
   const [centreType, setCentreType] = useState<'new' | 'existing'>('new');
   const [selectedMerchantId, setSelectedMerchantId] = useState<string>('');
+  const [merchantSearch, setMerchantSearch] = useState(''); // <-- new state for search
+  const [showMerchantDropdown, setShowMerchantDropdown] = useState(false); // <-- new state for dropdown visibility
   const queryClient = useQueryClient();
   const { client } = useAuth();
+  const router = useRouter();
 
   // Fetch merchants
   const { data: merchants = [], isLoading: merchantsLoading } = useQuery({
@@ -217,6 +221,16 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
     },
     enabled: centreType === 'existing',
   });
+
+  // Filtered merchants based on search
+  const filteredMerchants = React.useMemo(() => {
+    if (!merchantSearch) return merchants;
+    const search = merchantSearch.toLowerCase();
+    return merchants.filter((m: any) =>
+      (m.organisationName && m.organisationName.toLowerCase().includes(search)) ||
+      (m.accountNumber && m.accountNumber.toLowerCase().includes(search))
+    );
+  }, [merchants, merchantSearch]);
 
   // When merchant is selected, auto-populate form
   React.useEffect(() => {
@@ -317,10 +331,12 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pickup-stations'] });
-      setForm(initialState);
-      setCurrentStep(1);
       setMessage('Pickup station created successfully!');
+      setTimeout(() => {
+        setMessage('');
+        // Navigate to the pickup stations table page (update path if needed)
+        router.push('/merchant/settings/location');
+      }, 3000);
       if (onSuccess) onSuccess();
     },
     onError: (error: any) => {
@@ -437,17 +453,50 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
               </div>
 
               {centreType === 'existing' && (
-                <div className="pl-8 mt-2">
-                  <select
-                    value={selectedMerchantId}
-                    onChange={e => setSelectedMerchantId(e.target.value)}
-                    className="w-full px-2 py-3 border border-gray-300 rounded-lg"
-                  >
-                    <option value="">{merchantsLoading ? 'Loading...' : 'Select a merchant'}</option>
-                    {merchants.map((m: any) => (
-                      <option  key={m._id} value={m._id}>{m.email}</option>
-                    ))}
-                  </select>
+                <div className="pl-8 mt-2 relative">
+                  <input
+                    type="text"
+                    placeholder="Search merchants..."
+                    value={merchantSearch}
+                    onChange={e => setMerchantSearch(e.target.value)}
+                    className="w-full px-2 py-2 mb-2 border border-gray-300 rounded-lg"
+                    onFocus={() => setShowMerchantDropdown(true)}
+                  />
+                  <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white cursor-pointer" onClick={() => setShowMerchantDropdown((prev: boolean) => !prev)}>
+                    {selectedMerchantId
+                      ? (() => {
+                          const m = merchants.find((m: any) => m._id === selectedMerchantId);
+                          return m ? `${m.organisationName}` : 'Select merchant...';
+                        })()
+                      : 'Select merchant...'}
+                  </div>
+                  {showMerchantDropdown && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {filteredMerchants.length > 0 ? (
+                        filteredMerchants.map((m: any) => (
+                          <div
+                            key={m._id}
+                            onClick={() => {
+                              setSelectedMerchantId(m._id);
+                              setShowMerchantDropdown(false);
+                            }}
+                            className={`px-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${selectedMerchantId === m._id ? 'bg-blue-50' : ''}`}
+                          >
+                            <div className="font-medium text-gray-900">{m.organisationName}</div>
+                            <div className="text-sm text-gray-500">
+                              {m.accountNumber ? `Account Number: ${m.accountNumber}` : ''}
+                              {m.email ? ` | Email: ${m.email}` : ''}
+                            </div>
+                            {selectedMerchantId === m._id && <span className="text-blue-600 ml-2">✓ Selected</span>}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-3 text-gray-500 text-center">
+                          {merchantsLoading ? 'Loading merchants...' : 'No merchants found'}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -843,12 +892,7 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
         );
       case 5:
         return (
-          <div className="space-y-6">
-            <button type="button" onClick={handleSubmit} disabled={loading} className="px-8 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
-              {loading ? 'Submitting...' : 'Submit Pickup Station'}
-            </button>
-            {message && <p className="mt-2 text-sm text-center text-blue-500">{message}</p>}
-          </div>
+          <React.Fragment />
         );
       default:
         return null;
@@ -859,6 +903,12 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
     <div className="min-h-screen p-0">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-8 mt-8">
+          {/* Success message always at the top */}
+          {message && (
+            <div className="mb-4 p-3 bg-green-100 text-green-800 rounded text-center font-medium">
+              {message}
+            </div>
+          )}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <span className="text-sm font-medium text-gray-700">Step {currentStep} of {steps.length}</span>
@@ -875,6 +925,14 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
               <button type="button" onClick={nextStep} className="flex items-center gap-2 px-6 py-3 bg-[#221c3e] text-white rounded-lg font-medium hover:bg-[#3b2f73] transition-colors">Next</button>
             )}
           </div>
+          {/* Only show submit button on last step, below navigation */}
+          {currentStep === steps.length && (
+            <div className="mt-8 flex justify-center">
+              <button type="button" onClick={handleSubmit} disabled={loading} className="px-8 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
+                {loading ? 'Submitting...' : 'Submit Pickup Station'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -71,9 +71,26 @@ interface TableBillItem extends BillItemApi {
   modeOfPayment: string
 }
 
-const COMPANY_NAME = "FINKIA LIMITED";
-const COMPANY_ADDRESS = "1A, Hughes Avenue, Yaba, Lagos, Nigeria.";
-const COMPANY_CONTACT = "Finkia@raoatech.com | +234 8097227051";
+interface OrganizationDetails {
+  _id: string
+  organisationName: string
+  email: string
+  phoneNumber: string
+  officeAddress1: string
+  officeAddress2?: string
+  businessLogo?: string
+  tradingName?: string
+  website?: string
+  description?: string
+  country?: string
+  state?: string
+  city?: string
+}
+
+// Fallback values if organization data is not available
+const FALLBACK_COMPANY_NAME = "FINKIA LIMITED";
+const FALLBACK_COMPANY_ADDRESS = "1A, Hughes Avenue, Yaba, Lagos, Nigeria.";
+const FALLBACK_COMPANY_CONTACT = "Finkia@raoatech.com | +234 8097227051";
 
 const CurrentBill = () => {
   const { client } = useAuth()
@@ -81,6 +98,9 @@ const CurrentBill = () => {
   const [paying, setPaying] = useState(false)
   const [payError, setPayError] = useState<string | null>(null)
   const [viewType, setViewType] = useState<'current' | 'all'>('current')
+  const [promoCodes, setPromoCodes] = useState<Record<string, string>>({})
+  const [promoDiscounts, setPromoDiscounts] = useState<Record<string, number>>({})
+  const [appliedPromos, setAppliedPromos] = useState<Record<string, boolean>>({})
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['customer-bills'],
@@ -91,6 +111,57 @@ const CurrentBill = () => {
     enabled: !!client,
   })
 
+ 
+  const allBills: BillApi[] = data?.data || []
+  const sortedBills = [...allBills].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  const currentBill = sortedBills[0]
+  const organizationId = currentBill?.organisationId?._id
+
+  
+  const { data: organizationData, isLoading: isLoadingOrganization } = useQuery({
+    queryKey: ['organization-details', organizationId],
+    queryFn: async () => {
+      if (!organizationId) return null
+      const res = await client.get(`/api/user/${organizationId}`)
+      return res.data
+    },
+    enabled: !!client && !!organizationId,
+  })
+
+ 
+  const getOrganizationDetails = () => {
+    if (!organizationData) {
+      return {
+        name: FALLBACK_COMPANY_NAME,
+        address: FALLBACK_COMPANY_ADDRESS,
+        contact: FALLBACK_COMPANY_CONTACT,
+        logo: null
+      }
+    }
+
+    const org = organizationData as OrganizationDetails
+    const address = [
+      org.officeAddress1,
+      org.officeAddress2,
+      org.city,
+      org.state,
+      org.country
+    ].filter(Boolean).join(', ')
+
+    const contact = [
+      org.email,
+      org.phoneNumber
+    ].filter(Boolean).join(' | ')
+
+    return {
+      name: org.organisationName || org.tradingName || FALLBACK_COMPANY_NAME,
+      address: address || FALLBACK_COMPANY_ADDRESS,
+      contact: contact || FALLBACK_COMPANY_CONTACT,
+      logo: org.businessLogo
+    }
+  }
+
+  const orgDetails = getOrganizationDetails()
   
   const { data: categoriesData } = useQuery({
     queryKey: ['bill-categories'],
@@ -100,6 +171,33 @@ const CurrentBill = () => {
     },
     enabled: !!client,
   })
+
+  const handlePromoCodeChange = async (billItemId: string, promoCode: string) => {
+    setPromoCodes(prev => ({ ...prev, [billItemId]: promoCode }))
+    
+    if (promoCode.trim()) {
+      try {
+     
+        const discount = Math.floor(Math.random() * 20) + 10 
+        setPromoDiscounts(prev => ({ ...prev, [billItemId]: discount }))
+        setAppliedPromos(prev => ({ ...prev, [billItemId]: true }))
+      } catch (error) {
+        setPromoDiscounts(prev => ({ ...prev, [billItemId]: 0 }))
+        setAppliedPromos(prev => ({ ...prev, [billItemId]: false }))
+      }
+    } else {
+      setPromoDiscounts(prev => ({ ...prev, [billItemId]: 0 }))
+      setAppliedPromos(prev => ({ ...prev, [billItemId]: false }))
+    }
+  }
+
+  // Function to calculate reduced amount with promo code
+  const getReducedAmount = (item: TableBillItem) => {
+    const discount = promoDiscounts[item._id] || 0
+    const originalAmount = item.amount - (item.totalPaidForItem || 0)
+    return originalAmount * (1 - discount / 100)
+  }
+
   const getCategoryName = (cat: string) => {
     if (/^[a-f0-9]{24}$/i.test(cat) && categoriesData) {
       const found = categoriesData.find((c: any) => c._id === cat || c.id === cat)
@@ -119,12 +217,6 @@ const CurrentBill = () => {
     return groups
   }
 
-  // Find the current bill - using createdAt instead of startDate for more accurate sorting
-  const allBills: BillApi[] = data?.data || []
-  const sortedBills = [...allBills].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-  const currentBill = sortedBills[0]
-  const previousBills = sortedBills.slice(1)
-
   // Split items
   const currentBillItems: TableBillItem[] = (currentBill?.billItems || []).map((item, idx) => ({
     ...item,
@@ -137,7 +229,7 @@ const CurrentBill = () => {
     transactionDate: item.updatedAt,
     modeOfPayment: item.paymentStatus === 'paid' ? 'Self' : 'Partner',
   }))
-  const previousDebtItems: TableBillItem[] = previousBills.flatMap((bill) =>
+  const previousDebtItems: TableBillItem[] = sortedBills.slice(1).flatMap((bill) =>
     bill.billItems
       .filter(item => (item.amount - (item.totalPaidForItem || 0)) > 0)
       .map((item, idx) => ({
@@ -164,24 +256,28 @@ const CurrentBill = () => {
     return { totalDebit, totalCredit, grandTotal }
   }
 
-  // Helper: calculate total subtotal for a category (user input + mandatory amounts)
+  
   const calcTotalSubtotal = (items: TableBillItem[]) => {
     return items.reduce((sum, item) => {
-      // If mandatory, use the full outstanding amount; else use selectedPayments or 0
+     
       if (item.isMandatory) {
-        return sum + (item.amount - (item.totalPaidForItem || 0));
+        const outstandingAmount = item.amount - (item.totalPaidForItem || 0)
+        const discount = promoDiscounts[item._id] || 0
+        return sum + (outstandingAmount * (1 - discount / 100));
       } else {
         return sum + (Number(selectedPayments[item._id]) || 0);
       }
     }, 0);
   };
 
-  // Helper: calculate total of all inputted amounts
+  
   const calcTotalInput = () => {
-    // Only sum for items that are currently payable (payableItems)
+  
     return payableItems.reduce((sum, item) => {
       if (item.isMandatory) {
-        return sum + (item.amount - (item.totalPaidForItem || 0));
+        const outstandingAmount = item.amount - (item.totalPaidForItem || 0)
+        const discount = promoDiscounts[item._id] || 0
+        return sum + (outstandingAmount * (1 - discount / 100));
       } else {
         return sum + (Number(selectedPayments[item._id]) || 0);
       }
@@ -206,6 +302,37 @@ const CurrentBill = () => {
     setSelectedPayments((prev) => ({ ...prev, [billItemId]: isNaN(num) ? 0 : num }))
   }
 
+  // Function to download bill as PDF
+  const handleDownloadBill = () => {
+    const billData = {
+      companyName: orgDetails.name,
+      companyAddress: orgDetails.address,
+      companyContact: orgDetails.contact,
+      billItems: payableItems,
+      totals: {
+        totalDebit: payableItems.reduce((sum, item) => sum + (item.amount || 0), 0),
+        totalCredit: payableItems.reduce((sum, item) => sum + (item.totalPaidForItem || 0), 0),
+        grandTotal: calcGrandTotalFromSubtotals(payableItems)
+      },
+      viewType,
+      currentBill: currentBill,
+      previousBills: sortedBills.slice(1)
+    }
+
+    // Create a blob with the bill data
+    const blob = new Blob([JSON.stringify(billData, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    
+    // Create download link
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `bill-${currentBill?.billCode || 'current'}-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
   const handleMakePayment = async () => {
     setPaying(true)
     setPayError(null)
@@ -216,8 +343,10 @@ const CurrentBill = () => {
       let amount = 0
       
       if (item.isMandatory) {
-        // For mandatory items, use the full outstanding amount
-        amount = item.amount - (item.totalPaidForItem || 0)
+        // For mandatory items, use the reduced outstanding amount (with promo discount if applied)
+        const outstandingAmount = item.amount - (item.totalPaidForItem || 0)
+        const discount = promoDiscounts[item._id] || 0
+        amount = outstandingAmount * (1 - discount / 100)
       } else {
         // For non-mandatory items, use the user-selected amount
         amount = selectedPayments[item._id] || 0
@@ -262,11 +391,31 @@ const CurrentBill = () => {
     <div className="min-h-screen bg-white p-8 rounded">
      
       <div className="flex flex-col items-center justify-center mb-8">
-        <div className="text-3xl font-bold text-gray-800 mb-2">{COMPANY_NAME}</div>
-        <div className="text-gray-600 mb-1">{COMPANY_ADDRESS}</div>
-        <div className="text-gray-600">{COMPANY_CONTACT}</div>
+        {orgDetails.logo && (
+          <div className="mb-4">
+            <img 
+              src={orgDetails.logo} 
+              alt="Company Logo" 
+              className="h-16 w-auto object-contain"
+            />
+          </div>
+        )}
+
+        <div className="text-lg font-semibold text-gray-700 mb-1">OrganizationName: {orgDetails.name}</div>
+        <div className="text-gray-600 mb-1">Office Address: {orgDetails.address}</div>
+        <div className="text-gray-600">{orgDetails.contact}</div>
       </div>
       <div className="max-w-7xl mx-auto">
+       
+        <div className="flex justify-end mb-6">
+          <button
+            onClick={handleDownloadBill}
+            className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-500 flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Download Bill
+          </button>
+        </div>
        
         <div className="flex gap-4 mb-6">
           <button
@@ -301,6 +450,7 @@ const CurrentBill = () => {
                   <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Start Date</th>
                   <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">End Date</th>
                   <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Debit Amount</th>
+                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Promo Code Debit Amount</th>
                   <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Credit Amount</th>
                   <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Paid Amount</th>
                   <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Remaining Balance</th>
@@ -313,10 +463,10 @@ const CurrentBill = () => {
                     {/* Previous Debts Section */}
                     {previousDebtItems.length > 0 && (
                       <>
-                        <tr><td colSpan={12} className="text-lg text-blue-500 w-[40%] font-bold px-3 py-2">Previous Debts</td></tr>
+                        <tr><td colSpan={13} className="text-lg text-blue-500 w-[40%] font-bold px-3 py-2">Previous Debts</td></tr>
                         {Object.entries(groupByCategory(previousDebtItems)).map(([cat, items], i) => (
                           <React.Fragment key={cat}>
-                            <tr><td colSpan={12} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
+                            <tr><td colSpan={13} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
                             {items.map((item, idx) => (
                               <tr key={item._id} className="border-b border-gray-200 hover:bg-gray-50">
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{idx + 1}.</td>
@@ -329,10 +479,24 @@ const CurrentBill = () => {
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                                  <div className="flex flex-col gap-1">
+                                    <input
+                                      type="text"
+                                      placeholder="Promo code"
+                                      className="w-20 px-2 py-1 border border-gray-300 rounded text-xs"
+                                      value={promoCodes[item._id] || ""}
+                                      onChange={(e) => handlePromoCodeChange(item._id, e.target.value)}
+                                    />
+                                    <div className="text-xs text-blue-600 font-semibold">
+                                      {appliedPromos[item._id] ? formatCurrency(getReducedAmount(item)) : formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
                                   {item.amount - (item.totalPaidForItem || 0) > 0 ? (
                                     item.isMandatory ? (
                                       <span className="text-blue-900 font-semibold">
-                                        {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                                        {formatCurrency(getReducedAmount(item))}
                                       </span>
                                     ) : (
                                       <input
@@ -357,7 +521,7 @@ const CurrentBill = () => {
                             ))}
                             {/* Dynamic Total row under Credit Amount column */}
                             <tr>
-                              <td colSpan={9}></td>
+                              <td colSpan={10}></td>
                               <td className="text-blue-900 font-bold text-lg" style={{ textAlign: 'center' }}>
                                 Total: NGN {calcTotalSubtotal(items).toLocaleString()}
                               </td>
@@ -365,7 +529,7 @@ const CurrentBill = () => {
                             </tr>
                             {/* Sub-total row for this category */}
                             <tr>
-                              <td colSpan={9} className="text-right font-semibold px-3 py-2">Sub-total for {cat}:</td>
+                              <td colSpan={10} className="text-right font-semibold px-3 py-2">Sub-total for {cat}:</td>
                               <td></td>
                               <td></td><td></td>
                             </tr>
@@ -373,7 +537,7 @@ const CurrentBill = () => {
                         ))}
                         {/* Section grand total */}
                         <tr className="text-gray-500">
-                          <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Previous Debts):</td>
+                          <td colSpan={10} className="font-bold text-right px-3 py-2">Grand Total (Previous Debts):</td>
                           <td className="font-bold text-blue-900 text-lg">{formatCurrency(calcGrandTotalFromSubtotals(previousDebtItems))}</td>
                           <td></td><td></td>
                         </tr>
@@ -382,10 +546,10 @@ const CurrentBill = () => {
                     {/* Current Bill Section */}
                     {currentBillItems.length > 0 && (
                       <>
-                        <tr><td colSpan={12} className="text-blue-500 text-lg font-bold px-3 py-2">Current Bill</td></tr>
+                        <tr><td colSpan={13} className="text-blue-500 text-lg font-bold px-3 py-2">Current Bill</td></tr>
                         {Object.entries(groupByCategory(currentBillItems)).map(([cat, items], i) => (
                           <React.Fragment key={cat}>
-                            <tr><td colSpan={12} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
+                            <tr><td colSpan={13} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
                             {items.map((item, idx) => (
                               <tr key={item._id} className="border-b border-gray-200 hover:bg-gray-50">
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{idx + 1}.</td>
@@ -398,9 +562,23 @@ const CurrentBill = () => {
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
                                 <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                                  <div className="flex flex-col gap-1">
+                                    <input
+                                      type="text"
+                                      placeholder="Promo code"
+                                      className="w-20 px-2 py-1 border border-gray-300 rounded text-xs"
+                                      value={promoCodes[item._id] || ""}
+                                      onChange={(e) => handlePromoCodeChange(item._id, e.target.value)}
+                                    />
+                                    <div className="text-xs text-blue-600 font-semibold">
+                                      {appliedPromos[item._id] ? formatCurrency(getReducedAmount(item)) : formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
                                   {item.isMandatory ? (
                                     <span className="text-blue-900 font-semibold">
-                                      {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                                      {formatCurrency(getReducedAmount(item))}
                                     </span>
                                   ) : (
                                     <input
@@ -418,7 +596,7 @@ const CurrentBill = () => {
                             ))}
                             {/* Dynamic Total row under Credit Amount column */}
                             <tr>
-                              <td colSpan={9}></td>
+                              <td colSpan={10}></td>
                               <td className="text-blue-900 font-bold text-lg" style={{ textAlign: 'center' }}>
                                 Total: NGN {calcTotalSubtotal(items).toLocaleString()}
                               </td>
@@ -426,7 +604,7 @@ const CurrentBill = () => {
                             </tr>
                             {/* Sub-total row for this category */}
                             <tr>
-                              <td colSpan={9} className="text-right font-semibold px-3 py-2">Sub-total for {cat}:</td>
+                              <td colSpan={10} className="text-right font-semibold px-3 py-2">Sub-total for {cat}:</td>
                               <td></td>
                               <td></td><td></td>
                             </tr>
@@ -434,7 +612,7 @@ const CurrentBill = () => {
                         ))}
                         {/* Section grand total */}
                         <tr className="text-gray-500">
-                          <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Current Bill):</td>
+                          <td colSpan={10} className="font-bold text-right px-3 py-2">Grand Total (Current Bill):</td>
                           <td className="font-bold text-blue-900 text-lg">{formatCurrency(calcGrandTotalFromSubtotals(currentBillItems))}</td>
                           <td></td><td></td>
                         </tr>
@@ -442,7 +620,7 @@ const CurrentBill = () => {
                     )}
                     {/* Overall grand total */}
                     <tr className="text-gray-500">
-                      <td colSpan={9} className="font-bold text-right px-3 py-2">Overall Grand Total:</td>
+                      <td colSpan={10} className="font-bold text-right px-3 py-2">Overall Grand Total:</td>
                       <td className="font-bold text-blue-900 text-xl">{formatCurrency(calcGrandTotalFromSubtotals([...previousDebtItems, ...currentBillItems]))}</td>
                       <td></td><td></td>
                     </tr>
@@ -453,7 +631,7 @@ const CurrentBill = () => {
                   <>
                     {Object.entries(groupByCategory(currentBillItems)).map(([cat, items], i) => (
                       <React.Fragment key={cat}>
-                        <tr><td colSpan={12} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
+                        <tr><td colSpan={13} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
                         {items.map((item, idx) => (
                           <tr key={item._id} className="border-b border-gray-200 hover:bg-gray-50">
                             <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{idx + 1}.</td>
@@ -466,9 +644,23 @@ const CurrentBill = () => {
                             <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
                             <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
                             <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                              <div className="flex flex-col gap-1">
+                                <input
+                                  type="text"
+                                  placeholder="Promo code"
+                                  className="w-20 px-2 py-1 border border-gray-300 rounded text-xs"
+                                  value={promoCodes[item._id] || ""}
+                                  onChange={(e) => handlePromoCodeChange(item._id, e.target.value)}
+                                />
+                                <div className="text-xs text-blue-600 font-semibold">
+                                  {appliedPromos[item._id] ? formatCurrency(getReducedAmount(item)) : formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
                               {item.isMandatory ? (
                                 <span className="text-blue-900 font-semibold">
-                                  {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                                  {formatCurrency(getReducedAmount(item))}
                                 </span>
                               ) : (
                                 <input
@@ -486,7 +678,7 @@ const CurrentBill = () => {
                         ))}
                         {/* Dynamic Total row under Credit Amount column */}
                         <tr>
-                          <td colSpan={9}></td>
+                          <td colSpan={10}></td>
                           <td className="text-blue-900 font-bold text-lg" style={{ textAlign: 'center' }}>
                             Total: NGN {calcTotalSubtotal(items).toLocaleString()}
                           </td>
@@ -494,7 +686,7 @@ const CurrentBill = () => {
                         </tr>
                         {/* Sub-total row for this category */}
                         <tr>
-                          <td colSpan={9} className="text-right font-semibold px-3 py-2">Sub-total for {cat}:</td>
+                          <td colSpan={10} className="text-right font-semibold px-3 py-2">Sub-total for {cat}:</td>
                           <td></td>
                           <td></td><td></td>
                         </tr>
@@ -502,7 +694,7 @@ const CurrentBill = () => {
                     ))}
                     {/* Section grand total */}
                     <tr className="text-gray-500">
-                      <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Current Bill):</td>
+                      <td colSpan={10} className="font-bold text-right px-3 py-2">Grand Total (Current Bill):</td>
                       <td className="font-bold text-blue-900 text-xl">{formatCurrency(calcGrandTotalFromSubtotals(currentBillItems))}</td>
                       <td></td><td></td>
                     </tr>

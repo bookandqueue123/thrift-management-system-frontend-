@@ -377,6 +377,488 @@ const CustomerNavbar = () => {
 
 export default CustomerNavbar;
 
+
+// export const SuperAdminSidebar = ({
+//   onShow,
+//   setShow,
+// }: {
+//   onShow: boolean;
+//   setShow: Dispatch<SetStateAction<boolean>>;
+// }) => {
+//   const { SignOut } = useAuth();
+//   const router = useRouter();
+//   const user = useSelector(selectUser);
+//   const { userPermissions, permissionsMap } = usePermissions();
+//   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
+//   const [itemsDropdownIsOpen, setItemsDropdownIsOpen] = useState(false);
+//   const [commissionDropdownIsOpen, setCommissionDropdownIsOpen] =
+//     useState(false);
+//   const [subscriptionDropdownIsOpen, setSubscriptionDropdownIsOpen] =
+//     useState(false);
+//   const [pickupStationDropdownIsOpen, setPickupStationDropdownIsOpen] =
+//     useState(false);
+//   const [productCategoryDropdownIsOpen, setProductCategoryDropdownIsOpen] =
+//     useState(false);
+//   const [customerBillDropdownIsOpen, setCustomerBillDropdownIsOpen] =
+//     useState(false);
+//   const [customerGroupDropdownIsOpen, setCustomerGroupDropdownIsOpen] =
+//     useState(false);
+//   const [billCategoryDropdownIsOpen, setBillCategoryDropdownIsOpen] =
+//     useState(false);
+
+//   const toggleSidebar = () => (onShow ? "visible" : "invisible");
+//   const toggleLeftPadding = () => onShow && "pl-4 md:pl-12";
+
+//   const merchantRoutes = [
+//     "dashboard",
+//     "organisation",
+//     "customers",
+//     "group",
+//     "services",
+
+//     "roles",
+//     "industry",
+//     "category",
+//     "users",
+//     "account-statement",
+//     "superadminfee",
+//     "bill-payment-reports",
+//   ];
+
+//   const MenuBtn = ({
+//     icon,
+//     positioning,
+//   }: {
+//     icon: ReactElement;
+//     positioning?: string;
+//   }) => (
+//     <button
+//       type="button"
+//       className={`${positioning} inline-flex items-center justify-center rounded-md p-2 pl-0 text-gray-400 ${toggleLeftPadding()}`}
+//       aria-controls="mobile-menu"
+//       aria-expanded="false"
+//       tabIndex={-1}
+//       onClick={() => setShow(!onShow)}
+//     >
+//       <span className="sr-only">Open main menu</span>
+//       {icon}
+//     </button>
+//   );
+
+//   return (
+//     <aside>
+//       <div
+//         className={`${toggleSidebar()} fixed h-full w-44 space-y-10 overflow-y-auto border-r border-r-ajo_offWhite border-opacity-80 bg-ajo_darkBlue`}
+//       >
+//         <div className="flex w-full items-center justify-between px-6 py-6">
+//           <Link href="/" tabIndex={-1} className="outline-none">
+//             <Image
+//               src="/Logo.svg"
+//               alt="Finkia Logo"
+//               width={20}
+//               height={20}
+//               className="h-8 w-auto"
+//             />
+//           </Link>
+//           <MenuBtn
+//             icon={
+//               <svg
+//                 className="h-6 w-6"
+//                 fill="none"
+//                 viewBox="0 0 24 24"
+//                 strokeWidth="1.5"
+//                 stroke="currentColor"
+//                 aria-hidden="true"
+//               >
+//                 <path
+//                   strokeLinecap="round"
+//                   strokeLinejoin="round"
+//                   d="M6 18L18 6M6 6l12 12"
+//                 />
+//               </svg>
+//             }
+//           />
+//         </div>
+//         <nav className="mt-6 flex h-3/4 flex-col justify-between px-2">
+//           <div className="space-y-4">
+//             {merchantRoutes.map((route) => (
+//               <Link
+//                 key={route}
+//                 href={
+//                   route === "dashboard" ? "/superadmin" : `/superadmin/${route}`
+//                 }
+//                 className="block rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
+//               >
+//                 {route === "account-statement"
+//                   ? "Account Statement"
+//                   : route === "superadminfee"
+//                     ? "Superadmin Fee"
+//                     : route === "bill-payment-reports"
+//                       ? "Bill Payment Reports"
+//                       : route === "customer-bill"
+//                         ? "Customer Bill"
+//                         : route}
+//               </Link>
+//             ))}
+//           </div>
+
+//           <div className="space-y-2">
+//             {[
+//               "commission",
+//               "subscription-report",
+//               "item/purpose",
+//               "pick-up-station",
+//               "product-category",
+//               "customer-bill",
+//               "customer-group",
+//               "bill-category",
+//               "settings",
+//               "sign out",
+//             ].map((label) => (
+//               <div
+//                 key={label}
+//                 className="relative flex items-center gap-x-4 rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:bg-gray-700 hover:opacity-100"
+//               >
+//                 {/* Link or action based on label */}
+//                 {label === "settings" ? (
+//                   <Link
+//                     href="/superadmin/settings"
+//                     onClick={(e) => {
+//                       e.preventDefault();
+//                       setSettingsDropdownIsOpen(!settingsDropdownIsOpen);
+//                     }}
+//                   >
+//                     {label}
+//                   </Link>
+//                 ) : label === "commission" ? (
+//                   <Link
+//                     href="/superadmin/commission"
+//                     onClick={(e) => {
+//                       e.preventDefault();
+//                       setCommissionDropdownIsOpen(!commissionDropdownIsOpen);
+//                     }}
+//                   >
+//                     {label}
+//                   </Link>
+//                 ) : label === "item/purpose" ? (
+//                   <Link
+//                     href="/superadmin/item"
+//                     onClick={(e) => {
+//                       e.preventDefault();
+//                       setItemsDropdownIsOpen(!itemsDropdownIsOpen);
+//                     }}
+//                   >
+//                     {label}
+//                   </Link>
+//                 ) : label === "pick-up-station" ? (
+//                   <Link
+//                     href="/superadmin/pick-up-station"
+//                     onClick={(e) => {
+//                       e.preventDefault();
+//                       setPickupStationDropdownIsOpen(
+//                         !pickupStationDropdownIsOpen,
+//                       );
+//                     }}
+//                   >
+//                     pick up Center
+//                   </Link>
+//                 ) : label === "product-category" ? (
+//                   <Link
+//                     href="/superadmin/product-category"
+//                     onClick={(e) => {
+//                       e.preventDefault();
+//                       setProductCategoryDropdownIsOpen(
+//                         !productCategoryDropdownIsOpen,
+//                       );
+//                     }}
+//                   >
+//                     {label}
+//                   </Link>
+//                 ) : label === "customer-bill" ? (
+//                   <Link
+//                     href="/superadmin/customer-bill"
+//                     onClick={(e) => {
+//                       e.preventDefault();
+//                       setCustomerBillDropdownIsOpen(
+//                         !customerBillDropdownIsOpen,
+//                       );
+//                     }}
+//                   >
+//                     customer bill
+//                   </Link>
+//                 ) : label === "customer-group" ? (
+//                   <Link
+//                     href="/superadmin/customer-group"
+//                     onClick={(e) => {
+//                       e.preventDefault();
+//                       setCustomerGroupDropdownIsOpen(
+//                         !customerGroupDropdownIsOpen,
+//                       );
+//                     }}
+//                   >
+//                     customer group
+//                   </Link>
+//                 ) : label === "bill-category" ? (
+//                   <Link
+//                     href="/superadmin/bill-category"
+//                     onClick={(e) => {
+//                       e.preventDefault();
+//                       setBillCategoryDropdownIsOpen(
+//                         !billCategoryDropdownIsOpen,
+//                       );
+//                     }}
+//                   >
+//                     bill category
+//                   </Link>
+//                 ) : label === "subscription-report" ? (
+//                   <Link
+//                     href=""
+//                     onClick={(e) => {
+//                       e.preventDefault();
+//                       setSubscriptionDropdownIsOpen(
+//                         !subscriptionDropdownIsOpen,
+//                       );
+//                     }}
+//                   >
+//                     {label}
+//                   </Link>
+//                 ) : (
+//                   <span
+//                     onClick={() => {
+//                       SignOut();
+//                     }}
+//                   >
+//                     {label}
+//                   </span>
+//                 )}
+
+//                 {/* Dropdown toggles */}
+//                 {[
+//                   "commission",
+//                   "subscription-report",
+//                   "settings",
+//                   "item/purpose",
+//                   "pick-up-station",
+//                   "product-category",
+//                   "customer-bill",
+//                   "customer-group",
+//                   "bill-category",
+//                 ].includes(label) && (
+//                   <Image
+//                     src="/arrow_down.svg"
+//                     alt="arrow down"
+//                     width={8}
+//                     height={6}
+//                   />
+//                 )}
+
+//                 {/* Dropdown content */}
+
+//                 {label === "commission" && commissionDropdownIsOpen && (
+//                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+//                     <Link
+//                       href="/superadmin/commission"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       Organisation Commission
+//                     </Link>
+//                     <Link
+//                       href="/superadmin/commission/ecommerce-charge"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       Ecommerce commission
+//                     </Link>
+//                     <Link
+//                       href="/superadmin/commission/bill-charge"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       Bill Charge
+//                     </Link>
+                    
+//                   </div>
+//                 )}
+
+//                 {label === "settings" && settingsDropdownIsOpen && (
+//                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+//                     <Link
+//                       href="#"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       location settings
+//                     </Link>
+//                     <Link
+//                       href="#"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       group settings
+//                     </Link>
+//                     <Link
+//                       href="#"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       Savings settings
+//                     </Link>
+//                   </div>
+//                 )}
+
+//                 {label === "item/purpose" && itemsDropdownIsOpen && (
+//                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+//                     <Link
+//                       href="/superadmin/item"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       All purposes/items
+//                     </Link>
+//                     <Link
+//                       href="/superadmin/item/report"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       Purpose/item report
+//                     </Link>
+//                   </div>
+//                 )}
+
+//                 {label === "pick-up-station" && pickupStationDropdownIsOpen && (
+//                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+//                     <Link
+//                       href="/superadmin/getpick-station"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       Create-pick-up-center
+//                     </Link>
+//                   </div>
+//                 )}
+
+//                 {label === "product-category" &&
+//                   productCategoryDropdownIsOpen && (
+//                     <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+//                       <Link
+//                         href="/superadmin/product-category"
+//                         className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                       >
+//                         product-category
+//                       </Link>
+//                       <Link
+//                         href="/superadmin/product-brand"
+//                         className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                       >
+//                         Brands
+//                       </Link>
+//                       <Link
+//                         href="/superadmin/product-tags"
+//                         className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                       >
+//                         Tags
+//                       </Link>
+//                     </div>
+//                   )}
+
+//                 {label === "customer-bill" && customerBillDropdownIsOpen && (
+//                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+//                     <Link
+//                       href="/superadmin/customer-bill"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       Create User Bill
+//                     </Link>
+//                   </div>
+//                 )}
+
+//                 {label === "customer-group" && customerGroupDropdownIsOpen && (
+//                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+//                     {/* <Link href="/superadmin/customer-group" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
+//                       All Customer Groups
+//                     </Link> */}
+//                     <Link
+//                       href="/superadmin/customer-group"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       Create Customer Group
+//                     </Link>
+//                     {/* <Link href="/superadmin/customer-group/manage" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
+//                       Manage Groups
+//                     </Link> */}
+//                   </div>
+//                 )}
+
+//                 {label === "bill-category" && billCategoryDropdownIsOpen && (
+//                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+//                     {/* <Link
+//                       href="/superadmin/bill-category"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       All Bill Categories
+//                     </Link> */}
+//                     <Link
+//                       href="/superadmin/bill-category"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       Create Bill Category
+//                     </Link>
+//                     {/* <Link
+//                       href="/superadmin/bill-category/manage"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       Manage Categories
+//                     </Link> */}
+//                     {/* <Link
+//                       href="/superadmin/bill-category/reports"
+//                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                     >
+//                       Category Reports
+//                     </Link> */}
+//                   </div>
+//                 )}
+
+//                 {label === "subscription-report" &&
+//                   subscriptionDropdownIsOpen && (
+//                     <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+//                       <Link
+//                         href="/superadmin/subscription-report/merchant"
+//                         className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                       >
+//                         Merchants <br /> Subscription
+//                       </Link>
+//                       <Link
+//                         href="/superadmin/subscription-report/customer"
+//                         className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+//                       >
+//                         Customer <br /> Subscription
+//                       </Link>
+//                     </div>
+//                   )}
+//               </div>
+//             ))}
+//           </div>
+//         </nav>
+//       </div>
+
+//       {/* Mobile menu button */}
+//       {!onShow && (
+//         <MenuBtn
+//           positioning="absolute top-3.5"
+//           icon={
+//             <svg
+//               className="h-6 w-6"
+//               fill="none"
+//               viewBox="0 0 24 24"
+//               strokeWidth="1.5"
+//               stroke="currentColor"
+//               aria-hidden="true"
+//             >
+//               <path
+//                 strokeLinecap="round"
+//                 strokeLinejoin="round"
+//                 d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+//               />
+//             </svg>
+//           }
+//         />
+//       )}
+//     </aside>
+//   );
+// };
+
 export const Sidebar = ({
   onShow,
   setShow,
@@ -1298,6 +1780,7 @@ export const SuperAdminSidebar = ({
                     >
                       Bill Charge
                     </Link>
+                    
                   </div>
                 )}
 
@@ -1452,278 +1935,3 @@ export const SuperAdminSidebar = ({
     </aside>
   );
 };
-
-// export const SuperAdminSidebar = ({
-//   onShow,
-//   setShow,
-// }: {
-//   onShow: boolean;
-//   setShow: Dispatch<SetStateAction<boolean>>;
-// }) => {
-//   const { SignOut } = useAuth();
-//   const router = useRouter();
-//   const user = useSelector(selectUser);
-//   const { userPermissions, permissionsMap } = usePermissions();
-//   const [settingsDropdownIsOpen, setSettingsDropdownIsOpen] = useState(false);
-//   const [itemsDropdownIsOpen, setItemsDropdownIsOpen] = useState(false);
-//   const [subscriptionDropdownIsOpen, setSubscriptionDropdownIsOpen] = useState(false);
-//   const [pickupStationDropdownIsOpen, setPickupStationDropdownIsOpen] = useState(false);
-//   const [productCategoryDropdownIsOpen, setProductCategoryDropdownIsOpen] = useState(false);
-//   const [customerBillDropdownIsOpen, setCustomerBillDropdownIsOpen] = useState(false);
-
-//   const toggleSidebar = () => (onShow ? 'visible' : 'invisible');
-//   const toggleLeftPadding = () => onShow && 'pl-4 md:pl-12';
-
-//   const merchantRoutes = [
-//     'dashboard',
-//     'organisation',
-//     'customers',
-//     'group',
-//     'services',
-//     'commission',
-//     'roles',
-//     'industry',
-//     'category',
-//     'users',
-//     'account-statement',
-//     'superadminfee',
-//   ];
-
-//   const MenuBtn = ({ icon, positioning }: { icon: ReactElement; positioning?: string }) => (
-//     <button
-//       type="button"
-//       className={`${positioning} inline-flex items-center justify-center rounded-md p-2 pl-0 text-gray-400 ${toggleLeftPadding()}`}
-//       aria-controls="mobile-menu"
-//       aria-expanded="false"
-//       tabIndex={-1}
-//       onClick={() => setShow(!onShow)}
-//     >
-//       <span className="sr-only">Open main menu</span>
-//       {icon}
-//     </button>
-//   );
-
-//   return (
-//     <aside>
-//       <div className={`${toggleSidebar()} fixed h-full w-44 space-y-10 overflow-y-auto border-r border-r-ajo_offWhite border-opacity-80 bg-ajo_darkBlue`}>
-//         <div className="flex w-full items-center justify-between px-6 py-6">
-//           <Link href="/" tabIndex={-1} className="outline-none">
-//             <Image src="/Logo.svg" alt="Finkia Logo" width={20} height={20} className="h-8 w-auto" />
-//           </Link>
-//           <MenuBtn
-//             icon={
-//               <svg
-//                 className="h-6 w-6"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 strokeWidth="1.5"
-//                 stroke="currentColor"
-//                 aria-hidden="true"
-//               >
-//                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-//               </svg>
-//             }
-//           />
-//         </div>
-//         <nav className="mt-6 flex h-3/4 flex-col justify-between px-2">
-//           <div className="space-y-4">
-//             {merchantRoutes.map((route) => (
-//               <Link
-//                 key={route}
-//                 href={route === 'dashboard' ? '/superadmin' : `/superadmin/${route}`}
-//                 className="block rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:bg-gray-700 hover:opacity-100 focus:bg-gray-700 focus:opacity-100"
-//               >
-//                 {route === 'account-statement'
-//                   ? 'Account Statement'
-//                   : route === 'superadminfee'
-//                   ? 'Superadmin Fee'
-//                   : route === 'customer-bill'
-//                   ? 'Customer Bill'
-//                   : route}
-//               </Link>
-//             ))}
-//           </div>
-
-//           <div className="space-y-2">
-//             {[
-//               'subscription-report',
-//               'item/purpose',
-//               'pick-up-station',
-//               'product-category',
-//               'customer-bill',
-//               'settings',
-//               'sign out',
-//             ].map((label) => (
-//               <div
-//                 key={label}
-//                 className="relative flex items-center gap-x-4 rounded-lg px-4 py-2 text-sm font-medium capitalize text-ajo_offWhite opacity-50 hover:bg-gray-700 hover:opacity-100"
-//               >
-//                 {/* Link or action based on label */}
-//                 {label === 'settings' ? (
-//                   <Link
-//                     href="/superadmin/settings"
-//                     onClick={(e) => {
-//                       e.preventDefault();
-//                       setSettingsDropdownIsOpen(!settingsDropdownIsOpen);
-//                     }}
-//                   >
-//                     {label}
-//                   </Link>
-//                 ) : label === 'item/purpose' ? (
-//                   <Link
-//                     href="/superadmin/item"
-//                     onClick={(e) => {
-//                       e.preventDefault();
-//                       setItemsDropdownIsOpen(!itemsDropdownIsOpen);
-//                     }}
-//                   >
-//                     {label}
-//                   </Link>
-//                 ) : label === 'pick-up-station' ? (
-//                   <Link
-//                     href="/superadmin/pick-up-station"
-//                     onClick={(e) => {
-//                       e.preventDefault();
-//                       setPickupStationDropdownIsOpen(!pickupStationDropdownIsOpen);
-//                     }}
-//                   >
-//                     pick up Center
-//                   </Link>
-//                 ) : label === 'product-category' ? (
-//                   <Link
-//                     href="/superadmin/product-category"
-//                     onClick={(e) => {
-//                       e.preventDefault();
-//                       setProductCategoryDropdownIsOpen(!productCategoryDropdownIsOpen);
-//                     }}
-//                   >
-//                     {label}
-//                   </Link>
-//                 ) : label === 'customer-bill' ? (
-//                   <Link
-//                     href="/superadmin/customer-bill"
-//                     onClick={(e) => {
-//                       e.preventDefault();
-//                       setCustomerBillDropdownIsOpen(!customerBillDropdownIsOpen);
-//                     }}
-//                   >
-//                     customer bill
-//                   </Link>
-//                 ) : label === 'subscription-report' ? (
-//                   <Link
-//                     href=""
-//                     onClick={(e) => {
-//                       e.preventDefault();
-//                       setSubscriptionDropdownIsOpen(!subscriptionDropdownIsOpen);
-//                     }}
-//                   >
-//                     {label}
-//                   </Link>
-//                 ) : (
-//                   <span
-//                     onClick={() => {
-//                       SignOut();
-//                     }}
-//                   >
-//                     {label}
-//                   </span>
-//                 )}
-
-//                 {/* Dropdown toggles */}
-//                 {['subscription-report', 'settings', 'item/purpose', 'pick-up-station', 'product-category', 'customer-bill'].includes(label) && (
-//                   <Image src="/arrow_down.svg" alt="arrow down" width={8} height={6} />
-//                 )}
-
-//                 {/* Dropdown content */}
-//                 {label === 'settings' && settingsDropdownIsOpen && (
-//                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
-//                     <Link href="#" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
-//                       location settings
-//                     </Link>
-//                     <Link href="#" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
-//                       group settings
-//                     </Link>
-//                     <Link href="#" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
-//                       Savings settings
-//                     </Link>
-//                   </div>
-//                 )}
-
-//                 {label === 'item/purpose' && itemsDropdownIsOpen && (
-//                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
-//                     <Link href="/superadmin/item" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
-//                       All purposes/items
-//                     </Link>
-//                     <Link href="/superadmin/item/report" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
-//                       Purpose/item report
-//                     </Link>
-//                   </div>
-//                 )}
-
-//                 {label === 'pick-up-station' && pickupStationDropdownIsOpen && (
-//                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
-//                     <Link href="/superadmin/getpick-station" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
-//                       Create-pick-up-center
-//                     </Link>
-//                   </div>
-//                 )}
-
-//                 {label === 'product-category' && productCategoryDropdownIsOpen && (
-//                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
-//                     <Link href="/superadmin/product-category" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
-//                       product-category
-//                     </Link>
-//                     <Link href="/superadmin/product-brand" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
-//                       Brands
-//                     </Link>
-//                     <Link href="/superadmin/product-tags" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
-//                       Tags
-//                     </Link>
-//                   </div>
-//                 )}
-
-//                 {label === 'customer-bill' && customerBillDropdownIsOpen && (
-//                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
-//                     <Link href="/superadmin/customer-bill" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
-//                       Create User Bill
-//                     </Link>
-//                   </div>
-//                 )}
-
-//                 {label === 'subscription-report' && subscriptionDropdownIsOpen && (
-//                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
-//                     <Link href="/superadmin/subscription-report/merchant" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
-//                       Merchants <br /> Subscription
-//                     </Link>
-//                     <Link href="/superadmin/subscription-report/customer" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
-//                       Customer <br /> Subscription
-//                     </Link>
-//                   </div>
-//                 )}
-//               </div>
-//             ))}
-//           </div>
-//         </nav>
-//       </div>
-
-//       {/* Mobile menu button */}
-//       {!onShow && (
-//         <MenuBtn
-//           positioning="absolute top-3.5"
-//           icon={
-//             <svg
-//               className="h-6 w-6"
-//               fill="none"
-//               viewBox="0 0 24 24"
-//               strokeWidth="1.5"
-//               stroke="currentColor"
-//               aria-hidden="true"
-//             >
-//               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-//             </svg>
-//           }
-//         />
-//       )}
-//     </aside>
-//   );
-// };
