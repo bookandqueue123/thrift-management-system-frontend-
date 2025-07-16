@@ -1,18 +1,21 @@
-
-
 "use client";
 import { useAuth } from "@/api/hooks/useAuth";
+import RatingsReview from "@/modules/form/RatingsAndReview";
 import Footer from "@/modules/HomePage/Footer";
 import Navbar from "@/modules/HomePage/NavBar";
 import { selectToken } from "@/slices/OrganizationIdSlice";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, ShoppingCart, Star } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  ShoppingCart,
+  Star,
+} from "lucide-react";
 import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import RatingsReview from '@/modules/form/RatingsAndReview';
-
 
 interface Brand {
   _id: string;
@@ -29,7 +32,7 @@ interface Product {
   name: string;
   description: string;
   price: number;
-  category: Category | string; 
+  category: Category | string;
   brand: Brand | string;
   imageUrl?: string | string[];
   stock: number;
@@ -39,6 +42,29 @@ interface Product {
   subcategory?: string;
   doorDeliveryTermsAndCondition?: string;
   pickupCentreTermsAndCondition?: string;
+}
+
+interface CartItem {
+  product: {
+    _id: string;
+    name: string;
+    price: number;
+  };
+  name: string;
+  quantity: number;
+  price: number;
+  imageUrl: string;
+  _id: string;
+}
+
+interface CartResponse {
+  _id: string;
+  user: string;
+  items: CartItem[];
+  totalPrice: number;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
 }
 
 /** Helper functions to safely extract names **/
@@ -59,7 +85,6 @@ function getCategoryId(category: Category | string | undefined): string {
   if (typeof category === "string") return category;
   return category._id || "";
 }
-
 
 function renderStars(rating = 4.5) {
   const stars = [];
@@ -94,16 +119,17 @@ export default function ProductDetailPage({
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showRatings, setShowRatings] = useState(false);
+  const [isQuantityLoading, setIsQuantityLoading] = useState(false);
 
   const token = useSelector(selectToken);
   const paramsNode = useParams();
   console.log(params.id);
+
   React.useEffect(() => {
     if (!token) {
       router.push("/signin");
     }
   }, [token, router]);
-
 
   const {
     data: product,
@@ -118,10 +144,8 @@ export default function ProductDetailPage({
     enabled: !!params.id,
   });
 
- 
   console.log("Product detail:", product);
 
-  
   const { data: allProducts, isLoading: isLoadingAllProducts } = useQuery<
     Product[]
   >({
@@ -132,6 +156,32 @@ export default function ProductDetailPage({
     },
   });
 
+  // Cart query
+  const {
+    data: cartData,
+    isLoading: isLoadingCart,
+    error: cartError,
+  } = useQuery<CartResponse>({
+    queryKey: ["cart"],
+    queryFn: async () => {
+      const res = await client.get("/api/cart");
+      return res.data;
+    },
+  });
+
+  // Set quantity based on cart data when it loads
+  useEffect(() => {
+    if (cartData && product) {
+      const cartItem = cartData.items.find(
+        (item) => item.product._id === product._id,
+      );
+      if (cartItem) {
+        setQuantity(cartItem.quantity);
+      } else {
+        setQuantity(0);
+      }
+    }
+  }, [cartData, product]);
 
   const addToCartMutation = useMutation({
     mutationFn: async ({
@@ -151,14 +201,24 @@ export default function ProductDetailPage({
       return res.data;
     },
     onSuccess: () => {
-     
       queryClient.invalidateQueries({ queryKey: ["cart"] });
-     
-      router.push("/cart");
+      // router.push("/cart");
     },
     onError: (error) => {
       console.error("Error adding to cart:", error);
-     
+    },
+  });
+
+  const decreaseQuantityMutation = useMutation({
+    mutationFn: async (productId: string) => {
+      const res = await client.patch(`/api/cart/${productId}/decrease`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
+    onError: (error) => {
+      console.error("Error decreasing quantity:", error);
     },
   });
 
@@ -193,12 +253,34 @@ export default function ProductDetailPage({
       )
       .slice(0, 5) || [];
 
-  const increment = () => {
-    setQuantity((prev) => prev + 1);
+  const increment = async () => {
+    if (!product) return;
+
+    setIsQuantityLoading(true);
+    try {
+      await addToCartMutation.mutateAsync({
+        productId: product._id,
+        quantity: 1,
+        price: product.price,
+      });
+    } catch (error) {
+      console.error("Failed to increase quantity:", error);
+    } finally {
+      setIsQuantityLoading(false);
+    }
   };
 
-  const decrement = () => {
-    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+  const decrement = async () => {
+    if (!product || quantity <= 0) return;
+
+    setIsQuantityLoading(true);
+    try {
+      await decreaseQuantityMutation.mutateAsync(product._id);
+    } catch (error) {
+      console.error("Failed to decrease quantity:", error);
+    } finally {
+      setIsQuantityLoading(false);
+    }
   };
 
   // Handler for Add to Cart button
@@ -209,7 +291,7 @@ export default function ProductDetailPage({
     try {
       await addToCartMutation.mutateAsync({
         productId: product._id,
-        quantity: quantity,
+        quantity: 1,
         price: product.price,
       });
     } catch (error) {
@@ -247,6 +329,7 @@ export default function ProductDetailPage({
   const goToImage = (index: any) => {
     setCurrentImageIndex(index);
   };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
       <Navbar />
@@ -396,38 +479,60 @@ export default function ProductDetailPage({
 
             <div className="mt-4 flex flex-col space-y-4 sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0">
               {/* Quantity Selector (fixed height h-12) */}
-              <div className="flex h-12 items-center rounded border border-gray-300">
+              <div className="flex h-12 items-center rounded border border-gray-300 bg-white">
                 <button
                   onClick={decrement}
-                  className="h-full px-4 text-lg font-medium transition hover:bg-gray-100"
+                  disabled={isQuantityLoading || quantity <= 0}
+                  className="h-full px-4 text-lg font-medium transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  −
+                  {isQuantityLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "−"
+                  )}
                 </button>
-                <span className="flex h-full items-center px-4 text-sm font-medium">
-                  {quantity < 10 ? `0${quantity}` : quantity}
-                </span>
+                <div className="flex h-full items-center px-4">
+                  {isQuantityLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+                  ) : (
+                    <span className="text-sm font-medium">
+                      {quantity < 10 ? `0${quantity}` : quantity}
+                    </span>
+                  )}
+                </div>
                 <button
                   onClick={increment}
-                  className="h-full px-4 text-lg font-medium transition hover:bg-gray-100"
+                  disabled={isQuantityLoading}
+                  className="h-full px-4 text-lg font-medium transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  +
+                  {isQuantityLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "+"
+                  )}
                 </button>
               </div>
 
-              <button
-                onClick={handleAddToCart}
-                disabled={isAddingToCart || addToCartMutation.isPending}
-                className="flex h-12 items-center justify-center rounded-lg bg-[#fedc57] px-6 font-medium text-white transition hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1"
-              >
-                <ShoppingCart className="mr-2 h-5 w-5" />
-                {isAddingToCart || addToCartMutation.isPending
-                  ? "Adding..."
-                  : "Add to cart"}
-              </button>
+              {quantity === 0 ? (
+                <button
+                  onClick={handleAddToCart}
+                  disabled={isAddingToCart || addToCartMutation.isPending}
+                  className="flex h-12 items-center justify-center rounded-lg bg-[#fedc57] px-6 font-medium text-white transition hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1"
+                >
+                  <ShoppingCart className="mr-2 h-5 w-5" />
+                  {isAddingToCart || addToCartMutation.isPending
+                    ? "Adding..."
+                    : "Add to cart"}
+                </button>
+              ) : (
+                <div className="flex h-12 items-center justify-center rounded-lg bg-green-100 px-6 font-medium text-green-800 sm:flex-1">
+                  <span>In Cart ({quantity})</span>
+                </div>
+              )}
 
-              <button className="flex h-12 items-center justify-center rounded-lg border border-[#fedc57] px-6 font-medium text-[#fedc57] transition hover:bg-yellow-50 sm:flex-1">
+              {/* <button className="flex h-12 items-center justify-center rounded-lg border border-[#fedc57] px-6 font-medium text-[#fedc57] transition hover:bg-yellow-50 sm:flex-1">
                 Buy now
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -469,7 +574,7 @@ export default function ProductDetailPage({
                   <li>• Brand: {getBrandName(product.brand)}</li>
                   <li>• Category: {getCategoryName(product.category)}</li>
                   <li>• Stock Available: {product.stock} units</li>
-                  <li>• Price: ${product.price.toFixed(2)}</li>
+                  <li>• Price: ₦{product.price.toFixed(2)}</li>
                 </ul>
               </div>
 
@@ -554,7 +659,7 @@ export default function ProductDetailPage({
                       {p.name}
                     </h3>
                     <div className="mt-1 text-sm font-bold text-orange-600">
-                      ${p.price.toFixed(2)}
+                      ₦{p.price.toFixed(2)}
                     </div>
                     <div className="mt-1 text-xs text-gray-600">
                       {getCategoryName(p.category)}

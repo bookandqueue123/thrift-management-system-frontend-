@@ -247,11 +247,9 @@ export default function CartPage() {
     decreaseQuantityMutation.mutate(productId);
   };
 
- 
   const handleRemoveItem = (productId: string) => {
     removeItemMutation.mutate(productId);
   };
-
 
   const handleClearCart = () => {
     clearCartMutation.mutate();
@@ -295,7 +293,6 @@ export default function CartPage() {
     }
   };
 
-
   const handleRepaymentMonthsChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
   ) => {
@@ -314,7 +311,6 @@ export default function CartPage() {
       JSON.stringify({
         paymentMode:
           paymentMode === "bits" ? "Pay In Bits" : "100% Full Payment",
-        
       }),
     );
 
@@ -366,7 +362,6 @@ export default function CartPage() {
       </div>
     );
   }
-
 
   const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
 
@@ -516,14 +511,20 @@ export default function CartPage() {
                   </div>
                 </>
               )}
-              <div className="mt-4 border-t border-gray-200 pt-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-gray-800">Total</span>
-                  <span className="text-2xl font-extrabold text-gray-800">
-                    ₦{calculateTotal().toFixed(2)}
-                  </span>
+              {paymentMode !== "bits" ? (
+                <div className="mt-4 border-t border-gray-200 pt-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-bold text-gray-800">
+                      Total
+                    </span>
+                    <span className="text-2xl font-extrabold text-gray-800">
+                      ₦{calculateTotal().toFixed(2)}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                ""
+              )}
             </div>
 
             <button

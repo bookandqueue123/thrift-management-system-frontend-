@@ -1,88 +1,90 @@
-"use client"
-import type React from "react"
-import { useEffect, useState } from "react"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/api/hooks/useAuth"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
-import Navbar from "@/modules/HomePage/NavBar"
-import Footer from "@/modules/HomePage/Footer"
+"use client";
+import { useAuth } from "@/api/hooks/useAuth";
+import Footer from "@/modules/HomePage/Footer";
+import Navbar from "@/modules/HomePage/NavBar";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useEffect, useState } from "react";
 
 interface CartItem {
-  _id: string
-  name: string
-  price: number
-  quantity: number
-  imageUrl?: string | string[]
-  size?: string
+  _id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  imageUrl?: string | string[];
+  size?: string;
   product: {
-    _id: string
-    price?: number
-  }
+    _id: string;
+    price?: number;
+  };
 }
 
 interface OrderItem {
-  product: string
-  name: string
-  quantity: number
-  price: number
-  _id: string
+  product: string;
+  name: string;
+  quantity: number;
+  price: number;
+  _id: string;
 }
 
 interface ShippingAddress {
-  address: string
-  city: string
-  postalCode: string
-  country: string
+  address: string;
+  city: string;
+  postalCode: string;
+  country: string;
 }
 
 interface PaymentPlan {
-  paymentNumber?: number
-  dueDate: string
-  totalPayment?: number
-  principalAmount?: number
-  interestAmount?: number
-  remainingBalance?: number
-  isPaid: boolean
-  actualAmountPaid?: number
-  isOverdue?: boolean
-  daysOverdue?: number
-  lateFees?: number
-  additionalInterest?: number
-  isPartialPayment?: boolean
-  isUnscheduledPayment?: boolean
-  isEarlyPayment?: boolean
-  _id: string
-  paidAt?: string
+  paymentNumber?: number;
+  dueDate: string;
+  totalPayment?: number;
+  principalAmount?: number;
+  interestAmount?: number;
+  remainingBalance?: number;
+  isPaid: boolean;
+  actualAmountPaid?: number;
+  isOverdue?: boolean;
+  daysOverdue?: number;
+  lateFees?: number;
+  additionalInterest?: number;
+  isPartialPayment?: boolean;
+  isUnscheduledPayment?: boolean;
+  isEarlyPayment?: boolean;
+  _id: string;
+  paidAt?: string;
 }
 
 interface Order {
-  _id: string
-  shippingAddress: ShippingAddress
-  orderItems: OrderItem[]
-  paymentMethod: string
-  paymentMode: string
-  totalPrice: number
-  amountPaid: number
-  remainingBalance: number
-  isPaid: boolean
-  paidAt?: string
-  isDelivered: boolean
-  orderStatus: string
-  paymentStatus: string
-  paymentPlan?: PaymentPlan[]
-  createdAt: string
-  updatedAt: string
-  initialPaymentAmount?: number
-  firstPayment?: number
+  _id: string;
+  shippingAddress: ShippingAddress;
+  orderItems: OrderItem[];
+  paymentMethod: string;
+  paymentMode: string;
+  totalPrice: number;
+  amountPaid: number;
+  remainingBalance: number;
+  isPaid: boolean;
+  paidAt?: string;
+  isDelivered: boolean;
+  orderStatus: string;
+  paymentStatus: string;
+  paymentPlan?: PaymentPlan[];
+  createdAt: string;
+  updatedAt: string;
+  initialPaymentAmount?: number;
+  firstPayment?: number;
 }
 
-const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Payment" | "Pay In Bits" }> = ({ paymentMode }) => {
-  const router = useRouter()
-  const { client } = useAuth()
-  const queryClient = useQueryClient()
-  const [deliveryInfo, setDeliveryInfo] = useState<any>(null)
-  const [initialDepositInfo, setInitialDepositInfo] = useState<any>(null)
+const OrderConfirmation: React.FC<{
+  paymentMode: "full" | "bits" | "100% Full Payment" | "Pay In Bits";
+}> = ({ paymentMode }) => {
+  const router = useRouter();
+  const { client } = useAuth();
+  const queryClient = useQueryClient();
+  const [deliveryInfo, setDeliveryInfo] = useState<any>(null);
+  const [initialDepositInfo, setInitialDepositInfo] = useState<any>(null);
 
   // Fetch cart items from API instead of relying on localStorage
   const {
@@ -93,13 +95,13 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
   } = useQuery({
     queryKey: ["cart"],
     queryFn: async () => {
-      const res = await client.get("/api/cart")
-      return res.data
+      const res = await client.get("/api/cart");
+      return res.data;
     },
-  })
+  });
 
   // Extract cart items from the response
-  const cartDetails: CartItem[] = cartData?.items || []
+  const cartDetails: CartItem[] = cartData?.items || [];
 
   // Fetch orders using useQuery instead of useEffect
   const {
@@ -114,32 +116,38 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
         .get("/api/order/user/all?page=1&limit=10")
         .then((response) => response.data?.data?.orders || [])
         .catch((error) => {
-          throw error
-        })
+          throw error;
+        });
     },
-  })
+  });
 
   useEffect(() => {
     // Load delivery info and initial deposit info from localStorage
-    const deliveryRaw = typeof window !== "undefined" ? localStorage.getItem("deliveryInfo") : null
+    const deliveryRaw =
+      typeof window !== "undefined"
+        ? localStorage.getItem("deliveryInfo")
+        : null;
     if (deliveryRaw) {
-      setDeliveryInfo(JSON.parse(deliveryRaw))
+      setDeliveryInfo(JSON.parse(deliveryRaw));
     }
 
-    const depositRaw = typeof window !== "undefined" ? localStorage.getItem("initialDeposit") : null
+    const depositRaw =
+      typeof window !== "undefined"
+        ? localStorage.getItem("initialDeposit")
+        : null;
     if (depositRaw) {
       try {
-        setInitialDepositInfo(JSON.parse(depositRaw))
+        setInitialDepositInfo(JSON.parse(depositRaw));
       } catch (e) {
-        console.error("Error parsing initial deposit info:", e)
+        console.error("Error parsing initial deposit info:", e);
       }
     }
-  }, [])
+  }, []);
 
   // After loading deliveryInfo from localStorage:
   const pickupStationAmount = deliveryInfo?.pickupStationAmount;
   const pickupFee = pickupStationAmount?.value || 0;
-  const pickupCurrency = pickupStationAmount?.currency || "NGN";
+  const pickupCurrency = pickupStationAmount?.currency || "₦";
 
   // Determine the effective payment mode from localStorage/prop ONLY
   let effectivePaymentMode = paymentMode;
@@ -158,50 +166,61 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
   // const isPayInBits = effectivePaymentMode === "Pay In Bits" || effectivePaymentMode === "bits";
   // const isFullPayment = effectivePaymentMode === "100% Full Payment" || effectivePaymentMode === "full";
 
-  const isPayInBits = effectivePaymentMode === "Pay In Bits" || effectivePaymentMode === "bits";
-  const isFullPayment = effectivePaymentMode === "100% Full Payment" || effectivePaymentMode === "full";
+  const isPayInBits =
+    effectivePaymentMode === "Pay In Bits" || effectivePaymentMode === "bits";
+  const isFullPayment =
+    effectivePaymentMode === "100% Full Payment" ||
+    effectivePaymentMode === "full";
 
   // Debug log
-  console.log("OrderConfirmation: effectivePaymentMode =", effectivePaymentMode);
+  console.log(
+    "OrderConfirmation: effectivePaymentMode =",
+    effectivePaymentMode,
+  );
   console.log("isPayInBits:", isPayInBits, "isFullPayment:", isFullPayment);
 
   // Helper function to get image URL
   const getImageUrl = (imageUrl?: string | string[]) => {
-    if (!imageUrl) return "/placeholder.svg"
+    if (!imageUrl) return "/placeholder.svg";
     if (Array.isArray(imageUrl)) {
-      return imageUrl[0] || "/placeholder.svg"
+      return imageUrl[0] || "/placeholder.svg";
     }
-    return imageUrl
-  }
+    return imageUrl;
+  };
 
   const handleProceedToPayment = () => {
     if (cartDetails && cartDetails.length > 0) {
       // Calculate actual total from cart items
       const actualTotal = cartDetails.reduce((sum: number, item: CartItem) => {
-        return sum + item.price * item.quantity
-      }, 0)
+        return sum + item.price * item.quantity;
+      }, 0);
       const totalWithPickup = actualTotal + pickupFee;
 
       // Determine amount based on payment mode
-      let amountToPay: number
-      let paymentModeForStorage: string
+      let amountToPay: number;
+      let paymentModeForStorage: string;
 
       if (isFullPayment) {
         // FULL PAYMENT MODE
         amountToPay = totalWithPickup;
-        paymentModeForStorage = "100% Full Payment"
+        paymentModeForStorage = "100% Full Payment";
       } else {
         // PAY IN BITS MODE
-        amountToPay = initialDepositInfo?.initialDeposit || Math.floor(actualTotal * 0.5)
-        paymentModeForStorage = "Pay In Bits"
+        amountToPay =
+          initialDepositInfo?.initialDeposit || Math.floor(actualTotal * 0.5);
+        paymentModeForStorage = "Pay In Bits";
       }
 
       // Save cart details for payment page
       // Store totalAmountToPay and pickupFee in localStorage for payment page
       const totalAmountToPay = isFullPayment
         ? totalWithPickup
-        : (initialDepositInfo?.initialDeposit || Math.floor(actualTotal * 0.5)) + pickupFee;
-      localStorage.setItem("totalAmountToPay", JSON.stringify(totalAmountToPay));
+        : (initialDepositInfo?.initialDeposit ||
+            Math.floor(actualTotal * 0.5)) + pickupFee;
+      localStorage.setItem(
+        "totalAmountToPay",
+        JSON.stringify(totalAmountToPay),
+      );
       localStorage.setItem("pickupFee", JSON.stringify(pickupFee));
       localStorage.setItem(
         "orderDetails",
@@ -213,35 +232,38 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
           paymentMode: paymentModeForStorage,
           initialDeposit: isPayInBits ? amountToPay : undefined,
         }),
-      )
-      router.push("/payment")
-      return
+      );
+      router.push("/payment");
+      return;
     }
 
-    if (!orderQuery || !orderQuery.length) return
+    if (!orderQuery || !orderQuery.length) return;
 
     // For existing orders
-    const order = orderQuery[0]
-    const actualTotal = order.orderItems.reduce((sum: number, item: OrderItem) => sum + item.price * item.quantity, 0)
+    const order = orderQuery[0];
+    const actualTotal = order.orderItems.reduce(
+      (sum: number, item: OrderItem) => sum + item.price * item.quantity,
+      0,
+    );
     const totalWithPickup = actualTotal + pickupFee;
 
     // Determine amount based on payment mode
-    let amountToPay: number
-    let paymentModeForStorage: string
+    let amountToPay: number;
+    let paymentModeForStorage: string;
 
     if (isFullPayment) {
       // FULL PAYMENT MODE
-      amountToPay = totalWithPickup
-      paymentModeForStorage = "100% Full Payment"
+      amountToPay = totalWithPickup;
+      paymentModeForStorage = "100% Full Payment";
     } else {
       // PAY IN BITS MODE
       const depositAmount =
         initialDepositInfo?.initialDeposit ||
         order.firstPayment ||
         order.initialPaymentAmount ||
-        Math.floor(actualTotal * 0.5)
-      amountToPay = depositAmount
-      paymentModeForStorage = "Pay In Bits"
+        Math.floor(actualTotal * 0.5);
+      amountToPay = depositAmount;
+      paymentModeForStorage = "Pay In Bits";
     }
 
     // Save order details to localStorage for payment page
@@ -252,97 +274,114 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
       amountToPay: amountToPay,
       paymentMode: paymentModeForStorage,
       initialDeposit: isPayInBits ? amountToPay : undefined,
-    }
-    localStorage.setItem("orderDetails", JSON.stringify(orderDetails))
-    router.push("/payment")
-  }
+    };
+    localStorage.setItem("orderDetails", JSON.stringify(orderDetails));
+    router.push("/payment");
+  };
 
-  const isLoading = cartLoading || orderLoading
-  const isError = cartError || orderError
-  const error = cartError || orderErrorData
+  const isLoading = cartLoading || orderLoading;
+  const isError = cartError || orderError;
+  const error = cartError || orderErrorData;
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <div className="flex items-center justify-center h-64">
+        <div className="flex h-64 items-center justify-center">
           <div className="text-lg text-gray-600">Loading...</div>
         </div>
         <Footer />
       </div>
-    )
+    );
   }
 
   if (isError) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg text-red-600">{(error as any)?.message || "Failed to fetch data."}</div>
+        <div className="flex h-64 items-center justify-center">
+          <div className="text-lg text-red-600">
+            {(error as any)?.message || "Failed to fetch data."}
+          </div>
         </div>
         <Footer />
       </div>
-    )
+    );
   }
 
   // If cart details exist, show cart confirmation
   if (cartDetails && Array.isArray(cartDetails) && cartDetails.length > 0) {
     // Calculate actual total from cart items
     const actualTotal = cartDetails.reduce((sum: number, item: CartItem) => {
-      return sum + item.price * item.quantity
-    }, 0)
+      return sum + item.price * item.quantity;
+    }, 0);
     const totalWithPickup = actualTotal + pickupFee;
 
     // Determine display amount based on payment mode
     const displayAmount = isFullPayment
       ? totalWithPickup
-      : (initialDepositInfo?.initialDeposit || Math.floor(actualTotal * 0.5)) + pickupFee;
+      : (initialDepositInfo?.initialDeposit || Math.floor(actualTotal * 0.5)) +
+        pickupFee;
 
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <div className="max-w-6xl mx-auto py-8 px-4">
+        <div className="mx-auto max-w-6xl px-4 py-8">
           {/* Mode of Delivery at the top */}
-          <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
-            <div className="flex items-center text-green-600 font-semibold mb-2">
+          <div className="mb-8 rounded-lg border bg-white p-6 shadow-sm">
+            <div className="mb-2 flex items-center font-semibold text-green-600">
               <span className="mr-2">Mode of Delivery</span>
             </div>
             {deliveryInfo ? (
               <div>
                 <p className="font-bold">
-                  Mode: {deliveryInfo.deliveryMode === "pickup" ? "Pickup" : "Door Delivery"}
+                  Mode:{" "}
+                  {deliveryInfo.deliveryMode === "pickup"
+                    ? "Pickup"
+                    : "Door Delivery"}
                 </p>
                 {/* Show state, city, and address below the mode */}
-                <div className="mt-1 text-gray-700 text-sm">
+                <div className="mt-1 text-sm text-gray-700">
                   <div>State: {deliveryInfo.state}</div>
                   <div>City/LGA: {deliveryInfo.city}</div>
-                  {deliveryInfo.deliveryMode === "pickup" && deliveryInfo.pickupStation && (
-                    <div>Pickup Station: {deliveryInfo.pickupStation}</div>
-                  )}
-                  {deliveryInfo.deliveryMode === "door" && deliveryInfo.deliveryAddress && (
-                    <div>Delivery Address: {deliveryInfo.deliveryAddress}</div>
-                  )}
+                  {deliveryInfo.deliveryMode === "pickup" &&
+                    deliveryInfo.pickupStation && (
+                      <div>Pickup Station: {deliveryInfo.pickupStation}</div>
+                    )}
+                  {deliveryInfo.deliveryMode === "door" &&
+                    deliveryInfo.deliveryAddress && (
+                      <div>
+                        Delivery Address: {deliveryInfo.deliveryAddress}
+                      </div>
+                    )}
                 </div>
               </div>
             ) : (
-              <p className="text-gray-600 text-sm">No delivery info found.</p>
+              <p className="text-sm text-gray-600">No delivery info found.</p>
             )}
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-8">
+          <div className="flex flex-col gap-8 lg:flex-row">
             {/* Cart Items Display */}
             <div className="flex-1">
-              <div className="bg-white rounded-lg shadow-sm border p-6">
-                <h3 className="text-lg font-bold mb-4 text-gray-800">CART ITEMS</h3>
+              <div className="rounded-lg border bg-white p-6 shadow-sm">
+                <h3 className="mb-4 text-lg font-bold text-gray-800">
+                  CART ITEMS
+                </h3>
                 <div className="space-y-4">
                   {cartDetails.map((item: CartItem) => {
-                    const itemTotal = item.price * item.quantity
+                    const itemTotal = item.price * item.quantity;
 
                     return (
-                      <div key={item._id} className="flex items-center gap-4 border-b pb-4 last:border-b-0">
-                        <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center">
+                      <div
+                        key={item._id}
+                        className="flex items-center gap-4 border-b pb-4 last:border-b-0"
+                      >
+                        <div className="flex h-16 w-16 items-center justify-center rounded-md bg-gray-100">
                           <Image
-                            src={getImageUrl(item.imageUrl) || "/placeholder.svg"}
+                            src={
+                              getImageUrl(item.imageUrl) || "/placeholder.svg"
+                            }
                             alt={item.name}
                             width={64}
                             height={64}
@@ -350,11 +389,13 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
                           />
                         </div>
                         <div className="flex-1">
-                          <p className="font-semibold text-sm">{item.name}</p>
-                          <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                          <p className="text-sm font-semibold">{item.name}</p>
+                          <p className="text-xs text-gray-500">
+                            Qty: {item.quantity}
+                          </p>
                           {/* Show initial deposit info ONLY if in Pay In Bits mode */}
                           {isPayInBits && (
-                            <p className="text-xs text-blue-600 font-semibold">
+                            <p className="text-xs font-semibold text-blue-600">
                               Initial Deposit: ₦{displayAmount.toLocaleString()}
                             </p>
                           )}
@@ -363,43 +404,59 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
                           {isPayInBits ? (
                             <>
                               <p className="font-bold text-blue-600">
-                                ₦{displayAmount.toLocaleString()} <span className="text-xs">(Initial Deposit)</span>
+                                ₦{displayAmount.toLocaleString()}{" "}
+                                <span className="text-xs">
+                                  (Initial Deposit)
+                                </span>
                               </p>
                               <p className="text-xs text-gray-400 line-through">
-                                ₦{item.price.toLocaleString()} <span className="text-xs">(Full Price)</span>
+                                ₦{item.price.toLocaleString()}{" "}
+                                <span className="text-xs">(Full Price)</span>
                               </p>
                             </>
                           ) : (
                             <>
-                              <p className="text-sm font-bold">₦{item.price.toLocaleString()}</p>
-                              <p className="text-xs text-gray-500">Subtotal: ₦{itemTotal.toLocaleString()}</p>
+                              <p className="text-sm font-bold">
+                                ₦{item.price.toLocaleString()}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Subtotal: ₦{itemTotal.toLocaleString()}
+                              </p>
                             </>
                           )}
                         </div>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               </div>
             </div>
 
             {/* Order Summary */}
-            <div className="w-full lg:w-80 flex-shrink-0">
-              <div className="bg-white rounded-lg shadow-md border p-6 sticky top-24">
-                <h3 className="text-lg font-bold mb-4 text-gray-800">ORDER SUMMARY</h3>
-                <div className="space-y-3 mb-6">
-                  <div className="flex justify-between items-center">
+            <div className="w-full flex-shrink-0 lg:w-80">
+              <div className="sticky top-24 rounded-lg border bg-white p-6 shadow-md">
+                <h3 className="mb-4 text-lg font-bold text-gray-800">
+                  ORDER SUMMARY
+                </h3>
+                <div className="mb-6 space-y-3">
+                  <div className="flex items-center justify-between">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="font-semibold">₦ {actualTotal.toLocaleString()}</span>
+                    <span className="font-semibold">
+                      ₦ {actualTotal.toLocaleString()}
+                    </span>
                   </div>
                   {pickupFee > 0 && (
-                    <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <span className="text-gray-600">Pickup Station Fee</span>
-                      <span className="font-semibold">{pickupFee.toLocaleString()} {pickupCurrency}</span>
+                      <span className="font-semibold">
+                        {pickupFee.toLocaleString()} {pickupCurrency}
+                      </span>
                     </div>
                   )}
-                  <div className="flex justify-between items-center border-t pt-3">
-                    <span className="text-gray-600 text-lg font-semibold">Amount to Pay</span>
+                  <div className="flex items-center justify-between border-t pt-3">
+                    <span className="text-lg font-semibold text-gray-600">
+                      Amount to Pay
+                    </span>
                     <span className="text-2xl font-bold text-gray-900">
                       {displayAmount.toLocaleString()} {pickupCurrency}
                     </span>
@@ -407,7 +464,7 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
                 </div>
                 <button
                   onClick={handleProceedToPayment}
-                  className="w-full bg-orange-500 text-white font-bold py-4 rounded-lg text-lg hover:bg-orange-600 transition"
+                  className="w-full rounded-lg bg-orange-500 py-4 text-lg font-bold text-white transition hover:bg-orange-600"
                 >
                   {isPayInBits
                     ? `Pay Initial Deposit (₦ ${displayAmount.toLocaleString()})`
@@ -419,7 +476,7 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
         </div>
         <Footer />
       </div>
-    )
+    );
   }
 
   // Fallback: Show most recent order as before
@@ -427,16 +484,16 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
-        <div className="flex items-center justify-center h-64">
+        <div className="flex h-64 items-center justify-center">
           <div className="text-lg text-gray-600">No orders found.</div>
         </div>
         <Footer />
       </div>
-    )
+    );
   }
 
   // Show the most recent order (first in array)
-  const order = orderQuery[0]
+  const order = orderQuery[0];
   const {
     shippingAddress,
     orderItems,
@@ -446,87 +503,115 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
     paymentPlan,
     initialPaymentAmount,
     firstPayment,
-  } = order
+  } = order;
 
   // Calculate actual total from order items
-  const actualTotal = orderItems.reduce((sum: number, item: OrderItem) => sum + item.price * item.quantity, 0)
+  const actualTotal = orderItems.reduce(
+    (sum: number, item: OrderItem) => sum + item.price * item.quantity,
+    0,
+  );
   const totalWithPickup = actualTotal + pickupFee;
 
   // Determine amount based on payment mode
   const depositAmount =
-    initialDepositInfo?.initialDeposit || firstPayment || initialPaymentAmount || Math.floor(actualTotal * 0.5)
-  const amountToPay = isFullPayment ? totalWithPickup : depositAmount
+    initialDepositInfo?.initialDeposit ||
+    firstPayment ||
+    initialPaymentAmount ||
+    Math.floor(actualTotal * 0.5);
+  const amountToPay = isFullPayment ? totalWithPickup : depositAmount;
 
   // Determine display amount based on payment mode
   const displayAmount = isFullPayment
     ? totalWithPickup
-    : (initialDepositInfo?.initialDeposit || Math.floor(actualTotal * 0.5)) + pickupFee;
+    : (initialDepositInfo?.initialDeposit || Math.floor(actualTotal * 0.5)) +
+      pickupFee;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="max-w-6xl mx-auto py-8 px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-3">
           {/* Left side: Customer and Delivery Details */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6 lg:col-span-2">
             {/* Shipping Address */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center text-green-600 font-semibold">
+            <div className="rounded-lg border bg-white p-6 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center font-semibold text-green-600">
                   <span className="mr-2">1. SHIPPING ADDRESS</span>
                 </div>
               </div>
               <div>
-                {deliveryInfo && deliveryInfo.deliveryMode === "door" && deliveryInfo.deliveryAddress ? (
+                {deliveryInfo &&
+                deliveryInfo.deliveryMode === "door" &&
+                deliveryInfo.deliveryAddress ? (
                   <>
                     <p className="font-bold">{deliveryInfo.deliveryAddress}</p>
-                    <p className="text-gray-600 text-sm">{deliveryInfo.city}, {deliveryInfo.state}</p>
+                    <p className="text-sm text-gray-600">
+                      {deliveryInfo.city}, {deliveryInfo.state}
+                    </p>
                   </>
-                ) : deliveryInfo && deliveryInfo.deliveryMode === "pickup" && deliveryInfo.pickupStation ? (
+                ) : deliveryInfo &&
+                  deliveryInfo.deliveryMode === "pickup" &&
+                  deliveryInfo.pickupStation ? (
                   <>
                     <p className="font-bold">{deliveryInfo.pickupStation}</p>
-                    <p className="text-gray-600 text-sm">{deliveryInfo.city}, {deliveryInfo.state}</p>
+                    <p className="text-sm text-gray-600">
+                      {deliveryInfo.city}, {deliveryInfo.state}
+                    </p>
                   </>
                 ) : (
                   <>
-                    <p className="font-bold">{shippingAddress.address}, {shippingAddress.city}</p>
-                    <p className="text-gray-600 text-sm">{shippingAddress.postalCode}, {shippingAddress.country}</p>
+                    <p className="font-bold">
+                      {shippingAddress.address}, {shippingAddress.city}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {shippingAddress.postalCode}, {shippingAddress.country}
+                    </p>
                   </>
                 )}
               </div>
             </div>
 
             {/* Delivery & Payment Details */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center text-green-600 font-semibold">
+            <div className="rounded-lg border bg-white p-6 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center font-semibold text-green-600">
                   <span className="mr-2">2. PAYMENT & DELIVERY</span>
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <p className="font-bold capitalize">{isPayInBits ? "Pay In Bits" : "Full Payment"}</p>
-                <span className="text-orange-500 font-bold">{order.orderStatus}</span>
+                <p className="font-bold capitalize">
+                  {isPayInBits ? "Pay In Bits" : "Full Payment"}
+                </p>
+                <span className="font-bold text-orange-500">
+                  {order.orderStatus}
+                </span>
               </div>
-              <p className="text-gray-600 text-sm mb-4">
-                Payment status: {order.paymentStatus} | Paid: {order.isPaid ? "Yes" : "No"}
+              <p className="mb-4 text-sm text-gray-600">
+                Payment status: {order.paymentStatus} | Paid:{" "}
+                {order.isPaid ? "Yes" : "No"}
               </p>
-              <p className="text-gray-600 text-sm mb-4">
-                Amount Paid: ₦{amountPaid.toLocaleString()} | Remaining: ₦{remainingBalance.toLocaleString()}
+              <p className="mb-4 text-sm text-gray-600">
+                Amount Paid: ₦{amountPaid.toLocaleString()} | Remaining: ₦
+                {remainingBalance.toLocaleString()}
               </p>
               {isPayInBits && (
-                <p className="text-blue-600 text-sm font-semibold">
+                <p className="text-sm font-semibold text-blue-600">
                   Initial Deposit Required: ₦{depositAmount.toLocaleString()}
                 </p>
               )}
             </div>
 
             {/* Products Ordered */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <h3 className="font-bold mb-4">Products Ordered</h3>
+            <div className="rounded-lg border bg-white p-6 shadow-sm">
+              <h3 className="mb-4 font-bold">Products Ordered</h3>
               <div className="space-y-4">
                 {orderItems.map((item: OrderItem) => (
-                  <div key={item._id} className="flex items-center gap-4 border-b pb-4 last:border-b-0">
-                    <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center">
+                  <div
+                    key={item._id}
+                    className="flex items-center gap-4 border-b pb-4 last:border-b-0"
+                  >
+                    <div className="flex h-16 w-16 items-center justify-center rounded-md bg-gray-100">
                       <Image
                         src={"/market/Image8.png"}
                         alt={item.name}
@@ -536,10 +621,12 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-sm">{item.name}</p>
-                      <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                      <p className="text-sm font-semibold">{item.name}</p>
+                      <p className="text-xs text-gray-500">
+                        Qty: {item.quantity}
+                      </p>
                       {isPayInBits && (
-                        <p className="text-xs text-blue-600 font-semibold">
+                        <p className="text-xs font-semibold text-blue-600">
                           Initial Deposit: ₦{depositAmount.toLocaleString()}
                         </p>
                       )}
@@ -548,17 +635,22 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
                       {isPayInBits ? (
                         <>
                           <p className="font-bold text-blue-600">
-                            ₦{depositAmount.toLocaleString()} <span className="text-xs">(Initial Deposit)</span>
+                            ₦{depositAmount.toLocaleString()}{" "}
+                            <span className="text-xs">(Initial Deposit)</span>
                           </p>
                           <p className="text-xs text-gray-400 line-through">
-                            ₦{item.price.toLocaleString()} <span className="text-xs">(Full Price)</span>
+                            ₦{item.price.toLocaleString()}{" "}
+                            <span className="text-xs">(Full Price)</span>
                           </p>
                         </>
                       ) : (
                         <>
-                          <p className="text-sm font-bold">₦{item.price.toLocaleString()}</p>
+                          <p className="text-sm font-bold">
+                            ₦{item.price.toLocaleString()}
+                          </p>
                           <p className="text-xs text-gray-500">
-                            Subtotal: ₦{(item.price * item.quantity).toLocaleString()}
+                            Subtotal: ₦
+                            {(item.price * item.quantity).toLocaleString()}
                           </p>
                         </>
                       )}
@@ -570,15 +662,29 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
 
             {/* Payment Plan (if present and in Pay In Bits mode) */}
             {isPayInBits && paymentPlan && paymentPlan.length > 0 && (
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <h3 className="font-bold mb-4">Payment Plan</h3>
+              <div className="rounded-lg border bg-white p-6 shadow-sm">
+                <h3 className="mb-4 font-bold">Payment Plan</h3>
                 <div className="space-y-2">
                   {paymentPlan.map((plan: PaymentPlan, idx: number) => (
-                    <div key={plan._id || idx} className="flex justify-between text-sm border-b pb-2 last:border-b-0">
-                      <span>Due: {plan.dueDate ? new Date(plan.dueDate).toLocaleDateString() : ""}</span>
-                      <span>Amount: ₦{plan.totalPayment?.toLocaleString() || 0}</span>
+                    <div
+                      key={plan._id || idx}
+                      className="flex justify-between border-b pb-2 text-sm last:border-b-0"
+                    >
+                      <span>
+                        Due:{" "}
+                        {plan.dueDate
+                          ? new Date(plan.dueDate).toLocaleDateString()
+                          : ""}
+                      </span>
+                      <span>
+                        Amount: ₦{plan.totalPayment?.toLocaleString() || 0}
+                      </span>
                       <span>Status: {plan.isPaid ? "Paid" : "Pending"}</span>
-                      {plan.paidAt && <span>Paid at: {new Date(plan.paidAt).toLocaleDateString()}</span>}
+                      {plan.paidAt && (
+                        <span>
+                          Paid at: {new Date(plan.paidAt).toLocaleDateString()}
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -587,8 +693,8 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
           </div>
 
           {/* Right side: Order Summary */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border lg:sticky lg:top-8">
-            <h2 className="text-xl font-bold mb-4">Order summary</h2>
+          <div className="rounded-lg border bg-white p-6 shadow-sm lg:sticky lg:top-8">
+            <h2 className="mb-4 text-xl font-bold">Order summary</h2>
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Total Price</span>
@@ -607,12 +713,15 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
                 <>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Payment Mode</span>
-                    <span className="text-blue-600 font-semibold">Pay In Bits</span>
+                    <span className="font-semibold text-blue-600">
+                      Pay In Bits
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Amount to Pay</span>
-                    <span className="text-blue-600 font-bold">
-                      ₦{depositAmount.toLocaleString()} <span className="text-xs">(Initial Deposit)</span>
+                    <span className="font-bold text-blue-600">
+                      ₦{depositAmount.toLocaleString()}{" "}
+                      <span className="text-xs">(Initial Deposit)</span>
                     </span>
                   </div>
                 </>
@@ -620,16 +729,20 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
                 <>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Payment Mode</span>
-                    <span className="text-green-600 font-semibold">Full Payment</span>
+                    <span className="font-semibold text-green-600">
+                      Full Payment
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Amount to Pay</span>
-                    <span className="text-gray-900 font-bold">₦{totalWithPickup.toLocaleString()}</span>
+                    <span className="font-bold text-gray-900">
+                      ₦{totalWithPickup.toLocaleString()}
+                    </span>
                   </div>
                 </>
               )}
 
-              <div className="flex justify-between font-bold text-lg border-t pt-3">
+              <div className="flex justify-between border-t pt-3 text-lg font-bold">
                 <span>Status</span>
                 <span>{order.orderStatus}</span>
               </div>
@@ -639,7 +752,7 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
             <div className="mt-6">
               <button
                 onClick={handleProceedToPayment}
-                className="w-full bg-orange-500 text-white font-bold py-3 rounded-md mt-4 hover:bg-orange-600"
+                className="mt-4 w-full rounded-md bg-orange-500 py-3 font-bold text-white hover:bg-orange-600"
               >
                 {isPayInBits ? (
                   <>Make Initial Deposit (₦{depositAmount.toLocaleString()})</>
@@ -648,7 +761,7 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
                 )}
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-4 text-center">
+            <p className="mt-4 text-center text-xs text-gray-500">
               By proceeding, you are automatically accepting the{" "}
               <a href="#" className="text-blue-600">
                 Terms & Conditions
@@ -659,25 +772,7 @@ const OrderConfirmation: React.FC<{ paymentMode: "full" | "bits" | "100% Full Pa
       </div>
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default OrderConfirmation
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+export default OrderConfirmation;
