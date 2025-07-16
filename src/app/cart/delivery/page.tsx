@@ -59,7 +59,6 @@ const DeliveryPage = () => {
   const [modalContent, setModalContent] = useState({ title: "", content: "" });
   const [deliveryAddress, setDeliveryAddress] = useState("");
 
- 
   const { data: cartData } = useQuery({
     queryKey: ["cart"],
     queryFn: async () => {
@@ -70,16 +69,13 @@ const DeliveryPage = () => {
 
   const cartItems: CartItem[] = cartData?.items || [];
 
-
   const states = statesAndLGAs[0]?.states || [];
   const cities = selectedState
     ? states.find((s: any) => s.name === selectedState)?.lgas || []
     : [];
 
- 
   const getApiCity = (city: string) => city.replace(/\s+/g, "");
 
-  
   const { data, isLoading } = useQuery({
     queryKey: [
       "pickup-stations",
@@ -102,43 +98,55 @@ const DeliveryPage = () => {
   });
 
   // Map pickup stations for 'All centers' (ensure amount is always present and defaults to 0 NGN if missing)
-  const pickupStations: PickupStation[] = (data?.data || data?.stations || []).map(
-    function (station: any, idx: number) {
-      let amount = station.amount;
-      if (!amount || typeof amount.value !== 'number') {
-        amount = { value: 0, currency: (amount && amount.currency) ? amount.currency : 'NGN' };
-      }
-      return {
-        id: station._id || station.id,
-        name: `Station ${idx + 1} - ${station.name}`,
-        address: station.fullAddress || `${station.address.street}, ${station.address.city}, ${station.address.state} ${station.address.zipCode}, ${station.address.country}`,
-        amount,
+  const pickupStations: PickupStation[] = (
+    data?.data ||
+    data?.stations ||
+    []
+  ).map(function (station: any, idx: number) {
+    let amount = station.amount;
+    if (!amount || typeof amount.value !== "number") {
+      amount = {
+        value: 0,
+        currency: amount && amount.currency ? amount.currency : "NGN",
       };
     }
-  );
+    return {
+      id: station._id || station.id,
+      name: `Station ${idx + 1} - ${station.name}`,
+      address:
+        station.fullAddress ||
+        `${station.address.street}, ${station.address.city}, ${station.address.state} ${station.address.zipCode}, ${station.address.country}`,
+      amount,
+    };
+  });
 
- 
   const fetchAvailableStations = async () => {
     try {
       let url = `/api/pickup-stations/available`;
       if (selectedCity)
         url += `?city=${encodeURIComponent(getApiCity(selectedCity))}`;
       const res = await client.get(url);
-     
-      const stations = (res.data.data || []).map(
-        function (station: any, idx: number) {
-          let amount = station.amount;
-          if (!amount || typeof amount.value !== 'number') {
-            amount = { value: 0, currency: (amount && amount.currency) ? amount.currency : 'NGN' };
-          }
-          return {
-            id: station._id || station.id,
-            name: `Station ${idx + 1} - ${station.name}`,
-            address: station.fullAddress || `${station.address.street}, ${station.address.city}, ${station.address.state} ${station.address.zipCode}, ${station.address.country}`,
-            amount,
+
+      const stations = (res.data.data || []).map(function (
+        station: any,
+        idx: number,
+      ) {
+        let amount = station.amount;
+        if (!amount || typeof amount.value !== "number") {
+          amount = {
+            value: 0,
+            currency: amount && amount.currency ? amount.currency : "NGN",
           };
         }
-      );
+        return {
+          id: station._id || station.id,
+          name: `Station ${idx + 1} - ${station.name}`,
+          address:
+            station.fullAddress ||
+            `${station.address.street}, ${station.address.city}, ${station.address.state} ${station.address.zipCode}, ${station.address.country}`,
+          amount,
+        };
+      });
       setAvailableStations(stations);
     } catch (e) {
       setAvailableStations([]);
@@ -220,7 +228,6 @@ const DeliveryPage = () => {
       }
     });
 
-  
     if (allTerms.length === 0) {
       allTerms.push(
         `No ${type === "door" ? "door delivery" : "pickup"} terms and conditions available for the products in your cart.`,
@@ -260,9 +267,9 @@ const DeliveryPage = () => {
     setError("");
     let pickupStationAmount = null;
     if (deliveryMode === "pickup" && selectedPickup) {
-      const station = (showAvailableOnly ? availableStations : pickupStations).find(
-        s => s.name === selectedPickup
-      );
+      const station = (
+        showAvailableOnly ? availableStations : pickupStations
+      ).find((s) => s.name === selectedPickup);
       pickupStationAmount = station?.amount || null;
     }
     const deliveryInfo = {
@@ -270,7 +277,8 @@ const DeliveryPage = () => {
       city: selectedCity,
       deliveryMode,
       pickupStation: deliveryMode === "pickup" ? selectedPickup : null,
-      pickupStationAmount: deliveryMode === "pickup" ? pickupStationAmount : null,
+      pickupStationAmount:
+        deliveryMode === "pickup" ? pickupStationAmount : null,
       deliveryAddress: deliveryMode === "door" ? deliveryAddress : null,
     };
     localStorage.setItem("deliveryInfo", JSON.stringify(deliveryInfo));
@@ -289,8 +297,6 @@ const DeliveryPage = () => {
   //   "Take Rider's Picture",
   //   "Confirm Receipt of Product in Good Condition",
   // ];
-
- 
 
   return (
     <>
@@ -319,7 +325,7 @@ const DeliveryPage = () => {
                       />
                       <span className="ml-3 font-medium">Door Delivery</span>
                     </div>
-                    <span className="font-bold">$0.00</span>
+                    <span className="font-bold">₦0.00</span>
                   </div>
                   <button
                     onClick={(e) => {
@@ -354,14 +360,17 @@ const DeliveryPage = () => {
                     <span className="font-bold">
                       {deliveryMode === "pickup" && selectedPickup
                         ? (() => {
-                            const station = (showAvailableOnly ? availableStations : pickupStations).find(
-                              s => s.name === selectedPickup
-                            );
-                            return station && typeof station.amount?.value === 'number'
-                              ? `${station.amount.value} ${station.amount.currency || ''}`
-                              : '0 NGN';
+                            const station = (
+                              showAvailableOnly
+                                ? availableStations
+                                : pickupStations
+                            ).find((s) => s.name === selectedPickup);
+                            return station &&
+                              typeof station.amount?.value === "number"
+                              ? `${station.amount.value} ${station.amount.currency || ""}`
+                              : "₦0";
                           })()
-                        : "$0.00"}
+                        : "₦0.00"}
                     </span>
                   </div>
                   <button
@@ -385,7 +394,9 @@ const DeliveryPage = () => {
             {deliveryMode && (
               <>
                 <div>
-                  <label className="mb-1 block text-sm font-medium">State</label>
+                  <label className="mb-1 block text-sm font-medium">
+                    State
+                  </label>
                   <select
                     className="w-full rounded border p-2"
                     value={selectedState}
@@ -424,13 +435,15 @@ const DeliveryPage = () => {
 
                 {deliveryMode === "door" && (
                   <div>
-                    <label className="mb-1 block text-sm font-medium">Delivery Address</label>
+                    <label className="mb-1 block text-sm font-medium">
+                      Delivery Address
+                    </label>
                     <input
                       type="text"
                       className="w-full rounded border p-2"
                       placeholder="Enter your delivery address"
                       value={deliveryAddress}
-                      onChange={e => setDeliveryAddress(e.target.value)}
+                      onChange={(e) => setDeliveryAddress(e.target.value)}
                     />
                   </div>
                 )}
@@ -455,7 +468,7 @@ const DeliveryPage = () => {
                       >
                         All centers
                       </button>
-                     
+
                       {/* <button
                         className={`rounded px-3 py-1 ${showAvailableOnly ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-700"}`}
                         onClick={() => setShowAvailableOnly(true)}
@@ -479,7 +492,11 @@ const DeliveryPage = () => {
                           <option value="">Select Pickup Station</option>
                           {availableStations.map((station) => (
                             <option key={station.id} value={station.name}>
-                              {station.name} - {station.address} - {station.amount && typeof station.amount.value === 'number' ? `${station.amount.value} ${station.amount.currency || ''}` : '0 NGN'}
+                              {station.name} - {station.address} -{" "}
+                              {station.amount &&
+                              typeof station.amount.value === "number"
+                                ? `${station.amount.value} ${station.amount.currency || ""}`
+                                : "0 NGN"}
                             </option>
                           ))}
                         </select>
@@ -497,7 +514,11 @@ const DeliveryPage = () => {
                         <option value="">Select Pickup center</option>
                         {pickupStations.map((station) => (
                           <option key={station.id} value={station.name}>
-                            {station.name} - {station.address} - {station.amount && typeof station.amount.value === 'number' ? `${station.amount.value} ${station.amount.currency || ''}` : '0 NGN'}
+                            {station.name} - {station.address} -{" "}
+                            {station.amount &&
+                            typeof station.amount.value === "number"
+                              ? `${station.amount.value} ${station.amount.currency || ""}`
+                              : "0 NGN"}
                           </option>
                         ))}
                       </select>

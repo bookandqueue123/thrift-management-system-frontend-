@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
 
 // Updated Type Definitions to match API response
@@ -63,13 +64,122 @@ interface ProductCardProps {
 }
 
 // Header Component
+interface CartResponse {
+  items: Array<{
+    id: string;
+    quantity: number;
+    // Add other cart item properties as needed
+  }>;
+  total: number;
+  // Add other cart response properties as needed
+}
+
 const Header: React.FC = () => {
+  const router = useRouter();
+  const { client } = useAuth();
+  // Cart data fetching
+  const {
+    data: cartData,
+    isLoading,
+    error,
+  } = useQuery<CartResponse>({
+    queryKey: ["cart"],
+    queryFn: async () => {
+      const res = await client.get("/api/cart");
+      return res.data;
+    },
+  });
+
+  // Calculate total items in cart
+  const cartItemCount =
+    cartData?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
+
+  const handleCartClick = (): void => {
+    console.log(2345);
+    router.push("/cart");
+  };
+
   return (
-    <div className=" m-4 rounded-2xl bg-gradient-to-br from-[#2C2648]  to-[#000000] p-6 text-white">
-      <h1 className="mb-2 text-2xl font-bold">MarketPlace</h1>
-      <p className="text-white">
-        Discover products, brands, categories. Any and Everything.
-      </p>
+    <div className="relative m-4 overflow-hidden rounded-2xl bg-gradient-to-br from-[#2C2648] via-[#1a1a2e] to-[#000000] p-6 text-white shadow-xl">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_50%)]"></div>
+      </div>
+
+      <div className="relative flex items-center justify-between">
+        {/* Left Section - Title and Description */}
+        <div className="flex-1">
+          <h1 className="mb-3 text-3xl font-bold tracking-tight lg:text-4xl">
+            MarketPlace
+          </h1>
+          <p className="text-lg text-gray-200 lg:text-xl">
+            Discover products, brands, categories. Any and Everything.
+          </p>
+        </div>
+
+        {/* Right Section - Cart */}
+        <Link href={"/cart"}>
+          <div className="ml-6 flex items-center">
+            <button
+              onClick={handleCartClick}
+              className="group relative rounded-full bg-white/10 p-3 backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
+              aria-label="Shopping cart"
+            >
+              {/* Cart Icon */}
+              <svg
+                className="h-7 w-7 text-white transition-colors group-hover:text-gray-100"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m0 0h8.5M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6"
+                />
+              </svg>
+
+              {/* Cart Badge */}
+              {!isLoading && cartItemCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow-lg ring-2 ring-white/20">
+                  {cartItemCount > 99 ? "99+" : cartItemCount}
+                </span>
+              )}
+
+              {/* Loading indicator */}
+              {isLoading && (
+                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white/30">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-white"></span>
+                </span>
+              )}
+            </button>
+
+            {/* Cart Text (Desktop Only) */}
+            <div className="ml-3 hidden md:block">
+              <div className="text-sm font-medium text-white">Cart</div>
+              <div className="text-xs text-gray-300">
+                {isLoading ? (
+                  <span className="animate-pulse">Loading...</span>
+                ) : error ? (
+                  <span className="text-red-300">Error</span>
+                ) : cartItemCount === 0 ? (
+                  "Empty"
+                ) : cartItemCount === 1 ? (
+                  "1 item"
+                ) : (
+                  `${cartItemCount} items`
+                )}
+              </div>
+            </div>
+          </div>
+        </Link>
+      </div>
+
+      {/* Decorative Elements */}
+      <div className="absolute bottom-0 right-0 h-32 w-32 rounded-full bg-gradient-to-br from-white/5 to-transparent blur-2xl"></div>
+      <div className="absolute left-0 top-0 h-24 w-24 rounded-full bg-gradient-to-br from-white/5 to-transparent blur-xl"></div>
     </div>
   );
 };
@@ -213,6 +323,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 // Product Card Component
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const router = useRouter();
   const renderStars = (rating: number = 4.5): JSX.Element[] => {
     const stars = [];
     for (let i = 0; i < 5; i++) {
@@ -234,76 +345,83 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     // Handle image load success
   };
 
-  return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-lg">
-      {/* Product Image */}
-      <Link href={`/product/${product._id}`} className="block">
-        <div className="relative mb-4">
-          <div className="flex h-48 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-gray-100 transition-opacity hover:opacity-90">
-            {product.imageUrl ? (
-              <img
-                src={
-                  Array.isArray(product.imageUrl)
-                    ? product.imageUrl[0]
-                    : product.imageUrl
-                }
-                alt={product.name}
-                className="h-full w-full object-contain"
-                onError={handleImageError}
-                onLoad={handleImageLoad}
-              />
-            ) : (
-              <div className="text-sm text-gray-400">No image available</div>
-            )}
-          </div>
+  const handleRedirect = (id: string) => {
+    router.push(`/product/${product._id}`);
+  };
 
-          {/* Discount Badge */}
-          {product.discount && product.discount > 0 && (
-            <div className="absolute left-2 top-2">
-              <span className="rounded bg-orange-100 px-2 py-1 text-xs font-semibold text-orange-600">
-                -{product.discount}%
-              </span>
-            </div>
+  return (
+    <div
+      onClick={() => handleRedirect(product._id)}
+      className="rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-lg"
+    >
+      {/* Product Image */}
+      {/* <Link href={`/product/${product._id}`} className="block"> */}
+      <div className="relative mb-4">
+        <div className="flex h-48 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-gray-100 transition-opacity hover:opacity-90">
+          {product.imageUrl ? (
+            <img
+              src={
+                Array.isArray(product.imageUrl)
+                  ? product.imageUrl[0]
+                  : product.imageUrl
+              }
+              alt={product.name}
+              className="h-full w-full object-contain"
+              onError={handleImageError}
+              onLoad={handleImageLoad}
+            />
+          ) : (
+            <div className="text-sm text-gray-400">No image available</div>
           )}
-          {/* Wishlist Button */}
-          <button className="absolute right-2 top-2 rounded-full bg-white p-1 shadow-md hover:bg-gray-50">
-            <Heart className="h-4 w-4 text-gray-400" />
-          </button>
         </div>
-        {/* Product Info */}
-        <div>
-          <Link href={`/product/${product._id}`} className="block">
-            <h3 className="mb-2 line-clamp-2 font-medium text-gray-800 hover:text-orange-600">
-              {product.name}
-            </h3>
-          </Link>
-          {/* Price and Discount */}
-          <div className="mb-2 flex items-center gap-2">
-            <span className="text-lg font-bold text-orange-600">
-              ₦{product.price.toLocaleString()}
-            </span>
-            {product.discount &&
-              product.discount > 0 &&
-              product.costBeforeDiscount && (
-                <span className="text-sm text-gray-400 line-through">
-                  ₦{product.costBeforeDiscount.toLocaleString()}
-                </span>
-              )}
-          </div>
-          {/* Stock Left */}
-          <div className="mb-1 text-xs text-gray-500">
-            {product.stock} items left
-          </div>
-          {/* Category Badge */}
-          <div className="mt-2">
-            <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">
-              {typeof product.category === "object"
-                ? product.category?.name || product.category?._id || ""
-                : product.category}
+
+        {/* Discount Badge */}
+        {product.discount && product.discount > 0 && (
+          <div className="absolute left-2 top-2">
+            <span className="rounded bg-orange-100 px-2 py-1 text-xs font-semibold text-orange-600">
+              -{product.discount}%
             </span>
           </div>
-        </div>{" "}
-      </Link>
+        )}
+        {/* Wishlist Button */}
+        <button className="absolute right-2 top-2 rounded-full bg-white p-1 shadow-md hover:bg-gray-50">
+          <Heart className="h-4 w-4 text-gray-400" />
+        </button>
+      </div>
+      {/* Product Info */}
+      <div>
+        <Link href={`/product/${product._id}`} className="block">
+          <h3 className="mb-2 line-clamp-2 font-medium text-gray-800 hover:text-orange-600">
+            {product.name}
+          </h3>
+        </Link>
+        {/* Price and Discount */}
+        <div className="mb-2 flex items-center gap-2">
+          <span className="text-lg font-bold text-orange-600">
+            ₦{product.price.toLocaleString()}
+          </span>
+          {product.discount &&
+            product.discount > 0 &&
+            product.costBeforeDiscount && (
+              <span className="text-sm text-gray-400 line-through">
+                ₦{product.costBeforeDiscount.toLocaleString()}
+              </span>
+            )}
+        </div>
+        {/* Stock Left */}
+        <div className="mb-1 text-xs text-gray-500">
+          {product.stock} items left
+        </div>
+        {/* Category Badge */}
+        <div className="mt-2">
+          <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">
+            {typeof product.category === "object"
+              ? product.category?.name || product.category?._id || ""
+              : product.category}
+          </span>
+        </div>
+      </div>{" "}
+      {/* </Link> */}
     </div>
   );
 };
