@@ -1,5 +1,5 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import { Plus, Trash2, Calendar, DollarSign, ChevronRight, ChevronLeft, Upload } from 'lucide-react';
+import { Plus, Trash2, Calendar, DollarSign, ChevronRight, ChevronLeft, Upload, User, X } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/api/hooks/useAuth';
 
@@ -55,11 +55,87 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
   const [billDetails, setBillDetails] = useState<BillDetails>(initialData);
   const [billItems, setBillItems] = useState<BillItem[]>(initialData.billItems || []);
   const [formError, setFormError] = useState<string | null>(null);
+  const [customerSearchTerm, setCustomerSearchTerm] = useState("");
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const [selectedCustomers, setSelectedCustomers] = useState<any[]>(billDetails.assignToCustomer || []);
+  const customerSearchRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setBillDetails(initialData);
     setBillItems(initialData.billItems || []);
   }, [initialData]);
+
+  // Fetch platform charge percentage from API
+  const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuery({
+    queryKey: ['platform-charge'],
+    queryFn: async () => {
+      const res = await client.get('/api/bill-charge');
+      return res.data;
+    },
+  });
+
+  // Fetch groups for the customer group dropdown
+  const { data: groupsData, isLoading: isGroupsLoading } = useQuery({
+    queryKey: ['groups'],
+    queryFn: async () => {
+      const res = await client.get('/api/groups');
+      return res.data.data;
+    },
+  });
+
+  const organisationId = initialData.organisation || billDetails.organisation;
+  const { data: customerOrganisation, isLoading: isLoadingCustomerOrganisation } = useQuery({
+    queryKey: ["organisation", organisationId],
+    queryFn: async () => {
+      if (!organisationId) return [];
+      return client
+        .get(
+          `/api/user?role=customer&organisation=${organisationId}&userType=individual`,
+          {},
+        )
+        .then((response) => {
+          if (Array.isArray(response.data)) return response.data;
+          if (Array.isArray(response.data.data)) return response.data.data;
+          return [];
+        })
+        .catch((error: any) => {
+          console.error('Error loading customers:', error);
+          throw error;
+        });
+    },
+    enabled: !!organisationId,
+    staleTime: 5000,
+  });
+
+  // Move this useEffect after the useQuery hooks for customerOrganisation and groupsData
+  useEffect(() => {
+    if (customerOrganisation && billDetails.assignToCustomer) {
+      let assigned: any[] = [];
+      if (
+        Array.isArray(billDetails.assignToCustomer) &&
+        billDetails.assignToCustomer.length > 0
+      ) {
+        if (typeof billDetails.assignToCustomer[0] === "object") {
+          // Already objects
+          assigned = billDetails.assignToCustomer;
+        } else {
+          // Array of IDs
+          assigned = billDetails.assignToCustomer
+            .map((id: string) => customerOrganisation.find((c: any) => c._id === id))
+            .filter(Boolean);
+        }
+        setSelectedCustomers(assigned);
+      }
+    }
+  }, [customerOrganisation, billDetails.assignToCustomer]);
+
+  // Add a useEffect for group pre-population (optional, for completeness)
+  useEffect(() => {
+    if (groupsData && billDetails.customerGroupId) {
+      // No need to set a separate state, as the select uses billDetails.customerGroupId directly
+      // But you could add logic here if you want to display the group name elsewhere
+    }
+  }, [groupsData, billDetails.customerGroupId]);
 
   const { data: categoriesData } = useQuery<Category[]>({
     queryKey: ['bill-categories'],
@@ -68,6 +144,35 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
       return res.data.data;
     },
   });
+
+  // Handle customer selection
+  const handleCustomerSelect = (customer: any) => {
+    const isAlreadySelected = selectedCustomers.some((c) => c._id === customer._id);
+    let updatedCustomers;
+    if (isAlreadySelected) {
+      updatedCustomers = selectedCustomers.filter((c) => c._id !== customer._id);
+    } else {
+      updatedCustomers = [...selectedCustomers, customer];
+    }
+    setSelectedCustomers(updatedCustomers);
+    setBillDetails((prev) => ({
+      ...prev,
+      assignToCustomer: updatedCustomers.map((c) => c._id),
+      assignedCustomers: updatedCustomers.map((c) => c._id),
+    }));
+    setCustomerSearchTerm("");
+    setShowCustomerDropdown(false);
+  };
+
+  const removeSelectedCustomer = (customerId: string) => {
+    const updatedCustomers = selectedCustomers.filter((c) => c._id !== customerId);
+    setSelectedCustomers(updatedCustomers);
+    setBillDetails((prev) => ({
+      ...prev,
+      assignToCustomer: updatedCustomers.map((c) => c._id),
+      assignedCustomers: updatedCustomers.map((c) => c._id),
+    }));
+  };
 
   // Handlers for bill details
   const handleBillDetailsChange = (field: keyof BillDetails, value: any) => {
@@ -121,6 +226,11 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
       setFormError('Bill Code is required.');
       return;
     }
+    // New validation: Must assign to at least a customer or a group
+    if (!billDetails.customerGroupId && (!billDetails.assignToCustomer || billDetails.assignToCustomer.length === 0) && (!billDetails.assignedCustomers || billDetails.assignedCustomers.length === 0)) {
+      setFormError('You must assign this bill to at least one customer or a group.');
+      return;
+    }
     setFormError(null);
     onSubmit({ ...billDetails, billItems });
   };
@@ -150,6 +260,122 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
                   <input type="date" value={billDetails.endDate} onChange={e => handleBillDetailsChange('endDate', e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 </div>
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Assign to Group <span className='text-red-500'>*</span>
+              </label>
+              <select
+                value={billDetails.customerGroupId || ''}
+                onChange={e => handleBillDetailsChange('customerGroupId', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Select customer group</option>
+                {groupsData?.map((group: any) => (
+                  <option key={group._id} value={group._id}>{group.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <User size={16} />
+                Assign to Customers (Multiple Selection)
+              </label>
+              <div className="relative" ref={customerSearchRef}>
+                <div
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg cursor-pointer bg-white"
+                  onClick={() => setShowCustomerDropdown((prev) => !prev)}
+                >
+                  {selectedCustomers.length === 0
+                    ? "Select customers..."
+                    : selectedCustomers.map((c) => `${c.firstName} ${c.lastName}`).join(", ")}
+                </div>
+                {showCustomerDropdown && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <div className="sticky top-0 bg-white z-10 p-2 border-b border-gray-200">
+                      <input
+                        type="text"
+                        value={customerSearchTerm}
+                        onChange={e => setCustomerSearchTerm(e.target.value)}
+                        placeholder="Search customers..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        autoFocus
+                      />
+                    </div>
+                    {customerOrganisation?.length > 0 ? (
+                      customerOrganisation
+                        .filter((customer: any) => {
+                          if (!customerSearchTerm.trim()) return true;
+                          const fullName = `${customer.firstName} ${customer.lastName}`.toLowerCase();
+                          const email = customer.email.toLowerCase();
+                          const customerId = customer._id.toLowerCase();
+                          const searchLower = customerSearchTerm.toLowerCase();
+                          return (
+                            fullName.includes(searchLower) ||
+                            email.includes(searchLower) ||
+                            customerId.includes(searchLower)
+                          );
+                        })
+                        .map((customer: any) => {
+                          const isSelected = selectedCustomers.some((c) => c._id === customer._id);
+                          return (
+                            <div
+                              key={customer._id}
+                              onClick={() => handleCustomerSelect(customer)}
+                              className={`px-4 py-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${
+                                isSelected ? "bg-blue-50" : ""
+                              }`}
+                            >
+                              <div className="font-medium text-gray-900">
+                                {customer.firstName} {customer.lastName}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                Account Number: {customer.accountNumber} | Email: {customer.email}
+                              </div>
+                              {isSelected && <span className="text-blue-600 ml-2">✓ Selected</span>}
+                            </div>
+                          );
+                        })
+                    ) : (
+                      <div className="px-4 py-3 text-gray-500 text-center">
+                        {isLoadingCustomerOrganisation ? 'Loading customers...' : 'No customers available'}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {/* Selected Customers Display */}
+              {selectedCustomers.length > 0 && (
+                <div className="space-y-2 mt-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Selected Customers ({selectedCustomers.length}):
+                  </label>
+                  <div className="space-y-2">
+                    {selectedCustomers.map((customer) => (
+                      <div
+                        key={customer._id}
+                        className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg"
+                      >
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {customer.firstName} {customer.lastName}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Account Number: {customer.accountNumber} | Email: {customer.email}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeSelectedCustomer(customer._id)}
+                          className="text-red-600 hover:text-red-800 p-1"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         );
@@ -189,6 +415,43 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
                         <label className="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
                         <input type="number" min="1" value={item.quantity} onChange={e => handleItemChange(idx, 'quantity', parseInt(e.target.value) || 1)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" />
                       </div>
+                      {/* Platform charge fields */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge (%)</label>
+                        <input
+                          type="number"
+                          value={platformChargeData?.data?.percentage || ''}
+                          disabled
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                        />
+                        {isLoadingPlatformCharge && <span className="text-xs text-gray-400">Loading platform charge...</span>}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge value</label>
+                        <input
+                          type="number"
+                          value={
+                            platformChargeData?.data?.percentage
+                              ? ((platformChargeData.data.percentage / 100) * item.amount).toFixed(2)
+                              : ''
+                          }
+                          disabled
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Actual debit amount</label>
+                        <input
+                          type="number"
+                          value={
+                            platformChargeData?.data?.percentage
+                              ? (item.amount + (platformChargeData.data.percentage / 100) * item.amount).toFixed(2)
+                              : item.amount
+                          }
+                          disabled
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -210,10 +473,6 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Custom Unique Code</label>
                   <input type="text" value={billDetails.customUniqueCode} onChange={e => handleBillDetailsChange('customUniqueCode', e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter unique code" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Platform Service Charge</label>
-                  <input type="number" min="0" value={billDetails.platformServiceCharge} onChange={e => handleBillDetailsChange('platformServiceCharge', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Promo Percentage (%)</label>

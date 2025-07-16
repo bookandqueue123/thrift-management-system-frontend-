@@ -5,16 +5,23 @@ import { Plus, Trash2, Calendar, User, Users, FileText, DollarSign, ChevronRight
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/api/hooks/useAuth';
 import { nanoid } from 'nanoid';
+import { useRouter } from 'next/navigation';
 
 interface BillItem {
   id: number;
   purposeName: string;
   category: string;
-  amount: number;
-  amountWithoutCharge: number;
+  amountWithoutCharge: number; // user input
+  amount: number; // calculated (with charge)
   quantity: number;
   isMandatory: boolean;
+  promoType: 'promo' | 'custom';
+  promoCode: string;
   customPromoCode?: string;
+  startDate?: string;
+  startTime?: string;
+  endDate?: string;
+  endTime?: string;
 }
 
 interface BillDetails {
@@ -62,8 +69,14 @@ interface Customer {
 
 const generatePromoCode = () => nanoid(8).toUpperCase();
 
-const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
+interface BillCreationFormProps {
+  organizationId: string;
+  onSuccess?: () => void;
+}
+
+const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) => {
   const { client } = useAuth();
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
 
@@ -115,11 +128,17 @@ const BillCreationForm = ({ organizationId }: { organizationId: string }) => {
     id: 1,
     purposeName: "",
     category: "",
-    amount: 0,
     amountWithoutCharge: 0,
+    amount: 0,
     quantity: 1,
     isMandatory: false,
+    promoType: 'promo',
+    promoCode: '',
     customPromoCode: "",
+    startDate: '',
+    startTime: '',
+    endDate: '',
+    endTime: '',
   }]);
 
   
@@ -187,6 +206,15 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    if (customerOrganisation && billDetails.assignToCustomer && Array.isArray(billDetails.assignToCustomer)) {
+      const assigned = billDetails.assignToCustomer
+        .map((id: string) => customerOrganisation.find((c: any) => c._id === id))
+        .filter(Boolean);
+      setSelectedCustomers(assigned);
+    }
+  }, [customerOrganisation, billDetails.assignToCustomer]);
 
 
   const handleCustomerSearch = (searchTerm: string) => {
@@ -321,8 +349,8 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
           billName: rest.purposeName,
           category, // ID
           name: selectedCategory ? selectedCategory.name : "",
-          amount: rest.amount,
-          amountWithoutCharge: rest.amountWithoutCharge,
+          amountWithoutCharge: rest.amountWithoutCharge, // user input
+          amount: rest.amount, // with charge
           quantity: rest.quantity,
           isMandatory,
         };
@@ -378,18 +406,21 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
         id: 1,
         purposeName: "",
         category: "",
-        amount: 0,
         amountWithoutCharge: 0,
+        amount: 0,
         quantity: 1,
         isMandatory: false,
+        promoType: 'promo',
+        promoCode: '',
         customPromoCode: "",
+        startDate: '',
+        startTime: '',
+        endDate: '',
+        endTime: '',
       }]);
       setTimeout(() => {
-        setCloseModal(false);
-        setModalContent("form");
-        // Optionally reset form or redirect as needed
-        // router.push("/merchant/bills");
-      }, 3000);
+        if (onSuccess) onSuccess();
+      }, 2000); // Show modal for 2 seconds before navigating
     },
     onError(error: any) {
       // Axios error handling pattern
@@ -405,9 +436,17 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
 
   // Handlers for bill items
   const handleItemChange = (itemId: number, field: keyof BillItem, value: string | number | boolean) => {
-    setBillItems(prev => prev.map(item => 
-      item.id === itemId ? { ...item, [field]: value } : item
-    ));
+    setBillItems(prev => prev.map(item => {
+      if (item.id === itemId) {
+        let updated = { ...item, [field]: value };
+        if (field === 'amountWithoutCharge') {
+          const percentage = platformChargeData?.data?.percentage || 0;
+          updated.amount = Number(value) + (percentage / 100) * Number(value);
+        }
+        return updated;
+      }
+      return item;
+    }));
   };
 
   const addBillItem = () => {
@@ -416,11 +455,17 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
       id: newId,
       purposeName: "",
       category: "",
-      amount: 0,
       amountWithoutCharge: 0,
+      amount: 0,
       quantity: 1,
       isMandatory: false,
+      promoType: 'promo',
+      promoCode: '',
       customPromoCode: "",
+      startDate: '',
+      startTime: '',
+      endDate: '',
+      endTime: '',
     }]);
   };
 
@@ -489,6 +534,23 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
       setFormError("Promo Percentage must be between 0 and 100.");
       return;
     }
+    // New validation: Ensure every bill item has a category
+    const missingCategory = billItems.some(item => !item.category || item.category.trim() === "");
+    if (missingCategory) {
+      setFormError("Each bill item must have a category.");
+      return;
+    }
+    // New validation: Ensure every bill item has a name
+    const missingName = billItems.some(item => !item.purposeName || item.purposeName.trim() === "");
+    if (missingName) {
+      setFormError("Each bill item must have a name.");
+      return;
+    }
+    // New validation: Must assign to at least a customer or a group
+    if (!billDetails.customerGroupId && (!billDetails.assignToCustomer || billDetails.assignToCustomer.length === 0)) {
+      setFormError("You must assign this bill to at least one customer or a group.");
+      return;
+    }
     setFormError(null);
     createBill({
       ...billDetails,
@@ -509,6 +571,9 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
         return (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Bill Details</h2>
+            <div className="text-xs text-red-500 mt-1 mb-4">
+              You must assign this bill to at least one customer or a group. <span className='text-red-500'>*</span>
+            </div>
             <div className="w-full px-2 py-2 sm:px-4 sm:py-4 sm:p-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
@@ -640,9 +705,8 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <Users size={16} />
-                    Assign to Customer Group
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Assign to Group <span className='text-red-500'>*</span>
                   </label>
                   <select
                     value={billDetails.customerGroupId}
@@ -657,7 +721,6 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
                     ))}
                   </select>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                     <Calendar size={16} />
@@ -711,7 +774,7 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
             </div>
           </div>
         );
-
+        break;
       case 2: // Bill Items
         return (
           <div className="space-y-6">
@@ -792,12 +855,26 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
                         </label>
                         <input
                           type="number"
-                          min="0"
+                          // min="0"
+                          step="0.01"
+                          value={item.amountWithoutCharge}
+                          onChange={(e) => handleItemChange(item.id, 'amountWithoutCharge', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          placeholder="Enter amount without charge"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          ACTUAL DEBIT AMOUNT
+                        </label>
+                        <input
+                          type="number"
+                          // min="0"
                           step="0.01"
                           value={item.amount}
-                          onChange={(e) => handleItemChange(item.id, 'amount', parseFloat(e.target.value) || 0)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                          placeholder="Enter debit amount"
+                          readOnly
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                          placeholder="Amount with charge"
                         />
                       </div>
                       {/* Platform charge fields */}
@@ -817,26 +894,14 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
                           type="number"
                           value={
                             platformChargeData?.data?.percentage
-                              ? ((platformChargeData.data.percentage / 100) * item.amount).toFixed(2)
+                              ? ((platformChargeData.data.percentage / 100) * item.amountWithoutCharge).toFixed(2)
                               : ''
                           }
                           disabled
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Actual debit amount</label>
-                        <input
-                          type="number"
-                          value={
-                            platformChargeData?.data?.percentage
-                              ? (item.amount + (platformChargeData.data.percentage / 100) * item.amount).toFixed(2)
-                              : item.amount
-                          }
-                          disabled
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-                        />
-                      </div>
+                    
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Quantity
@@ -849,8 +914,9 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         />
                       </div>
+                      
                       {/* Custom Promo Code for this item */}
-                      <div>
+                      {/* <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Custom Promo Code</label>
                         <div className="flex gap-2">
                           <input
@@ -868,6 +934,86 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
                             Generate
                           </button>
                         </div>
+                      </div> */}
+                    </div>
+                  </div>
+                  {/* Promo Code Settings - Full width section */}
+                  <div className="mt-6">
+                    <div className="p-4 w-full border border-gray-200 rounded-lg bg-gray-50">
+                      <label className="block text-base font-semibold mb-4">Promo Code Settings</label>
+                      <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name={`promoType-${item.id}`}
+                            checked={item.promoType === 'promo' || !item.promoType}
+                            onChange={() => handleItemChange(item.id, 'promoType', 'promo')}
+                          />
+                          Promo Code
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name={`promoType-${item.id}`}
+                            checked={item.promoType === 'custom'}
+                            onChange={() => handleItemChange(item.id, 'promoType', 'custom')}
+                          />
+                          Custom Promo Code
+                        </label>
+                      </div>
+                      <div className="flex flex-col md:flex-row gap-2 mb-4 w-full">
+                        <input
+                          type="text"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded"
+                          placeholder={item.promoType === 'custom' ? 'Enter custom promo code' : 'Enter promo code'}
+                          value={item.promoType === 'custom' ? (item.customPromoCode || '') : (item.promoCode || '')}
+                          onChange={e => handleItemChange(item.id, item.promoType === 'custom' ? 'customPromoCode' : 'promoCode', e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="w-32 px-4 py-2 bg-gray-200 rounded text-gray-700 font-semibold hover:bg-gray-300 transition-colors"
+                          onClick={() => handleItemChange(item.id, item.promoType === 'custom' ? 'customPromoCode' : 'promoCode', generatePromoCode())}
+                        >
+                          Generate
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">Start Date</label>
+                          <input
+                            type="date"
+                            className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            value={item.startDate || ''}
+                            onChange={e => handleItemChange(item.id, 'startDate', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">Start Time</label>
+                          <input
+                            type="time"
+                            className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            value={item.startTime || ''}
+                            onChange={e => handleItemChange(item.id, 'startTime', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">End Date</label>
+                          <input
+                            type="date"
+                            className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            value={item.endDate || ''}
+                            onChange={e => handleItemChange(item.id, 'endDate', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-600 mb-1">End Time</label>
+                          <input
+                            type="time"
+                            className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            value={item.endTime || ''}
+                            onChange={e => handleItemChange(item.id, 'endTime', e.target.value)}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -884,7 +1030,7 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
             </button>
           </div>
         );
-
+        break;
       case 3: // Additional Settings
         return (
           <div className="space-y-6">
@@ -893,7 +1039,7 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
               {/* Use grid for perfect alignment */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
                 {/* Row 1: Promo Code & Platform Service Charge */}
-                <div className="flex flex-col">
+                {/* <div className="flex flex-col">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Promo Code</label>
                   <div className="flex w-full">
                     <input
@@ -912,7 +1058,7 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
                       Generate
                     </button>
                   </div>
-                </div>
+                </div> */}
                 <div className="flex flex-col">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Platform Service Charge</label>
                   <input
@@ -976,7 +1122,7 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
             </div>
           </div>
         );
-
+        break;
       default:
         return null;
     }
@@ -1004,11 +1150,6 @@ const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuer
             {userCreated ? 'Success!' : 'Error'}
           </h2>
           <p className="text-gray-600 mb-4">{mutationResponse}</p>
-          {userCreated && (
-            <div className="text-sm text-gray-500">
-              Redirecting in 3 seconds...
-            </div>
-          )}
         </div>
       </div>
     );
