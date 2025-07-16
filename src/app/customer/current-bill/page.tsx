@@ -1,11 +1,10 @@
-
-
 "use client"
 
 import React, { useState, useEffect } from "react"
 import { useQuery } from '@tanstack/react-query'
 import { Download, FileSpreadsheet } from "lucide-react"
 import { useAuth } from '@/api/hooks/useAuth'
+import Image from "next/image";
 
 interface BillItemApi {
   billName: string
@@ -70,10 +69,6 @@ interface TableBillItem extends BillItemApi {
   transactionDate: string
   modeOfPayment: string
 }
-
-const COMPANY_NAME = "FINKIA LIMITED";
-const COMPANY_ADDRESS = "1A, Hughes Avenue, Yaba, Lagos, Nigeria.";
-const COMPANY_CONTACT = "Finkia@raoatech.com | +234 8097227051";
 
 const CurrentBill = () => {
   const { client } = useAuth()
@@ -196,6 +191,35 @@ const CurrentBill = () => {
     }, 0)
   }
 
+  // Grand Sub Total Debit: sum of all item.amount in the current view
+  const calcGrandSubTotalDebit = (items: TableBillItem[]) => {
+    return items.reduce((sum, item) => sum + (item.amount || 0), 0);
+  };
+
+  // Grand Sub Total Credit: sum of all item.totalPaidForItem + user input for non-mandatory items
+  const calcGrandSubTotalCredit = (items: TableBillItem[]) => {
+    return items.reduce((sum, item) => {
+      if (item.isMandatory) {
+        return sum + (item.totalPaidForItem || 0);
+      } else {
+        // Add both paid and currently inputted value
+        return sum + (item.totalPaidForItem || 0) + (Number(selectedPayments[item._id]) || 0);
+      }
+    }, 0);
+  };
+
+  // Helper: calculate overall grand total credit (sum of paid + user input for all items in the view)
+  const calcOverallGrandTotalCredit = (items: TableBillItem[]) => {
+    return items.reduce((sum, item) => {
+      if (item.isMandatory) {
+        return sum + (item.totalPaidForItem || 0);
+      } else {
+        // Add both paid and currently inputted value
+        return sum + (item.totalPaidForItem || 0) + (Number(selectedPayments[item._id]) || 0);
+      }
+    }, 0);
+  };
+
   const formatCurrency = (amount: number | null) => {
     if (amount === null) return "-"
     return `NGN ${amount.toLocaleString()}`
@@ -258,13 +282,47 @@ const CurrentBill = () => {
     }
   }
 
+  // Fetch organization info dynamically based on the current bill's organisationId
+  const organisationId = currentBill?.organisationId?._id;
+  const { data: organisationData, isLoading: isOrgLoading } = useQuery({
+    queryKey: ["organisation-info", organisationId],
+    queryFn: async () => {
+      if (!organisationId) return null;
+      const res = await client.get(`/api/user/${organisationId}`);
+      return res.data;
+    },
+    enabled: !!organisationId,
+  });
+
   return (
     <div className="min-h-screen bg-white p-8 rounded">
      
       <div className="flex flex-col items-center justify-center mb-8">
-        <div className="text-3xl font-bold text-gray-800 mb-2">{COMPANY_NAME}</div>
-        <div className="text-gray-600 mb-1">{COMPANY_ADDRESS}</div>
-        <div className="text-gray-600">{COMPANY_CONTACT}</div>
+        {organisationData?.businessLogo && (
+          <div className="mb-2">
+            <Image
+              src={organisationData.businessLogo}
+              alt={organisationData.organisationName || "Organisation Logo"}
+              width={80}
+              height={80}
+              className="rounded-full object-cover"
+              priority
+              onError={(e) => {
+                e.currentTarget.src = "/Logo.svg";
+              }}
+            />
+          </div>
+        )}
+        <div className="text-3xl font-bold text-gray-800 mb-2">
+          {isOrgLoading ? "Loading..." : organisationData?.organisationName || "FINKIA LIMITED"}
+        </div>
+        <div className="text-gray-600 mb-1">
+          {organisationData?.officeAddress1 || organisationData?.address || "1A, Hughes Avenue, Yaba, Lagos, Nigeria."}
+        </div>
+        <div className="text-gray-600">
+          {organisationData?.email || organisationData?.businessEmailAdress || organisationData?.contactEmail || "Finkia@raoatech.com"}
+          {organisationData?.phoneNumber ? ` | ${organisationData.phoneNumber}` : " | +234 8097227051"}
+        </div>
       </div>
       <div className="max-w-7xl mx-auto">
        
@@ -287,246 +345,271 @@ const CurrentBill = () => {
         {error && <div className="text-center text-red-500">{(error as any)?.message || 'Error loading bills'}</div>}
         {payError && <div className="text-center text-red-500 mb-2">{payError}</div>}
         {/* Table */}
-        <div className="border border-gray-300 rounded-lg overflow-hidden mb-6">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-300">
-                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">S/N</th>
-                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Bill Item</th>
-                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Category</th>
-                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Bill Code</th>
-                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Description</th>
-                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Bill Duration</th>
-                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Start Date</th>
-                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">End Date</th>
-                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Debit Amount</th>
-                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Credit Amount</th>
-                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Paid Amount</th>
-                  <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Remaining Balance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* Render for 'Current bill and outstanding debts' */}
-                {viewType === 'all' && (
-                  <>
-                    {/* Previous Debts Section */}
-                    {previousDebtItems.length > 0 && (
-                      <>
-                        <tr><td colSpan={12} className="text-lg text-blue-500 w-[40%] font-bold px-3 py-2">Previous Debts</td></tr>
-                        {Object.entries(groupByCategory(previousDebtItems)).map(([cat, items], i) => (
-                          <React.Fragment key={cat}>
-                            <tr><td colSpan={12} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
-                            {items.map((item, idx) => (
-                              <tr key={item._id} className="border-b border-gray-200 hover:bg-gray-50">
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{idx + 1}.</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billName}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{cat}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billCode}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3">{item.billName}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billDuration}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.startDate}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                                  {item.amount - (item.totalPaidForItem || 0) > 0 ? (
-                                    item.isMandatory ? (
-                                      <span className="text-blue-900 font-semibold">
-                                        {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
-                                      </span>
-                                    ) : (
-                                      <input
-                                        type="number"
-                                        placeholder="Amount"
-                                        className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                                        value={selectedPayments[item._id] || ""}
-                                        onChange={(e) => handlePaymentInput(item._id, e.target.value)}
-                                      />
-                                    )
-                                  ) : (
-                                    <span>-</span>
-                                  )}
-                                </td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                                  {formatCurrency(item.totalPaidForItem || 0)}
-                                </td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                                  {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
-                                </td>
-                              </tr>
-                            ))}
-                            {/* Dynamic Total row under Credit Amount column */}
-                            <tr>
-                              <td colSpan={9}></td>
-                              <td className="text-blue-900 font-bold text-lg" style={{ textAlign: 'center' }}>
-                                Total: NGN {calcTotalSubtotal(items).toLocaleString()}
-                              </td>
-                              <td></td><td></td>
-                            </tr>
-                            {/* Sub-total row for this category */}
-                            <tr>
-                              <td colSpan={9} className="text-right font-semibold px-3 py-2">Sub-total for {cat}:</td>
-                              <td></td>
-                              <td></td><td></td>
-                            </tr>
-                          </React.Fragment>
-                        ))}
-                        {/* Section grand total */}
-                        <tr className="text-gray-500">
-                          <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Previous Debts):</td>
-                          <td className="font-bold text-blue-900 text-lg">{formatCurrency(calcGrandTotalFromSubtotals(previousDebtItems))}</td>
-                          <td></td><td></td>
-                        </tr>
-                      </>
-                    )}
-                    {/* Current Bill Section */}
-                    {currentBillItems.length > 0 && (
-                      <>
-                        <tr><td colSpan={12} className="text-blue-500 text-lg font-bold px-3 py-2">Current Bill</td></tr>
-                        {Object.entries(groupByCategory(currentBillItems)).map(([cat, items], i) => (
-                          <React.Fragment key={cat}>
-                            <tr><td colSpan={12} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
-                            {items.map((item, idx) => (
-                              <tr key={item._id} className="border-b border-gray-200 hover:bg-gray-50">
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{idx + 1}.</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billName}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{cat}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billCode}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3">{item.billName}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billDuration}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.startDate}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                                  {item.isMandatory ? (
-                                    <span className="text-blue-900 font-semibold">
-                                      {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
-                                    </span>
-                                  ) : (
-                                    <input
-                                      type="number"
-                                      placeholder="Amount"
-                                      className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                                      value={selectedPayments[item._id] || ""}
-                                      onChange={(e) => handlePaymentInput(item._id, e.target.value)}
-                                    />
-                                  )}
-                                </td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.totalPaidForItem || 0)}</td>
-                                <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount - (item.totalPaidForItem || 0))}</td>
-                              </tr>
-                            ))}
-                            {/* Dynamic Total row under Credit Amount column */}
-                            <tr>
-                              <td colSpan={9}></td>
-                              <td className="text-blue-900 font-bold text-lg" style={{ textAlign: 'center' }}>
-                                Total: NGN {calcTotalSubtotal(items).toLocaleString()}
-                              </td>
-                              <td></td><td></td>
-                            </tr>
-                            {/* Sub-total row for this category */}
-                            <tr>
-                              <td colSpan={9} className="text-right font-semibold px-3 py-2">Sub-total for {cat}:</td>
-                              <td></td>
-                              <td></td><td></td>
-                            </tr>
-                          </React.Fragment>
-                        ))}
-                        {/* Section grand total */}
-                        <tr className="text-gray-500">
-                          <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Current Bill):</td>
-                          <td className="font-bold text-blue-900 text-lg">{formatCurrency(calcGrandTotalFromSubtotals(currentBillItems))}</td>
-                          <td></td><td></td>
-                        </tr>
-                      </>
-                    )}
-                    {/* Overall grand total */}
-                    <tr className="text-gray-500">
-                      <td colSpan={9} className="font-bold text-right px-3 py-2">Overall Grand Total:</td>
-                      <td className="font-bold text-blue-900 text-xl">{formatCurrency(calcGrandTotalFromSubtotals([...previousDebtItems, ...currentBillItems]))}</td>
-                      <td></td><td></td>
-                    </tr>
-                  </>
-                )}
-                {/* Render for 'Current bill only' (existing logic) */}
-                {viewType === 'current' && (
-                  <>
-                    {Object.entries(groupByCategory(currentBillItems)).map(([cat, items], i) => (
-                      <React.Fragment key={cat}>
-                        <tr><td colSpan={12} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
-                        {items.map((item, idx) => (
-                          <tr key={item._id} className="border-b border-gray-200 hover:bg-gray-50">
-                            <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{idx + 1}.</td>
-                            <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billName}</td>
-                            <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{cat}</td>
-                            <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billCode}</td>
-                            <td className="text-gray-700 border-r border-gray-200 px-3 py-3">{item.billName}</td>
-                            <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billDuration}</td>
-                            <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.startDate}</td>
-                            <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
-                            <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
-                            <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                              {item.isMandatory ? (
-                                <span className="text-blue-900 font-semibold">
-                                  {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
-                                </span>
-                              ) : (
-                                <input
-                                  type="number"
-                                  placeholder="Amount"
-                                  className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                                  value={selectedPayments[item._id] || ""}
-                                  onChange={(e) => handlePaymentInput(item._id, e.target.value)}
-                                />
-                              )}
-                            </td>
-                            <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.totalPaidForItem || 0)}</td>
-                            <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount - (item.totalPaidForItem || 0))}</td>
-                          </tr>
-                        ))}
-                        {/* Dynamic Total row under Credit Amount column */}
-                        <tr>
-                          <td colSpan={9}></td>
-                          <td className="text-blue-900 font-bold text-lg" style={{ textAlign: 'center' }}>
-                            Total: NGN {calcTotalSubtotal(items).toLocaleString()}
-                          </td>
-                          <td></td><td></td>
-                        </tr>
-                        {/* Sub-total row for this category */}
-                        <tr>
-                          <td colSpan={9} className="text-right font-semibold px-3 py-2">Sub-total for {cat}:</td>
-                          <td></td>
-                          <td></td><td></td>
-                        </tr>
-                      </React.Fragment>
+   <div className="border border-gray-300 rounded-lg overflow-hidden mb-6">
+  <div className="overflow-x-auto">
+    <table className="w-full text-sm">
+      <thead>
+        <tr className="bg-gray-50 border-b border-gray-300">
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">S/N</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Bill Item</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Category</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Bill Code</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Description</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Bill Duration</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Start Date</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">End Date</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Debit Amount</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Credit Amount</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Paid Amount</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Remaining Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {/* Render for 'Current bill and outstanding debts' */}
+        {viewType === 'all' && (
+          <>
+            {/* Previous Debts Section */}
+            {previousDebtItems.length > 0 && (
+              <>
+                <tr><td colSpan={12} className="text-lg text-blue-500 w-[40%] font-bold px-3 py-2">Previous Debts</td></tr>
+                {Object.entries(groupByCategory(previousDebtItems)).map(([cat, items], i) => (
+                  <React.Fragment key={cat}>
+                    <tr><td colSpan={12} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
+                    {items.map((item, idx) => (
+                      <tr key={item._id} className="border-b border-gray-200 hover:bg-gray-50">
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{idx + 1}.</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billName}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{cat}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billCode}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3">{item.billName}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billDuration}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.startDate}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                          {item.amount - (item.totalPaidForItem || 0) > 0 ? (
+                            item.isMandatory ? (
+                              <span className="text-blue-900 font-semibold">
+                                {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                              </span>
+                            ) : (
+                              <input
+                                type="number"
+                                placeholder="Amount"
+                                className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                                value={selectedPayments[item._id] || ""}
+                                onChange={(e) => handlePaymentInput(item._id, e.target.value)}
+                              />
+                            )
+                          ) : (
+                            <span>-</span>
+                          )}
+                        </td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                          {formatCurrency(item.totalPaidForItem || 0)}
+                        </td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                          {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                        </td>
+                      </tr>
                     ))}
-                    {/* Section grand total */}
-                    <tr className="text-gray-500">
-                      <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Current Bill):</td>
-                      <td className="font-bold text-blue-900 text-xl">{formatCurrency(calcGrandTotalFromSubtotals(currentBillItems))}</td>
-                      <td></td><td></td>
+                    {/* Sub-total row for this category */}
+                    <tr>
+                      <td colSpan={5}></td>
+                      <td className="text-right font-semibold px-4 align-top">SUB-TOTAL ({cat})</td>
+                      <td colSpan={2}></td>
+                      <td className="text-blue-900 font-bold text-lg text-center align-top">{formatCurrency(items.reduce((sum, item) => sum + (item.amount || 0), 0))}</td>
+                      <td className="text-blue-900 font-bold text-lg text-center align-top">{formatCurrency(items.reduce((sum, item) => sum + (item.totalPaidForItem || 0), 0))}</td>
+                      <td colSpan={2}></td>
                     </tr>
-                  </>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={handleMakePayment}
-            disabled={paying}
-            className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {paying ? "Processing..." : "Make Payment"}
-          </button>
-        </div>
-        {/* Footer */}
-        <div className="text-center text-gray-500 text-sm mt-8">
-          <p>Powered by Raoatech (www.raoatech.com)</p>
-        </div>
+                  </React.Fragment>
+                ))}
+                {/* Section grand total */}
+                <tr className="text-gray-500">
+                  <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Previous Debts):</td>
+                  <td className="font-bold text-blue-900 text-lg">{formatCurrency(calcGrandTotalFromSubtotals(previousDebtItems))}</td>
+                  <td></td><td></td>
+                </tr>
+              </>
+            )}
+            {/* Current Bill Section */}
+            {currentBillItems.length > 0 && (
+              <>
+                <tr><td colSpan={12} className="text-blue-500 text-lg font-bold px-3 py-2">Current Bill</td></tr>
+                {Object.entries(groupByCategory(currentBillItems)).map(([cat, items], i) => (
+                  <React.Fragment key={cat}>
+                    <tr><td colSpan={12} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
+                    {items.map((item, idx) => (
+                      <tr key={item._id} className="border-b border-gray-200 hover:bg-gray-50">
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{idx + 1}.</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billName}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{cat}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billCode}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3">{item.billName}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billDuration}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.startDate}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                          {item.isMandatory ? (
+                            <span className="text-blue-900 font-semibold">
+                              {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                            </span>
+                          ) : (
+                            <input
+                              type="number"
+                              placeholder="Amount"
+                              className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                              value={selectedPayments[item._id] || ""}
+                              onChange={(e) => handlePaymentInput(item._id, e.target.value)}
+                            />
+                          )}
+                        </td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.totalPaidForItem || 0)}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount - (item.totalPaidForItem || 0))}</td>
+                      </tr>
+                    ))}
+                    {/* Sub-total row for this category */}
+                    <tr>
+                      <td colSpan={5}></td>
+                      <td className="text-right font-semibold px-4 align-top">SUB-TOTAL ({cat})</td>
+                      <td colSpan={2}></td>
+                      <td className="text-blue-900 font-bold text-lg text-center align-top">{formatCurrency(items.reduce((sum, item) => sum + (item.amount || 0), 0))}</td>
+                      <td className="text-blue-900 font-bold text-lg text-center align-top">{formatCurrency(items.reduce((sum, item) => sum + (item.totalPaidForItem || 0), 0))}</td>
+                      <td colSpan={2}></td>
+                    </tr>
+                  </React.Fragment>
+                ))}
+                {/* Section grand total */}
+                <tr className="text-gray-500">
+                  <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Current Bill):</td>
+                  <td className="font-bold text-blue-900 text-lg">{formatCurrency(calcGrandTotalFromSubtotals(currentBillItems))}</td>
+                  <td></td><td></td>
+                </tr>
+              </>
+            )}
+            {/* Add vertical space before grand sub total */}
+            <tr><td colSpan={12} style={{ height: '32px' }}></td></tr>
+            {/* Grand Sub Total row */}
+            <tr className="text-gray-500 bg-gray-100">
+              <td colSpan={5}></td>
+              <td className="text-right font-bold px-4 align-top">Grand Sub Total:</td>
+              <td colSpan={2}></td>
+              <td className="font-bold text-blue-900 text-xl text-center align-top">{formatCurrency(calcGrandSubTotalDebit(payableItems))}</td>
+              <td></td>
+              <td></td>
+            </tr>
+            {/* Overall Grand Total row */}
+            <tr className="text-gray-500">
+              <td colSpan={5}></td>
+              <td className="text-right font-bold px-4 align-top">Overall Grand Total:</td>
+              <td colSpan={2}></td>
+              <td></td>
+              <td className="font-bold text-blue-900 text-xl text-center align-top">{formatCurrency(calcOverallGrandTotalCredit(payableItems))}</td>
+              <td></td>
+            </tr>
+          </>
+        )}
+        {/* Render for 'Current bill only' (existing logic) */}
+        {viewType === 'current' && (
+          <>
+            {Object.entries(groupByCategory(currentBillItems)).map(([cat, items], i) => (
+              <React.Fragment key={cat}>
+                <tr><td colSpan={12} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
+                {items.map((item, idx) => (
+                  <tr key={item._id} className="border-b border-gray-200 hover:bg-gray-50">
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{idx + 1}.</td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billName}</td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{cat}</td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billCode}</td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3">{item.billName}</td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.billDuration}</td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.startDate}</td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                      {item.isMandatory ? (
+                        <span className="text-blue-900 font-semibold">
+                          {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                        </span>
+                      ) : (
+                        <input
+                          type="number"
+                          placeholder="Amount"
+                          className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                          value={selectedPayments[item._id] || ""}
+                          onChange={(e) => handlePaymentInput(item._id, e.target.value)}
+                        />
+                      )}
+                    </td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.totalPaidForItem || 0)}</td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount - (item.totalPaidForItem || 0))}</td>
+                  </tr>
+                ))}
+                {/* Sub-total row for this category */}
+                <tr>
+                  <td colSpan={5}></td>
+                  <td className="text-right font-semibold px-4 align-top">SUB-TOTAL ({cat})</td>
+                  <td colSpan={2}></td>
+                  <td className="text-blue-900 font-bold text-lg text-center align-top">{formatCurrency(items.reduce((sum, item) => sum + (item.amount || 0), 0))}</td>
+                  <td className="text-blue-900 font-bold text-lg text-center align-top">{formatCurrency(items.reduce((sum, item) => sum + (item.totalPaidForItem || 0), 0))}</td>
+                  <td colSpan={2}></td>
+                </tr>
+              </React.Fragment>
+            ))}
+            {/* Add vertical space before grand total */}
+            <tr><td colSpan={12} style={{ height: '32px' }}></td></tr>
+            {/* Grand Total Debit row */}
+            <tr className="text-gray-500 bg-gray-100">
+              <td colSpan={5}></td>
+              <td className="text-right font-bold px-4 align-top">Grand Total (Current Bill):</td>
+              <td colSpan={2}></td>
+              <td className="font-bold text-blue-900 text-xl text-center align-top">{formatCurrency(calcGrandSubTotalDebit(currentBillItems))}</td>
+              <td></td>
+              <td></td>
+            </tr>
+            {/* Overall Grand Total row */}
+            <tr className="text-gray-500">
+              <td colSpan={5}></td>
+              <td className="text-right font-bold px-4 align-top">Overall Grand Total:</td>
+              <td colSpan={2}></td>
+              <td></td>
+              <td className="font-bold text-blue-900 text-xl text-center align-top">{formatCurrency(calcOverallGrandTotalCredit(currentBillItems))}</td>
+              <td></td>
+            </tr>
+          </>
+        )}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div className="flex justify-end mt-6">
+  <button
+    onClick={handleMakePayment}
+    disabled={paying}
+    className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+  >
+    {paying ? "Processing..." : "Make Payment"}
+  </button>
+</div>
+{/* Footer */}
+<div className="text-center text-gray-500 text-sm mt-8">
+  <p>Powered by Raoatech (www.raoatech.com)</p>
+</div>
+
+
+
+</div>
+
+{/* Footer */}
+
+
+        
+        
       </div>
-    </div>
+   
+   
+   
   )
 }
 

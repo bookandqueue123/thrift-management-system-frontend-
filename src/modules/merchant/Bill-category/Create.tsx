@@ -14,6 +14,9 @@ const Create = () => {
   const [form, setForm] = useState({ name: '', description: '' });
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
+  const [formError, setFormError] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Fetch all categories
   const { data: categoriesData, isLoading } = useQuery({
@@ -29,10 +32,18 @@ const Create = () => {
     mutationFn: async (data: { name: string; description: string }) => {
       return client.post('/api/bill-categories', data);
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['bill-categories'] });
-      setShowModal(false);
-      setForm({ name: '', description: '' });
+      setSuccessMessage(response?.data?.message || "Category created successfully");
+      setFormError("");
+      setTimeout(() => {
+        setShowModal(false);
+        setForm({ name: '', description: '' });
+        setSuccessMessage("");
+      }, 1500);
+    },
+    onError: (error: any) => {
+      setFormError(error?.response?.data?.message || "An error occurred");
     },
   });
 
@@ -41,11 +52,19 @@ const Create = () => {
     mutationFn: async ({ id, data }: { id: string; data: { name: string; description: string } }) => {
       return client.put(`/api/bill-categories/${id}`, data);
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['bill-categories'] });
-      setShowModal(false);
-      setEditId(null);
-      setForm({ name: '', description: '' });
+      setSuccessMessage(response?.data?.message || "Category updated successfully");
+      setFormError("");
+      setTimeout(() => {
+        setShowModal(false);
+        setEditId(null);
+        setForm({ name: '', description: '' });
+        setSuccessMessage("");
+      }, 1500);
+    },
+    onError: (error: any) => {
+      setFormError(error?.response?.data?.message || "An error occurred");
     },
   });
 
@@ -56,6 +75,10 @@ const Create = () => {
     },
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ['bill-categories'] });
+      setDeletingId(null);
+    },
+    onError: () => {
+      setDeletingId(null);
     },
   });
 
@@ -64,11 +87,13 @@ const Create = () => {
     setEditId(cat._id);
     setForm({ name: cat.name, description: cat.description });
     setShowModal(true);
+    setFormError("");
   };
 
   // Delete handler
   const handleDelete = (id: string) => {
     if (window.confirm('Are you sure you want to delete this category?')) {
+      setDeletingId(id);
       deleteMutation.mutate(id);
     }
   };
@@ -76,6 +101,7 @@ const Create = () => {
   // Submit handler
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError("");
     if (editId) {
       updateMutation.mutate({ id: editId, data: form });
     } else {
@@ -118,7 +144,7 @@ const Create = () => {
         </div>
         <button
           className="ml-auto bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-          onClick={() => { setShowModal(true); setEditId(null); setForm({ name: '', description: '' }); }}
+          onClick={() => { setShowModal(true); setEditId(null); setForm({ name: '', description: '' }); setFormError(""); }}
         >
           Create a Category
         </button>
@@ -139,8 +165,8 @@ const Create = () => {
                 <td className="text-left px-6">{cat.description}</td>
                 <td className="flex gap-2 items-center">
                   <button onClick={() => handleEdit(cat)} className="p-1 hover:text-yellow-400"><FiEdit2 /></button>
-                  <button onClick={() => handleDelete(cat._id)} className="p-1 hover:text-red-500" disabled={deleteMutation.isPending}>
-                    {deleteMutation.isPending ? "Deleting..." : <FiTrash2 />}
+                  <button onClick={() => handleDelete(cat._id)} className="p-1 hover:text-red-500" disabled={deletingId === cat._id}>
+                    {deletingId === cat._id ? "Deleting..." : <FiTrash2 />}
                   </button>
                 </td>
               </tr>
@@ -153,6 +179,8 @@ const Create = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-[#221c3e] p-8 rounded-lg w-full max-w-md">
             <h3 className="text-xl font-bold mb-4 text-white">{editId ? 'Edit Category' : 'Create Category'}</h3>
+            {successMessage && <div className="mb-2 text-green-400 font-semibold text-sm">{successMessage}</div>}
+            {formError && <div className="mb-2 text-red-400 font-semibold text-sm">{formError}</div>}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-white mb-1">Category Name</label>
@@ -175,7 +203,7 @@ const Create = () => {
                 />
               </div>
               <div className="flex justify-end gap-2 mt-6">
-                <button type="button" className="px-4 py-2 rounded bg-gray-500 text-white" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="button" className="px-4 py-2 rounded bg-gray-500 text-white" onClick={() => { setShowModal(false); setFormError(""); }}>Cancel</button>
                 <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700" disabled={createMutation.isPending || updateMutation.isPending}>
                   {editId ? (updateMutation.isPending ? 'Updating...' : 'Update') : (createMutation.isPending ? 'Creating...' : 'Create')}
                 </button>

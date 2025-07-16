@@ -70,6 +70,9 @@ const Create = () => {
   const [actionDropdownOpen, setActionDropdownOpen] = useState<string | null>(null);
   const actionDropdownRef = useRef<any>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  // Add state for update modal
+  const [updateSuccessModal, setUpdateSuccessModal] = useState(false);
+  const [updateSuccessMessage, setUpdateSuccessMessage] = useState("");
 
   // Fetch all bills
 const { data: billsResponse, isLoading: billsLoading, isError: billsError } = useQuery<ApiResponse<Bill[]>>({
@@ -93,6 +96,14 @@ const { data: billsResponse, isLoading: billsLoading, isError: billsError } = us
 
 const singleBill = singleBillResponse?.data;
 
+  // Fetch platform charge percentage from API
+  const { data: platformChargeData, isLoading: isLoadingPlatformCharge } = useQuery({
+    queryKey: ['platform-charge'],
+    queryFn: async () => {
+      const res = await client.get('/api/bill-charge');
+      return res.data;
+    },
+  });
 
   // Prefill form for edit
   useEffect(() => {
@@ -250,10 +261,15 @@ const singleBill = singleBillResponse?.data;
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["bills"] });
-      setShowViewEditModal(false);
-      setSelectedBillId(null);
-      setModalType(null);
+      setUpdateSuccessMessage("Bill updated successfully!");
+      setUpdateSuccessModal(true);
+      setTimeout(() => {
+        setUpdateSuccessModal(false);
+        queryClient.invalidateQueries({ queryKey: ["bills"] });
+        setShowViewEditModal(false);
+        setSelectedBillId(null);
+        setModalType(null);
+      }, 2000); // Show modal for 2 seconds before navigating
     },
     onError: (error: any) => {
       // Optionally handle error
@@ -282,7 +298,6 @@ const singleBill = singleBillResponse?.data;
     "Bill Code",
     "Promo Code",
     "Unique Code",
-    "Platform Service Charge",
     "Platform Percentage",
     "Bill Image",
     "Max Payment Duration",
@@ -346,8 +361,7 @@ const singleBill = singleBillResponse?.data;
             <td className="px-4">{bill.billCode}</td>
             <td className="px-4">{bill.promoCode}</td>
             <td className="px-4">{bill.customUniqueCode}</td>
-            <td className="px-4">{bill.platformServiceCharge}</td>
-            <td className="px-4">{bill.promoPercentage}</td>
+            <td className="px-4">{platformChargeData?.data?.percentage || '--'}</td>
             <td className="px-4">{bill.billImage ? "Yes" : "No"}</td>
             <td className="px-4"><button className="text-blue-600 underline" onClick={() => { setSelectedBillId(bill._id); setShowPaymentModal(true); }}>View </button></td>
             <td className="px-4">{bill.totalAmount}</td>
@@ -381,7 +395,10 @@ const singleBill = singleBillResponse?.data;
       {/* Create Modal */}
       {showCreateModal && (
         <Modal title="Create Bill" setModalState={setShowCreateModal}>
-          <BillCreationForm organizationId={organizationId} />
+          <BillCreationForm organizationId={organizationId} onSuccess={() => {
+            setShowCreateModal(false);
+            queryClient.invalidateQueries({ queryKey: ["bills"] });
+          }} />
         </Modal>
       )}
       {/* View/Edit/Delete Modal */}
@@ -392,8 +409,6 @@ const singleBill = singleBillResponse?.data;
             <div className="px-4"><strong>Bill Code:</strong> {singleBill.billCode}</div>
             <div className="px-4"><strong>Promo Code:</strong> {singleBill.promoCode}</div>
             <div className="px-4"><strong>Unique Code:</strong> {singleBill.customUniqueCode}</div>
-            <div className="px-4"><strong>Platform Service Charge:</strong> {singleBill.platformServiceCharge}</div>
-            <div className="px-4"><strong>Platform Percentage:</strong> {singleBill.promoPercentage}</div>
             <div className="px-4"><strong>Bill Image:</strong> {singleBill.billImage ? (<img src={singleBill.billImage} alt="Bill" className="h-24 w-24 object-cover rounded" />) : 'No Image'}</div>
             <div className="px-4"><strong>Max Payment Duration:</strong> <button className="text-blue-600 underline" onClick={() => setShowPaymentModal(true)}>View Payment</button></div>
             <div className="px-4"><strong>Total Amount:</strong> {singleBill.totalAmount}</div>
@@ -426,6 +441,7 @@ const singleBill = singleBillResponse?.data;
                 endTime: singleBill.maxPaymentDuration?.endTime || '',
               },
               billItems: singleBill.billItems || [],
+              organisation: singleBill.organisation?._id || singleBill.organisationId || '',
               // Add any other fields as needed
             }}
             onSubmit={handleEdit}
@@ -452,19 +468,29 @@ const singleBill = singleBillResponse?.data;
             <th className="px-6 py-3">Category</th>
             <th className="px-6 py-3">Amount</th>
             <th className="px-6 py-3">Quantity</th>
+            <th className="px-6 py-3">Platform %</th>
+            <th className="px-6 py-3">Platform Value</th>
+            <th className="px-6 py-3">Actual Debit</th>
           </tr>
         </thead>
         <tbody>
-          {singleBill.billItems.map((item: any, idx: number) => (
-            <tr key={idx} className="bg-[#0d0f29] border-b border-gray-700">
-              <td className="px-6 py-2 whitespace-nowrap">{item.billName}</td>
-              <td className="px-6 py-2 whitespace-nowrap">
-                {item.name || item.category}
-              </td>
-              <td className="px-6 py-2 whitespace-nowrap">{item.amount}</td>
-              <td className="px-6 py-2 whitespace-nowrap">{item.quantity}</td>
-            </tr>
-          ))}
+          {singleBill.billItems.map((item: any, idx: number) => {
+            const percentage = platformChargeData?.data?.percentage || 0;
+            const amount = Number(item.amount) || 0;
+            const platformValue = ((percentage / 100) * amount);
+            const actualDebit = amount + platformValue;
+            return (
+              <tr key={idx} className="bg-[#0d0f29] border-b border-gray-700">
+                <td className="px-6 py-2 whitespace-nowrap">{item.billName}</td>
+                <td className="px-6 py-2 whitespace-nowrap">{item.name || item.category}</td>
+                <td className="px-6 py-2 whitespace-nowrap">{amount}</td>
+                <td className="px-6 py-2 whitespace-nowrap">{item.quantity}</td>
+                <td className="px-6 py-2 whitespace-nowrap">{percentage}%</td>
+                <td className="px-6 py-2 whitespace-nowrap">{platformValue.toFixed(2)}</td>
+                <td className="px-6 py-2 whitespace-nowrap">{actualDebit.toFixed(2)}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -478,6 +504,19 @@ const singleBill = singleBillResponse?.data;
             <div><strong>Start Time:</strong> {singleBill.maxPaymentDuration?.startTime}</div>
             <div><strong>End Date:</strong> {singleBill.maxPaymentDuration?.endDate}</div>
             <div><strong>End Time:</strong> {singleBill.maxPaymentDuration?.endTime}</div>
+          </div>
+        </Modal>
+      )}
+      {updateSuccessModal && (
+        <Modal title="Success" setModalState={setUpdateSuccessModal}>
+          <div className="text-center p-6">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold mb-2 text-green-800">Success!</h2>
+            <p className="text-gray-600 mb-4">{updateSuccessMessage}</p>
           </div>
         </Modal>
       )}
