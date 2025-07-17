@@ -107,25 +107,26 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
     staleTime: 5000,
   });
 
-  // Move this useEffect after the useQuery hooks for customerOrganisation and groupsData
+  // Update selectedCustomers robustly to always show email
   useEffect(() => {
-    if (customerOrganisation && billDetails.assignToCustomer) {
+    if (billDetails.assignToCustomer && Array.isArray(billDetails.assignToCustomer)) {
       let assigned: any[] = [];
-      if (
-        Array.isArray(billDetails.assignToCustomer) &&
-        billDetails.assignToCustomer.length > 0
-      ) {
-        if (typeof billDetails.assignToCustomer[0] === "object") {
-          // Already objects
-          assigned = billDetails.assignToCustomer;
-        } else {
-          // Array of IDs
-          assigned = billDetails.assignToCustomer
-            .map((id: string) => customerOrganisation.find((c: any) => c._id === id))
-            .filter(Boolean);
-        }
-        setSelectedCustomers(assigned);
+      if (typeof billDetails.assignToCustomer[0] === "object") {
+        // Try to hydrate with full customerOrganisation info if possible
+        assigned = billDetails.assignToCustomer.map((c: any) => {
+          if (customerOrganisation) {
+            const found = customerOrganisation.find((co: any) => co._id === c._id);
+            return found || c;
+          }
+          return c;
+        });
+      } else if (customerOrganisation) {
+        assigned = billDetails.assignToCustomer.map((id: string) => {
+          const found = customerOrganisation.find((c: any) => c._id === id);
+          return found || { _id: id, email: "Unknown" };
+        });
       }
+      setSelectedCustomers(assigned);
     }
   }, [customerOrganisation, billDetails.assignToCustomer]);
 
@@ -157,8 +158,8 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
     setSelectedCustomers(updatedCustomers);
     setBillDetails((prev) => ({
       ...prev,
-      assignToCustomer: updatedCustomers.map((c) => c._id),
-      assignedCustomers: updatedCustomers.map((c) => c._id),
+      assignToCustomer: updatedCustomers, // keep as array of objects
+      assignedCustomers: updatedCustomers, // keep as array of objects
     }));
     setCustomerSearchTerm("");
     setShowCustomerDropdown(false);
@@ -169,8 +170,8 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
     setSelectedCustomers(updatedCustomers);
     setBillDetails((prev) => ({
       ...prev,
-      assignToCustomer: updatedCustomers.map((c) => c._id),
-      assignedCustomers: updatedCustomers.map((c) => c._id),
+      assignToCustomer: updatedCustomers, // keep as array of objects
+      assignedCustomers: updatedCustomers, // keep as array of objects
     }));
   };
 
@@ -227,12 +228,17 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
       return;
     }
     // New validation: Must assign to at least a customer or a group
-    if (!billDetails.customerGroupId && (!billDetails.assignToCustomer || billDetails.assignToCustomer.length === 0) && (!billDetails.assignedCustomers || billDetails.assignedCustomers.length === 0)) {
+    if (!billDetails.customerGroupId && (!selectedCustomers || selectedCustomers.length === 0)) {
       setFormError('You must assign this bill to at least one customer or a group.');
       return;
     }
     setFormError(null);
-    onSubmit({ ...billDetails, billItems });
+    onSubmit({
+      ...billDetails,
+      assignToCustomer: selectedCustomers.map((c) => c._id), // convert to IDs for backend
+      assignedCustomers: selectedCustomers.map((c) => c._id),
+      billItems,
+    });
   };
 
   const renderStepContent = () => {
@@ -288,7 +294,16 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
                 >
                   {selectedCustomers.length === 0
                     ? "Select customers..."
-                    : selectedCustomers.map((c) => `${c.firstName} ${c.lastName}`).join(", ")}
+                    : selectedCustomers.map((c) =>
+                        (c.firstName || c.lastName)
+                          ? `${c.firstName || ""} ${c.lastName || ""}`.trim()
+                          : c.accountNumber
+                            ? c.accountNumber
+                            : c.email
+                              ? c.email
+                              : c._id
+                      ).join(", ")
+                  }
                 </div>
                 {showCustomerDropdown && (
                   <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
@@ -358,10 +373,17 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
                       >
                         <div>
                           <div className="font-medium text-gray-900">
-                            {customer.firstName} {customer.lastName}
+                            {(customer.firstName || customer.lastName)
+                              ? `${customer.firstName || ""} ${customer.lastName || ""}`.trim()
+                              : customer.accountNumber
+                                ? customer.accountNumber
+                                : customer.email
+                                  ? customer.email
+                                  : customer._id
+                            }
                           </div>
                           <div className="text-sm text-gray-600">
-                            Account Number: {customer.accountNumber} | Email: {customer.email}
+                            Account Number: {customer.accountNumber || "N/A"} | Email: {customer.email || "Unknown"}
                           </div>
                         </div>
                         <button
@@ -560,3 +582,5 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
 };
 
 export default EditBillForm; 
+
+
