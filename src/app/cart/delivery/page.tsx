@@ -6,7 +6,7 @@ import Footer from "@/modules/HomePage/Footer";
 import Navbar from "@/modules/HomePage/NavBar";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 interface PickupStation {
   id: string;
@@ -566,4 +566,10 @@ const DeliveryPage = () => {
   );
 };
 
-export default DeliveryPage;
+export default function Delivery() {
+  return (
+    <Suspense>
+      <DeliveryPage />
+    </Suspense>
+  );
+}
