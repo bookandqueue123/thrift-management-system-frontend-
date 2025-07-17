@@ -78,7 +78,7 @@ interface Order {
 }
 
 const OrderConfirmation: React.FC<{
-  paymentMode: "full" | "bits" | "100% Full Payment" | "Pay In Bits";
+  paymentMode: string;
 }> = ({ paymentMode }) => {
   const router = useRouter();
   const { client } = useAuth();
@@ -154,11 +154,12 @@ const OrderConfirmation: React.FC<{
 
   if (typeof window !== "undefined") {
     const storedOrderDetails = localStorage.getItem("orderDetails");
+    console.log(storedOrderDetails);
     if (storedOrderDetails) {
       const parsed = JSON.parse(storedOrderDetails);
-      if (parsed.paymentMode) {
-        effectivePaymentMode = parsed.paymentMode;
-      }
+      // if (parsed.paymentMode) {
+      //   effectivePaymentMode = parsed.paymentMode;
+      // }
     }
   }
 

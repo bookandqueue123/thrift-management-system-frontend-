@@ -318,7 +318,7 @@ export default function CartPage() {
       if (!repaymentMonths || !selectedItem) return; // Prevent if not selected
       handlePayInBitsPreview(selectedItem, repaymentMonths);
     } else {
-      router.push("/cart/delivery");
+      router.push("/cart/delivery?mode=full");
     }
   };
 
