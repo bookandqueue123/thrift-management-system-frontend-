@@ -4,14 +4,20 @@ import OrderConfirmation from "@/modules/form/OrderConfirmation";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
-export default function Orderpage() {
+function Orderpage() {
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode");
   return (
+    <div>
+      <OrderConfirmation paymentMode={mode || "full"} />
+    </div>
+  );
+}
+
+export default function OrderConfirmationPage() {
+  return (
     <Suspense>
-      <div>
-        <OrderConfirmation paymentMode={mode || "full"} />
-      </div>
+      <Orderpage />
     </Suspense>
   );
 }
