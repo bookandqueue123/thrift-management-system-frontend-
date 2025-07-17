@@ -442,6 +442,8 @@ const singleBill = singleBillResponse?.data;
               },
               billItems: singleBill.billItems || [],
               organisation: singleBill.organisation?._id || singleBill.organisationId || '',
+              assignToCustomer: singleBill.assignToCustomer || [], // <-- prefill assigned customers
+              customerGroupId: singleBill.assignToCustomerGroup?._id || singleBill.customerGroupId || '',
               // Add any other fields as needed
             }}
             onSubmit={handleEdit}
