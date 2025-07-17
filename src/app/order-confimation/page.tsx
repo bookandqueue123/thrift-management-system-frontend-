@@ -4,7 +4,7 @@ import OrderConfirmation from "@/modules/form/OrderConfirmation";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
-const page = () => {
+const Orderpage = () => {
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode");
   return (
@@ -16,4 +16,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Orderpage;
