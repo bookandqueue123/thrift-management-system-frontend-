@@ -20,6 +20,7 @@ interface Promo {
 }
 
 interface Product {
+  originalPrice(originalPrice: any): unknown;
   _id: string;
   name: string;
   description: string;
@@ -267,6 +268,7 @@ const Create = () => {
       form.append("description", sanitizedData.description);
       form.append("price", sanitizedData.price || "");
       form.append("costBeforeDiscount", actualPrice || "");
+      form.append("originalPrice", sanitizedData.costBeforeDiscount);
       form.append("discount", sanitizedData.discount || "");
       form.append("category", sanitizedData.category || "");
       form.append("brand", sanitizedData.brand || "");
@@ -795,11 +797,24 @@ const Create = () => {
             })
           : [];
 
+        // Get platform percentage
+        const platformPercent = platformChargeData?.data?.percentage || 0;
+
+        // CORRECTED: Calculate platform charge value
+        const platformChargeVal =
+          (Number(platformPercent) / 100) * Number(productToEdit.originalPrice);
+        setPlatformChargeValue(platformChargeVal.toFixed(2));
+
+        // CORRECTED: Calculate actual price
+        const actualPriceVal =
+          Number(productToEdit.originalPrice) + platformChargeVal;
+        setActualPrice(actualPriceVal.toFixed(2));
+
         setFormData({
           name: productToEdit.name,
           description: productToEdit.description,
           price: String(productToEdit.price),
-          costBeforeDiscount: String(productToEdit.costBeforeDiscount),
+          costBeforeDiscount: String(productToEdit.originalPrice),
           discount: String(productToEdit.discount),
           category: categoryId,
           brand: brandId,
@@ -1480,13 +1495,25 @@ const Create = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-white">Actual Price (Before Discount)</label>
+                <label className="block text-white">
+                  Actual Price (Before Discount)
+                </label>
                 <div className="w-full rounded border bg-gray-200 px-3 py-2 text-black">
-                  ₦ {AmountFormatter(singleProduct.costBeforeDiscount + (platformChargeData?.data?.percentage ? (singleProduct.costBeforeDiscount * platformChargeData.data.percentage) / 100 : 0))}
+                  ₦{" "}
+                  {AmountFormatter(
+                    singleProduct.costBeforeDiscount +
+                      (platformChargeData?.data?.percentage
+                        ? (singleProduct.costBeforeDiscount *
+                            platformChargeData.data.percentage) /
+                          100
+                        : 0),
+                  )}
                 </div>
               </div>
               <div>
-                <label className="block text-white">Final Price (After Discount)</label>
+                <label className="block text-white">
+                  Final Price (After Discount)
+                </label>
                 <div className="w-full rounded border bg-gray-200 px-3 py-2 text-black">
                   ₦ {AmountFormatter(singleProduct.price)}
                 </div>
@@ -1504,9 +1531,14 @@ const Create = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-white">Minimum Deposit Value</label>
+                <label className="block text-white">
+                  Minimum Deposit Value
+                </label>
                 <div className="w-full rounded border bg-gray-200 px-3 py-2 text-black">
-                  {(singleProduct as any).mininumDepositPercentage && singleProduct.price ? `₦ ${AmountFormatter((parseFloat((singleProduct as any).mininumDepositPercentage) / 100) * singleProduct.price)}` : "-"}
+                  {(singleProduct as any).mininumDepositPercentage &&
+                  singleProduct.price
+                    ? `₦ ${AmountFormatter((parseFloat((singleProduct as any).mininumDepositPercentage) / 100) * singleProduct.price)}`
+                    : "-"}
                 </div>
               </div>
               <div>
@@ -1540,27 +1572,39 @@ const Create = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-white">Door Delivery Terms &amp; Condition</label>
+                <label className="block text-white">
+                  Door Delivery Terms &amp; Condition
+                </label>
                 <div className="w-full rounded border bg-gray-200 px-3 py-2 text-black">
                   {(singleProduct as any).doorDeliveryTermsAndCondition || "-"}
                 </div>
               </div>
               <div>
-                <label className="block text-white">Pickup Centre Terms &amp; Condition</label>
+                <label className="block text-white">
+                  Pickup Centre Terms &amp; Condition
+                </label>
                 <div className="w-full rounded border bg-gray-200 px-3 py-2 text-black">
                   {(singleProduct as any).pickupCentreTermsAndCondition || "-"}
                 </div>
               </div>
               <div>
-                <label className="block text-white">Storage Outdoor (H x L x B)</label>
+                <label className="block text-white">
+                  Storage Outdoor (H x L x B)
+                </label>
                 <div className="w-full rounded border bg-gray-200 px-3 py-2 text-black">
-                  {(singleProduct as any).storageOutdoor ? `${(singleProduct as any).storageOutdoor.height || "-"} x ${(singleProduct as any).storageOutdoor.length || "-"} x ${(singleProduct as any).storageOutdoor.breadth || "-"}` : "-"}
+                  {(singleProduct as any).storageOutdoor
+                    ? `${(singleProduct as any).storageOutdoor.height || "-"} x ${(singleProduct as any).storageOutdoor.length || "-"} x ${(singleProduct as any).storageOutdoor.breadth || "-"}`
+                    : "-"}
                 </div>
               </div>
               <div>
-                <label className="block text-white">Storage Refrigerated (H x L x B)</label>
+                <label className="block text-white">
+                  Storage Refrigerated (H x L x B)
+                </label>
                 <div className="w-full rounded border bg-gray-200 px-3 py-2 text-black">
-                  {(singleProduct as any).storageRefrigerated ? `${(singleProduct as any).storageRefrigerated.height || "-"} x ${(singleProduct as any).storageRefrigerated.length || "-"} x ${(singleProduct as any).storageRefrigerated.breadth || "-"}` : "-"}
+                  {(singleProduct as any).storageRefrigerated
+                    ? `${(singleProduct as any).storageRefrigerated.height || "-"} x ${(singleProduct as any).storageRefrigerated.length || "-"} x ${(singleProduct as any).storageRefrigerated.breadth || "-"}`
+                    : "-"}
                 </div>
               </div>
               <div>
@@ -1652,7 +1696,9 @@ const Create = () => {
                 />
               </div>
               <div>
-                <label className="block text-white">Discount (%) (optional)</label>
+                <label className="block text-white">
+                  Discount (%) (optional)
+                </label>
                 <input
                   type="number"
                   name="discount"
@@ -1665,7 +1711,10 @@ const Create = () => {
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="platformFee" className="block text-sm font-medium text-white">
+                <label
+                  htmlFor="platformFee"
+                  className="block text-sm font-medium text-white"
+                >
                   Platform Charge %
                 </label>
                 <input
@@ -1677,11 +1726,15 @@ const Create = () => {
                   className="mt-1 block w-full cursor-not-allowed rounded-md border border-gray-300 bg-gray-200 px-3 py-2 sm:text-sm"
                 />
                 {isLoadingPlatformCharge && (
-                  <span className="text-xs text-gray-400">Loading platform charge...</span>
+                  <span className="text-xs text-gray-400">
+                    Loading platform charge...
+                  </span>
                 )}
               </div>
               <div>
-                <label className="block text-white">Platform Charge Value</label>
+                <label className="block text-white">
+                  Platform Charge Value
+                </label>
                 <input
                   type="number"
                   name="platformChargeValue"
@@ -1689,10 +1742,14 @@ const Create = () => {
                   disabled
                   className="w-full cursor-not-allowed rounded border bg-gray-200 px-3 py-2 text-black"
                 />
-                <small className="text-gray-400">{platformChargeData?.data?.percentage || 0}% of original price</small>
+                <small className="text-gray-400">
+                  {platformChargeData?.data?.percentage || 0}% of original price
+                </small>
               </div>
               <div>
-                <label className="block text-white">Actual Price (Before Discount)</label>
+                <label className="block text-white">
+                  Actual Price (Before Discount)
+                </label>
                 <input
                   type="number"
                   name="actualPrice"
@@ -1700,10 +1757,14 @@ const Create = () => {
                   disabled
                   className="w-full cursor-not-allowed rounded border bg-gray-200 px-3 py-2 text-black"
                 />
-                <small className="text-gray-400">Original price + platform charge</small>
+                <small className="text-gray-400">
+                  Original price + platform charge
+                </small>
               </div>
               <div>
-                <label className="block text-white">Final Price (After Discount)</label>
+                <label className="block text-white">
+                  Final Price (After Discount)
+                </label>
                 <input
                   type="number"
                   name="price"
@@ -1711,10 +1772,15 @@ const Create = () => {
                   disabled
                   className="w-full cursor-not-allowed rounded border bg-gray-200 px-3 py-2 text-black"
                 />
-                <small className="text-gray-400">Price customers will pay</small>
+                <small className="text-gray-400">
+                  Price customers will pay
+                </small>
               </div>
               <div className="mb-4">
-                <label htmlFor="interestRatePercentage" className="block text-sm font-medium text-white">
+                <label
+                  htmlFor="interestRatePercentage"
+                  className="block text-sm font-medium text-white"
+                >
                   Interest rate (%) for little-by-little payment (optional)
                 </label>
                 <input
@@ -1727,7 +1793,10 @@ const Create = () => {
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="mininumDepositPercentage" className="block text-sm font-medium text-white">
+                <label
+                  htmlFor="mininumDepositPercentage"
+                  className="block text-sm font-medium text-white"
+                >
                   Minimum Deposit %
                 </label>
                 <input
@@ -1740,7 +1809,10 @@ const Create = () => {
                 />
               </div>
               <div className="mb-4">
-                <label htmlFor="minimumDepositValue" className="block text-sm font-medium text-white">
+                <label
+                  htmlFor="minimumDepositValue"
+                  className="block text-sm font-medium text-white"
+                >
                   Minimum Deposit Value
                 </label>
                 <input
@@ -1769,7 +1841,9 @@ const Create = () => {
                   ))}
                 </select>
                 {isLoadingCategories && (
-                  <span className="text-xs text-gray-400">Loading categories...</span>
+                  <span className="text-xs text-gray-400">
+                    Loading categories...
+                  </span>
                 )}
               </div>
               <div>
@@ -1789,7 +1863,9 @@ const Create = () => {
                   ))}
                 </select>
                 {isLoadingBrands && (
-                  <span className="text-xs text-gray-400">Loading brands...</span>
+                  <span className="text-xs text-gray-400">
+                    Loading brands...
+                  </span>
                 )}
               </div>
               <div>
@@ -1826,7 +1902,9 @@ const Create = () => {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 {[0, 1, 2].map((idx) => (
                   <div key={idx}>
-                    <label className="block text-white">Product image {idx + 1} (optional)</label>
+                    <label className="block text-white">
+                      Product image {idx + 1} (optional)
+                    </label>
                     {/* Show preview: if new image selected, show preview, else show existing image */}
                     {imagePreviews[idx] ? (
                       <div className="mb-2 flex gap-2">
@@ -1836,7 +1914,8 @@ const Create = () => {
                           className="h-20 w-20 rounded object-cover"
                         />
                       </div>
-                    ) : singleProduct.imageUrl && singleProduct.imageUrl[idx] ? (
+                    ) : singleProduct.imageUrl &&
+                      singleProduct.imageUrl[idx] ? (
                       <div className="mb-2 flex gap-2">
                         <img
                           src={singleProduct.imageUrl[idx]}
@@ -1851,8 +1930,8 @@ const Create = () => {
                         idx === 0
                           ? "firstProductImage"
                           : idx === 1
-                          ? "secondProductImage"
-                          : "thirdProductImage"
+                            ? "secondProductImage"
+                            : "thirdProductImage"
                       }
                       accept="image/*"
                       onChange={handleInputChange}
@@ -1862,7 +1941,9 @@ const Create = () => {
                 ))}
               </div>
               <div>
-                <label className="block text-white">Door Delivery Terms &amp; Condition (optional)</label>
+                <label className="block text-white">
+                  Door Delivery Terms &amp; Condition (optional)
+                </label>
                 <textarea
                   name="doorDeliveryTermsAndCondition"
                   value={formData.doorDeliveryTermsAndCondition}
@@ -1871,7 +1952,9 @@ const Create = () => {
                 />
               </div>
               <div>
-                <label className="block text-white">Pickup Centre Terms &amp; Condition (optional)</label>
+                <label className="block text-white">
+                  Pickup Centre Terms &amp; Condition (optional)
+                </label>
                 <textarea
                   name="pickupCentreTermsAndCondition"
                   value={formData.pickupCentreTermsAndCondition}
@@ -1880,7 +1963,9 @@ const Create = () => {
                 />
               </div>
               <div>
-                <label className="block text-white">Storage Outdoor (Height, Length, Breadth) (optional)</label>
+                <label className="block text-white">
+                  Storage Outdoor (Height, Length, Breadth) (optional)
+                </label>
                 <div className="flex gap-2">
                   <input
                     type="number"
@@ -1909,7 +1994,9 @@ const Create = () => {
                 </div>
               </div>
               <div>
-                <label className="block text-white">Storage Refrigerated (Height, Length, Breadth) (optional)</label>
+                <label className="block text-white">
+                  Storage Refrigerated (Height, Length, Breadth) (optional)
+                </label>
                 <div className="flex gap-2">
                   <input
                     type="number"
@@ -1938,9 +2025,13 @@ const Create = () => {
                 </div>
               </div>
               <div className="grid grid-cols-1 gap-4 rounded-md border border-gray-600 p-4 md:grid-cols-2">
-                <h3 className="col-span-1 text-lg font-semibold text-white md:col-span-2">Promotion (optional)</h3>
+                <h3 className="col-span-1 text-lg font-semibold text-white md:col-span-2">
+                  Promotion (optional)
+                </h3>
                 <div className="">
-                  <label className="m-0 text-xs font-medium text-white">Promo code (or referral bonus code) (optional)</label>
+                  <label className="m-0 text-xs font-medium text-white">
+                    Promo code (or referral bonus code) (optional)
+                  </label>
                   <div className="relative w-full">
                     <input
                       name="promo.code"
@@ -1959,7 +2050,9 @@ const Create = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-white">Promo percentage (or referral bonus %) (optional)</label>
+                  <label className="block text-white">
+                    Promo percentage (or referral bonus %) (optional)
+                  </label>
                   <input
                     type="number"
                     name="promo.percentage"
@@ -1969,7 +2062,9 @@ const Create = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-white">Start date (optional)</label>
+                  <label className="block text-white">
+                    Start date (optional)
+                  </label>
                   <input
                     type="date"
                     name="promo.startDate"
@@ -1979,7 +2074,9 @@ const Create = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-white">End date (optional)</label>
+                  <label className="block text-white">
+                    End date (optional)
+                  </label>
                   <input
                     type="date"
                     name="promo.endDate"
@@ -2001,7 +2098,9 @@ const Create = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-white">Minimum purchase (optional)</label>
+                  <label className="block text-white">
+                    Minimum purchase (optional)
+                  </label>
                   <input
                     type="number"
                     name="promo.minimumPurchase"
@@ -2011,7 +2110,9 @@ const Create = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-white">Max usage (optional)</label>
+                  <label className="block text-white">
+                    Max usage (optional)
+                  </label>
                   <input
                     type="number"
                     name="promo.maxUsage"
@@ -2021,13 +2122,17 @@ const Create = () => {
                   />
                 </div>
               </div>
-              {errors.general && <div className="text-red-500">{errors.general}</div>}
+              {errors.general && (
+                <div className="text-red-500">{errors.general}</div>
+              )}
               <button
                 type="submit"
                 className="w-full rounded-xl bg-blue-500 py-2 text-white hover:bg-blue-600"
                 disabled={updateProductMutation.isPending}
               >
-                {updateProductMutation.isPending ? "Updating..." : "Update Product"}
+                {updateProductMutation.isPending
+                  ? "Updating..."
+                  : "Update Product"}
               </button>
             </form>
           </Modal>
