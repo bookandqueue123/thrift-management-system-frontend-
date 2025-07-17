@@ -58,18 +58,13 @@ interface PickUpStation {
   landmarkArea?: string;
   createdAt?: string;
   updatedAt?: string;
-  fullAddress?: string;
-  amount?: {
-    value: number;
-    currency: string;
-  };
 }
 
 type StationsResponse = {
   data: PickUpStation[];
   pagination?: {
     currentPage: number;
-  totalPages: number;
+    totalPages: number;
     totalItems: number;
     itemsPerPage: number;
   };
@@ -130,10 +125,9 @@ const GetPickStation = () => {
     'S/N',
     'Name',
     'Code',
-    'Amount',
     'Address',
     'Contact',
-    'Manager',
+    'Center Manager',
     'Capacity',
     'Status',
     'Coordinates',
@@ -180,10 +174,6 @@ const GetPickStation = () => {
         <td className="px-6 py-4 whitespace-nowrap">{(currentPage - 1) * PAGE_SIZE + idx + 1}</td>
         <td className="px-6 py-4 whitespace-nowrap">{station.name}</td>
         <td className="px-6 py-4 whitespace-nowrap">{station.code}</td>
-        {/* Amount column */}
-        <td className="px-6 py-4 whitespace-nowrap">
-          {station.amount ? `${station.amount.value} ${station.amount.currency}` : '--'}
-        </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <button className="btn btn-xs btn-info" onClick={() => { setSelectedStation(station); setModalType('address'); setShowModal(true); setDropdownOpen(null); }}>Address</button>
         </td>
@@ -191,22 +181,22 @@ const GetPickStation = () => {
           <button className="btn btn-xs btn-info" onClick={() => { setSelectedStation(station); setModalType('contact'); setShowModal(true); setDropdownOpen(null); }}>Contact</button>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <button className="btn btn-xs btn-info" onClick={() => { setSelectedStation(station); setModalType('manager'); setShowModal(true); setDropdownOpen(null); }}>Manager</button>
+          <button className="btn btn-xs btn-info" onClick={() => { setSelectedStation(station); setModalType('manager'); setShowModal(true); setDropdownOpen(null); }}>Center&apos;sManager</button>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <button className="btn btn-xs btn-info" onClick={() => { setSelectedStation(station); setModalType('capacity'); setShowModal(true); setDropdownOpen(null); }}>Capacity</button>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <button className="btn btn-xs btn-info" onClick={() => { setSelectedStation(station); setModalType('status'); setShowModal(true); setDropdownOpen(null); }}>View</button>
+          <button className="btn btn-xs btn-info" onClick={() => { setSelectedStation(station); setModalType('status'); setShowModal(true); setDropdownOpen(null); }}>Status</button>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <button className="btn btn-xs btn-info" onClick={() => { setSelectedStation(station); setModalType('coordinates'); setShowModal(true); setDropdownOpen(null); }}>View</button>
+          <button className="btn btn-xs btn-info" onClick={() => { setSelectedStation(station); setModalType('coordinates'); setShowModal(true); setDropdownOpen(null); }}>Cordinates</button>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <button className="btn btn-xs btn-info" onClick={() => { setSelectedStation(station); setModalType('facilities'); setShowModal(true); setDropdownOpen(null); }}>View</button>
+          <button className="btn btn-xs btn-info" onClick={() => { setSelectedStation(station); setModalType('facilities'); setShowModal(true); setDropdownOpen(null); }}>Facilities</button>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <button className="btn btn-xs btn-info" onClick={() => { setSelectedStation(station); setModalType('operatingHours'); setShowModal(true); setDropdownOpen(null); }}>View</button>
+          <button className="btn btn-xs btn-info" onClick={() => { setSelectedStation(station); setModalType('operatingHours'); setShowModal(true); setDropdownOpen(null); }}>OperatingHours</button>
         </td>
         <td className="px-6 py-4 whitespace-nowrap flex gap-2">
           <div className="relative">
@@ -246,7 +236,7 @@ const GetPickStation = () => {
       let url = `/api/pickup-stations/available`;
       if (city) url += `?city=${encodeURIComponent(city)}`;
       const res = await client.get(url);
-      setAvailableStations(res.data.data || []);
+      setAvailableStations(res.data.stations || []);
     } catch (e) {
       setAvailableStations([]);
     }
@@ -269,12 +259,12 @@ const GetPickStation = () => {
     <>
       <div className="container mx-auto max-w-7xl px-4 py-2 md:px-6 md:py-8 lg:px-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-ajo_offWhite">Pick Up Stations</h2>
+          <h2 className="text-2xl font-bold text-ajo_offWhite">Pick Up Center</h2>
           <button
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
             onClick={() => setShowCreateModal(true)}
           >
-            Create Pick Up Station
+            Create Pick Up Center
           </button>
         </div>
         {/* Filter Dropdowns */}
@@ -297,29 +287,28 @@ const GetPickStation = () => {
               ))}
             </select>
           </div>
-          <div className="flex flex-col gap-2 w-full sm:w-auto sm:flex-row sm:gap-4">
-            <div className="flex-1">
-              <label className="block text-xs font-semibold mb-1 text-white">Available Only</label>
-              <button
-                className="rounded-2xl border px-3 py-2 text-black bg-white w-full h-12 sm:w-40 sm:h-12"
-                onClick={() => {
-                  fetchAvailableStations();
-                  setShowAvailableModal(true);
-                }}
-              >
-                Show Available
-              </button>
-            </div>
-            <div className="flex-1">
-              <label className="block text-xs font-semibold mb-1 text-white">Nearby</label>
-              <button
-                className="rounded-2xl border px-3 py-2 text-black bg-white w-full h-12 sm:w-40 sm:h-12"
-                onClick={() => setShowNearbyModal(true)}
-              >
-                Find Nearby
-              </button>
-            </div>
+          <div>
+            <label className="block text-xs font-semibold mb-1 text-white">Available Only</label>
+            <button
+              className="rounded-2xl border px-3 py-2 text-black bg-white"
+              onClick={() => {
+                fetchAvailableStations();
+                setShowAvailableModal(true);
+              }}
+            >
+              Show Available
+            </button>
           </div>
+          <div>
+            <label className="block text-xs font-semibold mb-1 text-white">Nearby</label>
+            <button
+              className="rounded-2xl border px-3 py-2 text-black bg-white"
+              onClick={() => setShowNearbyModal(true)}
+            >
+              Find Nearby
+            </button>
+          </div>
+          
         </div>
         <div className="mt-8">
           <TransactionsTable
@@ -464,17 +453,19 @@ const GetPickStation = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {statusStations.length > 0 ? statusStations.map(station => (
                   <tr key={station._id}>
+                    <td className="px-6 py-4 whitespace-nowrap">{station.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{station.address?.city || ''}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{station.status || ''}</td>
                   </tr>
-                )) : (
-                  <tr><td className="text-center">No stations found.</td></tr>
-                )}
+                )) : <tr><td colSpan={3} className="text-center">No stations found.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -487,27 +478,19 @@ const GetPickStation = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {availableStations.length > 0 ? availableStations.map(station => (
                   <tr key={station._id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-white">
-                      {station.address ? (
-                        <div>
-                          <div><b>Street:</b> {station.address.street}</div>
-                          <div><b>City:</b> {station.address.city}</div>
-                          <div><b>State:</b> {station.address.state}</div>
-                          <div><b>Zip Code:</b> {station.address.zipCode}</div>
-                          <div><b>Country:</b> {station.address.country}</div>
-                        </div>
-                      ) : (
-                        station.fullAddress || ''
-                      )}
-                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">{station.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{station.address?.city || ''}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{station.status || ''}</td>
                   </tr>
-                )) : <tr><td className="text-center text-white">No available stations found.</td></tr>}
+                )) : <tr><td colSpan={3} className="text-center">No stations found.</td></tr>}
               </tbody>
             </table>
           </div>
