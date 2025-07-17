@@ -376,7 +376,6 @@ const CustomerNavbar = () => {
 };
 
 export default CustomerNavbar;
-
 export const Sidebar = ({
   onShow,
   setShow,
@@ -395,6 +394,7 @@ export const Sidebar = ({
     useState(false);
   const [ecommerceDropdownOpen, setEcommerceDropdownOpen] = useState(false); // New state for e-commerce
   const [productDropdownOpen, setProductDropdownOpen] = useState(false); // New state for product sub-module
+  const [customerGroupDropdownOpen, setCustomerGroupDropdownOpen] = useState(false); // New state for customer group
 
   const [purposeDropdownIsOpen, setpurposeDropdownIsOpen] = useState(false);
   const [categoriesdropdownOpen, setCategoriesDropdownOpen] = useState(false);
@@ -535,6 +535,7 @@ export const Sidebar = ({
               purpose ? "item/purpose" : "",
               "bill management",
               "e-commerce",
+              "customer group",
               "settings",
               "sign out",
             ].map((label) => (
@@ -584,6 +585,16 @@ export const Sidebar = ({
                   >
                     {label}
                   </Link>
+                ) : label === "customer group" ? (
+                  <Link
+                    href="/merchant/customer-group"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setCustomerGroupDropdownOpen(!customerGroupDropdownOpen);
+                    }}
+                  >
+                    {label}
+                  </Link>
                 ) : (
                   <span
                     onClick={() => {
@@ -625,6 +636,32 @@ export const Sidebar = ({
                     width={8}
                     height={6}
                   />
+                )}
+                {label === "customer group" && (
+                  <Image
+                    src="/arrow_down.svg"
+                    alt="arrow down"
+                    width={8}
+                    height={6}
+                  />
+                )}
+
+                {/* Customer Group Dropdown */}
+                {label === "customer group" && customerGroupDropdownOpen && (
+                  <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
+                    <Link
+                      href="/merchant/customer-group"
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      Create 
+                    </Link>
+                    {/* <Link
+                      href="/merchant/customer-group/manage"
+                      className="block cursor-pointer whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
+                    >
+                      Manage Groups
+                    </Link> */}
+                  </div>
                 )}
 
                 {/* E-commerce Dropdown */}
@@ -1148,7 +1185,7 @@ export const SuperAdminSidebar = ({
               "pick-up-station",
               "product-category",
               "customer-bill",
-              "customer-group",
+              
               "settings",
               "sign out",
             ].map((label) => (
@@ -1266,7 +1303,7 @@ export const SuperAdminSidebar = ({
                   "pick-up-station",
                   "product-category",
                   "customer-bill",
-                  "customer-group",
+                 
                 ].includes(label) && (
                   <Image
                     src="/arrow_down.svg"
@@ -1386,23 +1423,19 @@ export const SuperAdminSidebar = ({
                     </Link>
                   </div>
                 )}
-
+{/* 
                 {label === "customer-group" && customerGroupDropdownIsOpen && (
                   <div className="absolute bottom-[110%] left-0 z-20 w-full rounded-md border border-ajo_offWhite border-opacity-40 bg-ajo_darkBlue py-1 shadow-lg">
-                    {/* <Link href="/superadmin/customer-group" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
-                      All Customer Groups
-                    </Link> */}
+                   
                     <Link
                       href="/superadmin/customer-group"
                       className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue"
                     >
                       Create Customer Group
                     </Link>
-                    {/* <Link href="/superadmin/customer-group/manage" className="block whitespace-nowrap px-4 py-2 text-sm capitalize text-ajo_offWhite hover:bg-ajo_offWhite hover:text-ajo_darkBlue">
-                      Manage Groups
-                    </Link> */}
+                  
                   </div>
-                )}
+                )} */}
 
                 {label === "subscription-report" &&
                   subscriptionDropdownIsOpen && (
