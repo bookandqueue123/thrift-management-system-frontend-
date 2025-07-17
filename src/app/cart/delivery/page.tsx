@@ -5,8 +5,8 @@ import Modal from "@/components/Modal";
 import Footer from "@/modules/HomePage/Footer";
 import Navbar from "@/modules/HomePage/NavBar";
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
 interface PickupStation {
   id: string;
@@ -43,6 +43,8 @@ const PAGE_SIZE = 10;
 const DeliveryPage = () => {
   const router = useRouter();
   const { client } = useAuth();
+  const searchParams = useSearchParams();
+  const mode = searchParams.get("mode");
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [deliveryMode, setDeliveryMode] = useState("");
@@ -282,7 +284,7 @@ const DeliveryPage = () => {
       deliveryAddress: deliveryMode === "door" ? deliveryAddress : null,
     };
     localStorage.setItem("deliveryInfo", JSON.stringify(deliveryInfo));
-    router.push("/order-confimation");
+    router.push(`/order-confimation?mode=${mode}`);
   };
 
   // const deliveryHeaders = [
@@ -564,4 +566,10 @@ const DeliveryPage = () => {
   );
 };
 
-export default DeliveryPage;
+export default function Delivery() {
+  return (
+    <Suspense>
+      <DeliveryPage />
+    </Suspense>
+  );
+}

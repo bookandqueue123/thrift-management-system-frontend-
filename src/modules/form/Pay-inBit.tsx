@@ -1,5 +1,3 @@
-
-
 // "use client";
 // import { X } from "lucide-react";
 // import { useRouter } from "next/navigation";
@@ -747,7 +745,6 @@
 //   );
 // }
 
-
 "use client";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -997,7 +994,7 @@ export default function PayInBitsForm({
       }
 
       onClose();
-      router.push("/cart/delivery");
+      router.push("/cart/delivery?mode=Pay In Bits");
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("An error occurred while submitting the form. Please try again.");
@@ -1025,9 +1022,10 @@ export default function PayInBitsForm({
 
   // Helper function to get input className based on field and error state
   const getInputClassName = (fieldName: string): string => {
-    const baseClasses = "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent";
+    const baseClasses =
+      "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent";
     const errorClasses = "border-red-500 focus:ring-red-500";
-    
+
     return errors[fieldName] ? `${baseClasses} ${errorClasses}` : baseClasses;
   };
 
@@ -1124,97 +1122,108 @@ export default function PayInBitsForm({
                           )}
                         </div>
                       </div>
-                      {previewData && previewData.paymentSchedule && Array.isArray(previewData.paymentSchedule) && (
-                        <div className="mt-2">
-                          <h4 className="mb-1 font-semibold">
-                            Payment Schedule
-                          </h4>
-                          <table className="min-w-full divide-y divide-gray-200 border">
-                            <thead>
-                              <tr>
-                                <th className="px-2 py-1 text-xs font-medium uppercase text-gray-500">
-                                  #
-                                </th>
-                                <th className="px-1 py-1 text-xs font-medium uppercase text-gray-500">
-                                  Due Date
-                                </th>
-                                <th className="px-1 py-1 text-xs font-medium uppercase text-gray-500">
-                                  Amount
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {previewData.paymentSchedule.map(
-                                (schedule: any, sidx: number) => (
-                                  <tr key={sidx}>
-                                    <td className="px-2 py-1 text-center">
-                                      {schedule.paymentNumber || sidx + 1}
-                                    </td>
-                                    <td className="px-1 py-1 text-center">
-                                      {schedule.dueDate ? new Date(schedule.dueDate).toLocaleDateString() : "N/A"}
-                                    </td>
-                                    <td className="px-1 py-1 text-center">
-                                      ₦{formatCurrency(schedule.totalPayment)}
-                                    </td>
-                                  </tr>
-                                ),
-                              )}
-                              <tr>
-                                <td
-                                  colSpan={2}
-                                  className="text-right font-bold"
-                                >
-                                  Total Installments
-                                </td>
-                                <td className="text-center font-bold">
-                                  ₦
-                                  {formatCurrency(
-                                    previewData.paymentSchedule.reduce(
-                                      (sum: number, s: any) =>
-                                        sum + (s.totalPayment || 0),
-                                      0,
-                                    )
-                                  )}
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-                          <div className="mt-4">
+                      {previewData &&
+                        previewData.paymentSchedule &&
+                        Array.isArray(previewData.paymentSchedule) && (
+                          <div className="mt-2">
                             <h4 className="mb-1 font-semibold">
-                              Payment Breakdown
+                              Payment Schedule
                             </h4>
-                            <ul className="mb-2">
-                              <li>
-                                <b>Initial Payment:</b> ₦
-                                {formatCurrency(previewData.firstPayment)}{" "}
-                                (Due:{" "}
-                                {previewData.paymentSchedule[0]?.dueDate
-                                  ? new Date(
-                                      previewData.paymentSchedule[0].dueDate,
-                                    ).toLocaleDateString()
-                                  : "Immediately"}
-                                )
-                              </li>
-                            </ul>
-                            <h4 className="mb-1 font-semibold">
-                              Subsequent Payments
-                            </h4>
-                            <ul>
-                              {previewData.paymentSchedule.map(
-                                (schedule: any, sidx: number) => (
-                                  <li key={sidx}>
-                                    Payment {schedule.paymentNumber || sidx + 1}: ₦
-                                    {formatCurrency(schedule.totalPayment)}{" "}
-                                    (Due:{" "}
-                                    {schedule.dueDate ? new Date(schedule.dueDate).toLocaleDateString() : "N/A"}
-                                    )
-                                  </li>
-                                ),
-                              )}
-                            </ul>
+                            <table className="min-w-full divide-y divide-gray-200 border">
+                              <thead>
+                                <tr>
+                                  <th className="px-2 py-1 text-xs font-medium uppercase text-gray-500">
+                                    #
+                                  </th>
+                                  <th className="px-1 py-1 text-xs font-medium uppercase text-gray-500">
+                                    Due Date
+                                  </th>
+                                  <th className="px-1 py-1 text-xs font-medium uppercase text-gray-500">
+                                    Amount
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {previewData.paymentSchedule.map(
+                                  (schedule: any, sidx: number) => (
+                                    <tr key={sidx}>
+                                      <td className="px-2 py-1 text-center">
+                                        {schedule.paymentNumber || sidx + 1}
+                                      </td>
+                                      <td className="px-1 py-1 text-center">
+                                        {schedule.dueDate
+                                          ? new Date(
+                                              schedule.dueDate,
+                                            ).toLocaleDateString()
+                                          : "N/A"}
+                                      </td>
+                                      <td className="px-1 py-1 text-center">
+                                        ₦{formatCurrency(schedule.totalPayment)}
+                                      </td>
+                                    </tr>
+                                  ),
+                                )}
+                                <tr>
+                                  <td
+                                    colSpan={2}
+                                    className="text-right font-bold"
+                                  >
+                                    Total Installments
+                                  </td>
+                                  <td className="text-center font-bold">
+                                    ₦
+                                    {formatCurrency(
+                                      previewData.paymentSchedule.reduce(
+                                        (sum: number, s: any) =>
+                                          sum + (s.totalPayment || 0),
+                                        0,
+                                      ),
+                                    )}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            <div className="mt-4">
+                              <h4 className="mb-1 font-semibold">
+                                Payment Breakdown
+                              </h4>
+                              <ul className="mb-2">
+                                <li>
+                                  <b>Initial Payment:</b> ₦
+                                  {formatCurrency(previewData.firstPayment)}{" "}
+                                  (Due:{" "}
+                                  {previewData.paymentSchedule[0]?.dueDate
+                                    ? new Date(
+                                        previewData.paymentSchedule[0].dueDate,
+                                      ).toLocaleDateString()
+                                    : "Immediately"}
+                                  )
+                                </li>
+                              </ul>
+                              <h4 className="mb-1 font-semibold">
+                                Subsequent Payments
+                              </h4>
+                              <ul>
+                                {previewData.paymentSchedule.map(
+                                  (schedule: any, sidx: number) => (
+                                    <li key={sidx}>
+                                      Payment{" "}
+                                      {schedule.paymentNumber || sidx + 1}: ₦
+                                      {formatCurrency(schedule.totalPayment)}{" "}
+                                      (Due:{" "}
+                                      {schedule.dueDate
+                                        ? new Date(
+                                            schedule.dueDate,
+                                          ).toLocaleDateString()
+                                        : "N/A"}
+                                      )
+                                    </li>
+                                  ),
+                                )}
+                              </ul>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                     </React.Fragment>
                   ))}
                 </div>

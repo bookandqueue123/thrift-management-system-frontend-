@@ -1,16 +1,23 @@
 "use client";
 
-import React from 'react'
-import OrderConfirmation from '@/modules/form/OrderConfirmation'
+import OrderConfirmation from "@/modules/form/OrderConfirmation";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-const page = () => {
+function Orderpage() {
+  const searchParams = useSearchParams();
+  const mode = searchParams.get("mode");
   return (
     <div>
-        <OrderConfirmation
-          paymentMode="full"
-        />
+      <OrderConfirmation paymentMode={mode || "full"} />
     </div>
-  )
+  );
 }
 
-export default page
+export default function OrderConfirmationPage() {
+  return (
+    <Suspense>
+      <Orderpage />
+    </Suspense>
+  );
+}
