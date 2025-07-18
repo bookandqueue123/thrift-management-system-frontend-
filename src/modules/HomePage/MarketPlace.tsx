@@ -77,6 +77,7 @@ interface CartResponse {
 const Header: React.FC = () => {
   const router = useRouter();
   const { client } = useAuth();
+
   // Cart data fetching
   const {
     data: cartData,
@@ -94,15 +95,29 @@ const Header: React.FC = () => {
   const cartItemCount =
     cartData?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
 
-  const handleCartClick = (): void => {
-    console.log(2345);
+  const handleCartClick = (e: React.MouseEvent<HTMLButtonElement>): void => {
+    // Debug logging
+    console.log("Cart button clicked!", e);
+    console.log("Event target:", e.target);
+    console.log("Current target:", e.currentTarget);
+
+    // Prevent any potential event bubbling issues
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Navigate to cart
     router.push("/cart");
+  };
+
+  // Debug function to test if button is reachable
+  const handleMouseEnter = (): void => {
+    console.log("Mouse entered cart button - button is reachable");
   };
 
   return (
     <div className="relative m-4 overflow-hidden rounded-2xl bg-gradient-to-br from-[#2C2648] via-[#1a1a2e] to-[#000000] p-6 text-white shadow-xl">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
+      {/* Background Pattern - Ensure it doesn't block clicks */}
+      <div className="pointer-events-none absolute inset-0 opacity-5">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_50%)]"></div>
       </div>
 
@@ -118,68 +133,73 @@ const Header: React.FC = () => {
         </div>
 
         {/* Right Section - Cart */}
-        <Link href={"/cart"}>
-          <div className="ml-6 flex items-center">
-            <button
-              onClick={handleCartClick}
-              className="group relative rounded-full bg-white/10 p-3 backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
-              aria-label="Shopping cart"
+        <div className="relative z-10 ml-6 flex items-center">
+          <button
+            type="button"
+            onClick={handleCartClick}
+            onMouseEnter={handleMouseEnter}
+            className="group relative cursor-pointer rounded-full bg-white/10 p-3 backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
+            aria-label="Shopping cart"
+            style={{
+              pointerEvents: "auto",
+              position: "relative",
+              zIndex: 100,
+            }}
+          >
+            {/* Cart Icon */}
+            <svg
+              className="pointer-events-none h-7 w-7 text-white transition-colors group-hover:text-gray-100"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              {/* Cart Icon */}
-              <svg
-                className="h-7 w-7 text-white transition-colors group-hover:text-gray-100"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m0 0h8.5M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6"
-                />
-              </svg>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m0 0h8.5M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6"
+              />
+            </svg>
 
-              {/* Cart Badge */}
-              {!isLoading && cartItemCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow-lg ring-2 ring-white/20">
-                  {cartItemCount > 99 ? "99+" : cartItemCount}
-                </span>
+            {/* Cart Badge */}
+            {!isLoading && cartItemCount > 0 && (
+              <span className="pointer-events-none absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow-lg ring-2 ring-white/20">
+                {cartItemCount > 99 ? "99+" : cartItemCount}
+              </span>
+            )}
+
+            {/* Loading indicator */}
+            {isLoading && (
+              <span className="pointer-events-none absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white/30">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-white"></span>
+              </span>
+            )}
+          </button>
+
+          {/* Cart Text (Desktop Only) */}
+          <div className="pointer-events-none ml-3 hidden md:block">
+            <div className="text-sm font-medium text-white">Cart</div>
+            <div className="text-xs text-gray-300">
+              {isLoading ? (
+                <span className="animate-pulse">Loading...</span>
+              ) : error ? (
+                <span className="text-red-300">Error</span>
+              ) : cartItemCount === 0 ? (
+                "Empty"
+              ) : cartItemCount === 1 ? (
+                "1 item"
+              ) : (
+                `${cartItemCount} items`
               )}
-
-              {/* Loading indicator */}
-              {isLoading && (
-                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white/30">
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-white"></span>
-                </span>
-              )}
-            </button>
-
-            {/* Cart Text (Desktop Only) */}
-            <div className="ml-3 hidden md:block">
-              <div className="text-sm font-medium text-white">Cart</div>
-              <div className="text-xs text-gray-300">
-                {isLoading ? (
-                  <span className="animate-pulse">Loading...</span>
-                ) : error ? (
-                  <span className="text-red-300">Error</span>
-                ) : cartItemCount === 0 ? (
-                  "Empty"
-                ) : cartItemCount === 1 ? (
-                  "1 item"
-                ) : (
-                  `${cartItemCount} items`
-                )}
-              </div>
             </div>
           </div>
-        </Link>
+        </div>
       </div>
 
-      {/* Decorative Elements */}
-      <div className="absolute bottom-0 right-0 h-32 w-32 rounded-full bg-gradient-to-br from-white/5 to-transparent blur-2xl"></div>
-      <div className="absolute left-0 top-0 h-24 w-24 rounded-full bg-gradient-to-br from-white/5 to-transparent blur-xl"></div>
+      {/* Decorative Elements - Ensure they don't block clicks */}
+      <div className="pointer-events-none absolute bottom-0 right-0 h-32 w-32 rounded-full bg-gradient-to-br from-white/5 to-transparent blur-2xl"></div>
+      <div className="pointer-events-none absolute left-0 top-0 h-24 w-24 rounded-full bg-gradient-to-br from-white/5 to-transparent blur-xl"></div>
     </div>
   );
 };
