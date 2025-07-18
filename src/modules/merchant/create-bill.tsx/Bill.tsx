@@ -20,6 +20,21 @@ export interface Bill {
   startDate: string;
   endDate: string;
   createdAt: string;
+  billItems?: Array<{
+    billName: string;
+    category: string;
+    isMandatory: boolean;
+    amount: number;
+    quantity: number;
+    amountWithoutCharge: number;
+    image: string | File | null | undefined;
+    promoCode: string | null;
+    promoPercentage: number;
+    startDate: string | null;
+    endDate: string | null;
+    startTime: string | null;
+    endTime: string | null;
+  }>;
   [key: string]: any;
 }
 
@@ -110,7 +125,22 @@ const singleBill = singleBillResponse?.data;
     if (modalType === 'edit' && singleBill) {
       setBillForm({
         ...singleBill,
-        billItems: singleBill.billItems?.length ? singleBill.billItems.map((item: any) => ({ ...item, image: null })) : [{ billName: "", category: "", amount: "", quantity: "", amountWithoutCharge: "", image: null }],
+        billItems: singleBill.billItems?.length
+          ? singleBill.billItems.map((item: any) => ({
+              ...item,
+              image: null,
+              promoCode: typeof item.promoCode === 'string' || item.promoCode == null
+                ? {
+                    code: item.promoCode || null,
+                    promoPercentage: item.promoPercentage ?? 0,
+                    startDate: item.startDate ?? null,
+                    endDate: item.endDate ?? null,
+                    startTime: item.startTime ?? null,
+                    endTime: item.endTime ?? null,
+                  }
+                : item.promoCode,
+            }))
+          : [{ billName: "", category: "", amount: "", quantity: "", amountWithoutCharge: "", image: null, promoCode: null }],
         billImage: null,
       });
       setEditMode(true);
@@ -440,7 +470,19 @@ const singleBill = singleBillResponse?.data;
                 startTime: singleBill.maxPaymentDuration?.startTime || '',
                 endTime: singleBill.maxPaymentDuration?.endTime || '',
               },
-              billItems: singleBill.billItems || [],
+              billItems: (singleBill.billItems || []).map((item: any) => ({
+                ...item,
+                promoCode: typeof item.promoCode === 'string' || item.promoCode == null
+                  ? {
+                      code: item.promoCode || null,
+                      promoPercentage: item.promoPercentage ?? 0,
+                      startDate: item.startDate ?? null,
+                      endDate: item.endDate ?? null,
+                      startTime: item.startTime ?? null,
+                      endTime: item.endTime ?? null,
+                    }
+                  : item.promoCode,
+              })),
               organisation: singleBill.organisation?._id || singleBill.organisationId || '',
               assignToCustomer: singleBill.assignToCustomer || [], // <-- prefill assigned customers
               customerGroupId: singleBill.assignToCustomerGroup?._id || singleBill.customerGroupId || '',
@@ -473,10 +515,23 @@ const singleBill = singleBillResponse?.data;
             <th className="px-6 py-3">Platform %</th>
             <th className="px-6 py-3">Platform Value</th>
             <th className="px-6 py-3">Actual Debit</th>
+            <th className="px-6 py-3">Promo Code</th>
+            <th className="px-6 py-3">Promo %</th>
+            <th className="px-6 py-3">Promo Period</th>
           </tr>
         </thead>
         <tbody>
-          {singleBill.billItems.map((item: any, idx: number) => {
+          {(singleBill.billItems || []).map((item: any, idx: number) => {
+            const normalizedPromoCode = typeof item.promoCode === 'string' || item.promoCode == null
+              ? {
+                  code: item.promoCode || null,
+                  promoPercentage: item.promoPercentage ?? 0,
+                  startDate: item.startDate ?? null,
+                  endDate: item.endDate ?? null,
+                  startTime: item.startTime ?? null,
+                  endTime: item.endTime ?? null,
+                }
+              : item.promoCode;
             const percentage = platformChargeData?.data?.percentage || 0;
             const amount = Number(item.amount) || 0;
             const platformValue = ((percentage / 100) * amount);
@@ -484,12 +539,15 @@ const singleBill = singleBillResponse?.data;
             return (
               <tr key={idx} className="bg-[#0d0f29] border-b border-gray-700">
                 <td className="px-6 py-2 whitespace-nowrap">{item.billName}</td>
-                <td className="px-6 py-2 whitespace-nowrap">{item.name || item.category}</td>
+                <td className="px-6 py-2 whitespace-nowrap">{item.category}</td>
                 <td className="px-6 py-2 whitespace-nowrap">{amount}</td>
                 <td className="px-6 py-2 whitespace-nowrap">{item.quantity}</td>
                 <td className="px-6 py-2 whitespace-nowrap">{percentage}%</td>
                 <td className="px-6 py-2 whitespace-nowrap">{platformValue.toFixed(2)}</td>
                 <td className="px-6 py-2 whitespace-nowrap">{actualDebit.toFixed(2)}</td>
+                <td className="px-6 py-2 whitespace-nowrap">{normalizedPromoCode.code || '-'}</td>
+                <td className="px-6 py-2 whitespace-nowrap">{normalizedPromoCode.promoPercentage || 0}</td>
+                <td className="px-6 py-2 whitespace-nowrap">{normalizedPromoCode.startDate && normalizedPromoCode.endDate ? `${normalizedPromoCode.startDate} to ${normalizedPromoCode.endDate}` : '-'}</td>
               </tr>
             );
           })}

@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from "react"
@@ -20,6 +21,7 @@ interface BillItemApi {
   remainingBalance: number | null
   paymentStatus: string
   isMandatory?: boolean
+  promoPercentage?: number;
 }
 
 interface BillApi {
@@ -68,7 +70,32 @@ interface TableBillItem extends BillItemApi {
   endDate: string
   transactionDate: string
   modeOfPayment: string
+  promoPercentage?: number;
+  promoCode?: {
+    code: string;
+    promoPercentage: number;
+    [key: string]: any;
+  };
 }
+
+// Modal component for error display
+const ErrorModal = ({ open, onClose, message }: { open: boolean; onClose: () => void; message: string }) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full">
+        <div className="text-lg font-semibold text-red-600 mb-2">Promo Code Error</div>
+        <div className="text-gray-800 mb-4">{message}</div>
+        <button
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          onClick={onClose}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const CurrentBill = () => {
   const { client } = useAuth()
@@ -76,6 +103,9 @@ const CurrentBill = () => {
   const [paying, setPaying] = useState(false)
   const [payError, setPayError] = useState<string | null>(null)
   const [viewType, setViewType] = useState<'current' | 'all'>('current')
+  const [promoCodes, setPromoCodes] = useState<Record<string, string>>({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['customer-bills'],
@@ -230,26 +260,40 @@ const CurrentBill = () => {
     setSelectedPayments((prev) => ({ ...prev, [billItemId]: isNaN(num) ? 0 : num }))
   }
 
+  const handlePromoCodeInput = (billItemId: string, value: string) => {
+    setPromoCodes((prev) => ({ ...prev, [billItemId]: value }));
+  };
+
   const handleMakePayment = async () => {
     setPaying(true)
     setPayError(null)
     // Group selected payments by billId
-    const paymentsByBill: Record<string, { billId: string; billItems: { billItemId: string; amountToPay: number }[] }> = {}
+    const paymentsByBill: Record<string, { billId: string; billItems: { billItemId: string; amountToPay: number; promoCode?: string }[] }> = {}
     
     payableItems.forEach((item: TableBillItem) => {
       let amount = 0
-      
+      const outstanding = item.amount - (item.totalPaidForItem || 0);
       if (item.isMandatory) {
-        // For mandatory items, use the full outstanding amount
-        amount = item.amount - (item.totalPaidForItem || 0)
+        // For mandatory items, use the discounted outstanding amount if promo is valid
+        if (isPromoCodeValid(item)) {
+          const discounted = getEffectiveAmount(item) - (item.totalPaidForItem || 0);
+          amount = Math.min(discounted, outstanding);
+        } else {
+          amount = outstanding;
+        }
       } else {
-        // For non-mandatory items, use the user-selected amount
-        amount = selectedPayments[item._id] || 0
+        // For non-mandatory items, use the user-selected amount, but cap to remaining balance
+        amount = Math.min(selectedPayments[item._id] || 0, outstanding);
       }
       
       if (amount && amount > 0) {
         if (!paymentsByBill[item.billId]) paymentsByBill[item.billId] = { billId: item.billId, billItems: [] }
-        paymentsByBill[item.billId].billItems.push({ billItemId: item._id, amountToPay: amount })
+        // If promo code is valid, include it in the payload
+        if (isPromoCodeValid(item)) {
+          paymentsByBill[item.billId].billItems.push({ billItemId: item._id, amountToPay: amount, promoCode: promoCodes[item._id] })
+        } else {
+          paymentsByBill[item.billId].billItems.push({ billItemId: item._id, amountToPay: amount })
+        }
       }
     })
     
@@ -276,7 +320,14 @@ const CurrentBill = () => {
       }
       refetch()
     } catch (e: any) {
-      setPayError(e.message || "Payment failed")
+      // Check for promo code error in response
+      const errorMsg = e?.response?.data?.message || e.message || "Payment failed";
+      if (errorMsg && errorMsg.toLowerCase().includes("promo code")) {
+        setModalMessage(errorMsg);
+        setModalOpen(true);
+      } else {
+        setPayError(errorMsg);
+      }
     } finally {
       setPaying(false)
     }
@@ -293,6 +344,32 @@ const CurrentBill = () => {
     },
     enabled: !!organisationId,
   });
+
+  // Helper: check if promo code matches for an item
+  const isPromoCodeValid = (item: TableBillItem) => {
+    return item.promoCode && promoCodes[item._id] && promoCodes[item._id].trim().toUpperCase() === item.promoCode.code.toUpperCase();
+  };
+
+  // Helper: get promo percentage for an item if code matches
+  const getPromoPercentage = (item: TableBillItem) => {
+    return isPromoCodeValid(item) && item.promoCode ? item.promoCode.promoPercentage : 0;
+  };
+
+  // Helper: calculate promo discount for an item
+  const calculatePromoDiscount = (item: TableBillItem) => {
+    if (!item.isMandatory) return 0;
+    const percentage = getPromoPercentage(item);
+    if (percentage > 0) {
+      return (item.amount * percentage) / 100;
+    }
+    return 0;
+  };
+
+  // Helper: get effective amount after promo for an item
+  const getEffectiveAmount = (item: TableBillItem) => {
+    const discount = calculatePromoDiscount(item);
+    return item.amount - discount;
+  };
 
   return (
     <div className="min-h-screen bg-white p-8 rounded">
@@ -362,6 +439,8 @@ const CurrentBill = () => {
           <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Credit Amount</th>
           <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Paid Amount</th>
           <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Remaining Balance</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Promo Code</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Promo Debit Amount</th>
         </tr>
       </thead>
       <tbody>
@@ -371,10 +450,10 @@ const CurrentBill = () => {
             {/* Previous Debts Section */}
             {previousDebtItems.length > 0 && (
               <>
-                <tr><td colSpan={12} className="text-lg text-blue-500 w-[40%] font-bold px-3 py-2">Previous Debts</td></tr>
+                <tr><td colSpan={14} className="text-lg text-blue-500 w-[40%] font-bold px-3 py-2">Previous Debts</td></tr>
                 {Object.entries(groupByCategory(previousDebtItems)).map(([cat, items], i) => (
                   <React.Fragment key={cat}>
-                    <tr><td colSpan={12} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
+                    <tr><td colSpan={14} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
                     {items.map((item, idx) => (
                       <tr key={item._id} className="border-b border-gray-200 hover:bg-gray-50">
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{idx + 1}.</td>
@@ -387,29 +466,38 @@ const CurrentBill = () => {
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                          {item.amount - (item.totalPaidForItem || 0) > 0 ? (
-                            item.isMandatory ? (
-                              <span className="text-blue-900 font-semibold">
-                                {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
-                              </span>
-                            ) : (
-                              <input
-                                type="number"
-                                placeholder="Amount"
-                                className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                                value={selectedPayments[item._id] || ""}
-                                onChange={(e) => handlePaymentInput(item._id, e.target.value)}
-                              />
-                            )
-                          ) : (
-                            <span>-</span>
-                          )}
+                          {item.isMandatory
+                            ? (isPromoCodeValid(item)
+                                ? <span className="text-blue-900 font-semibold">{formatCurrency(getEffectiveAmount(item))}</span>
+                                : <span className="text-blue-900 font-semibold">{formatCurrency(item.amount)}</span>
+                              )
+                            : (
+                                <input
+                                  type="number"
+                                  placeholder="Amount"
+                                  className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                                  value={selectedPayments[item._id] || ""}
+                                  onChange={(e) => handlePaymentInput(item._id, e.target.value)}
+                                />
+                              )
+                          }
+                        </td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">NGN 0</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount - (item.totalPaidForItem || 0))}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                          <input
+                            type="text"
+                            placeholder="Enter promo code"
+                            className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
+                            value={promoCodes[item._id] || ""}
+                            onChange={(e) => handlePromoCodeInput(item._id, e.target.value)}
+                          />
                         </td>
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                          {formatCurrency(item.totalPaidForItem || 0)}
-                        </td>
-                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                          {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
+                          {item.isMandatory && isPromoCodeValid(item)
+                            ? formatCurrency(calculatePromoDiscount(item))
+                            : <span className="text-gray-400">-</span>
+                          }
                         </td>
                       </tr>
                     ))}
@@ -419,8 +507,10 @@ const CurrentBill = () => {
                       <td className="text-right font-semibold px-4 align-top">SUB-TOTAL ({cat})</td>
                       <td colSpan={2}></td>
                       <td className="text-blue-900 font-bold text-lg text-center align-top">{formatCurrency(items.reduce((sum, item) => sum + (item.amount || 0), 0))}</td>
-                      <td className="text-blue-900 font-bold text-lg text-center align-top">{formatCurrency(items.reduce((sum, item) => sum + (item.totalPaidForItem || 0), 0))}</td>
-                      <td colSpan={2}></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
                     </tr>
                   </React.Fragment>
                 ))}
@@ -429,16 +519,18 @@ const CurrentBill = () => {
                   <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Previous Debts):</td>
                   <td className="font-bold text-blue-900 text-lg">{formatCurrency(calcGrandTotalFromSubtotals(previousDebtItems))}</td>
                   <td></td><td></td>
+                  <td></td>
+                  <td></td>
                 </tr>
               </>
             )}
             {/* Current Bill Section */}
             {currentBillItems.length > 0 && (
               <>
-                <tr><td colSpan={12} className="text-blue-500 text-lg font-bold px-3 py-2">Current Bill</td></tr>
+                <tr><td colSpan={14} className="text-blue-500 text-lg font-bold px-3 py-2">Current Bill</td></tr>
                 {Object.entries(groupByCategory(currentBillItems)).map(([cat, items], i) => (
                   <React.Fragment key={cat}>
-                    <tr><td colSpan={12} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
+                    <tr><td colSpan={14} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
                     {items.map((item, idx) => (
                       <tr key={item._id} className="border-b border-gray-200 hover:bg-gray-50">
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{idx + 1}.</td>
@@ -451,22 +543,39 @@ const CurrentBill = () => {
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                          {item.isMandatory ? (
-                            <span className="text-blue-900 font-semibold">
-                              {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
-                            </span>
-                          ) : (
-                            <input
-                              type="number"
-                              placeholder="Amount"
-                              className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                              value={selectedPayments[item._id] || ""}
-                              onChange={(e) => handlePaymentInput(item._id, e.target.value)}
-                            />
-                          )}
+                          {item.isMandatory
+                            ? (isPromoCodeValid(item)
+                                ? <span className="text-blue-900 font-semibold">{formatCurrency(getEffectiveAmount(item))}</span>
+                                : <span className="text-blue-900 font-semibold">{formatCurrency(item.amount)}</span>
+                              )
+                            : (
+                                <input
+                                  type="number"
+                                  placeholder="Amount"
+                                  className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                                  value={selectedPayments[item._id] || ""}
+                                  onChange={(e) => handlePaymentInput(item._id, e.target.value)}
+                                />
+                              )
+                          }
                         </td>
-                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.totalPaidForItem || 0)}</td>
-                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount - (item.totalPaidForItem || 0))}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">NGN 0</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                          <input
+                            type="text"
+                            placeholder="Enter promo code"
+                            className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
+                            value={promoCodes[item._id] || ""}
+                            onChange={(e) => handlePromoCodeInput(item._id, e.target.value)}
+                          />
+                        </td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                          {item.isMandatory && isPromoCodeValid(item)
+                            ? formatCurrency(calculatePromoDiscount(item))
+                            : <span className="text-gray-400">-</span>
+                          }
+                        </td>
                       </tr>
                     ))}
                     {/* Sub-total row for this category */}
@@ -475,8 +584,10 @@ const CurrentBill = () => {
                       <td className="text-right font-semibold px-4 align-top">SUB-TOTAL ({cat})</td>
                       <td colSpan={2}></td>
                       <td className="text-blue-900 font-bold text-lg text-center align-top">{formatCurrency(items.reduce((sum, item) => sum + (item.amount || 0), 0))}</td>
-                      <td className="text-blue-900 font-bold text-lg text-center align-top">{formatCurrency(items.reduce((sum, item) => sum + (item.totalPaidForItem || 0), 0))}</td>
-                      <td colSpan={2}></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
                     </tr>
                   </React.Fragment>
                 ))}
@@ -485,17 +596,21 @@ const CurrentBill = () => {
                   <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Current Bill):</td>
                   <td className="font-bold text-blue-900 text-lg">{formatCurrency(calcGrandTotalFromSubtotals(currentBillItems))}</td>
                   <td></td><td></td>
+                  <td></td>
+                  <td></td>
                 </tr>
               </>
             )}
             {/* Add vertical space before grand sub total */}
-            <tr><td colSpan={12} style={{ height: '32px' }}></td></tr>
+            <tr><td colSpan={14} style={{ height: '32px' }}></td></tr>
             {/* Grand Sub Total row */}
             <tr className="text-gray-500 bg-gray-100">
               <td colSpan={5}></td>
               <td className="text-right font-bold px-4 align-top">Grand Sub Total:</td>
               <td colSpan={2}></td>
               <td className="font-bold text-blue-900 text-xl text-center align-top">{formatCurrency(calcGrandSubTotalDebit(payableItems))}</td>
+              <td></td>
+              <td></td>
               <td></td>
               <td></td>
             </tr>
@@ -507,15 +622,18 @@ const CurrentBill = () => {
               <td></td>
               <td className="font-bold text-blue-900 text-xl text-center align-top">{formatCurrency(calcOverallGrandTotalCredit(payableItems))}</td>
               <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
             </tr>
           </>
         )}
-        {/* Render for 'Current bill only' (existing logic) */}
+        {/* Render for 'Current bill only' */}
         {viewType === 'current' && (
           <>
             {Object.entries(groupByCategory(currentBillItems)).map(([cat, items], i) => (
               <React.Fragment key={cat}>
-                <tr><td colSpan={12} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
+                <tr><td colSpan={14} className="bg-gray-100 font-semibold px-3 py-2">Category: {cat}</td></tr>
                 {items.map((item, idx) => (
                   <tr key={item._id} className="border-b border-gray-200 hover:bg-gray-50">
                     <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{idx + 1}.</td>
@@ -528,22 +646,39 @@ const CurrentBill = () => {
                     <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{item.endDate}</td>
                     <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
                     <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                      {item.isMandatory ? (
-                        <span className="text-blue-900 font-semibold">
-                          {formatCurrency(item.amount - (item.totalPaidForItem || 0))}
-                        </span>
-                      ) : (
-                        <input
-                          type="number"
-                          placeholder="Amount"
-                          className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                          value={selectedPayments[item._id] || ""}
-                          onChange={(e) => handlePaymentInput(item._id, e.target.value)}
-                        />
-                      )}
+                      {item.isMandatory
+                        ? (isPromoCodeValid(item)
+                            ? <span className="text-blue-900 font-semibold">{formatCurrency(getEffectiveAmount(item))}</span>
+                            : <span className="text-blue-900 font-semibold">{formatCurrency(item.amount)}</span>
+                          )
+                        : (
+                            <input
+                              type="number"
+                              placeholder="Amount"
+                              className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                              value={selectedPayments[item._id] || ""}
+                              onChange={(e) => handlePaymentInput(item._id, e.target.value)}
+                            />
+                          )
+                      }
                     </td>
-                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.totalPaidForItem || 0)}</td>
-                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount - (item.totalPaidForItem || 0))}</td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">NGN 0</td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                      <input
+                        type="text"
+                        placeholder="Enter promo code"
+                        className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
+                        value={promoCodes[item._id] || ""}
+                        onChange={(e) => handlePromoCodeInput(item._id, e.target.value)}
+                      />
+                    </td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                      {item.isMandatory && isPromoCodeValid(item)
+                        ? formatCurrency(calculatePromoDiscount(item))
+                        : <span className="text-gray-400">-</span>
+                      }
+                    </td>
                   </tr>
                 ))}
                 {/* Sub-total row for this category */}
@@ -552,19 +687,23 @@ const CurrentBill = () => {
                   <td className="text-right font-semibold px-4 align-top">SUB-TOTAL ({cat})</td>
                   <td colSpan={2}></td>
                   <td className="text-blue-900 font-bold text-lg text-center align-top">{formatCurrency(items.reduce((sum, item) => sum + (item.amount || 0), 0))}</td>
-                  <td className="text-blue-900 font-bold text-lg text-center align-top">{formatCurrency(items.reduce((sum, item) => sum + (item.totalPaidForItem || 0), 0))}</td>
-                  <td colSpan={2}></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
                 </tr>
               </React.Fragment>
             ))}
             {/* Add vertical space before grand total */}
-            <tr><td colSpan={12} style={{ height: '32px' }}></td></tr>
+            <tr><td colSpan={14} style={{ height: '32px' }}></td></tr>
             {/* Grand Total Debit row */}
             <tr className="text-gray-500 bg-gray-100">
               <td colSpan={5}></td>
               <td className="text-right font-bold px-4 align-top">Grand Total (Current Bill):</td>
               <td colSpan={2}></td>
               <td className="font-bold text-blue-900 text-xl text-center align-top">{formatCurrency(calcGrandSubTotalDebit(currentBillItems))}</td>
+              <td></td>
+              <td></td>
               <td></td>
               <td></td>
             </tr>
@@ -575,6 +714,9 @@ const CurrentBill = () => {
               <td colSpan={2}></td>
               <td></td>
               <td className="font-bold text-blue-900 text-xl text-center align-top">{formatCurrency(calcOverallGrandTotalCredit(currentBillItems))}</td>
+              <td></td>
+              <td></td>
+              <td></td>
               <td></td>
             </tr>
           </>
@@ -596,19 +738,12 @@ const CurrentBill = () => {
 <div className="text-center text-gray-500 text-sm mt-8">
   <p>Powered by Raoatech (www.raoatech.com)</p>
 </div>
-
-
+<ErrorModal open={modalOpen} onClose={() => setModalOpen(false)} message={modalMessage} />
 
 </div>
-
-{/* Footer */}
-
-
         
         
-      </div>
-   
-   
+      </div>  
    
   )
 }
