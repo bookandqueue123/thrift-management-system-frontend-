@@ -109,7 +109,7 @@ const DeliveryPage = () => {
     if (!amount || typeof amount.value !== "number") {
       amount = {
         value: 0,
-        currency: amount && amount.currency ? amount.currency : "NGN",
+        currency: amount && amount.currency ? amount.currency : "₦",
       };
     }
     return {
@@ -137,7 +137,7 @@ const DeliveryPage = () => {
         if (!amount || typeof amount.value !== "number") {
           amount = {
             value: 0,
-            currency: amount && amount.currency ? amount.currency : "NGN",
+            currency: amount && amount.currency ? amount.currency : "₦",
           };
         }
         return {
@@ -455,21 +455,21 @@ const DeliveryPage = () => {
                     <label className="mb-1 block text-sm font-medium">
                       Select Pickup center
                     </label>
-                    <input
+                    {/* <input
                       type="text"
                       placeholder="Search pickup stations"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="mb-2 w-full rounded border p-2"
-                    />
+                    /> */}
                     <div className="mb-2 flex gap-2">
-                      <button
+                      {/* <button
                         className={`rounded px-3 py-1 ${!showAvailableOnly ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-700"}`}
                         onClick={() => setShowAvailableOnly(false)}
                         type="button"
                       >
                         All centers
-                      </button>
+                      </button> */}
 
                       {/* <button
                         className={`rounded px-3 py-1 ${showAvailableOnly ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-700"}`}
@@ -498,7 +498,7 @@ const DeliveryPage = () => {
                               {station.amount &&
                               typeof station.amount.value === "number"
                                 ? `${station.amount.value} ${station.amount.currency || ""}`
-                                : "0 NGN"}
+                                : "0 ₦"}
                             </option>
                           ))}
                         </select>
@@ -520,7 +520,7 @@ const DeliveryPage = () => {
                             {station.amount &&
                             typeof station.amount.value === "number"
                               ? `${station.amount.value} ${station.amount.currency || ""}`
-                              : "0 NGN"}
+                              : "0 ₦"}
                           </option>
                         ))}
                       </select>
