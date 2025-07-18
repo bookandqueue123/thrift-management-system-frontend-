@@ -8,10 +8,19 @@ interface BillItem {
   _id?: string;
   billName: string;
   category: string;
+  isMandatory: boolean;
   amount: number;
   amountWithoutCharge: number;
   quantity: number;
-  image?: File | null;
+  image: string | File | null | undefined;
+  promoCode: {
+    code: string | null;
+    promoPercentage: number;
+    startDate: string | null;
+    endDate: string | null;
+    startTime: string | null;
+    endTime: string | null;
+  } | null;
 }
 
 interface BillDetails {
@@ -186,7 +195,7 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
   };
 
   const addBillItem = () => {
-    setBillItems(prev => [...prev, { billName: '', category: '', amount: 0, amountWithoutCharge: 0, quantity: 1, image: null }]);
+    setBillItems(prev => [...prev, { billName: '', category: '', isMandatory: false, amount: 0, amountWithoutCharge: 0, quantity: 1, image: null, promoCode: null }]);
   };
 
   const removeBillItem = (idx: number) => {
@@ -430,6 +439,10 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
                         </select>
                       </div>
                       <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Is Mandatory</label>
+                        <input type="checkbox" checked={item.isMandatory} onChange={e => handleItemChange(idx, 'isMandatory', e.target.checked)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" />
+                      </div>
+                      <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Debit Amount</label>
                         <input type="number" min="0" step="0.01" value={item.amount} onChange={e => handleItemChange(idx, 'amount', parseFloat(e.target.value) || 0)} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Enter total amount" />
                       </div>
@@ -473,6 +486,31 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
                           disabled
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
                         />
+                      </div>
+                      {/* Promo Code */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Promo Code</label>
+                        <input type="text" value={item.promoCode?.code || ''} onChange={e => handleItemChange(idx, 'promoCode', { ...item.promoCode, code: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter promo code" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Promo Percentage (%)</label>
+                        <input type="number" min="0" max="100" value={item.promoCode?.promoPercentage || ''} onChange={e => handleItemChange(idx, 'promoCode', { ...item.promoCode, promoPercentage: parseFloat(e.target.value) || 0 })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Promo Start Date</label>
+                        <input type="date" value={item.promoCode?.startDate || ''} onChange={e => handleItemChange(idx, 'promoCode', { ...item.promoCode, startDate: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Promo End Date</label>
+                        <input type="date" value={item.promoCode?.endDate || ''} onChange={e => handleItemChange(idx, 'promoCode', { ...item.promoCode, endDate: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Promo Start Time</label>
+                        <input type="time" value={item.promoCode?.startTime || ''} onChange={e => handleItemChange(idx, 'promoCode', { ...item.promoCode, startTime: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Promo End Time</label>
+                        <input type="time" value={item.promoCode?.endTime || ''} onChange={e => handleItemChange(idx, 'promoCode', { ...item.promoCode, endTime: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                       </div>
                     </div>
                   </div>
