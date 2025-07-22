@@ -127,10 +127,10 @@ const PaymentBreakdownModal: React.FC<PaymentBreakdownModalProps> = ({ order, is
     setPaying(true);
     setPayError(null);
     try {
-      // For this example, pay the remaining balance for all items in the order
+      
       const billItems = order.orderItems.map(item => ({
         billItemId: item._id,
-        amountToPay: item.price * item.quantity // or use remainingBalance if available
+        amountToPay: item.price * item.quantity 
       }));
       const res = await client.post('/api/payments/bills', {
         billId: order._id,

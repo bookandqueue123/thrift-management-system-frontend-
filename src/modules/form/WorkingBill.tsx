@@ -1,6 +1,8 @@
-// "use client";
 
-// import React, { useState, ChangeEvent, useEffect, useRef, memo } from 'react';
+
+//  "use client";
+
+// import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
 // import { Plus, Trash2, Calendar, User, Users, FileText, DollarSign, ChevronRight, ChevronLeft, Upload, Search, X } from 'lucide-react';
 // import { useMutation, useQuery } from '@tanstack/react-query';
 // import { useAuth } from '@/api/hooks/useAuth';
@@ -8,23 +10,20 @@
 // import { useRouter } from 'next/navigation';
 
 // interface BillItem {
-//   _id?: string; // Backend ID, present after saving
-//   id?: string;  // Local temporary ID for React keys
-//   billName: string;
+//   id: number;
+//   purposeName: string;
 //   category: string;
-//   isMandatory: boolean;
-//   amount: number;
+//   amountWithoutCharge: number; // user input
+//   amount: number; // calculated (with charge)
 //   quantity: number;
-//   amountWithoutCharge: number;
-//   image: string | File | null | undefined;
-//   promoCode: {
-//     code: string | null;
-//     promoPercentage: number;
-//     startDate: string | null;
-//     endDate: string | null;
-//     startTime: string | null;
-//     endTime: string | null;
-//   } | null;
+//   isMandatory: boolean;
+//   promoType: 'promo' | 'custom';
+//   promoCode: string;
+//   customPromoCode?: string;
+//   startDate?: string;
+//   startTime?: string;
+//   endDate?: string;
+//   endTime?: string;
 // }
 
 // interface BillDetails {
@@ -127,19 +126,22 @@
 //   });
 
 //   // Bill Items
-//   const [billItems, setBillItems] = useState<BillItem[]>([
-//     {
-//       id: nanoid(),
-//       billName: "",
-//       category: "",
-//       isMandatory: false,
-//       amount: 0,
-//       quantity: 1,
-//       amountWithoutCharge: 0,
-//       image: null,
-//       promoCode: null,
-//     },
-//   ]);
+//   const [billItems, setBillItems] = useState<BillItem[]>([{
+//     id: 1,
+//     purposeName: "",
+//     category: "",
+//     amountWithoutCharge: 0,
+//     amount: 0,
+//     quantity: 1,
+//     isMandatory: false,
+//     promoType: 'promo',
+//     promoCode: '',
+//     customPromoCode: "",
+//     startDate: '',
+//     startTime: '',
+//     endDate: '',
+//     endTime: '',
+//   }]);
 
   
  
@@ -337,16 +339,24 @@
 //       }
 
 //       // Bill Items - send as JSON string
-//       const billItemsData = billItems.map((item) => ({
-//         billName: item.billName,
-//         category: item.category,
-//         isMandatory: item.isMandatory,
-//         amount: item.amount,
-//         quantity: item.quantity,
-//         amountWithoutCharge: item.amountWithoutCharge,
-//         image: null, // handle image upload if needed
-//         promoCode: item.promoCode,
-//       }));
+//       const billItemsData = billItems.map(({ id, category, isMandatory, ...rest }) => {
+//         console.log('Processing bill item:', { category, categoriesData });
+//         const selectedCategory = categoriesData?.find(cat => cat.id === category || cat._id === category);
+//         console.log('Category lookup result:', { 
+//           category, 
+//           categoriesData: categoriesData?.map(c => ({ id: c.id, _id: c._id, name: c.name })),
+//           selectedCategory: selectedCategory ? { id: selectedCategory.id, _id: selectedCategory._id, name: selectedCategory.name } : null
+//         });
+//         return {
+//           billName: rest.purposeName,
+//           category, // ID
+//           name: selectedCategory ? selectedCategory.name : "",
+//           amountWithoutCharge: rest.amountWithoutCharge, // user input
+//           amount: rest.amount, // with charge
+//           quantity: rest.quantity,
+//           isMandatory,
+//         };
+//       });
 //       formData.append("billItems", JSON.stringify(billItemsData));
 
 //       // Max Payment Duration
@@ -395,15 +405,20 @@
 //         platformServiceCharge: 0
 //       });
 //       setBillItems([{
-//         id: nanoid(),
-//         billName: "",
+//         id: 1,
+//         purposeName: "",
 //         category: "",
-//         isMandatory: false,
+//         amountWithoutCharge: 0,
 //         amount: 0,
 //         quantity: 1,
-//         amountWithoutCharge: 0,
-//         image: null,
-//         promoCode: null,
+//         isMandatory: false,
+//         promoType: 'promo',
+//         promoCode: '',
+//         customPromoCode: "",
+//         startDate: '',
+//         startTime: '',
+//         endDate: '',
+//         endTime: '',
 //       }]);
 //       setTimeout(() => {
 //         if (onSuccess) onSuccess();
@@ -422,62 +437,43 @@
 //   };
 
 //   // Handlers for bill items
-//   const handleItemChange = (idx: number, field: keyof BillItem | keyof BillItem["promoCode"], value: any) => {
-//     setBillItems(prev => prev.map((item, i) => {
-//       if (i !== idx) return item;
-//       if (field === "amountWithoutCharge") {
-//         const percentage = platformChargeData?.data?.percentage || 0;
-//         const amount = Number(value) + (percentage / 100) * Number(value);
-//         return { ...item, amountWithoutCharge: value, amount };
+//   const handleItemChange = (itemId: number, field: keyof BillItem, value: string | number | boolean) => {
+//     setBillItems(prev => prev.map(item => {
+//       if (item.id === itemId) {
+//         let updated = { ...item, [field]: value };
+//         if (field === 'amountWithoutCharge') {
+//           const percentage = platformChargeData?.data?.percentage || 0;
+//           updated.amount = Number(value) + (percentage / 100) * Number(value);
+//         }
+//         return updated;
 //       }
-//       if (
-//         field === "promoCode" && (typeof value === "object" || value === null)
-//       ) {
-//         return { ...item, promoCode: value };
-//       }
-//       // Handle nested promoCode fields
-//       if (
-//         ["code", "promoPercentage", "startDate", "endDate", "startTime", "endTime"].includes(field as string)
-//       ) {
-//         return {
-//           ...item,
-//           promoCode: {
-//             ...((item.promoCode as any) || {
-//               code: null,
-//               promoPercentage: 0,
-//               startDate: null,
-//               endDate: null,
-//               startTime: null,
-//               endTime: null,
-//             }),
-//             [field]: value,
-//           },
-//         };
-//       }
-//       return { ...item, [field]: value };
+//       return item;
 //     }));
 //   };
 
 //   const addBillItem = () => {
-//     setBillItems(prev => [
-//       ...prev,
-//       {
-//         id: nanoid(),
-//         billName: "",
-//         category: "",
-//         isMandatory: false,
-//         amount: 0,
-//         quantity: 1,
-//         amountWithoutCharge: 0,
-//         image: null,
-//         promoCode: null,
-//       },
-//     ]);
+//     const newId = Math.max(0, ...billItems.map(item => item.id)) + 1;
+//     setBillItems(prev => [...prev, {
+//       id: newId,
+//       purposeName: "",
+//       category: "",
+//       amountWithoutCharge: 0,
+//       amount: 0,
+//       quantity: 1,
+//       isMandatory: false,
+//       promoType: 'promo',
+//       promoCode: '',
+//       customPromoCode: "",
+//       startDate: '',
+//       startTime: '',
+//       endDate: '',
+//       endTime: '',
+//     }]);
 //   };
 
-//   const removeBillItem = (idx: number) => {
+//   const removeBillItem = (itemId: number) => {
 //     if (billItems.length > 1) {
-//       setBillItems(prev => prev.filter((_, i) => i !== idx));
+//       setBillItems(prev => prev.filter(item => item.id !== itemId));
 //     }
 //   };
 
@@ -547,7 +543,7 @@
 //       return;
 //     }
 //     // New validation: Ensure every bill item has a name
-//     const missingName = billItems.some(item => !item.billName || item.billName.trim() === "");
+//     const missingName = billItems.some(item => !item.purposeName || item.purposeName.trim() === "");
 //     if (missingName) {
 //       setFormError("Each bill item must have a name.");
 //       return;
@@ -570,253 +566,6 @@
 //     // You can implement the email sending functionality here
 //     // This could be a separate API call or integrated with the bill creation
 //   };
-
-//   // Memoized BillItemInput component
-//   const BillItemInput = memo(function BillItemInput({
-//     item,
-//     index,
-//     handleItemChange,
-//     removeBillItem,
-//     categoriesData,
-//     platformChargeData,
-//     isLoadingPlatformCharge,
-//     billItemsLength
-//   }: {
-//     item: any;
-//     index: number;
-//     handleItemChange: any;
-//     removeBillItem: any;
-//     categoriesData: any;
-//     platformChargeData: any;
-//     isLoadingPlatformCharge: boolean;
-//     billItemsLength: number;
-//   }) {
-//     return (
-//       <div className="bg-white rounded-lg p-4 border border-gray-200">
-//         <div className="flex justify-between items-center mb-4">
-//           <h3 className="font-medium text-gray-800">Bill Item {index + 1}</h3>
-//           {billItemsLength > 1 && (
-//             <button
-//               type="button"
-//               onClick={() => removeBillItem(index)}
-//               className="text-red-600 hover:text-red-800 p-1"
-//             >
-//               <Trash2 size={16} />
-//             </button>
-//           )}
-//         </div>
-//         <div className="mb-4">
-//           <label className="block text-sm font-medium text-gray-700 mb-2">Make bill item mandatory for payment</label>
-//           <div className="flex items-center gap-4">
-//             <input
-//               type="radio"
-//               id={`isMandatory-yes-${index}`}
-//               name={`isMandatory-${index}`}
-//               checked={item.isMandatory}
-//               onChange={() => handleItemChange(index, 'isMandatory', true)}
-//             />
-//             <label htmlFor={`isMandatory-yes-${index}`}>Yes</label>
-//             <input
-//               type="radio"
-//               id={`isMandatory-no-${index}`}
-//               name={`isMandatory-${index}`}
-//               checked={!item.isMandatory}
-//               onChange={() => handleItemChange(index, 'isMandatory', false)}
-//             />
-//             <label htmlFor={`isMandatory-no-${index}`}>No</label>
-//           </div>
-//         </div>
-//         <div className="w-full px-2 sm:px-4 py-2 sm:p-8">
-//           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-2">
-//                 Bill Name <span className='text-red-500'>*</span>
-//               </label>
-//               <input
-//                 type="text"
-//                 value={item.billName}
-//                 onChange={(e) => handleItemChange(index, 'billName', e.target.value)}
-//                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-//                 placeholder="Enter item name"
-//               />
-//             </div>
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-2">
-//                 Category
-//               </label>
-//               <select
-//                 value={item.category}
-//                 onChange={(e) => handleItemChange(index, 'category', e.target.value)}
-//                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-//               >
-//                 <option value="">Select category</option>
-//                 {categoriesData?.map((category: any) => (
-//                   <option key={category.id} value={category.id}>
-//                     {category.name}
-//                   </option>
-//                 ))}
-//               </select>
-//             </div>
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-2">
-//                 DEBIT AMOUNT
-//               </label>
-//               <input
-//                 type="number"
-//                 step="0.01"
-//                 value={item.amountWithoutCharge}
-//                 onChange={(e) => handleItemChange(index, 'amountWithoutCharge', parseFloat(e.target.value) || 0)}
-//                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-//                 placeholder="Enter amount without charge"
-//               />
-//             </div>
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-2">
-//                 ACTUAL DEBIT AMOUNT
-//               </label>
-//               <input
-//                 type="number"
-//                 step="0.01"
-//                 value={item.amount}
-//                 readOnly
-//                 className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-//                 placeholder="Amount with charge"
-//               />
-//             </div>
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge (%)</label>
-//               <input
-//                 type="number"
-//                 value={platformChargeData?.data?.percentage || ''}
-//                 disabled
-//                 className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-//               />
-//               {isLoadingPlatformCharge && <span className="text-xs text-gray-400">Loading platform charge...</span>}
-//             </div>
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge value</label>
-//               <input
-//                 type="number"
-//                 value={
-//                   platformChargeData?.data?.percentage
-//                     ? ((platformChargeData.data.percentage / 100) * item.amountWithoutCharge).toFixed(2)
-//                     : ''
-//                 }
-//                 disabled
-//                 className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-//               />
-//             </div>
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-2">
-//                 Quantity
-//               </label>
-//               <input
-//                 type="number"
-//                 min="1"
-//                 value={item.quantity}
-//                 onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
-//                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-//               />
-//             </div>
-//           </div>
-//         </div>
-//         {/* Promo Code Settings - Full width section */}
-//         <div className="mt-6">
-//           <div className="p-4 w-full border border-gray-200 rounded-lg bg-gray-50">
-//             <label className="block text-base font-semibold mb-4">Promo Code Settings</label>
-//             <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
-//               <label className="flex items-center gap-2">
-//                 <input
-//                   type="radio"
-//                   name={`promoType-${index}`}
-//                   checked={!!(item.promoCode && item.promoCode.code && item.promoCode.code !== '')}
-//                   onChange={() => handleItemChange(index, 'promoCode', { code: nanoid(8).toUpperCase(), promoPercentage: 0, startDate: null, endDate: null, startTime: null, endTime: null })}
-//                 />
-//                 Promo Code
-//               </label>
-//               <label className="flex items-center gap-2">
-//                 <input
-//                   type="radio"
-//                   name={`promoType-${index}`}
-//                   checked={!!item.promoCode && item.promoCode.code === ''}
-//                   onChange={() => handleItemChange(index, 'promoCode', { code: '', promoPercentage: 0, startDate: null, endDate: null, startTime: null, endTime: null })}
-//                 />
-//                 Custom Promo Code
-//               </label>
-//             </div>
-//             <div className="flex flex-col md:flex-row gap-2 mb-4 w-full">
-//               <input
-//                 type="text"
-//                 className="flex-1 px-3 py-2 border border-gray-300 rounded"
-//                 placeholder={item.promoCode?.code || "Enter promo code"}
-//                 value={item.promoCode?.code || ''}
-//                 onChange={e => handleItemChange(index, 'promoCode', { ...item.promoCode, code: e.target.value })}
-//               />
-//               <button
-//                 type="button"
-//                 className="w-32 px-4 py-2 bg-gray-200 rounded text-gray-700 font-semibold hover:bg-gray-300 transition-colors"
-//                 onClick={() => handleItemChange(index, 'promoCode', { ...item.promoCode, code: nanoid(8).toUpperCase() })}
-//               >
-//                 Generate
-//               </button>
-//             </div>
-//             {/* Promo Percentage input */}
-//             <div className="mb-4 w-full">
-//               <label className="block text-sm font-medium text-gray-700 mb-2">Promo Percentage (%)</label>
-//               <input
-//                 type="number"
-//                 min="0"
-//                 max="100"
-//                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//                 value={item.promoCode?.promoPercentage || 0}
-//                 onChange={e => handleItemChange(index, 'promoCode', { ...item.promoCode, promoPercentage: parseFloat(e.target.value) || 0 })}
-//                 disabled={!item.promoCode?.code}
-//                 placeholder="Enter promo percentage"
-//               />
-//             </div>
-//             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
-//               <div>
-//                 <label className="block text-xs text-gray-600 mb-1">Start Date</label>
-//                 <input
-//                   type="date"
-//                   className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-//                   value={item.promoCode?.startDate || ''}
-//                   onChange={e => handleItemChange(index, 'promoCode', { ...item.promoCode, startDate: e.target.value })}
-//                 />
-//               </div>
-//               <div>
-//                 <label className="block text-xs text-gray-600 mb-1">Start Time</label>
-//                 <input
-//                   type="time"
-//                   className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-//                   value={item.promoCode?.startTime || ''}
-//                   onChange={e => handleItemChange(index, 'promoCode', { ...item.promoCode, startTime: e.target.value })}
-//                 />
-//               </div>
-//               <div>
-//                 <label className="block text-xs text-gray-600 mb-1">End Date</label>
-//                 <input
-//                   type="date"
-//                   className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-//                   value={item.promoCode?.endDate || ''}
-//                   onChange={e => handleItemChange(index, 'promoCode', { ...item.promoCode, endDate: e.target.value })}
-//                 />
-//               </div>
-//               <div>
-//                 <label className="block text-xs text-gray-600 mb-1">End Time</label>
-//                 <input
-//                   type="time"
-//                   className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
-//                   value={item.promoCode?.endTime || ''}
-//                   onChange={e => handleItemChange(index, 'promoCode', { ...item.promoCode, endTime: e.target.value })}
-//                 />
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     );
-//   });
 
 //   const renderStepContent = () => {
 //     switch (currentStep) {
@@ -1037,17 +786,240 @@
 //             </h2>
 //             <div className="space-y-4">
 //               {billItems.map((item, index) => (
-//                 <BillItemInput
-//                   key={item._id || item.id || index}
-//                   item={item}
-//                   index={index}
-//                   handleItemChange={handleItemChange}
-//                   removeBillItem={removeBillItem}
-//                   categoriesData={categoriesData}
-//                   platformChargeData={platformChargeData}
-//                   isLoadingPlatformCharge={isLoadingPlatformCharge}
-//                   billItemsLength={billItems.length}
-//                 />
+//                 <div key={item.id} className="bg-white rounded-lg p-4 border border-gray-200">
+//                   <div className="flex justify-between items-center mb-4">
+//                     <h3 className="font-medium text-gray-800">Bill Item {index + 1}</h3>
+//                     {billItems.length > 1 && (
+//                       <button
+//                         type="button"
+//                         onClick={() => removeBillItem(item.id)}
+//                         className="text-red-600 hover:text-red-800 p-1"
+//                       >
+//                         <Trash2 size={16} />
+//                       </button>
+//                     )}
+//                   </div>
+//                   <div className="mb-4">
+//                     <label className="block text-sm font-medium text-gray-700 mb-2">Make bill item mandatory for payment</label>
+//                     <div className="flex items-center gap-4">
+//                       <input
+//                         type="radio"
+//                         id={`isMandatory-yes-${item.id}`}
+//                         name={`isMandatory-${item.id}`}
+//                         checked={item.isMandatory}
+//                         onChange={() => handleItemChange(item.id, 'isMandatory', true)}
+//                       />
+//                       <label htmlFor={`isMandatory-yes-${item.id}`}>Yes</label>
+//                       <input
+//                         type="radio"
+//                         id={`isMandatory-no-${item.id}`}
+//                         name={`isMandatory-${item.id}`}
+//                         checked={!item.isMandatory}
+//                         onChange={() => handleItemChange(item.id, 'isMandatory', false)}
+//                       />
+//                       <label htmlFor={`isMandatory-no-${item.id}`}>No</label>
+//                     </div>
+//                   </div>
+//                   <div className="w-full px-2 sm:px-4 py-2 sm:p-8">
+//                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+//                       <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">
+//                           Bill Name <span className='text-red-500'>*</span>
+//                         </label>
+//                         <input
+//                           type="text"
+//                           value={item.purposeName}
+//                           onChange={(e) => handleItemChange(item.id, 'purposeName', e.target.value)}
+//                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+//                           placeholder="Enter item name"
+//                         />
+//                       </div>
+//                       <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">
+//                           Category
+//                         </label>
+//                         <select
+//                           value={item.category}
+//                           onChange={(e) => handleItemChange(item.id, 'category', e.target.value)}
+//                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+//                         >
+//                           <option value="">Select category</option>
+//                           {categoriesData?.map(category => (
+//                             <option key={category.id} value={category.id}>
+//                               {category.name}
+//                             </option>
+//                           ))}
+//                         </select>
+//                       </div>
+//                       <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">
+//                           DEBIT AMOUNT
+//                         </label>
+//                         <input
+//                           type="number"
+//                           // min="0"
+//                           step="0.01"
+//                           value={item.amountWithoutCharge}
+//                           onChange={(e) => handleItemChange(item.id, 'amountWithoutCharge', parseFloat(e.target.value) || 0)}
+//                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+//                           placeholder="Enter amount without charge"
+//                         />
+//                       </div>
+//                       <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">
+//                           ACTUAL DEBIT AMOUNT
+//                         </label>
+//                         <input
+//                           type="number"
+//                           // min="0"
+//                           step="0.01"
+//                           value={item.amount}
+//                           readOnly
+//                           className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+//                           placeholder="Amount with charge"
+//                         />
+//                       </div>
+//                       {/* Platform charge fields */}
+//                       <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge (%)</label>
+//                         <input
+//                           type="number"
+//                           value={platformChargeData?.data?.percentage || ''}
+//                           disabled
+//                           className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+//                         />
+//                         {isLoadingPlatformCharge && <span className="text-xs text-gray-400">Loading platform charge...</span>}
+//                       </div>
+//                       <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge value</label>
+//                         <input
+//                           type="number"
+//                           value={
+//                             platformChargeData?.data?.percentage
+//                               ? ((platformChargeData.data.percentage / 100) * item.amountWithoutCharge).toFixed(2)
+//                               : ''
+//                           }
+//                           disabled
+//                           className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+//                         />
+//                       </div>
+                    
+//                       <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">
+//                           Quantity
+//                         </label>
+//                         <input
+//                           type="number"
+//                           min="1"
+//                           value={item.quantity}
+//                           onChange={(e) => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
+//                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+//                         />
+//                       </div>
+                      
+//                       {/* Custom Promo Code for this item */}
+//                       {/* <div>
+//                         <label className="block text-sm font-medium text-gray-700 mb-2">Custom Promo Code</label>
+//                         <div className="flex gap-2">
+//                           <input
+//                             type="text"
+//                             value={item.customPromoCode || ''}
+//                             readOnly
+//                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 cursor-not-allowed"
+//                             placeholder="Custom promo code"
+//                           />
+//                           <button
+//                             type="button"
+//                             onClick={() => handleItemChange(item.id, 'customPromoCode', generatePromoCode())}
+//                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+//                           >
+//                             Generate
+//                           </button>
+//                         </div>
+//                       </div> */}
+//                     </div>
+//                   </div>
+//                   {/* Promo Code Settings - Full width section */}
+//                   <div className="mt-6">
+//                     <div className="p-4 w-full border border-gray-200 rounded-lg bg-gray-50">
+//                       <label className="block text-base font-semibold mb-4">Promo Code Settings</label>
+//                       <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+//                         <label className="flex items-center gap-2">
+//                           <input
+//                             type="radio"
+//                             name={`promoType-${item.id}`}
+//                             checked={item.promoType === 'promo' || !item.promoType}
+//                             onChange={() => handleItemChange(item.id, 'promoType', 'promo')}
+//                           />
+//                           Promo Code
+//                         </label>
+//                         <label className="flex items-center gap-2">
+//                           <input
+//                             type="radio"
+//                             name={`promoType-${item.id}`}
+//                             checked={item.promoType === 'custom'}
+//                             onChange={() => handleItemChange(item.id, 'promoType', 'custom')}
+//                           />
+//                           Custom Promo Code
+//                         </label>
+//                       </div>
+//                       <div className="flex flex-col md:flex-row gap-2 mb-4 w-full">
+//                         <input
+//                           type="text"
+//                           className="flex-1 px-3 py-2 border border-gray-300 rounded"
+//                           placeholder={item.promoType === 'custom' ? 'Enter custom promo code' : 'Enter promo code'}
+//                           value={item.promoType === 'custom' ? (item.customPromoCode || '') : (item.promoCode || '')}
+//                           onChange={e => handleItemChange(item.id, item.promoType === 'custom' ? 'customPromoCode' : 'promoCode', e.target.value)}
+//                         />
+//                         <button
+//                           type="button"
+//                           className="w-32 px-4 py-2 bg-gray-200 rounded text-gray-700 font-semibold hover:bg-gray-300 transition-colors"
+//                           onClick={() => handleItemChange(item.id, item.promoType === 'custom' ? 'customPromoCode' : 'promoCode', generatePromoCode())}
+//                         >
+//                           Generate
+//                         </button>
+//                       </div>
+//                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
+//                         <div>
+//                           <label className="block text-xs text-gray-600 mb-1">Start Date</label>
+//                           <input
+//                             type="date"
+//                             className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+//                             value={item.startDate || ''}
+//                             onChange={e => handleItemChange(item.id, 'startDate', e.target.value)}
+//                           />
+//                         </div>
+//                         <div>
+//                           <label className="block text-xs text-gray-600 mb-1">Start Time</label>
+//                           <input
+//                             type="time"
+//                             className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+//                             value={item.startTime || ''}
+//                             onChange={e => handleItemChange(item.id, 'startTime', e.target.value)}
+//                           />
+//                         </div>
+//                         <div>
+//                           <label className="block text-xs text-gray-600 mb-1">End Date</label>
+//                           <input
+//                             type="date"
+//                             className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+//                             value={item.endDate || ''}
+//                             onChange={e => handleItemChange(item.id, 'endDate', e.target.value)}
+//                           />
+//                         </div>
+//                         <div>
+//                           <label className="block text-xs text-gray-600 mb-1">End Time</label>
+//                           <input
+//                             type="time"
+//                             className="w-full px-2 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+//                             value={item.endTime || ''}
+//                             onChange={e => handleItemChange(item.id, 'endTime', e.target.value)}
+//                           />
+//                         </div>
+//                       </div>
+//                     </div>
+//                   </div>
+//                 </div>
 //               ))}
 //             </div>
 //             <button
@@ -1289,13 +1261,10 @@
 
 
 
-
-
-
 "use client";
 
 import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
-import { Plus, Trash2, Calendar, User, Users, FileText, DollarSign, ChevronRight, ChevronLeft, Upload, Search, X, CheckCircle } from 'lucide-react';
+import { Plus, Trash2, Calendar, User, Users, FileText, DollarSign, ChevronRight, ChevronLeft, Upload, Search, X } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/api/hooks/useAuth';
 import { nanoid } from 'nanoid';
@@ -1373,7 +1342,7 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
   const [selectedCustomers, setSelectedCustomers] = useState<Customer[]>([]);
   const customerSearchRef = useRef<HTMLDivElement>(null);
-   const [isSuccess, setIsSuccess] = useState(false);
+
   // Bill Details
   const [billDetails, setBillDetails] = useState<BillDetails>({
     billName: "",
@@ -1410,9 +1379,7 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
       endTime: null
     }
   }]);
-  
 
-   
   const { data: categoriesData } = useQuery<Category[]>({
     queryKey: ['bill-categories'],
     queryFn: async () => {
@@ -1585,11 +1552,7 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
       });
     },
     onSuccess() {
-      setIsSuccess(true); 
-      setTimeout(() => {
-        if (onSuccess) onSuccess();
-        setIsSuccess(false);
-      }, 3000); // Show success message for 3 seconds
+      if (onSuccess) onSuccess();
     }
   });
 
@@ -1675,22 +1638,6 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
 
   return (
     <div className="min-h-screen p-2 sm:p-6">
-       {isSuccess && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md text-center">
-            <CheckCircle className="text-green-500 w-16 h-16 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Bill Created Successfully!</h2>
-            
-            {/* <button
-              onClick={() => setIsSuccess(false)}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Continue
-            </button> */}
-          </div>
-        </div>
-      )}
-
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-2 sm:p-8">
           <div className="mb-8">
@@ -1980,31 +1927,7 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                               ))}
                             </select>
                           </div>
-                            <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            DEBIT AMOUNT
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={item.amountWithoutCharge === 0 ? '' : item.amountWithoutCharge}
-            onChange={(e) => {
-              const value = e.target.value;
-              // Handle empty input
-              if (value === '') {
-                handleItemChange(item.id, 'amountWithoutCharge', 0);
-              } else {
-                const num = parseFloat(value);
-                if (!isNaN(num)) {
-                  handleItemChange(item.id, 'amountWithoutCharge', num);
-                }
-              }
-            }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          />
-        </div>
-                          {/* <div>
+                          <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Amount Without Charge
                             </label>
@@ -2016,10 +1939,10 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                               onChange={(e) => handleItemChange(item.id, 'amountWithoutCharge', parseFloat(e.target.value) || 0)}
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                             />
-                          </div> */}
+                          </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              ACTUAL DEBIT AMOUNT
+                              Final Amount
                             </label>
                             <input
                               type="number"
@@ -2030,46 +1953,6 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
                             />
                           </div>
-                               
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Platform Service Charge (%)
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={billDetails.platformServiceCharge}
-                        onChange={(e) => handleBillDetailsChange('platformServiceCharge', parseFloat(e.target.value) || 0)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div> */}
-
-                           <div>
-               <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge (%)</label>
-               <input
-                type="number"
-                value={platformChargeData?.data?.percentage || ''}
-                disabled
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-              />
-              
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge value</label>
-              <input
-                type="number"
-                value={
-                  platformChargeData?.data?.percentage
-                    ? ((platformChargeData.data.percentage / 100) * item.amountWithoutCharge).toFixed(2)
-                    : ''
-                }
-                disabled
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-              />
-            </div>
-
-
-
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Quantity
@@ -2089,7 +1972,7 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                         <div className="p-4 w-full border border-gray-200 rounded-lg bg-gray-50">
                           <label className="block text-base font-semibold mb-4">Promo Code Settings</label>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {/* <div>
+                            <div>
                               <label className="block text-xs text-gray-600 mb-1">Promo Code</label>
                               <input
                                 type="text"
@@ -2098,27 +1981,7 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                                 value={item.promoCode.code || ''}
                                 onChange={e => handlePromoCodeChange(item.id, 'code', e.target.value)}
                               />
-                            </div> */}
-
-                            <div>
-      <label className="block text-xs text-gray-600 mb-1">Promo Code</label>
-      <div className="flex gap-2">
-        <input
-          type="text"
-          className="flex-grow px-2 py-2 border border-gray-300 rounded"
-          placeholder="Enter promo code"
-          value={item.promoCode.code || ''}
-          onChange={e => handlePromoCodeChange(item.id, 'code', e.target.value)}
-        />
-        <button
-          type="button"
-          onClick={() => handlePromoCodeChange(item.id, 'code', generatePromoCode())}
-          className="px-3 py-2 bg-blue-500 text-white  hover:bg-gray-300 rounded transition-colors text-xs whitespace-nowrap"
-        >
-          Generate
-        </button>
-      </div>
-    </div>
+                            </div>
                             <div>
                               <label className="block text-xs text-gray-600 mb-1">Promo Percentage (%)</label>
                               <input
@@ -2188,28 +2051,31 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">Additional Settings</h2>
                 <div className="w-full px-2 py-2 sm:px-4 sm:py-4 sm:p-8">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Promo Code
-      </label>
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={billDetails.promoCode}
-          onChange={(e) => handleBillDetailsChange('promoCode', e.target.value)}
-          className="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="Enter promo code"
-        />
-        <button
-          type="button"
-          onClick={() => handleBillDetailsChange('promoCode', generatePromoCode())}
-          className="px-4 py-3 bg-blue-500 text-white hover:bg-gray-300 rounded-lg transition-colors whitespace-nowrap"
-        >
-          Generate
-        </button>
-      </div>
-    </div>
-               
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Promo Code
+                      </label>
+                      <input
+                        type="text"
+                        value={billDetails.promoCode}
+                        onChange={(e) => handleBillDetailsChange('promoCode', e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter promo code"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Platform Service Charge (%)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={billDetails.platformServiceCharge}
+                        onChange={(e) => handleBillDetailsChange('platformServiceCharge', parseFloat(e.target.value) || 0)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
                     
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
