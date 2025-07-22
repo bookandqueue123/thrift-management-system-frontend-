@@ -66,12 +66,18 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
   const [formError, setFormError] = useState<string | null>(null);
   const [customerSearchTerm, setCustomerSearchTerm] = useState("");
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
-  const [selectedCustomers, setSelectedCustomers] = useState<any[]>(billDetails.assignToCustomer || []);
+  const [selectedCustomers, setSelectedCustomers] = useState<any[]>([]);
   const customerSearchRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setBillDetails(initialData);
     setBillItems(initialData.billItems || []);
+    // This correctly resets the selected customers when the initialData prop changes.
+    if (initialData.assignToCustomer && Array.isArray(initialData.assignToCustomer)) {
+      setSelectedCustomers(initialData.assignToCustomer);
+    } else {
+      setSelectedCustomers([]);
+    }
   }, [initialData]);
 
   // Fetch platform charge percentage from API
@@ -116,25 +122,16 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
     staleTime: 5000,
   });
 
-  // Update selectedCustomers robustly to always show email
+  // This effect "hydrates" the customer data. `initialData` might have partial
+  // customer info (e.g., just ID). This merges it with the full customer
+  // details fetched from the API.
   useEffect(() => {
-    if (billDetails.assignToCustomer && Array.isArray(billDetails.assignToCustomer)) {
-      let assigned: any[] = [];
-      if (typeof billDetails.assignToCustomer[0] === "object") {
-        // Try to hydrate with full customerOrganisation info if possible
-        assigned = billDetails.assignToCustomer.map((c: any) => {
-          if (customerOrganisation) {
-            const found = customerOrganisation.find((co: any) => co._id === c._id);
-            return found || c;
-          }
-          return c;
-        });
-      } else if (customerOrganisation) {
-        assigned = billDetails.assignToCustomer.map((id: string) => {
-          const found = customerOrganisation.find((c: any) => c._id === id);
-          return found || { _id: id, email: "Unknown" };
-        });
-      }
+    if (billDetails.assignToCustomer && Array.isArray(billDetails.assignToCustomer) && customerOrganisation) {
+      const assigned = billDetails.assignToCustomer.map((customerOrId: any) => {
+        const id = typeof customerOrId === 'object' && customerOrId !== null ? customerOrId._id : customerOrId;
+        const found = customerOrganisation.find((c: any) => c._id === id);
+        return found || customerOrId; // Fallback to original if not found
+      });
       setSelectedCustomers(assigned);
     }
   }, [customerOrganisation, billDetails.assignToCustomer]);
@@ -620,5 +617,3 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
 };
 
 export default EditBillForm; 
-
-
