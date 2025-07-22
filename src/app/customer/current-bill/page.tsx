@@ -1,4 +1,6 @@
 
+
+
 "use client"
 
 import React, { useState, useEffect } from "react"
@@ -106,6 +108,8 @@ const CurrentBill = () => {
   const [promoCodes, setPromoCodes] = useState<Record<string, string>>({});
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+  // Add state for custom payment error
+  const [customPayError, setCustomPayError] = useState<string | null>(null);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['customer-bills'],
@@ -264,31 +268,62 @@ const CurrentBill = () => {
     setPromoCodes((prev) => ({ ...prev, [billItemId]: value }));
   };
 
+  // Add a function to handle promo code validation onBlur
+  const handlePromoCodeBlur = (item: TableBillItem) => {
+    if (promoCodes[item._id] && item.promoCode && promoCodes[item._id].trim() !== item.promoCode.code) {
+      setModalMessage('Invalid promo code');
+      setModalOpen(true);
+    }
+  };
+
+  // Helper: check if promo code matches for an item (now applies to all items)
+  const isPromoCodeValid = (item: TableBillItem) => {
+    return item.promoCode && promoCodes[item._id] && promoCodes[item._id].trim().toUpperCase() === item.promoCode.code.toUpperCase();
+  };
+
+  // Helper: get promo percentage for an item if code matches
+  const getPromoPercentage = (item: TableBillItem) => {
+    return isPromoCodeValid(item) && item.promoCode ? item.promoCode.promoPercentage : 0;
+  };
+
+  // Helper: calculate promo discount for an item (applies to all items)
+  const calculatePromoDiscount = (item: TableBillItem) => {
+    const percentage = getPromoPercentage(item);
+    if (percentage > 0) {
+      // Discount is always on the outstanding amount
+      const outstanding = item.amount - (item.totalPaidForItem || 0);
+      return (outstanding * percentage) / 100;
+    }
+    return 0;
+  };
+
+  // Helper: get effective amount after promo for an item (applies to all items)
+  const getEffectiveAmount = (item: TableBillItem) => {
+    const outstanding = item.amount - (item.totalPaidForItem || 0);
+    const discount = calculatePromoDiscount(item);
+    return outstanding - discount;
+  };
+
   const handleMakePayment = async () => {
     setPaying(true)
     setPayError(null)
+    setCustomPayError(null)
     // Group selected payments by billId
     const paymentsByBill: Record<string, { billId: string; billItems: { billItemId: string; amountToPay: number; promoCode?: string }[] }> = {}
-    
     payableItems.forEach((item: TableBillItem) => {
-      let amount = 0
       const outstanding = item.amount - (item.totalPaidForItem || 0);
-      if (item.isMandatory) {
-        // For mandatory items, use the discounted outstanding amount if promo is valid
-        if (isPromoCodeValid(item)) {
-          const discounted = getEffectiveAmount(item) - (item.totalPaidForItem || 0);
-          amount = Math.min(discounted, outstanding);
-        } else {
-          amount = outstanding;
-        }
+      let amount = 0
+      if (isPromoCodeValid(item)) {
+        const discounted = getEffectiveAmount(item);
+        amount = Math.min(discounted, outstanding);
+      } else if (item.isMandatory) {
+        amount = outstanding;
       } else {
-        // For non-mandatory items, use the user-selected amount, but cap to remaining balance
         amount = Math.min(selectedPayments[item._id] || 0, outstanding);
       }
       
       if (amount && amount > 0) {
         if (!paymentsByBill[item.billId]) paymentsByBill[item.billId] = { billId: item.billId, billItems: [] }
-        // If promo code is valid, include it in the payload
         if (isPromoCodeValid(item)) {
           paymentsByBill[item.billId].billItems.push({ billItemId: item._id, amountToPay: amount, promoCode: promoCodes[item._id] })
         } else {
@@ -320,13 +355,10 @@ const CurrentBill = () => {
       }
       refetch()
     } catch (e: any) {
-      // Check for promo code error in response
       const errorMsg = e?.response?.data?.message || e.message || "Payment failed";
-      if (errorMsg && errorMsg.toLowerCase().includes("promo code")) {
+      if (errorMsg) {
         setModalMessage(errorMsg);
         setModalOpen(true);
-      } else {
-        setPayError(errorMsg);
       }
     } finally {
       setPaying(false)
@@ -344,32 +376,6 @@ const CurrentBill = () => {
     },
     enabled: !!organisationId,
   });
-
-  // Helper: check if promo code matches for an item
-  const isPromoCodeValid = (item: TableBillItem) => {
-    return item.promoCode && promoCodes[item._id] && promoCodes[item._id].trim().toUpperCase() === item.promoCode.code.toUpperCase();
-  };
-
-  // Helper: get promo percentage for an item if code matches
-  const getPromoPercentage = (item: TableBillItem) => {
-    return isPromoCodeValid(item) && item.promoCode ? item.promoCode.promoPercentage : 0;
-  };
-
-  // Helper: calculate promo discount for an item
-  const calculatePromoDiscount = (item: TableBillItem) => {
-    if (!item.isMandatory) return 0;
-    const percentage = getPromoPercentage(item);
-    if (percentage > 0) {
-      return (item.amount * percentage) / 100;
-    }
-    return 0;
-  };
-
-  // Helper: get effective amount after promo for an item
-  const getEffectiveAmount = (item: TableBillItem) => {
-    const discount = calculatePromoDiscount(item);
-    return item.amount - discount;
-  };
 
   return (
     <div className="min-h-screen bg-white p-8 rounded">
@@ -421,6 +427,7 @@ const CurrentBill = () => {
         {isLoading && <div className="text-center text-gray-500">Loading bills...</div>}
         {error && <div className="text-center text-red-500">{(error as any)?.message || 'Error loading bills'}</div>}
         {payError && <div className="text-center text-red-500 mb-2">{payError}</div>}
+        {customPayError && <div className="text-center text-red-500 mb-2">{customPayError}</div>}
         {/* Table */}
    <div className="border border-gray-300 rounded-lg overflow-hidden mb-6">
   <div className="overflow-x-auto">
@@ -437,10 +444,11 @@ const CurrentBill = () => {
           <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">End Date</th>
           <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Debit Amount</th>
           <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Credit Amount</th>
-          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Paid Amount</th>
-          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Remaining Balance</th>
-          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Promo Code</th>
           <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Promo Debit Amount</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Paid Amount</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Promo Code</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Promo Code Value</th>
+          <th className="text-gray-800 font-semibold text-left border-r border-gray-300 px-3 py-3 whitespace-nowrap">Remaining Balance</th>
         </tr>
       </thead>
       <tbody>
@@ -467,10 +475,7 @@ const CurrentBill = () => {
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
                           {item.isMandatory
-                            ? (isPromoCodeValid(item)
-                                ? <span className="text-blue-900 font-semibold">{formatCurrency(getEffectiveAmount(item))}</span>
-                                : <span className="text-blue-900 font-semibold">{formatCurrency(item.amount)}</span>
-                              )
+                            ? <span className="text-blue-900 font-semibold">{formatCurrency(item.amount)}</span>
                             : (
                                 <input
                                   type="number"
@@ -482,8 +487,13 @@ const CurrentBill = () => {
                               )
                           }
                         </td>
-                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">NGN 0</td>
-                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount - (item.totalPaidForItem || 0))}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                          {isPromoCodeValid(item)
+                            ? <span className="text-blue-900 font-semibold">{formatCurrency(getEffectiveAmount(item))}</span>
+                            : <span className="text-blue-900 font-semibold">NGN 0</span>
+                          }
+                        </td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.totalPaidForItem)}</td>
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
                           <input
                             type="text"
@@ -491,13 +501,17 @@ const CurrentBill = () => {
                             className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
                             value={promoCodes[item._id] || ""}
                             onChange={(e) => handlePromoCodeInput(item._id, e.target.value)}
+                            onBlur={() => handlePromoCodeBlur(item)}
                           />
                         </td>
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                          {item.isMandatory && isPromoCodeValid(item)
-                            ? formatCurrency(calculatePromoDiscount(item))
+                          {isPromoCodeValid(item) && getPromoPercentage(item) > 0
+                            ? <span className="text-green-700 font-semibold">{formatCurrency(calculatePromoDiscount(item))}</span>
                             : <span className="text-gray-400">-</span>
                           }
+                        </td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                          {(item.amount - (item.totalPaidForItem || 0)) <= 0 ? formatCurrency(0) : formatCurrency(item.amount - (item.totalPaidForItem || 0))}
                         </td>
                       </tr>
                     ))}
@@ -515,13 +529,13 @@ const CurrentBill = () => {
                   </React.Fragment>
                 ))}
                 {/* Section grand total */}
-                <tr className="text-gray-500">
+                {/* <tr className="text-gray-500">
                   <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Previous Debts):</td>
                   <td className="font-bold text-blue-900 text-lg">{formatCurrency(calcGrandTotalFromSubtotals(previousDebtItems))}</td>
                   <td></td><td></td>
                   <td></td>
                   <td></td>
-                </tr>
+                </tr> */}
               </>
             )}
             {/* Current Bill Section */}
@@ -544,10 +558,7 @@ const CurrentBill = () => {
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
                           {item.isMandatory
-                            ? (isPromoCodeValid(item)
-                                ? <span className="text-blue-900 font-semibold">{formatCurrency(getEffectiveAmount(item))}</span>
-                                : <span className="text-blue-900 font-semibold">{formatCurrency(item.amount)}</span>
-                              )
+                            ? <span className="text-blue-900 font-semibold">{formatCurrency(item.amount)}</span>
                             : (
                                 <input
                                   type="number"
@@ -559,8 +570,13 @@ const CurrentBill = () => {
                               )
                           }
                         </td>
-                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">NGN 0</td>
-                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                          {isPromoCodeValid(item)
+                            ? <span className="text-blue-900 font-semibold">{formatCurrency(getEffectiveAmount(item))}</span>
+                            : <span className="text-blue-900 font-semibold">NGN 0</span>
+                          }
+                        </td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.totalPaidForItem)}</td>
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
                           <input
                             type="text"
@@ -568,13 +584,17 @@ const CurrentBill = () => {
                             className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
                             value={promoCodes[item._id] || ""}
                             onChange={(e) => handlePromoCodeInput(item._id, e.target.value)}
+                            onBlur={() => handlePromoCodeBlur(item)}
                           />
                         </td>
                         <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                          {item.isMandatory && isPromoCodeValid(item)
-                            ? formatCurrency(calculatePromoDiscount(item))
+                          {isPromoCodeValid(item) && getPromoPercentage(item) > 0
+                            ? <span className="text-green-700 font-semibold">{formatCurrency(calculatePromoDiscount(item))}</span>
                             : <span className="text-gray-400">-</span>
                           }
+                        </td>
+                        <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                          {(item.amount - (item.totalPaidForItem || 0)) <= 0 ? formatCurrency(0) : formatCurrency(item.amount - (item.totalPaidForItem || 0))}
                         </td>
                       </tr>
                     ))}
@@ -592,13 +612,13 @@ const CurrentBill = () => {
                   </React.Fragment>
                 ))}
                 {/* Section grand total */}
-                <tr className="text-gray-500">
+                {/* <tr className="text-gray-500">
                   <td colSpan={9} className="font-bold text-right px-3 py-2">Grand Total (Current Bill):</td>
                   <td className="font-bold text-blue-900 text-lg">{formatCurrency(calcGrandTotalFromSubtotals(currentBillItems))}</td>
                   <td></td><td></td>
                   <td></td>
                   <td></td>
-                </tr>
+                </tr> */}
               </>
             )}
             {/* Add vertical space before grand sub total */}
@@ -647,10 +667,7 @@ const CurrentBill = () => {
                     <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
                     <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
                       {item.isMandatory
-                        ? (isPromoCodeValid(item)
-                            ? <span className="text-blue-900 font-semibold">{formatCurrency(getEffectiveAmount(item))}</span>
-                            : <span className="text-blue-900 font-semibold">{formatCurrency(item.amount)}</span>
-                          )
+                        ? <span className="text-blue-900 font-semibold">{formatCurrency(item.amount)}</span>
                         : (
                             <input
                               type="number"
@@ -662,8 +679,13 @@ const CurrentBill = () => {
                           )
                       }
                     </td>
-                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">NGN 0</td>
-                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.amount)}</td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                      {isPromoCodeValid(item)
+                        ? <span className="text-blue-900 font-semibold">{formatCurrency(getEffectiveAmount(item))}</span>
+                        : <span className="text-blue-900 font-semibold">NGN 0</span>
+                      }
+                    </td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">{formatCurrency(item.totalPaidForItem)}</td>
                     <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
                       <input
                         type="text"
@@ -671,13 +693,17 @@ const CurrentBill = () => {
                         className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
                         value={promoCodes[item._id] || ""}
                         onChange={(e) => handlePromoCodeInput(item._id, e.target.value)}
+                        onBlur={() => handlePromoCodeBlur(item)}
                       />
                     </td>
                     <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
-                      {item.isMandatory && isPromoCodeValid(item)
-                        ? formatCurrency(calculatePromoDiscount(item))
+                      {isPromoCodeValid(item) && getPromoPercentage(item) > 0
+                        ? <span className="text-green-700 font-semibold">{formatCurrency(calculatePromoDiscount(item))}</span>
                         : <span className="text-gray-400">-</span>
                       }
+                    </td>
+                    <td className="text-gray-700 border-r border-gray-200 px-3 py-3 whitespace-nowrap">
+                      {(item.amount - (item.totalPaidForItem || 0)) <= 0 ? formatCurrency(0) : formatCurrency(item.amount - (item.totalPaidForItem || 0))}
                     </td>
                   </tr>
                 ))}
@@ -742,7 +768,7 @@ const CurrentBill = () => {
 
 </div>
         
-        
+      
       </div>  
    
   )

@@ -257,6 +257,10 @@ const singleBill = singleBillResponse?.data;
         }
       } else if (key === "maxPaymentDuration") {
         formData.append("maxPaymentDuration", JSON.stringify(value));
+      } else if (key === "assignToCustomer" && Array.isArray(value)) {
+        value.forEach((customerId: string) => {
+          formData.append("assignToCustomer", customerId);
+        });
       } else if (typeof value === "string") {
         formData.append(key, value);
       } else if (typeof value === "number") {
@@ -476,12 +480,16 @@ const singleBill = singleBillResponse?.data;
                   ? {
                       code: item.promoCode || null,
                       promoPercentage: item.promoPercentage ?? 0,
-                      startDate: item.startDate ?? null,
-                      endDate: item.endDate ?? null,
+                      startDate: item.startDate ? item.startDate.slice(0, 10) : null,
+                      endDate: item.endDate ? item.endDate.slice(0, 10) : null,
                       startTime: item.startTime ?? null,
                       endTime: item.endTime ?? null,
                     }
-                  : item.promoCode,
+                  : {
+                      ...item.promoCode,
+                      startDate: item.promoCode.startDate ? item.promoCode.startDate.slice(0, 10) : null,
+                      endDate: item.promoCode.endDate ? item.promoCode.endDate.slice(0, 10) : null,
+                    },
               })),
               organisation: singleBill.organisation?._id || singleBill.organisationId || '',
               assignToCustomer: singleBill.assignToCustomer || [], // <-- prefill assigned customers
