@@ -1695,7 +1695,7 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
         <div className="bg-white rounded-lg shadow-lg p-2 sm:p-8">
           <div className="mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">
-              <FileText className="text-blue-600" size={32} />
+              
               Bill Creation
             </h1>
             <p className="text-gray-600 text-sm sm:text-base">Create a new bill with detailed information</p>
@@ -1908,7 +1908,7 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
             {currentStep === 2 && (
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 mb-6">
-                  <DollarSign className="text-green-600" size={20} />
+                 
                   Bill Items
                 </h2>
                 <div className="space-y-4">

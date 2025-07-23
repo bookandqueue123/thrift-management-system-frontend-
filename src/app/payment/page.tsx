@@ -45,6 +45,7 @@ interface FullPaymentData {
   paymentMethod: string
   paymentMode: "100% Full Payment"
   totalPrice: number
+  pickupFee: number
 }
 
 // Pay In Bits Payment Data Structure (matches your API example)
@@ -56,6 +57,8 @@ interface PayInBitsPaymentData {
   totalPrice: number
   initialPaymentAmount: number 
   amountPaid: number
+  pickupFee: number
+
   paymentSchedule: PaymentScheduleItem[]
 }
 
@@ -133,6 +136,7 @@ const PaymentPage = () => {
         paymentData = {
           orderItems,
           shippingAddress,
+          pickupFee,
           amountPaid: totalAmountToPay, // Use totalAmountToPay from localStorage
           paymentMethod: order.paymentMethod || "Credit Card",
           paymentMode: "100% Full Payment",
@@ -159,6 +163,7 @@ const PaymentPage = () => {
         paymentData = {
           orderItems,
           shippingAddress,
+          pickupFee,
           paymentMethod: "Card",
           paymentMode: "Pay In Bits",
           totalPrice: totalAmountToPay, // Use totalAmountToPay from localStorage
@@ -169,6 +174,7 @@ const PaymentPage = () => {
         paymentData = {
           orderItems,
           shippingAddress,
+          pickupFee,
           amountPaid: totalAmountToPay, // Use totalAmountToPay from localStorage
           paymentMethod: "Credit Card",
           paymentMode: "100% Full Payment",
@@ -202,7 +208,7 @@ const PaymentPage = () => {
       }
 
       // Validate that amountPaid equals totalPrice for full payment
-      if (fullPaymentData.amountPaid !== fullPaymentData.totalPrice) {
+      if (fullPaymentData.amountPaid !== fullPaymentData.totalPrice ) {
         console.warn("Amount paid does not equal total price for full payment")
       }
     }
