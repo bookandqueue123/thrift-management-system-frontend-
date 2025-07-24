@@ -110,6 +110,8 @@ interface PaymentBreakdownModalProps {
 
 const PaymentBreakdownModal: React.FC<PaymentBreakdownModalProps> = ({ order, isOpen, onClose }) => {
   const { client } = useAuth();
+   const [processingPayments, setProcessingPayments] = useState<Set<string>>(new Set());
+  const [paymentErrors, setPaymentErrors] = useState<Record<string, string>>({});
   const [paying, setPaying] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
 
@@ -122,33 +124,49 @@ const PaymentBreakdownModal: React.FC<PaymentBreakdownModalProps> = ({ order, is
   const formatCurrency = (amount: number): string => {
     return `₦${amount.toLocaleString()}`;
   };
-
-  const handleMakePayment = async () => {
-    setPaying(true);
-    setPayError(null);
-    try {
-      
-      const billItems = order.orderItems.map(item => ({
-        billItemId: item._id,
-        amountToPay: item.price * item.quantity 
-      }));
-      const res = await client.post('/api/payments/bills', {
-        billId: order._id,
-        billItems,
-        paymentMethod: 'card',
-        notes: 'Little by little payment',
-      });
-      const link = res?.data?.data?.data?.link;
-      if (link) {
-        window.location.href = link;
-        return;
-      }
-    } catch (e: any) {
-      setPayError(e.message || 'Payment failed');
-    } finally {
-      setPaying(false);
-    }
+  
+    const startPaymentProcessing = (paymentId: string) => {
+    setProcessingPayments(prev => new Set(prev).add(paymentId));
+    setPaymentErrors(prev => ({ ...prev, [paymentId]: '' }));
   };
+
+  // Remove payment from processing set
+  const stopPaymentProcessing = (paymentId: string) => {
+    setProcessingPayments(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(paymentId);
+      return newSet;
+    });
+  };
+
+  // const handleMakePayment = async () => {
+  //   setPaying(true);
+  //   setPayError(null);
+  //   try {
+      
+  //     const billItems = order.orderItems.map(item => ({
+  //       billItemId: item._id,
+  //       amountToPay: item.price * item.quantity 
+  //     }));
+  //     const res = await client.post('/api/payments/bills', {
+  //       billId: order._id,
+  //       billItems,
+  //       paymentMethod: 'card',
+  //       notes: 'Little by little payment',
+  //     });
+  //     const link = res?.data?.data?.data?.link;
+  //     if (link) {
+
+
+  //       window.location.href = link;
+  //       return;
+  //     }
+  //   } catch (e: any) {
+  //     setPayError(e.message || 'Payment failed');
+  //   } finally {
+  //     setPaying(false);
+  //   }
+  // };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -245,7 +263,8 @@ const PaymentBreakdownModal: React.FC<PaymentBreakdownModalProps> = ({ order, is
                         {/* Date & Time of Transaction column */}
                         <td className="border border-gray-600 px-3 py-2 text-gray-300">{payment.transactionDate ? new Date(payment.transactionDate).toLocaleString() : 'N/A'}</td>
                         {/* Pay My Debts button for each payment row */}
-                        <td className="border border-gray-600 px-3 py-2 text-gray-300">
+                        
+                        {/* <td className="border border-gray-600 px-3 py-2 text-gray-300">
                           {!payment.isPaid && payment.remainingBalance > 0 && (
                             <button
                               className={`bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition-colors ${!productId ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -278,6 +297,61 @@ const PaymentBreakdownModal: React.FC<PaymentBreakdownModalProps> = ({ order, is
                             </button>
                           )}
                         </td>
+                         */}
+                           
+                           <td className="border border-gray-600 px-3 py-2 text-gray-300">
+  {!payment.isPaid && (
+    <>
+      <button
+        className={`bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition-colors ${
+          !productId || processingPayments.has(payment._id) 
+            ? 'opacity-50 cursor-not-allowed' 
+            : ''
+        }`}
+        onClick={async () => {
+          if (!productId || processingPayments.has(payment._id)) return;
+          
+          startPaymentProcessing(payment._id);
+          try {
+            const res = await client.post(
+              '/api/payments/bits',
+              {
+                orderId: order._id,
+                amount: payment.totalPayment
+              }
+            );
+            const link = res?.data?.data?.data?.link;
+            if (link) {
+              window.location.href = link;
+            }
+          } catch (e: any) {
+            setPaymentErrors(prev => ({
+              ...prev,
+              [payment._id]: e.message || 'Payment failed'
+            }));
+          } finally {
+            stopPaymentProcessing(payment._id);
+          }
+        }}
+        disabled={processingPayments.has(payment._id) || !productId}
+        title={!productId ? 'Product not found for this payment row' : ''}
+      >
+        {processingPayments.has(payment._id)
+          ? 'Processing...' 
+          : !productId 
+            ? 'Product not found' 
+            : 'Pay My Debts'}
+      </button>
+      
+      {paymentErrors[payment._id] && (
+        <div className="text-red-400 text-xs mt-1">
+          {paymentErrors[payment._id]}
+        </div>
+      )}
+    </>
+  )}
+</td>
+                       
                         <td className="border border-gray-600 px-3 py-2">
                           <span className={`px-2 py-1 rounded text-xs ${
                             payment.isPaid 
