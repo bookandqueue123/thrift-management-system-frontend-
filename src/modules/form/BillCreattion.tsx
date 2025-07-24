@@ -1,4 +1,6 @@
 
+
+
 "use client";
 
 import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
@@ -82,7 +84,18 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
   const [selectedCustomers, setSelectedCustomers] = useState<Customer[]>([]);
   const customerSearchRef = useRef<HTMLDivElement>(null);
-   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  
+  // Validation errors
+  const [validationErrors, setValidationErrors] = useState<{
+    billName?: string;
+    billCode?: string;
+    startDate?: string;
+    endDate?: string;
+    category?: string;
+    billItemName?: string;
+  }>({});
+
   // Bill Details
   const [billDetails, setBillDetails] = useState<BillDetails>({
     billName: "",
@@ -121,9 +134,7 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
       sendEmail: false,
     }
   }]);
-  
 
-   
   const { data: categoriesData } = useQuery<Category[]>({
     queryKey: ['bill-categories'],
     queryFn: async () => {
@@ -306,6 +317,14 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
 
   const handleBillDetailsChange = (field: keyof BillDetails, value: string | number | File | null) => {
     setBillDetails(prev => ({ ...prev, [field]: value }));
+    
+    // Clear validation error when field is updated
+    if (validationErrors[field as keyof typeof validationErrors]) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [field]: undefined
+      }));
+    }
   };
 
   const handleItemChange = (itemId: number, field: keyof BillItem, value: string | number | boolean) => {
@@ -321,6 +340,14 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
       
       return updatedItem;
     }));
+    
+    // Clear validation errors when fields are updated
+    if (field === 'category' && validationErrors.category) {
+      setValidationErrors(prev => ({ ...prev, category: undefined }));
+    }
+    if (field === 'billName' && validationErrors.billItemName) {
+      setValidationErrors(prev => ({ ...prev, billItemName: undefined }));
+    }
   };
 
   const handlePromoCodeChange = (
@@ -380,25 +407,66 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
     }
   };
 
-  const nextStep = () => currentStep < totalSteps && setCurrentStep(currentStep + 1);
+  // Validation function
+  const validateForm = () => {
+    const errors: typeof validationErrors = {};
+    
+    // Step 1 validation
+    if (currentStep === 1) {
+      if (!billDetails.billName.trim()) {
+        errors.billName = 'Bill name is required';
+      }
+      
+      if (!billDetails.billCode.trim()) {
+        errors.billCode = 'Bill code is required';
+      }
+      
+      if (!billDetails.startDate) {
+        errors.startDate = 'Start date is required';
+      }
+      
+      if (!billDetails.endDate) {
+        errors.endDate = 'End date is required';
+      }
+    }
+    
+    // Step 2 validation
+    if (currentStep === 2) {
+      const hasMissingCategory = billItems.some(item => !item.category);
+      if (hasMissingCategory) {
+        errors.category = 'Category is required for all bill items';
+      }
+      
+      // Add validation for bill item names
+      const hasMissingItemName = billItems.some(item => !item.billName.trim());
+      if (hasMissingItemName) {
+        errors.billItemName = 'Bill item name is required for all items';
+      }
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const nextStep = () => {
+    if (!validateForm()) return;
+    currentStep < totalSteps && setCurrentStep(currentStep + 1);
+  };
+
   const prevStep = () => currentStep > 1 && setCurrentStep(currentStep - 1);
 
-  const handleSubmit = () => createBill();
+  const handleSubmit = () => {
+    if (!validateForm()) return;
+    createBill();
+  };
 
   return (
     <div className="min-h-screen p-2 sm:p-6">
-       {isSuccess && (
+      {isSuccess && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-8 max-w-md text-center">
             <CheckCircle className="text-green-500 w-16 h-16 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Bill Created Successfully!</h2>
-            
-            {/* <button
-              onClick={() => setIsSuccess(false)}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Continue
-            </button> */}
           </div>
         </div>
       )}
@@ -407,7 +475,6 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
         <div className="bg-white rounded-lg shadow-lg p-2 sm:p-8">
           <div className="mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2 flex items-center gap-3">
-              
               Bill Creation
             </h1>
             <p className="text-gray-600 text-sm sm:text-base">Create a new bill with detailed information</p>
@@ -449,9 +516,14 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                         type="text"
                         value={billDetails.billName}
                         onChange={(e) => handleBillDetailsChange('billName', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className={`w-full px-4 py-3 border ${
+                          validationErrors.billName ? 'border-red-500' : 'border-gray-300'
+                        } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                         placeholder="Enter bill name"
                       />
+                      {validationErrors.billName && (
+                        <p className="text-red-500 text-xs mt-1">{validationErrors.billName}</p>
+                      )}
                     </div>
 
                     <div>
@@ -462,9 +534,14 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                         type="text"
                         value={billDetails.billCode}
                         onChange={(e) => handleBillDetailsChange('billCode', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className={`w-full px-4 py-3 border ${
+                          validationErrors.billCode ? 'border-red-500' : 'border-gray-300'
+                        } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                         placeholder="Enter bill code"
                       />
+                      {validationErrors.billCode && (
+                        <p className="text-red-500 text-xs mt-1">{validationErrors.billCode}</p>
+                      )}
                     </div>
 
                     <div className="sm:col-span-2">
@@ -573,8 +650,13 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                         type="date"
                         value={billDetails.startDate}
                         onChange={(e) => handleBillDetailsChange('startDate', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className={`w-full px-4 py-3 border ${
+                          validationErrors.startDate ? 'border-red-500' : 'border-gray-300'
+                        } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                       />
+                      {validationErrors.startDate && (
+                        <p className="text-red-500 text-xs mt-1">{validationErrors.startDate}</p>
+                      )}
                     </div>
 
                     <div>
@@ -597,8 +679,13 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                         type="date"
                         value={billDetails.endDate}
                         onChange={(e) => handleBillDetailsChange('endDate', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className={`w-full px-4 py-3 border ${
+                          validationErrors.endDate ? 'border-red-500' : 'border-gray-300'
+                        } rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                       />
+                      {validationErrors.endDate && (
+                        <p className="text-red-500 text-xs mt-1">{validationErrors.endDate}</p>
+                      )}
                     </div>
 
                     <div>
@@ -620,9 +707,21 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
             {currentStep === 2 && (
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 mb-6">
-                 
                   Bill Items
                 </h2>
+                
+                {validationErrors.category && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                    {validationErrors.category}
+                  </div>
+                )}
+                
+                {validationErrors.billItemName && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                    {validationErrors.billItemName}
+                  </div>
+                )}
+                
                 <div className="space-y-4">
                   {billItems.map((item) => (
                     <div key={item.id} className="bg-white rounded-lg p-4 border border-gray-200">
@@ -682,7 +781,9 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                             <select
                               value={item.category}
                               onChange={(e) => handleItemChange(item.id, 'category', e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                              className={`w-full px-3 py-2 border ${
+                                validationErrors.category ? 'border-red-500' : 'border-gray-300'
+                              } rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent`}
                             >
                               <option value="">Select category</option>
                               {categoriesData?.map(category => (
@@ -692,43 +793,30 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                               ))}
                             </select>
                           </div>
-                            <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            DEBIT AMOUNT
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={item.amountWithoutCharge === 0 ? '' : item.amountWithoutCharge}
-            onChange={(e) => {
-              const value = e.target.value;
-              // Handle empty input
-              if (value === '') {
-                handleItemChange(item.id, 'amountWithoutCharge', 0);
-              } else {
-                const num = parseFloat(value);
-                if (!isNaN(num)) {
-                  handleItemChange(item.id, 'amountWithoutCharge', num);
-                }
-              }
-            }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          />
-        </div>
-                          {/* <div>
+                          <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Amount Without Charge
+                              DEBIT AMOUNT
                             </label>
                             <input
                               type="number"
                               min="0"
                               step="0.01"
-                              value={item.amountWithoutCharge}
-                              onChange={(e) => handleItemChange(item.id, 'amountWithoutCharge', parseFloat(e.target.value) || 0)}
+                              value={item.amountWithoutCharge === 0 ? '' : item.amountWithoutCharge}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                // Handle empty input
+                                if (value === '') {
+                                  handleItemChange(item.id, 'amountWithoutCharge', 0);
+                                } else {
+                                  const num = parseFloat(value);
+                                  if (!isNaN(num)) {
+                                    handleItemChange(item.id, 'amountWithoutCharge', num);
+                                  }
+                                }
+                              }}
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                             />
-                          </div> */}
+                          </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               ACTUAL DEBIT AMOUNT
@@ -742,46 +830,28 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
                             />
                           </div>
-                               
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Platform Service Charge (%)
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={billDetails.platformServiceCharge}
-                        onChange={(e) => handleBillDetailsChange('platformServiceCharge', parseFloat(e.target.value) || 0)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div> */}
-
-                           <div>
-               <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge (%)</label>
-               <input
-                type="number"
-                value={platformChargeData?.data?.percentage || ''}
-                disabled
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-              />
-              
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge value</label>
-              <input
-                type="number"
-                value={
-                  platformChargeData?.data?.percentage
-                    ? ((platformChargeData.data.percentage / 100) * item.amountWithoutCharge).toFixed(2)
-                    : ''
-                }
-                disabled
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-              />
-            </div>
-
-
-
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge (%)</label>
+                            <input
+                              type="number"
+                              value={platformChargeData?.data?.percentage || ''}
+                              disabled
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Platform charge value</label>
+                            <input
+                              type="number"
+                              value={
+                                platformChargeData?.data?.percentage
+                                  ? ((platformChargeData.data.percentage / 100) * item.amountWithoutCharge).toFixed(2)
+                                  : ''
+                              }
+                              disabled
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                            />
+                          </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Quantity
@@ -801,36 +871,25 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                         <div className="p-4 w-full border border-gray-200 rounded-lg bg-gray-50">
                           <label className="block text-base font-semibold mb-4">Promo Code Settings</label>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {/* <div>
-                              <label className="block text-xs text-gray-600 mb-1">Promo Code</label>
-                              <input
-                                type="text"
-                                className="w-full px-2 py-2 border border-gray-300 rounded"
-                                placeholder="Enter promo code"
-                                value={item.promoCode.code || ''}
-                                onChange={e => handlePromoCodeChange(item.id, 'code', e.target.value)}
-                              />
-                            </div> */}
-
                             <div>
-      <label className="block text-xs text-gray-600 mb-1">Promo Code</label>
-      <div className="flex gap-2">
-        <input
-          type="text"
-          className="flex-grow px-2 py-2 border border-gray-300 rounded"
-          placeholder="Enter promo code"
-          value={item.promoCode.code || ''}
-          onChange={e => handlePromoCodeChange(item.id, 'code', e.target.value)}
-        />
-        <button
-          type="button"
-          onClick={() => handlePromoCodeChange(item.id, 'code', generatePromoCode())}
-          className="px-3 py-2 bg-blue-500 text-white  hover:bg-gray-300 rounded transition-colors text-xs whitespace-nowrap"
-        >
-          Generate
-        </button>
-      </div>
-    </div>
+                              <label className="block text-xs text-gray-600 mb-1">Promo Code</label>
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  className="flex-grow px-2 py-2 border border-gray-300 rounded"
+                                  placeholder="Enter promo code"
+                                  value={item.promoCode.code || ''}
+                                  onChange={e => handlePromoCodeChange(item.id, 'code', e.target.value)}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handlePromoCodeChange(item.id, 'code', generatePromoCode())}
+                                  className="px-3 py-2 bg-blue-500 text-white hover:bg-gray-300 rounded transition-colors text-xs whitespace-nowrap"
+                                >
+                                  Generate
+                                </button>
+                              </div>
+                            </div>
                             <div>
                               <label className="block text-xs text-gray-600 mb-1">Promo Percentage (%)</label>
                               <input
@@ -879,25 +938,22 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                               />
                             </div>
                             <div className="flex items-center mt-4">
-  <input
-    type="checkbox"
-    id={`send-email-${item.id}`}
-    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-    checked={item.promoCode.sendEmail || false}
- onChange={e => handlePromoCodeChange(item.id, 'sendEmail', e.target.checked)}
-
-  />
-  <label
-    htmlFor={`send-email-${item.id}`}
-    className="ml-2 text-base font-semibold text-gray-800"
-  >
-    Send promo code to customers via email
-  </label>
-</div>
-
+                              <input
+                                type="checkbox"
+                                id={`send-email-${item.id}`}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                checked={item.promoCode.sendEmail || false}
+                                onChange={e => handlePromoCodeChange(item.id, 'sendEmail', e.target.checked)}
+                              />
+                              <label
+                                htmlFor={`send-email-${item.id}`}
+                                className="ml-2 text-base font-semibold text-gray-800"
+                              >
+                                Send promo code to customers via email
+                              </label>
+                            </div>
                           </div>
                         </div>
-                        
                       </div>
                     </div>
                   ))}
@@ -918,29 +974,27 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">Additional Settings</h2>
                 <div className="w-full px-2 py-2 sm:px-4 sm:py-4 sm:p-8">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Promo Code
-      </label>
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={billDetails.promoCode}
-          onChange={(e) => handleBillDetailsChange('promoCode', e.target.value)}
-          className="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          placeholder="Enter promo code"
-        />
-        <button
-          type="button"
-          onClick={() => handleBillDetailsChange('promoCode', generatePromoCode())}
-          className="px-4 py-3 bg-blue-500 text-white hover:bg-gray-300 rounded-lg transition-colors whitespace-nowrap"
-        >
-          Generate
-        </button>
-      </div>
-    </div>
-               
-                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Promo Code
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={billDetails.promoCode}
+                          onChange={(e) => handleBillDetailsChange('promoCode', e.target.value)}
+                          className="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Enter promo code"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleBillDetailsChange('promoCode', generatePromoCode())}
+                          className="px-4 py-3 bg-blue-500 text-white hover:bg-gray-300 rounded-lg transition-colors whitespace-nowrap"
+                        >
+                          Generate
+                        </button>
+                      </div>
+                    </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Promo Percentage (%)
@@ -954,7 +1008,6 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
-                    
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Custom Unique Code
@@ -967,7 +1020,6 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                         placeholder="Enter unique code"
                       />
                     </div>
-                    
                     <div className="sm:col-span-2">
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Bill Image
@@ -996,18 +1048,17 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                       </div>
                     </div>
                     <div className="sm:col-span-2">
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Special Notes
-  </label>
-  <textarea
-    value={billDetails.specialNotes}
-    onChange={(e) => handleBillDetailsChange('specialNotes', e.target.value)}
-    rows={5}
-    placeholder="Type any additional information here..."
-    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
-  />
-</div>
-
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Special Notes
+                      </label>
+                      <textarea
+                        value={billDetails.specialNotes}
+                        onChange={(e) => handleBillDetailsChange('specialNotes', e.target.value)}
+                        rows={5}
+                        placeholder="Type any additional information here..."
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
