@@ -381,12 +381,12 @@ const OrderConfirmation: React.FC<{
                         <div className="flex h-16 w-16 items-center justify-center rounded-md bg-gray-100">
                           <Image
                             src={
-                              getImageUrl(item.imageUrl) || "/placeholder.svg"
+                              getImageUrl(item.imageUrl)||  "/placeholder.svg"
                             }
                             alt={item.name}
                             width={64}
                             height={64}
-                            className="rounded-md object-contain"
+                            className="h-full w-full object-contain rounded-md"
                           />
                         </div>
                         <div className="flex-1">
@@ -469,7 +469,7 @@ const OrderConfirmation: React.FC<{
                 >
                   {isPayInBits
                     ? `Pay Initial Deposit (₦ ${displayAmount.toLocaleString()})`
-                    : `Make Full Payment (₦ ${totalWithPickup.toLocaleString()})`}
+                    : `Make payment (₦ ${totalWithPickup.toLocaleString()})`}
                 </button>
               </div>
             </div>
@@ -758,7 +758,7 @@ const OrderConfirmation: React.FC<{
                 {isPayInBits ? (
                   <>Make Initial Deposit (₦{depositAmount.toLocaleString()})</>
                 ) : (
-                  <>Make Full Payment (₦{totalWithPickup.toLocaleString()})</>
+                  <>Make Payment (₦{totalWithPickup.toLocaleString()})</>
                 )}
               </button>
             </div>
