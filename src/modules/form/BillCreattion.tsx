@@ -18,6 +18,7 @@ interface BillItem {
   amount: number;
   amountWithoutCharge: number;
   quantity: number;
+   sendEmail: false,
   promoCode: {
     code: string | null;
     promoPercentage: number;
@@ -25,7 +26,7 @@ interface BillItem {
     endDate: string | null;
     startTime: string | null;
     endTime: string | null;
-    sendEmail: false,
+   
   };
 }
 
@@ -124,6 +125,7 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
     amount: 0,
     amountWithoutCharge: 0,
     quantity: 1,
+     sendEmail: false,
     promoCode: {
       code: null,
       promoPercentage: 0,
@@ -131,7 +133,7 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
       endDate: null,
       startTime: null,
       endTime: null,
-      sendEmail: false,
+     
     }
   }]);
 
@@ -378,6 +380,7 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
       amount: 0,
       amountWithoutCharge: 0,
       quantity: 1,
+       sendEmail: false,
       promoCode: {
         code: null,
         promoPercentage: 0,
@@ -385,7 +388,7 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
         endDate: null,
         startTime: null,
         endTime: null,
-        sendEmail: false,
+       
       }
     }]);
   };
@@ -942,8 +945,8 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
                                 type="checkbox"
                                 id={`send-email-${item.id}`}
                                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                checked={item.promoCode.sendEmail || false}
-                                onChange={e => handlePromoCodeChange(item.id, 'sendEmail', e.target.checked)}
+                                checked={item.sendEmail}
+                                 onChange={e => handleItemChange(item.id, 'sendEmail', e.target.checked)}
                               />
                               <label
                                 htmlFor={`send-email-${item.id}`}
