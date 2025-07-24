@@ -111,7 +111,7 @@ const Landing = () => {
      
       <section className="md:flex md:min-h-screen">
        
-        <div className="md:w-1/2">
+        <div className="md:w-1/2 ">
           <Banner />
         </div>
         
