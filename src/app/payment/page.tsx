@@ -265,7 +265,7 @@ const PaymentPage = () => {
       <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
         <h1 className="text-2xl font-bold text-center mb-6">Payment Processing</h1>
         <p className="text-center text-gray-600">
-          {isLoading ? "Processing your payment, please wait..." : errorMessage ? errorMessage : successMessage}
+          {isLoading ? "Processing your payment, please wait..." : errorMessage}
         </p>
         {/* Show total amount to pay and pickup fee if available */}
         {!isLoading && !errorMessage && (
