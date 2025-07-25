@@ -272,7 +272,7 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
       formData.append("customUniqueCode", billDetails.customUniqueCode);
       formData.append("platformServiceCharge", billDetails.platformServiceCharge.toString());
       formData.append("promoPercentage", billDetails.promoPercentage.toString());
-
+     formData.append("specialNotes", billDetails.specialNotes);
       // Assign to customers
       billDetails.assignToCustomer.forEach(customerId => {
         formData.append("assignToCustomer[]", customerId);
@@ -286,7 +286,8 @@ const BillCreationForm = ({ organizationId, onSuccess }: BillCreationFormProps) 
         amount: item.amount,
         amountWithoutCharge: item.amountWithoutCharge,
         quantity: item.quantity,
-        promoCode: item.promoCode
+        promoCode: item.promoCode,
+        sendEmail: item.sendEmail
       }));
       formData.append("billItems", JSON.stringify(itemsData));
 
