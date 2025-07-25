@@ -1549,6 +1549,7 @@ const CurrentBill = () => {
   const [promoCodes, setPromoCodes] = useState<Record<string, string>>({})
   const [modalOpen, setModalOpen] = useState(false)
   const [modalMessage, setModalMessage] = useState("")
+ const [showNote, setShowNote] = useState(false);
 
   // Fetch bills data
   const { data, isLoading, error, refetch } = useQuery({
@@ -1838,24 +1839,39 @@ const CurrentBill = () => {
 
       <div className="max-w-7xl mx-auto">
         {/* View Toggle */}
-        <div className="flex gap-4 mb-6">
-          <button
-            className={`px-4 py-2 rounded font-medium ${
-              viewType === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
-            }`}
-            onClick={() => setViewType('all')}
-          >
-            Current bill and outstanding debts
-          </button>
-          <button
-            className={`px-4 py-2 rounded font-medium ${
-              viewType === 'current' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
-            }`}
-            onClick={() => setViewType('current')}
-          >
-            Current bill only
-          </button>
-        </div>
+      <div className="flex justify-between items-center gap-4 mb-6 flex-wrap">
+  {/* Left buttons */}
+  <div className="flex gap-4">
+    <button
+      className={`px-4 py-2 rounded font-medium ${
+        viewType === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
+      }`}
+      onClick={() => setViewType('all')}
+    >
+      Current bill and outstanding debts
+    </button>
+    <button
+      className={`px-4 py-2 rounded font-medium ${
+        viewType === 'current' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'
+      }`}
+      onClick={() => setViewType('current')}
+    >
+      Current bill only
+    </button>
+  </div>
+ 
+  {/* Right button */}
+  <button
+    onClick={() => window.print()}
+    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-green-700"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+      <path fillRule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clipRule="evenodd" />
+    </svg>
+    Print Bill
+  </button>
+</div>
+
 
         {/* Loading/Error States */}
         {isLoading && <div className="text-center text-gray-500">Loading bills...</div>}
