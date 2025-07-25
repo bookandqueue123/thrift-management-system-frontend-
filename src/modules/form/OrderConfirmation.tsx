@@ -149,6 +149,7 @@ const OrderConfirmation: React.FC<{
   const pickupFee = pickupStationAmount?.value || 0;
   const pickupCurrency = pickupStationAmount?.currency || "₦";
 
+  console.log(pickupStationAmount, pickupFee, pickupCurrency);
   // Determine the effective payment mode from localStorage/prop ONLY
   let effectivePaymentMode = paymentMode;
 
@@ -207,7 +208,7 @@ const OrderConfirmation: React.FC<{
         paymentModeForStorage = "100% Full Payment";
       } else {
         // PAY IN BITS MODE
-        amountToPay = 
+        amountToPay =
           initialDepositInfo?.initialDeposit || Math.floor(actualTotal * 0.5);
         paymentModeForStorage = "Pay In Bits";
       }
@@ -234,7 +235,7 @@ const OrderConfirmation: React.FC<{
           initialDeposit: isPayInBits ? amountToPay : undefined,
         }),
       );
-      router.push("/payment");
+      router.push("/payment?pickupFee=" + pickupFee);
       return;
     }
 
@@ -275,9 +276,11 @@ const OrderConfirmation: React.FC<{
       amountToPay: amountToPay,
       paymentMode: paymentModeForStorage,
       initialDeposit: isPayInBits ? amountToPay : undefined,
+      pickupFee: pickupFee,
     };
     localStorage.setItem("orderDetails", JSON.stringify(orderDetails));
-    router.push("/payment");
+    console.log("Order Details:", orderDetails); // Debug log
+    router.push("/payment?pickupFee=" + pickupFee);
   };
 
   const isLoading = cartLoading || orderLoading;
@@ -381,12 +384,12 @@ const OrderConfirmation: React.FC<{
                         <div className="flex h-16 w-16 items-center justify-center rounded-md bg-gray-100">
                           <Image
                             src={
-                              getImageUrl(item.imageUrl)||  "/placeholder.svg"
+                              getImageUrl(item.imageUrl) || "/placeholder.svg"
                             }
                             alt={item.name}
                             width={64}
                             height={64}
-                            className="h-full w-full object-contain rounded-md"
+                            className="h-full w-full rounded-md object-contain"
                           />
                         </div>
                         <div className="flex-1">
@@ -450,7 +453,7 @@ const OrderConfirmation: React.FC<{
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Pickup centre fee</span>
                       <span className="font-semibold">
-                       ₦ {pickupFee.toLocaleString()} 
+                        ₦ {pickupFee.toLocaleString()}
                       </span>
                     </div>
                   )}
@@ -459,7 +462,7 @@ const OrderConfirmation: React.FC<{
                       Amount to Pay
                     </span>
                     <span className="text-2xl font-bold text-gray-900">
-                      ₦  {displayAmount.toLocaleString()} 
+                      ₦ {displayAmount.toLocaleString()}
                     </span>
                   </div>
                 </div>

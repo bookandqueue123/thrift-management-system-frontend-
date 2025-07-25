@@ -2,7 +2,7 @@
 import { useAuth } from "@/api/hooks/useAuth";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { selectToken } from "@/slices/OrganizationIdSlice";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
@@ -67,6 +67,8 @@ type PaymentData = FullPaymentData | PayInBitsPaymentData;
 const PaymentPage = () => {
   const { client } = useAuth();
   const token = useSelector(selectToken);
+  const searchParams = useSearchParams();
+  const pickupFeeParama = searchParams.get("pickupFee");
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState("");
@@ -254,6 +256,13 @@ const PaymentPage = () => {
           "Sending payment data:",
           JSON.stringify(paymentData, null, 2),
         );
+        // Add pickupFee from pickupFeeParama to paymentData before sending
+        if (pickupFeeParama) {
+          paymentData = {
+            ...paymentData,
+            pickupFee: JSON.parse(pickupFeeParama),
+          };
+        }
         const response = await client.post("/api/payments", paymentData);
 
         console.log("Payment response:", response.data);
