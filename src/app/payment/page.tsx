@@ -198,7 +198,7 @@ const PaymentPage = () => {
       }
     }
 
-    console.log("Payment Data:", paymentData); // Debug log
+    console.log("Payment DataA:", paymentData); // Debug log
     console.log("Payment Mode:", paymentData.paymentMode); // Debug log
 
     // Validate payment data before sending
