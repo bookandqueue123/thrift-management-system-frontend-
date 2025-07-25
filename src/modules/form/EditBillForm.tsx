@@ -2,6 +2,7 @@ import React, { useState, useEffect, ChangeEvent } from 'react';
 import { Plus, Trash2, Calendar, DollarSign, ChevronRight, ChevronLeft, Upload, User, X } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/api/hooks/useAuth';
+import { nanoid } from 'nanoid';
 
 interface BillItem {
   id?: number;
@@ -68,7 +69,7 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
   const [selectedCustomers, setSelectedCustomers] = useState<any[]>([]);
   const customerSearchRef = React.useRef<HTMLDivElement>(null);
-
+   const generatePromoCode = () => nanoid(8).toUpperCase();
   useEffect(() => {
     setBillDetails(initialData);
     setBillItems(initialData.billItems || []);
@@ -485,10 +486,31 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
                         />
                       </div>
                       {/* Promo Code */}
-                      <div>
+                       <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Promo Code
+      </label>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={item.promoCode?.code || ''}
+          onChange={e => handleItemChange(idx, 'promoCode', { ...item.promoCode, code: e.target.value })}
+          className="flex-grow px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Enter promo code"
+        />
+        <button
+          type="button"
+          onClick={() => handleItemChange(idx, 'promoCode', { ...item.promoCode, code: generatePromoCode() })}
+          className="px-3 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded transition-colors whitespace-nowrap"
+        >
+          Generate
+        </button>
+      </div>
+    </div>
+                      {/* <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Promo Code</label>
                         <input type="text" value={item.promoCode?.code || ''} onChange={e => handleItemChange(idx, 'promoCode', { ...item.promoCode, code: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter promo code" />
-                      </div>
+                      </div> */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Promo Percentage (%)</label>
                         <input type="number" min="0" max="100" value={item.promoCode?.promoPercentage || ''} onChange={e => handleItemChange(idx, 'promoCode', { ...item.promoCode, promoPercentage: parseFloat(e.target.value) || 0 })} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0" />
@@ -523,10 +545,31 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Additional Settings</h2>
             <div className="max-w-4xl mx-auto w-full p-4 md:p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
+                  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Promo Code
+    </label>
+    <div className="flex gap-2">
+      <input
+        type="text"
+        value={billDetails.promoCode}
+        onChange={e => handleBillDetailsChange('promoCode', e.target.value)}
+        className="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        placeholder="Enter promo code"
+      />
+      <button
+        type="button"
+        onClick={() => handleBillDetailsChange('promoCode', generatePromoCode())}
+        className="px-4 py-3 bg-blue-500 text-white hover:bg-blue-600 rounded-lg transition-colors whitespace-nowrap"
+      >
+        Generate
+      </button>
+    </div>
+  </div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Promo Code</label>
                   <input type="text" value={billDetails.promoCode} onChange={e => handleBillDetailsChange('promoCode', e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter promo code" />
-                </div>
+                </div> */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Custom Unique Code</label>
                   <input type="text" value={billDetails.customUniqueCode} onChange={e => handleBillDetailsChange('customUniqueCode', e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter unique code" />

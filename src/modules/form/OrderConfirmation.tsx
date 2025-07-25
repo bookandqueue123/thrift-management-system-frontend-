@@ -207,7 +207,7 @@ const OrderConfirmation: React.FC<{
         paymentModeForStorage = "100% Full Payment";
       } else {
         // PAY IN BITS MODE
-        amountToPay =
+        amountToPay = 
           initialDepositInfo?.initialDeposit || Math.floor(actualTotal * 0.5);
         paymentModeForStorage = "Pay In Bits";
       }
@@ -381,12 +381,12 @@ const OrderConfirmation: React.FC<{
                         <div className="flex h-16 w-16 items-center justify-center rounded-md bg-gray-100">
                           <Image
                             src={
-                              getImageUrl(item.imageUrl) || "/placeholder.svg"
+                              getImageUrl(item.imageUrl)||  "/placeholder.svg"
                             }
                             alt={item.name}
                             width={64}
                             height={64}
-                            className="rounded-md object-contain"
+                            className="h-full w-full object-contain rounded-md"
                           />
                         </div>
                         <div className="flex-1">
@@ -448,9 +448,9 @@ const OrderConfirmation: React.FC<{
                   </div>
                   {pickupFee > 0 && (
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Pickup Station Fee</span>
+                      <span className="text-gray-600">Pickup centre fee</span>
                       <span className="font-semibold">
-                        {pickupFee.toLocaleString()} {pickupCurrency}
+                       ₦ {pickupFee.toLocaleString()} 
                       </span>
                     </div>
                   )}
@@ -459,7 +459,7 @@ const OrderConfirmation: React.FC<{
                       Amount to Pay
                     </span>
                     <span className="text-2xl font-bold text-gray-900">
-                      {displayAmount.toLocaleString()} {pickupCurrency}
+                      ₦  {displayAmount.toLocaleString()} 
                     </span>
                   </div>
                 </div>
@@ -469,7 +469,7 @@ const OrderConfirmation: React.FC<{
                 >
                   {isPayInBits
                     ? `Pay Initial Deposit (₦ ${displayAmount.toLocaleString()})`
-                    : `Make Full Payment (₦ ${totalWithPickup.toLocaleString()})`}
+                    : `Make payment (₦ ${totalWithPickup.toLocaleString()})`}
                 </button>
               </div>
             </div>
@@ -758,7 +758,7 @@ const OrderConfirmation: React.FC<{
                 {isPayInBits ? (
                   <>Make Initial Deposit (₦{depositAmount.toLocaleString()})</>
                 ) : (
-                  <>Make Full Payment (₦{totalWithPickup.toLocaleString()})</>
+                  <>Make Payment (₦{totalWithPickup.toLocaleString()})</>
                 )}
               </button>
             </div>
