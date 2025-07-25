@@ -6,7 +6,7 @@ import Footer from "@/modules/HomePage/Footer";
 import Navbar from "@/modules/HomePage/NavBar";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
 interface PickupStation {
   id: string;
@@ -52,6 +52,8 @@ const DeliveryPage = () => {
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  
   const [available] = useState(true); // Always fetch available stations
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
   const [availableStations, setAvailableStations] = useState<PickupStation[]>(
@@ -100,11 +102,8 @@ const DeliveryPage = () => {
   });
 
   // Map pickup stations for 'All centers' (ensure amount is always present and defaults to 0 NGN if missing)
-  const pickupStations: PickupStation[] = (
-    data?.data ||
-    data?.stations ||
-    []
-  ).map(function (station: any, idx: number) {
+ const pickupStations = useMemo(() => {
+  return (data?.data || data?.stations || []).map(function (station: any, idx: number) {
     let amount = station.amount;
     if (!amount || typeof amount.value !== "number") {
       amount = {
@@ -121,6 +120,7 @@ const DeliveryPage = () => {
       amount,
     };
   });
+}, [data]);
 
   const fetchAvailableStations = async () => {
     try {
@@ -271,7 +271,7 @@ const DeliveryPage = () => {
     if (deliveryMode === "pickup" && selectedPickup) {
       const station = (
         showAvailableOnly ? availableStations : pickupStations
-      ).find((s) => s.name === selectedPickup);
+      ).find((s: { name: string; }) => s.name === selectedPickup);
       pickupStationAmount = station?.amount || null;
     }
     const deliveryInfo = {
@@ -286,6 +286,54 @@ const DeliveryPage = () => {
     localStorage.setItem("deliveryInfo", JSON.stringify(deliveryInfo));
     router.push(`/order-confimation?mode=${mode}`);
   };
+  
+
+   const filterStations = (stations: PickupStation[], query: string) => {
+    if (!query.trim()) return stations;
+    
+    const searchTerm = query.toLowerCase();
+    return stations.filter(station => 
+      station.name.toLowerCase().includes(searchTerm) ||
+      station.address.toLowerCase().includes(searchTerm)
+    );
+  };
+
+  const handleStationSelect = (station: PickupStation) => {
+    setSelectedPickup(station.name);
+    setSearchQuery(station.name.split(' - ').slice(1).join(' - '));
+    setIsDropdownOpen(false);
+  };
+
+  const handleInputFocus = () => {
+    setIsDropdownOpen(true);
+    if (selectedPickup && !searchQuery) {
+      const stationDisplayName = selectedPickup.split(' - ').slice(1).join(' - ');
+      setSearchQuery(stationDisplayName);
+    }
+  };
+
+  const handleInputBlur = () => {
+    setTimeout(() => {
+      setIsDropdownOpen(false);
+    }, 150);
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setSelectedPickup("");
+    setIsDropdownOpen(false);
+  };
+  
+  const filteredStations = useMemo(() => {
+  const stations = showAvailableOnly ? availableStations : pickupStations;
+  return filterStations(stations, searchQuery);
+}, [searchQuery, availableStations, pickupStations, showAvailableOnly]);
+
+
+  //  useEffect(() => {
+  //   const stations = showAvailableOnly ? availableStations : pickupStations;
+  //   setFilteredStations(filterStations(stations, searchQuery));
+  // }, [searchQuery, availableStations, pickupStations, showAvailableOnly]);
 
   // const deliveryHeaders = [
   //   "S/N",
@@ -366,7 +414,7 @@ const DeliveryPage = () => {
                               showAvailableOnly
                                 ? availableStations
                                 : pickupStations
-                            ).find((s) => s.name === selectedPickup);
+                            ).find((s: { name: string; }) => s.name === selectedPickup);
                             return station &&
                               typeof station.amount?.value === "number"
                               ? `${station.amount.value} ${station.amount.currency || ""}`
@@ -451,33 +499,90 @@ const DeliveryPage = () => {
                 )}
 
                 {deliveryMode === "pickup" && (
+  <div>
+    <label className="mb-1 block text-sm font-medium">
+      Select pickup centre
+    </label>
+    
+    {/* Searchable Input */}
+    <div className="relative">
+      <input
+        type="text"
+        placeholder="Search pickup stations by name or address..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        onFocus={handleInputFocus}
+        onBlur={handleInputBlur}
+        className="w-full rounded border p-2 pr-8"
+      />
+      
+      {/* Clear button */}
+      {(searchQuery || selectedPickup) && (
+        <button
+          type="button"
+          onClick={handleClearSearch}
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        >
+          ✕
+        </button>
+      )}
+      
+      {/* Dropdown */}
+      {isDropdownOpen && (
+        <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-b shadow-lg max-h-60 overflow-y-auto">
+          {isLoading ? (
+            <div className="p-3 text-sm text-gray-500">Loading centers...</div>
+          ) : filteredStations.length === 0 ? (
+            <div className="p-3 text-sm text-gray-500">
+              {searchQuery ? 'No centers found matching your search.' : 'No centers available.'}
+            </div>
+          ) : (
+            filteredStations.map((station) => (
+              <div
+                key={station.id}
+                className={`p-3 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0 ${
+                  selectedPickup === station.name ? 'bg-orange-50 border-orange-200' : ''
+                }`}
+                onClick={() => handleStationSelect(station)}
+              >
+                <div className="font-medium text-sm">
+                  {station.name.split(' - ').slice(1).join(' - ')}
+                </div>
+                <div className="text-xs text-gray-600 mt-1">
+                  {station.address}
+                </div>
+                <div className="text-xs font-semibold text-orange-600 mt-1">
+                  {station.amount && typeof station.amount.value === "number"
+                    ? `${station.amount.currency || '₦'}${station.amount.value}`
+                    : "₦0"}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+    
+    {/* Selected station display */}
+    {selectedPickup && !isDropdownOpen && (
+      <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-sm">
+        <span className="text-green-800 font-medium">Selected: </span>
+        <span className="text-green-700">
+          {selectedPickup.split(' - ').slice(1).join(' - ')}
+        </span>
+      </div>
+    )}
+  </div>
+)}
+
+                {/* {deliveryMode === "pickup" && (
                   <div>
                     <label className="mb-1 block text-sm font-medium">
                       Select Pickup center
                     </label>
-                    {/* <input
-                      type="text"
-                      placeholder="Search pickup stations"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="mb-2 w-full rounded border p-2"
-                    /> */}
+                   
                     <div className="mb-2 flex gap-2">
-                      {/* <button
-                        className={`rounded px-3 py-1 ${!showAvailableOnly ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-700"}`}
-                        onClick={() => setShowAvailableOnly(false)}
-                        type="button"
-                      >
-                        All centers
-                      </button> */}
-
-                      {/* <button
-                        className={`rounded px-3 py-1 ${showAvailableOnly ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-700"}`}
-                        onClick={() => setShowAvailableOnly(true)}
-                        type="button"
-                      >
-                        Available centers
-                      </button> */}
+                      
                     </div>
 
                     {showAvailableOnly ? (
@@ -526,7 +631,7 @@ const DeliveryPage = () => {
                       </select>
                     )}
                   </div>
-                )}
+                )} */}
               </>
             )}
 
