@@ -567,10 +567,7 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
       </button>
     </div>
   </div>
-                {/* <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Promo Code</label>
-                  <input type="text" value={billDetails.promoCode} onChange={e => handleBillDetailsChange('promoCode', e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter promo code" />
-                </div> */}
+               
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Custom Unique Code</label>
                   <input type="text" value={billDetails.customUniqueCode} onChange={e => handleBillDetailsChange('customUniqueCode', e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter unique code" />
@@ -578,7 +575,7 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
                  {/* Add this after the customer assignment section */}
 <div className="sm:col-span-2">
   <label className="block text-sm font-medium text-gray-700 mb-2">
-    Special Note
+    Special Notes
   </label>
   <textarea
     value={billDetails.specialNote || ''}
