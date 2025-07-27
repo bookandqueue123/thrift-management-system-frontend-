@@ -32,6 +32,7 @@ interface BillDetails {
   startTime: string;
   endTime: string;
   promoCode: string;
+   specialNote?: string;
   promoPercentage: number;
   billImage: File | null;
   billImageUrl?: string | null;
@@ -574,6 +575,19 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
                   <label className="block text-sm font-medium text-gray-700 mb-2">Custom Unique Code</label>
                   <input type="text" value={billDetails.customUniqueCode} onChange={e => handleBillDetailsChange('customUniqueCode', e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter unique code" />
                 </div>
+                 {/* Add this after the customer assignment section */}
+<div className="sm:col-span-2">
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Special Note
+  </label>
+  <textarea
+    value={billDetails.specialNote || ''}
+    onChange={e => handleBillDetailsChange('specialNote', e.target.value)}
+    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    placeholder="Enter any special note for this bill"
+    rows={3}
+  />
+</div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Promo Percentage (%)</label>
                   <input type="number" min="0" max="100" value={billDetails.promoPercentage} onChange={e => handleBillDetailsChange('promoPercentage', parseFloat(e.target.value) || 0)} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0" />
@@ -586,6 +600,7 @@ const EditBillForm: React.FC<EditBillFormProps> = ({ initialData, onSubmit, onCa
                     {billDetails.billImageUrl && (<div className="mt-4"><img src={billDetails.billImageUrl} alt="Preview" className="mx-auto h-32 w-32 object-cover rounded-lg" /></div>)}
                   </div>
                 </div>
+               
                 {/* Maximum payment Duration */}
                 <div className="col-span-2">
                   <h4 className="font-semibold mb-2">Maximum payment Duration</h4>
