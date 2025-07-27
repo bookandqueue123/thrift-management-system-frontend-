@@ -3,7 +3,7 @@ import { useAuth } from "@/api/hooks/useAuth";
 import SuccessToaster, { ErrorToaster } from "@/components/toast";
 import { selectToken } from "@/slices/OrganizationIdSlice";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
 // Define interfaces for payment data based on your API examples
@@ -342,4 +342,10 @@ const PaymentPage = () => {
   );
 };
 
-export default PaymentPage;
+export default function PaymentPagePage() {
+  return (
+    <Suspense>
+      <PaymentPage />
+    </Suspense>
+  );
+}
