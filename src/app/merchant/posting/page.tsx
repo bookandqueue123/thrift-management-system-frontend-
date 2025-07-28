@@ -289,7 +289,33 @@ const Posting = () => {
       alert("Failed to export savings. Please try again.");
     }
   };
+    
+  // const handleExcelExport = async () => {
+  // try {
+  //   const organisation = organizationId;
+  //   const response = await axios.get(
+  //     // Add organisation to the URL path
+  //     `${apiUrl}api/saving/export-savings-excel-postings/${organisation}`,
+  //     {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       responseType: "blob",
+  //     },
+  //   );
 
+//     const url = window.URL.createObjectURL(new Blob([response.data]));
+//     const link = document.createElement("a");
+//     link.href = url;
+//     link.setAttribute("download", "postings.xlsx");
+//     document.body.appendChild(link);
+//     link.click();
+//     link.remove();
+//   } catch (error) {
+//     console.error("Error exporting savings:", error);
+//     alert("Failed to export savings. Please try again.");
+//   }
+// };
   return (
     <>
       <ProtectedRoute requireSavings>

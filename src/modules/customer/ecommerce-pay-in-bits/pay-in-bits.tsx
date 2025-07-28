@@ -261,7 +261,11 @@ const PaymentBreakdownModal: React.FC<PaymentBreakdownModalProps> = ({ order, is
                         {/* Transaction Reference column */}
                         <td className="border border-gray-600 px-3 py-2 text-gray-300">{payment.transactionReference || 'N/A'}</td>
                         {/* Date & Time of Transaction column */}
-                        <td className="border border-gray-600 px-3 py-2 text-gray-300">{payment.transactionDate ? new Date(payment.transactionDate).toLocaleString() : 'N/A'}</td>
+                        <td className="border border-gray-600 px-3 py-2 text-gray-300">
+  {new Date(order.createdAt).toLocaleString()}
+</td>
+
+                        {/* <td className="border border-gray-600 px-3 py-2 text-gray-300">{payment.transactionDate ? new Date(payment.transactionDate).toLocaleString() : 'N/A'}</td> */}
                         {/* Pay My Debts button for each payment row */}
                         
                         {/* <td className="border border-gray-600 px-3 py-2 text-gray-300">
@@ -591,8 +595,12 @@ const LittleByLittlePayment = () => {
                     ₦{(order.totalPrice || 0).toLocaleString()}
                   </td>
                   <td className="px-6 py-3 whitespace-nowrap text-white">
+              {order.productPaymentTerms?.repaymentPeriodInMonths !== undefined ? 
+               order.productPaymentTerms.repaymentPeriodInMonths : 'N/A'} months
+</td>
+                  {/* <td className="px-6 py-3 whitespace-nowrap text-white">
                     {order.productPaymentTerms?.repaymentPeriodInMonths || 'N/A'} months
-                  </td>
+                  </td> */}
                   <td className="px-6 py-3 whitespace-nowrap text-white">
                     ₦{calculateMinimumDeposit(
                       order.totalPrice || 0, 
