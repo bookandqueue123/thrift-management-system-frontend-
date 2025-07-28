@@ -311,7 +311,7 @@ const PickUpStation: React.FC<PickUpStationFormProps> = ({ onSuccess }) => {
       formData.append('amount[value]', String(form.amount.value));
       formData.append('amount[currency]', form.amount.currency);
 
-      // Use client.post instead of fetch
+ 
       return client.post('/api/pickup-stations', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
