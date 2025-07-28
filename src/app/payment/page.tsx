@@ -248,7 +248,7 @@ const PaymentPage = () => {
     // Trigger payment
     const makePayment = async () => {
       setIsLoading(true);
-      setSuccessMessage("");
+      // setSuccessMessage("");
       setErrorMessage("");
 
       try {
@@ -265,8 +265,8 @@ const PaymentPage = () => {
         }
         const response = await client.post("/api/payments", paymentData);
 
-        console.log("Payment response:", response.data);
-        setSuccessMessage("Payment successful!");
+        // console.log("Payment response:", response.data);
+        // setSuccessMessage("Payment successful!");
 
         if (response.data?.data?.data?.link) {
           window.location.href = response.data.data.data.link;
@@ -300,7 +300,7 @@ const PaymentPage = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      {successMessage && <SuccessToaster message={successMessage} />}
+      {/* {successMessage && <SuccessToaster message={successMessage} />} */}
       {errorMessage && <ErrorToaster message={errorMessage} />}
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
         <h1 className="mb-6 text-center text-2xl font-bold">
@@ -310,8 +310,7 @@ const PaymentPage = () => {
           {isLoading
             ? "Processing your payment, please wait..."
             : errorMessage
-              ? errorMessage
-              : successMessage}
+             }
         </p>
         {/* Show total amount to pay and pickup fee if available */}
         {!isLoading && !errorMessage && (

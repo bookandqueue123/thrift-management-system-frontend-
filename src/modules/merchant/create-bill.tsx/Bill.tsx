@@ -19,6 +19,7 @@ export interface Bill {
   status: string;
   startDate: string;
   endDate: string;
+   specialNote?: string;
   createdAt: string;
   billItems?: Array<{
     billName: string;
@@ -443,6 +444,9 @@ const singleBill = singleBillResponse?.data;
             <div className="px-4"><strong>Bill Code:</strong> {singleBill.billCode}</div>
             <div className="px-4"><strong>Promo Code:</strong> {singleBill.promoCode}</div>
             <div className="px-4"><strong>Unique Code:</strong> {singleBill.customUniqueCode}</div>
+            <div className="px-4">
+               <strong>Special Note:</strong> {singleBill.specialNotes || 'N/A'}
+                  </div>
             <div className="px-4"><strong>Bill Image:</strong> {singleBill.billImage ? (<img src={singleBill.billImage} alt="Bill" className="h-24 w-24 object-cover rounded" />) : 'No Image'}</div>
             <div className="px-4"><strong>Max Payment Duration:</strong> <button className="text-blue-600 underline" onClick={() => setShowPaymentModal(true)}>View Payment</button></div>
             <div className="px-4"><strong>Total Amount:</strong> {singleBill.totalAmount}</div>
