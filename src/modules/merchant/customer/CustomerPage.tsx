@@ -162,17 +162,41 @@ const Customers = () => {
     },
     staleTime: 5000,
   });
+ 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchResult(e.target.value);
+  const searchValue = e.target.value;
+  setSearchResult(searchValue);
+   
+  if (allCustomers) {
+    const filtered = allCustomers.filter((customer) => {
+      // Check all relevant fields
+      const matchesAccountNumber = customer.accountNumber?.toString().includes(searchValue);
+      const matchesFirstName = customer.firstName?.toLowerCase().includes(searchValue.toLowerCase());
+      const matchesLastName = customer.lastName?.toLowerCase().includes(searchValue.toLowerCase());
+      const matchesEmail = customer.email?.toLowerCase().includes(searchValue.toLowerCase());
+      
+      return matchesAccountNumber || matchesFirstName || matchesLastName || matchesEmail;
+    });
+    setFilteredCustomer(filtered);
+  }
+};
 
-    if (allCustomers) {
-      const filtered = allCustomers.filter((item) =>
-        String(item.accountNumber).includes(String(e.target.value)),
-      );
-      // Update the filtered data state
-      setFilteredCustomer(filtered);
-    }
-  };
+  
+
+// const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+  //   setSearchResult(e.target.value);
+
+  //   if (allCustomers) {
+  //     const filtered = allCustomers.filter((item) =>
+  //       String(item.accountNumber).includes(String(e.target.value)),
+        
+  //     );
+      
+  //     setFilteredCustomer(filtered);
+  //   }
+  // };
+  
+  
   const handleDateFilter = () => {
     // Filter the data based on the date range
     if (allCustomers) {
@@ -234,36 +258,67 @@ const Customers = () => {
     }
   };
 
-  const handleExcelExport = async () => {
-    try {
-      const organisation = organisationId; // Replace with actual organisation ID or obtain it dynamically
-      const response = await fetch(
-        `${apiUrl}api/user/export-users-excel/${organisation}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+     const handleExcelExport = async () => {
+  try {
+    const organisation = organisationId;
+    const response = await fetch(
+      `${apiUrl}/api/user/export-users-excel/${organisation}`, 
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      },
+    );
 
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "users.xlsx";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      } else {
-        console.error("Failed to export users:", response.statusText);
-      }
-    } catch (error) {
-      console.error("An error occurred while exporting users:", error);
+    if (response.ok) {
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "customers.xlsx"; // Better filename
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } else {
+      console.error("Failed to export users:", response.statusText);
+      // Add user notification here if needed
     }
-  };
+  } catch (error) {
+    console.error("An error occurred while exporting users:", error);
+    // Add user notification here if needed
+  }
+};
+  // const handleExcelExport = async () => {
+  //   try {
+  //     const organisation = organisationId; // Replace with actual organisation ID or obtain it dynamically
+  //     const response = await fetch(
+  //       `${apiUrl}api/user/export-users-excel/${organisation}`,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       },
+  //     );
+
+  //     if (response.ok) {
+  //       const blob = await response.blob();
+  //       const url = window.URL.createObjectURL(blob);
+  //       const a = document.createElement("a");
+  //       a.href = url;
+  //       a.download = "users.xlsx";
+  //       document.body.appendChild(a);
+  //       a.click();
+  //       a.remove();
+  //     } else {
+  //       console.error("Failed to export users:", response.statusText);
+  //     }
+  //   } catch (error) {
+  //     console.error("An error occurred while exporting users:", error);
+  //   }
+  // };
 
   useEffect(() => {
     // Calling refetch to rerun the allRoles query

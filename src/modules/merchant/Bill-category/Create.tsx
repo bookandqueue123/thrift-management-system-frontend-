@@ -165,9 +165,9 @@ const Create = () => {
                 <td className="text-left px-6">{cat.description}</td>
                 <td className="flex gap-2 items-center">
                   <button onClick={() => handleEdit(cat)} className="p-1 hover:text-yellow-400"><FiEdit2 /></button>
-                  <button onClick={() => handleDelete(cat._id)} className="p-1 hover:text-red-500" disabled={deletingId === cat._id}>
+                  {/* <button onClick={() => handleDelete(cat._id)} className="p-1 hover:text-red-500" disabled={deletingId === cat._id}>
                     {deletingId === cat._id ? "Deleting..." : <FiTrash2 />}
-                  </button>
+                  </button> */}
                 </td>
               </tr>
             ))
