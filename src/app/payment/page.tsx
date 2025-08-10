@@ -120,7 +120,7 @@ const PaymentPage = () => {
       ? JSON.parse(payInBitsDataRaw)
       : null;
 
-    console.log("Order Detailss:", orderDetails); // Debug log
+    console.log("Order Details:", orderDetails); // Debug log
     console.log("Pay In Bits Data:", payInBitsData); // Debug log
     console.log("Token available:", !!token); // Debug log
     console.log("Effective Payment Mode:", effectivePaymentMode); // Debug log
