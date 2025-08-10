@@ -509,7 +509,7 @@ const MutateUser = ({
     isLoading: isLoadingAllPurpose,
     refetch: editingPurposeRefetched,
   } = useQuery({
-    queryKey: ["allPurpose"],
+    queryKey: ["single Purpose"],
     queryFn: async () => {
       return client
         .get(`/api/purpose/${purposeToBeEdited}`, {})
@@ -956,7 +956,7 @@ const MutateUser = ({
           className="m-0 text-xs font-medium text-white"
           htmlFor="purposeName"
         >
-          Purpose Name
+          Purpose Name 
           <span className=" font-base font-semibold text-[#FF0000]">*</span>
         </label>
         <input
@@ -1687,40 +1687,6 @@ const MutateUser = ({
         </div>
       </div>
 
-      {/* {actionToTake === 'create-purpose' ? (
-             <div className="flex flex-col space-y-2">
-             <label className="m-0 text-xs font-medium text-white">Upload Image</label>
-             <label
-               htmlFor="imageUrl"
-               className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
-               >
-                 <Image
-                       src="/upload.svg"
-                       alt="document upload icon"
-                       width={48}
-                       height={48}
-                     />
-                      
-                       <input
-                 id="image"
-                 name="image"
-                 type="file"
-                 onChange={handleImageChange}
-                className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
-               />
-               </label>
-               
-               {formik.values.imageUrl && (
-                 <Image
-                 width={48}
-                 height={48}
-                   src={formik.values.imageUrl}
-                   alt="Selected"
-                   className="mt-2 w-32 h-32 object-cover"
-                 />
-               )}
-             </div>
-      ) : ""} */}
 
       {actionToTake === "create-purpose" ? (
         <div className="mt-4">
@@ -1746,7 +1712,7 @@ const MutateUser = ({
                   formik.setFieldValue("imageUrl", file); // Handle file input
                 }
               }}
-              accept="application/pdf, .jpg, .png"
+              // accept="application/pdf, .jpg, .png .mp4"
             />
             <div className="flex flex-col items-center justify-center">
               <Image

@@ -82,7 +82,7 @@ const Posting = () => {
       return client
         .get(`/api/saving/get-savings?organisation=${organizationId}`, config)
         .then((response) => {
-          setFilteredSavings(response.data.savings);
+          // setFilteredSavings(response.data.savings);
 
           return response.data;
         })
@@ -92,35 +92,100 @@ const Posting = () => {
     },
   });
 
+  const { data: allPostings, isLoading: isLoadingAllPostings } = useQuery({
+    queryKey: ["all postings"],
+    staleTime: 5000,
+    queryFn: async () => {
+      return client
+        .get(`/api/saving/get-postings?organisation=${organizationId}`, config)
+        .then((response) => {
+          setFilteredSavings(response.data);
+
+          return response.data;
+        })
+        .catch((error: AxiosError<any, any>) => {
+          throw error;
+        });
+    },
+  });
+
+  console.log(allPostings);
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
 
-    if (allSavings) {
-      const filtered = allSavings.savings.filter(
+    if (allPostings) {
+      const filtered = allPostings.filter(
         (item: { [x: string]: any; accountNumber: any }) =>
-          String(item.user.accountNumber).includes(String(e.target.value)),
+          String(item.name).includes(String(e.target.value)),
       );
       // Update the filtered data state
       setFilteredSavings(filtered);
     }
   };
 
+  // const handleDateFilter = (toDate: Date) => {
+  //   // Parse fromDate and toDate as Date objects
+  //   const from = new Date(fromDate);
+  //   const to = new Date(toDate);
+
+  //   console.log(toDate);
+  //   console.log(from);
+  //   console.log(to);
+  //   // Ensure the dates are valid
+  //   if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+  //     console.error("Invalid date range provided");
+  //     return;
+  //   }
+
+  //   // Filter the original data instead of filteredSavings to avoid overwriting issues
+  //   const filtered = allPostings.filter((item: { date: string }) => {
+  //     const itemDate = new Date(item.date); // Convert item.date to a Date object
+  //     console.log({ itemDate, from, to }, itemDate >= from, itemDate <= to); // Debugging logs
+  //     return itemDate >= from && itemDate <= to;
+  //   });
+
+  //   // Debugging logs
+
+  //   // Update the state with filtered results
+  //   setFilteredSavings(filtered);
+  // };
+
+  const handleResetButton = () => {
+    handleDateFilter();
+  };
   const handleDateFilter = () => {
-    // Filter the data based on the date range
-    if (allSavings) {
-      const filtered = allSavings.savings.filter(
-        (item: { createdAt: string | number | Date }) => {
-          const itemDate = new Date(item.createdAt); // Convert item date to Date object
-          const startDateObj = new Date(fromDate);
-          const endDateObj = new Date(toDate);
+    // Parse fromDate and toDate as Date objects
+    const from = new Date(fromDate);
+    const to = new Date(toDate);
 
-          return itemDate >= startDateObj && itemDate <= endDateObj;
-        },
-      );
+    // Normalize from and to dates to midnight
+    from.setHours(0, 0, 0, 0); // Set time to 00:00:00.000
+    to.setHours(23, 59, 59, 999); // Set time to 23:59:59.999 for inclusive end of the day
 
-      // Update the filtered data state
-      setFilteredSavings(filtered);
+    console.log(toDate);
+    console.log(from);
+    console.log(to);
+
+    // Ensure the dates are valid
+    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+      console.error("Invalid date range provided");
+      return;
     }
+
+    // Filter the original data instead of filteredSavings to avoid overwriting issues
+    const filtered = allPostings.filter((item: { date: string }) => {
+      const itemDate = new Date(item.date); // Convert item.date to a Date object
+
+      // Normalize itemDate to midnight for comparison
+      itemDate.setHours(0, 0, 0, 0);
+
+      console.log({ itemDate, from, to }, itemDate >= from, itemDate <= to); // Debugging logs
+
+      return itemDate >= from && itemDate <= to;
+    });
+
+    // Update the state with filtered results
+    setFilteredSavings(filtered);
   };
 
   const handleFromDateChange = (event: {
@@ -132,18 +197,20 @@ const Posting = () => {
   const handleToDateChange = (event: {
     target: { value: SetStateAction<string> };
   }) => {
+    // console.log(event.target.value);
     setToDate(event.target.value);
 
-    handleDateFilter();
+    // handleDateFilter(event.target.value);
   };
 
   const paginatedSavings = filteredSavings?.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
+
   let totalPages = 0;
-  if (allSavings) {
-    totalPages = Math.ceil(allSavings.savings.length / PAGE_SIZE);
+  if (allPostings) {
+    totalPages = Math.ceil(allPostings.length / PAGE_SIZE);
   }
 
   const goToPreviousPage = () => {
@@ -222,18 +289,42 @@ const Posting = () => {
       alert("Failed to export savings. Please try again.");
     }
   };
+    
+  // const handleExcelExport = async () => {
+  // try {
+  //   const organisation = organizationId;
+  //   const response = await axios.get(
+  //     // Add organisation to the URL path
+  //     `${apiUrl}api/saving/export-savings-excel-postings/${organisation}`,
+  //     {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       responseType: "blob",
+  //     },
+  //   );
 
+//     const url = window.URL.createObjectURL(new Blob([response.data]));
+//     const link = document.createElement("a");
+//     link.href = url;
+//     link.setAttribute("download", "postings.xlsx");
+//     document.body.appendChild(link);
+//     link.click();
+//     link.remove();
+//   } catch (error) {
+//     console.error("Error exporting savings:", error);
+//     alert("Failed to export savings. Please try again.");
+//   }
+// };
   return (
     <>
       <ProtectedRoute requireSavings>
         <div className="mb-4 space-y-2">
           <p className="text-base font-bold text-ajo_offWhite text-opacity-60">
-            Posting
+            Posting 
           </p>
         </div>
-        <div className="mb-4">
-          <p className="text-xl text-white">Customer List</p>
-        </div>
+
         <section>
           <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <span className="flex items-center gap-3">
@@ -335,6 +426,15 @@ const Posting = () => {
                 onChange={handleToDateChange}
                 className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
               />
+              <CustomButton
+                type="button"
+                label="Go"
+                style="ml-2 rounded-md bg-ajo_blue py-2 px-1 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
+                onButtonClick={() => {
+                  handleResetButton();
+                }}
+              />
+              {/* <button onClick={() => handleResetButton()}>reset</button> */}
             </div>
 
             {(user?.role === "organisation" ||
@@ -366,15 +466,17 @@ const Posting = () => {
                 "Customer Name",
                 "Account Number",
                 "Transaction ID",
+                "Amount",
                 "Purpose",
                 "Email Address",
                 "Phone Number",
                 "Time",
-                "State",
-                "Local Govt Area",
+                "Date",
+                // "State",
+                // "Local Govt Area",
                 "Posted By",
-                "Payment Mode",
-                "Status",
+                // "Payment Mode",
+                // "Status",
                 "Start Date",
                 "End Date",
                 "Action",
@@ -382,45 +484,49 @@ const Posting = () => {
               content={paginatedSavings?.map((savings, index) => (
                 <tr className="" key={index}>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings.user.groupName ??
-                      savings.user.firstName + " " + savings.user.lastName ??
-                      "----"}
+                    {savings.groupName ?? savings.name ?? "----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings.user.accountNumber ?? "----"}
+                    {savings.accountNumber ?? "----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings._id ?? "-----"}
+                    {savings.transactionId ?? "-----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings.purposeName ?? "-----"}
+                    {savings.amount ?? "-----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings.user.email ?? "----"}
+                    {savings.purpose ?? "-----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings.user.phoneNumber ?? "----"}
+                    {savings.email ?? "----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {extractTime(savings.updatedAt ?? "-----")}
+                    {savings.phoneNumber ?? "----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {savings.time ?? "-----"}
+                  </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {savings.date ?? "-----"}
                   </td>
 
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings.user.state ?? "----"}
+                  {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    {savings.state ?? "----"}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {savings.user.lga ?? "----"}
-                  </td>
+                    {savings.lga ?? "----"}
+                  </td> */}
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {user.role === "organisation" ? "Admin" : ""}
+                    {savings.postedBy ?? "-----"}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     Payment Mode
-                  </td>
+                  </td> */}
 
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                  {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {savings.isPaid ?? "----"}
-                  </td>
+                  </td> */}
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     {extractDate(savings.startDate) ?? "----"}
                   </td>
@@ -689,7 +795,7 @@ const PostingForm = ({
     queryFn: async () => {
       return client
         .get(
-          `/api/user?organisation=${organizationId}&userType=${postDetails.postingType}`,
+          `/api/user?organisation=${organizationId}&userType=${postDetails.postingType}&role=${"customer"}`,
           {},
         )
         .then((response) => {
@@ -707,6 +813,7 @@ const PostingForm = ({
         });
     },
   });
+  console.log(users);
 
   const { data: customerAcctNumber, isLoading: isLoadingCustomerAcctNumber } =
     useQuery({
@@ -1307,6 +1414,23 @@ const PostConfirmation = ({
       });
     }
   }, []);
+  // const confirmationRef = useRef<HTMLDivElement>(null);
+
+  // const handleDownload = () => {
+
+  //   if (confirmationRef.current)
+  //     domtoimage
+  //       .toBlob(confirmationRef.current)
+  //       .then((blob: Blob | MediaSource) => {
+  //         const pdf = new jsPDF("landscape", "mm", "a4");
+  //         const pdfWidth = pdf.internal.pageSize.getWidth();
+  //         const pdfHeight = pdf.internal.pageSize.getHeight();
+
+  //         const imgData = URL.createObjectURL(blob);
+  //         pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+  //         pdf.save("certificate.pdf");
+  //       });
+  // };
 
   const handleDownload = () => {
     if (pdfBlob) {

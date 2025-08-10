@@ -6,10 +6,11 @@ import { Montserrat } from "next/font/google";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import TanstackProvider from "../../providers/TanstackProvider";
+
 const montserrat = Montserrat({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Ajo by Raoatech",
+  title: "Finkia by Raoatech",
   description: "Experience the power of seamless savings with Ajo.",
 };
 
@@ -20,8 +21,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head></head>
-
       <body className={montserrat.className}>
         {/* <Provider store={store}> */}
         <TanstackProvider>

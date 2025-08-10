@@ -1,25 +1,28 @@
-'use client'
+"use client";
 import { apiUrl, useAuth } from "@/api/hooks/useAuth";
 import { CustomButton, FilterDropdown } from "@/components/Buttons";
-import CustomerAction from "@/components/CustomerAction";
 import Modal, { ModalConfirmation } from "@/components/Modal";
 import TransactionsTable from "@/components/Tables";
 import OrganisationAction from "@/modules/merchant/OrganisationAction";
 import { selectToken } from "@/slices/OrganizationIdSlice";
-import { MerchantSignUpProps, getOrganizationProps } from "@/types";
-import { extractDate, extractTime, formatToDateAndTime } from "@/utils/TimeStampFormatter";
+import { getOrganizationProps } from "@/types";
+import { extractDate } from "@/utils/TimeStampFormatter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ErrorMessage, Field, Formik } from "formik";
 import Image from "next/image";
-import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from "react";
+import {
+  ChangeEvent,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import { CiExport } from "react-icons/ci";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
 
-
-  
-export default function SuperAdminOrganisation(){
+export default function SuperAdminOrganisation() {
   const token = useSelector(selectToken);
   const PAGE_SIZE = 5;
   const { client } = useAuth();
@@ -27,7 +30,9 @@ export default function SuperAdminOrganisation(){
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [searchResult, setSearchResult] = useState("");
-  const [filteredOrganisations, setFilteredOrganisations] = useState<getOrganizationProps[]>([])
+  const [filteredOrganisations, setFilteredOrganisations] = useState<
+    getOrganizationProps[]
+  >([]);
   const [modalState, setModalState] = useState(false);
   const [modalToShow, setModalToShow] = useState<
     "edit-organisation" | "create-organisation" | "view-organisation" | ""
@@ -36,7 +41,8 @@ export default function SuperAdminOrganisation(){
     "form",
   );
   const [isOrganisationCreated, setIsOrganisationCreated] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("")
+  const [errorMessage, setErrorMessage] = useState("");
+ 
   const {
     data: organizations,
     isLoading: isUserLoading,
@@ -48,12 +54,10 @@ export default function SuperAdminOrganisation(){
       return client
         .get(`/api/user?role=organisation`, {})
         .then((response) => {
-          setFilteredOrganisations(response.data)
+          setFilteredOrganisations(response.data);
           return response.data;
-          
         })
         .catch((error) => {
-         
           throw error;
         });
     },
@@ -63,7 +67,6 @@ export default function SuperAdminOrganisation(){
     // Calling refetch to rerun the allRoles query
     refetch();
   }, [isOrganisationCreated, refetch]);
-
 
   const handleFromDateChange = (event: {
     target: { value: SetStateAction<string> };
@@ -76,50 +79,43 @@ export default function SuperAdminOrganisation(){
   }) => {
     setToDate(event.target.value);
 
-   
-      //  handleDateFilter();
-    
-    
+    //  handleDateFilter();
   };
 
+  const handleDateFilter = () => {
+    if (organizations) {
+      const startDateObj = new Date(fromDate);
+      let endDateObj = new Date(toDate);
 
+      // Adjust the endDateObj to the end of the day
+      endDateObj.setHours(23, 59, 59, 999);
 
+      if (isNaN(startDateObj.getTime())) {
+        console.error("Invalid fromDate:", fromDate);
+        return;
+      }
 
-const handleDateFilter = () => {
-  if (organizations) {
-    const startDateObj = new Date(fromDate);
-    let endDateObj = new Date(toDate);
-    
-    // Adjust the endDateObj to the end of the day
-    endDateObj.setHours(23, 59, 59, 999);
+      if (isNaN(endDateObj.getTime())) {
+        console.error("Invalid toDate:", toDate);
+        return;
+      }
 
-   
+      const filtered = organizations.filter(
+        (item: { createdAt: string | number | Date }) => {
+          const itemDate = new Date(item.createdAt); // Convert item date to Date object
+          return itemDate >= startDateObj && itemDate <= endDateObj;
+        },
+      );
 
-    if (isNaN(startDateObj.getTime())) {
-      console.error('Invalid fromDate:', fromDate);
-      return;
+      setFilteredOrganisations(filtered);
     }
+  };
 
-    if (isNaN(endDateObj.getTime())) {
-      console.error('Invalid toDate:', toDate);
-      return;
+  useEffect(() => {
+    if (fromDate && toDate) {
+      handleDateFilter();
     }
-
-    const filtered = organizations.filter((item: { createdAt: string | number | Date; }) => {
-      const itemDate = new Date(item.createdAt); // Convert item date to Date object
-      return itemDate >= startDateObj && itemDate <= endDateObj;
-    });
-
-    setFilteredOrganisations(filtered);
-  }
-};
-
-useEffect(() => {
-  if (fromDate && toDate) {
-    handleDateFilter();
-  }
-}, [fromDate, toDate]);
-
+  }, [fromDate, toDate]);
 
   // console.log(toDate)
   // console.log(fromDate)
@@ -144,17 +140,16 @@ useEffect(() => {
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchResult(e.target.value);
 
-
     if (organizations) {
       const searchQuery = e.target.value.trim().toLowerCase();
-      const filtered = organizations.filter((item: { organisationName: any; }) =>
-        (item.organisationName.toLowerCase()).includes(searchQuery),
+      const filtered = organizations.filter((item: { organisationName: any }) =>
+        item.organisationName.toLowerCase().includes(searchQuery),
       );
       // Update the filtered data state
       setFilteredOrganisations(filtered);
     }
   };
-  
+
   const paginatedCustomers = filteredOrganisations?.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
@@ -163,8 +158,6 @@ useEffect(() => {
   if (organizations) {
     totalPages = Math.ceil(organizations.length / PAGE_SIZE);
   }
- 
-  
 
   const goToPreviousPage = () => {
     if (currentPage > 1) {
@@ -179,101 +172,100 @@ useEffect(() => {
   };
 
   const handleExport = async () => {
-  
     try {
-     
       const response = await fetch(`${apiUrl}api/user/export-organisation`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = 'organisation.csv';
+        a.download = "organisation.csv";
         document.body.appendChild(a);
         a.click();
         a.remove();
       } else {
-        console.error('Failed to export users:', response);
+        console.error("Failed to export users:", response);
       }
     } catch (error) {
-      console.error('An error occurred while exporting users:', error);
+      console.error("An error occurred while exporting users:", error);
     }
   };
 
   const handleExcelExport = async () => {
     try {
-      
-      const response = await fetch(`${apiUrl}api/user/export-excel-organisation`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${apiUrl}api/user/export-excel-organisation`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
-      
+      );
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = 'organisation.xlsx';
+        a.download = "organisation.xlsx";
         document.body.appendChild(a);
         a.click();
         a.remove();
       } else {
-        console.error('Failed to export users:', response.statusText);
+        console.error("Failed to export users:", response.statusText);
       }
     } catch (error) {
-      console.error('An error occurred while exporting users:', error);
+      console.error("An error occurred while exporting users:", error);
     }
   };
 
+  return (
+    <div>
+      <div className="mb-4 space-y-2">
+        <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
+          Organisation
+        </p>
+      </div>
 
-    return(
-        <div>
-           <div className="mb-4 space-y-2">
-                <p className="text-3xl font-bold text-ajo_offWhite text-opacity-60">
-                 Organisation
-                </p>
-            </div>
-
-            <section>
-          <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+      <section>
+        <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <span className="flex items-center gap-3">
             {/* <SearchInput onSearch={() => ("")}/> */}
             <form className="flex items-center justify-between rounded-lg bg-[rgba(255,255,255,0.1)] p-3">
-            <input
-            onChange={handleSearch}
-              type="search"
-              placeholder="Search"
-              className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
-            />
-          <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-            <circle
-              cx="8.60996"
-              cy="8.10312"
-              r="7.10312"
-              stroke="#EAEAFF"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M13.4121 13.4121L16.9997 16.9997"
-              stroke="#EAEAFF"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          </form>
+              <input
+                onChange={handleSearch}
+                type="search"
+                placeholder="Search"
+                className="w-full bg-transparent text-ajo_offWhite caret-ajo_offWhite outline-none focus:outline-none"
+              />
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                <circle
+                  cx="8.60996"
+                  cy="8.10312"
+                  r="7.10312"
+                  stroke="#EAEAFF"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M13.4121 13.4121L16.9997 16.9997"
+                  stroke="#EAEAFF"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </form>
             <FilterDropdown
               options={[
                 "Timestamp",
@@ -287,38 +279,35 @@ useEffect(() => {
             />
           </span>
 
-         
           <CustomButton
             type="button"
             label="Create an Organisation"
             style="rounded-md bg-ajo_blue py-3 px-9 text-sm text-ajo_offWhite  hover:bg-indigo-500 focus:bg-indigo-500"
             onButtonClick={() => {
-              setIsOrganisationCreated(false)
+              setIsOrganisationCreated(false);
               setModalState(true);
               setModalToShow("create-organisation");
               setModalContent("form");
             }}
           />
-         
         </div>
 
-        <div className="md:flex justify-between my-8">
-          <div className="md:flex items-center">
-            <p className="mr-2 font-lg text-white">Select range from:</p>
+        <div className="my-8 justify-between md:flex">
+          <div className="items-center md:flex">
+            <p className="font-lg mr-2 text-white">Select range from:</p>
             <input
               type="date"
               value={fromDate}
               onChange={handleFromDateChange}
-              className="px-4 mt-2 md:mt-0 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+              className="mt-2 w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none md:mt-0"
             />
-
 
             <p className="mx-2 text-white">to</p>
             <input
               type="date"
               value={toDate}
-               onChange={handleToDateChange}
-              className="px-4 py-2 w-48 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+              onChange={handleToDateChange}
+              className="w-48 rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
             />
 
             {/* <button 
@@ -328,148 +317,146 @@ useEffect(() => {
             >
               Go
               </button> */}
-            </div>
-              <div className="flex mt-4">
-                <button onClick={handleExport} className="mr-4 bg-transparent hover:bg-blue-500 text-white font-medium hover:text-white py-2 px-4 border border-white hover:border-transparent rounded flex">Export as CSV <span className="ml-2 mt-1"><CiExport /></span></button>
-                <button onClick={handleExcelExport} className="px-4 py-2 text-white rounded-md border-none bg-transparent relative">
-                  
-                  <u>Export as Excel</u>
-                </button>
-              </div>
           </div>
+          <div className="mt-4 flex">
+            <button
+              onClick={handleExport}
+              className="mr-4 flex rounded border border-white bg-transparent px-4 py-2 font-medium text-white hover:border-transparent hover:bg-blue-500 hover:text-white"
+            >
+              Export as CSV{" "}
+              <span className="ml-2 mt-1">
+                <CiExport />
+              </span>
+            </button>
+            <button
+              onClick={handleExcelExport}
+              className="relative rounded-md border-none bg-transparent px-4 py-2 text-white"
+            >
+              <u>Export as Excel</u>
+            </button>
+          </div>
+        </div>
 
-          <div className="mb-4">
-        <p className="text-white text-xl">Organisation List</p>
-      </div>
+        <div className="mb-4">
+          <p className="text-xl text-white">Organisation List</p>
+        </div>
 
-      <TransactionsTable
-        headers={[
-        "S/N",
-        "Organisation Name",
-        "Account Number",
-        "email",
-        
-        // "Total Number of Customers",
-        "Registration Date",
-        "Action"
-        ]}
+        <TransactionsTable
+          headers={[
+            "S/N",
+            "Organisation Name",
+            "Account Number",
+            "email",
 
-        content={paginatedCustomers.map((organisation, index) => (
+            // "Total Number of Customers",
+            "Registration Date",
+            "Action",
+          ]}
+          content={paginatedCustomers.map((organisation, index) => (
             <tr className="" key={index}>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {index}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.organisationName}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.accountNumber}
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {organisation.email}
-                </td>
-                
-                {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
+              <td className="whitespace-nowrap px-6 py-4 text-sm">{index}</td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {organisation.organisationName}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {organisation.accountNumber}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {organisation.email}
+              </td>
+
+              {/* <td className="whitespace-nowrap px-6 py-4 text-sm">
                     --- customers
                 </td> */}
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    {extractDate(organisation.createdAt)} 
-                </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm">
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
+                {extractDate(organisation.createdAt)}
+              </td>
+              <td className="whitespace-nowrap px-6 py-4 text-sm">
                 <OrganisationAction
                   index={index}
                   organisationId={organisation._id}
-                  />
-                </td>
+                />
+              </td>
             </tr>
-        ))}
-      />
+          ))}
+        />
 
-      {modalState && (
-        <Modal
-          setModalState={setModalState}
-          title={
-            modalToShow === "create-organisation"
-              ? "Create Organisation"
-                  : ""
-          }
-        >
-          {modalContent === "form" ? (
-             (
+        {modalState && (
+          <Modal
+            setModalState={setModalState}
+            title={
+              modalToShow === "create-organisation" ? "Create Organisation" : ""
+            }
+          >
+            {modalContent === "form" ? (
               <div className="px-[10%]">
                 <CreateOrganisation
-                setIsOrganisationCreated={setIsOrganisationCreated}
-                 setCloseModal={setModalState}
-                    // setUserMutated={setIsUserMutated}
-                    actionToTake={modalToShow}
-                    setModalContent={setModalContent}    
-                    
-                   errorMessage={setErrorMessage} 
+                  setIsOrganisationCreated={setIsOrganisationCreated}
+                  setCloseModal={setModalState}
+                  // setUserMutated={setIsUserMutated}
+                  actionToTake={modalToShow}
+                  setModalContent={setModalContent}
+                  errorMessage={setErrorMessage}
                 />
-                
               </div>
-            ) 
-          ) : 
-          (
-            <ModalConfirmation
-            successTitle={`Organisation ${modalToShow === "create-organisation" ? "Creation" : "Editing"} Successful`}
-            errorTitle={`Organisation ${modalToShow === "create-organisation" ? "Creation" : "Editing"} Failed`}
-            status={isOrganisationCreated ? "success" : "failed"}
-            responseMessage={errorMessage}
-            />
-          )
-          }  
-            
+            ) : (
+              <ModalConfirmation
+                successTitle={`Organisation ${modalToShow === "create-organisation" ? "Creation" : "Editing"} Successful`}
+                errorTitle={`Organisation ${modalToShow === "create-organisation" ? "Creation" : "Editing"} Failed`}
+                status={isOrganisationCreated ? "success" : "failed"}
+                responseMessage={errorMessage}
+              />
+            )}
           </Modal>
         )}
 
-      <div className="flex justify-center">
-            <div className="flex items-center justify-center  space-x-2">
-              <button
-                className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={goToPreviousPage}
-              >
-                <MdKeyboardArrowLeft />
-              </button>
+        <div className="flex justify-center">
+          <div className="flex items-center justify-center  space-x-2">
+            <button
+              className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+              onClick={goToPreviousPage}
+            >
+              <MdKeyboardArrowLeft />
+            </button>
 
-              <button
-                className="cursor-pointer  rounded-md p-2 text-blue-500 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={() => setCurrentPage(currentPage)}
-              >
-                {currentPage}
-              </button>
+            <button
+              className="cursor-pointer  rounded-md p-2 text-blue-500 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+              onClick={() => setCurrentPage(currentPage)}
+            >
+              {currentPage}
+            </button>
 
-              <button
-                className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={() => setCurrentPage(currentPage + 1)}
-              >
-                {currentPage + 1}
-              </button>
-              <button
-                className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={() => setCurrentPage(currentPage + 2)}
-              >
-                {currentPage + 2}
-              </button>
+            <button
+              className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              {currentPage + 1}
+            </button>
+            <button
+              className="cursor-pointer  rounded-md p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+              onClick={() => setCurrentPage(currentPage + 2)}
+            >
+              {currentPage + 2}
+            </button>
 
-              <button
-                className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
-                onClick={goToNextPage}
-              >
-                <MdKeyboardArrowRight />
-              </button>
+            <button
+              className="rounded-md border border-blue-500 p-2 hover:bg-blue-100 focus:border-blue-300 focus:outline-none focus:ring"
+              onClick={goToNextPage}
+            >
+              <MdKeyboardArrowRight />
+            </button>
 
-              {/* <button
+            {/* <button
                 className="p-2 bg-white rounded-md cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring focus:border-blue-300"
                 onClick={() => dispatch(setCurrentPage(currentPage + 6))}
               >
                 {currentPage + 6}
               </button> */}
-            </div>
-            </div>
-      </section>
+          </div>
         </div>
-    )
+      </section>
+    </div>
+  );
 }
 
 const CreateOrganisation = ({
@@ -483,25 +470,29 @@ const CreateOrganisation = ({
   errorMessage: Dispatch<SetStateAction<string>>;
   setModalContent: Dispatch<SetStateAction<"" | "status" | "form">>;
   setIsOrganisationCreated: Dispatch<SetStateAction<boolean>>;
-  actionToTake: "create-organisation" | "edit-organisation" | "view-organisation" | "";
+  actionToTake:
+    | "create-organisation"
+    | "edit-organisation"
+    | "view-organisation"
+    | "";
   setCloseModal: Dispatch<SetStateAction<boolean>>;
   // setUserMutated: Dispatch<SetStateAction<boolean>>;
 }) => {
   const { client } = useAuth();
 
-
-  interface valuesProps{
-    organisationName: string,
-    email: string,
-    contactNumber: string,
-    prefferedUrl: string,
+  interface valuesProps {
+    organisationName: string;
+    password: string;
+    email: string;
+    contactNumber: string;
+    prefferedUrl: string;
   }
-  const initialValues= {
+  const initialValues = {
     organisationName: "",
+    password: "",
     email: "",
     contactNumber: "",
     prefferedUrl: "",
-    
   };
 
   const {
@@ -513,34 +504,28 @@ const CreateOrganisation = ({
     mutationFn: async (values: valuesProps) => {
       return client.post(`/api/user/create-merchant`, {
         organisationName: values.organisationName,
+        password: values.password,
         phoneNumber: values.contactNumber,
         email: values.email,
         prefferedUrl: values.prefferedUrl,
-        
       });
     },
 
     onSuccess(response) {
-      console.log(response)
-      setIsOrganisationCreated(true)
+      console.log(response);
+      setIsOrganisationCreated(true);
       setModalContent("status");
-      errorMessage("")
+      errorMessage("");
       setTimeout(() => {
         setCloseModal(false);
       }, 5000);
     },
     onError(error: any) {
-      errorMessage(error.response.data.message)
+      errorMessage(error.response.data.message);
       setModalContent("status");
-      setIsOrganisationCreated(false)
-      
+      setIsOrganisationCreated(false);
     },
   });
-
-
- 
-
-  
 
   return (
     <Formik
@@ -548,6 +533,7 @@ const CreateOrganisation = ({
       initialValues={initialValues}
       validationSchema={Yup.object({
         organisationName: Yup.string().required("Required"),
+        password: Yup.string().required("Required"),
         email: Yup.string().required("Required").email("Invalid email address"),
         contactNumber: Yup.string()
           .matches(
@@ -557,8 +543,8 @@ const CreateOrganisation = ({
           .required("Required"),
         prefferedUrl: Yup.string().required("Required"),
       })}
-      onSubmit={async(values, { setSubmitting }) => {
-       MerchantSignUp(values)
+      onSubmit={async (values, { setSubmitting }) => {
+        MerchantSignUp(values);
       }}
     >
       {({
@@ -588,6 +574,26 @@ const CreateOrganisation = ({
                 />
                 <ErrorMessage
                   name="organisationName"
+                  component="div"
+                  className="text-xs text-red-500"
+                />
+              </div>
+
+              <div className="my-3">
+                <label
+                  htmlFor="password"
+                  className="m-0 text-xs font-medium text-ajo_darkBlue"
+                >
+                  Password
+                </label>
+                <Field
+                  onChange={handleChange}
+                  name="password"
+                  type="text"
+                  className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                />
+                <ErrorMessage
+                  name="password"
                   component="div"
                   className="text-xs text-red-500"
                 />
@@ -632,36 +638,33 @@ const CreateOrganisation = ({
                   />
                 </div>
               </div>
-              
-              <div className="mb-3">
-              <label
-                htmlFor="prefferedUrl"
-                className="m-0 text-xs font-medium text-ajo_darkBlue"
-              >
-                Preferred Url{" "}
-                <span className="font-base font-semibold text-[#FF0000]">
-                  *
-                </span>{" "}
-                (e.g: example@finkia.com.ng)
-              </label>
-              <div className="mt-1 flex w-full rounded-lg border-0 bg-[#F3F4F6]  p-3">
-                <Field
-                  type="string"
-                  name="prefferedUrl"
-                  id="prefferedUrl"
-                  className="w-full bg-transparent text-[#7D7D7D] outline-none"
-                />
-                <span className="text-ajo_darkBlue">@finkia.com.ng</span>
-              </div>
-              <ErrorMessage
-                name="prefferedUrl"
-                component="div"
-                className="text-xs text-red-500"
-              />
-            </div>
 
-              
-              
+              <div className="mb-3">
+                <label
+                  htmlFor="prefferedUrl"
+                  className="m-0 text-xs font-medium text-ajo_darkBlue"
+                >
+                  Preferred Url{" "}
+                  <span className="font-base font-semibold text-[#FF0000]">
+                    *
+                  </span>{" "}
+                  (e.g: example@finkia.com.ng)
+                </label>
+                <div className="mt-1 flex w-full rounded-lg border-0 bg-[#F3F4F6]  p-3">
+                  <Field
+                    type="string"
+                    name="prefferedUrl"
+                    id="prefferedUrl"
+                    className="w-full bg-transparent text-[#7D7D7D] outline-none"
+                  />
+                  <span className="text-ajo_darkBlue">@finkia.com.ng</span>
+                </div>
+                <ErrorMessage
+                  name="prefferedUrl"
+                  component="div"
+                  className="text-xs text-red-500"
+                />
+              </div>
             </section>
           </div>
           <button
@@ -679,8 +682,8 @@ const CreateOrganisation = ({
                 height={25}
               />
             ) : (
-              'Submit'
-         )} 
+              "Submit"
+            )}
           </button>
         </form>
       )}

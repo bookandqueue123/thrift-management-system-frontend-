@@ -125,7 +125,7 @@ export default function WithDrawalReportSettings() {
   return (
     <div>
       <section className="mt-4">
-        <h1 className="text-xxl mb-8 text-white">Settings</h1>
+        <h1 className="text-xxl mb-8 text-white">Withdrawal</h1>
         <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <span className="items-center gap-3 md:flex">
             <FilterDropdown

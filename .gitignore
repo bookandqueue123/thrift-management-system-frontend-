@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 .yarn/install-state.gz
+/vscode
 
 # testing
 /coverage
@@ -43,3 +44,6 @@ next-env.d.ts
 
 # vscode settings
 .vscode/
+
+# Local Netlify folder
+.netlify

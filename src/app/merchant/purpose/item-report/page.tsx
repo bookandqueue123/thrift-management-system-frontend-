@@ -10,7 +10,7 @@ import { extractDate, extractTime } from "@/utils/TimeStampFormatter";
 import { useQuery } from "@tanstack/react-query";
 import {
   JSXElementConstructor,
-  PromiseLikeOfReactNode,
+  // PromiseLikeOfReactNode,
   ReactElement,
   ReactNode,
   ReactPortal,
@@ -188,7 +188,7 @@ export default function PurposeReport() {
                             | string
                             | number
                             | boolean
-                            | PromiseLikeOfReactNode
+                            // | PromiseLikeOfReactNode
                             | null
                             | undefined;
                           total:
@@ -201,7 +201,7 @@ export default function PurposeReport() {
                               >
                             | Iterable<ReactNode>
                             | ReactPortal
-                            | PromiseLikeOfReactNode
+                            // | PromiseLikeOfReactNode
                             | null
                             | undefined;
                           balance:
@@ -214,7 +214,7 @@ export default function PurposeReport() {
                               >
                             | Iterable<ReactNode>
                             | ReactPortal
-                            | PromiseLikeOfReactNode
+                            // | PromiseLikeOfReactNode
                             | null
                             | undefined;
                           TotalPaymentDuration: any;
