@@ -8,7 +8,7 @@ const nextConfig = {
   },
   env: {
     BACKEND_API: isProd
-      ? // ? "https://thrift-management-system.onrender.com/"
+      ? // ? "https://thrift-management-system.onrender.com/" test
         "https://thrift-management-system.onrender.com/"
       : "https://thrift-management-system.onrender.com/",
     PASSWORD_ENCRYPTION_KEY: process.env.PASSWORD_ENCRYPTION_KEY,
