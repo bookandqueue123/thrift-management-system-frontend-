@@ -2,9 +2,8 @@
 
 import { useAuth } from "@/api/hooks/useAuth";
 
-import { FilterDropdown } from "@/components/Buttons";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import PurposeCarousel from "@/modules/merchant/SavingPurposeCarousel";
+import MarketplaceInterface from "@/modules/HomePage/MarketPlace";
 import {
   selectOrganizationId,
   updateSelectedProducts,
@@ -77,7 +76,7 @@ export default function Page() {
 
   return (
     <ProtectedRoute requirePurpose>
-      <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
+      {/* <div className="container mx-auto max-w-7xl px-4 py-2  md:px-6 md:py-8 lg:px-8">
         <div className="mb-4 space-y-2">
           <p className="text-base font-bold text-ajo_offWhite text-opacity-60">
             Savings Purpose
@@ -181,6 +180,9 @@ export default function Page() {
             categoryToshow={selectedCategory}
           />
         </div>
+      </div> */}
+      <div>
+        <MarketplaceInterface />
       </div>
     </ProtectedRoute>
   );

@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import {
   JSXElementConstructor,
-  PromiseLikeOfReactNode,
+  // PromiseLikeOfReactNode,
   ReactElement,
   ReactNode,
   ReactPortal,
@@ -191,7 +191,7 @@ export default function Purpose() {
                             >
                           | Iterable<ReactNode>
                           | ReactPortal
-                          | PromiseLikeOfReactNode
+                          // | PromiseLikeOfReactNode
                           | null
                           | undefined;
                         uniqueCode:
@@ -204,7 +204,7 @@ export default function Purpose() {
                             >
                           | Iterable<ReactNode>
                           | ReactPortal
-                          | PromiseLikeOfReactNode
+                          // | PromiseLikeOfReactNode
                           | null
                           | undefined;
                         description:
@@ -217,7 +217,7 @@ export default function Purpose() {
                             >
                           | Iterable<ReactNode>
                           | ReactPortal
-                          | PromiseLikeOfReactNode
+                          // | PromiseLikeOfReactNode
                           | null
                           | undefined;
                         organisation: {
@@ -231,7 +231,7 @@ export default function Purpose() {
                               >
                             | Iterable<ReactNode>
                             | ReactPortal
-                            | PromiseLikeOfReactNode
+                            // | PromiseLikeOfReactNode
                             | null
                             | undefined;
                           purposeCommission:
@@ -244,7 +244,7 @@ export default function Purpose() {
                               >
                             | Iterable<ReactNode>
                             | ReactPortal
-                            | PromiseLikeOfReactNode
+                            // | PromiseLikeOfReactNode
                             | null
                             | undefined;
                           generalSpace:
@@ -257,7 +257,7 @@ export default function Purpose() {
                               >
                             | Iterable<ReactNode>
                             | ReactPortal
-                            | PromiseLikeOfReactNode
+                            // | PromiseLikeOfReactNode
                             | null
                             | undefined;
                         };
@@ -271,7 +271,7 @@ export default function Purpose() {
                               string | JSXElementConstructor<any>
                             >
                           | Iterable<ReactNode>
-                          | PromiseLikeOfReactNode
+                          // | PromiseLikeOfReactNode
                           | null
                           | undefined;
                         amount:
@@ -283,7 +283,7 @@ export default function Purpose() {
                               string | JSXElementConstructor<any>
                             >
                           | Iterable<ReactNode>
-                          | PromiseLikeOfReactNode
+                          // | PromiseLikeOfReactNode
                           | null
                           | undefined;
                         promoPercentage:
@@ -296,7 +296,7 @@ export default function Purpose() {
                             >
                           | Iterable<ReactNode>
                           | ReactPortal
-                          | PromiseLikeOfReactNode
+                          // | PromiseLikeOfReactNode
                           | null
                           | undefined;
                         totalPlatformFee:
@@ -309,7 +309,7 @@ export default function Purpose() {
                             >
                           | Iterable<ReactNode>
                           | ReactPortal
-                          | PromiseLikeOfReactNode
+                          // | PromiseLikeOfReactNode
                           | null
                           | undefined;
                         category: {
@@ -323,7 +323,7 @@ export default function Purpose() {
                               >
                             | Iterable<ReactNode>
                             | ReactPortal
-                            | PromiseLikeOfReactNode
+                            // | PromiseLikeOfReactNode
                             | null
                             | undefined;
                         };

@@ -5,29 +5,35 @@ const TransactionsTable = ({
   content,
   belowText
 }: {
-  headers: string[];
+  headers: string[] | React.ReactNode[];
   content: React.ReactNode;
   belowText?: React.ReactNode
 }) => {
   return (
-    <div className="overflow-x-auto rounded-lg border">
-      <table className="min-w-full table-auto divide-y divide-gray-200  text-ajo_offWhite">
-        <thead className="text-xs font-bold tracking-wider text-ajo_offWhite text-opacity-60">
-          <tr className="text-left">
-            {headers.map((header: string) => (
-              <th className="px-6 py-3 whitespace-nowrap" key={header}>
+    <div className="overflow-x-auto rounded-md border border-gray-600">
+      <table className="w-full text-sm text-left text-white border border-gray-600 rounded-md overflow-hidden">
+        <thead className="bg-[#221c3e] text-gray-300 text-sm">
+          <tr>
+            {headers.map((header, idx) => (
+              <th key={idx} className="px-6 py-4 border-b border-gray-600 font-semibold text-left">
                 {header}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody >
-          {content}
+        <tbody className="bg-[#1b1634] text-white">
+          {React.Children.map(content, (child, index) => {
+            if (React.isValidElement(child)) {
+              return React.cloneElement(child, {
+                ...child.props,
+                className: `${child.props.className || ''} border-b border-gray-600`.trim()
+              });
+            }
+            return child;
+          })}
         </tbody>
-
-       
-      </table> 
-            {belowText}
+      </table>
+      {belowText}
     </div>
   );
 };

@@ -41,7 +41,8 @@ const initialState: initialStateProps = {
     ? (() => {
         try {
           const storedProducts = localStorage.getItem("selectedProducts");
-          return storedProducts ? JSON.parse(storedProducts) : [];
+          if (!storedProducts || storedProducts === "undefined") return [];
+          return JSON.parse(storedProducts);
         } catch (error) {
           console.error(
             "Error parsing selectedProducts from localStorage",
@@ -70,7 +71,7 @@ export const authSlice = createSlice({
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
         localStorage.setItem("userId", userId);
-        localStorage.setItem("selectedProducts", selectedProducts);
+        localStorage.setItem("selectedProducts", JSON.stringify(selectedProducts));
       }
     },
     clearAuthData: (state) => {

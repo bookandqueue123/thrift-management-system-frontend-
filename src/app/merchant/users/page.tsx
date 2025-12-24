@@ -12,14 +12,13 @@ import {
   selectUserId,
 } from "@/slices/OrganizationIdSlice";
 import {
-  MyFileList,
   customer,
   mutateUserProps,
   roleResponse,
   staffResponse,
 } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import axios, { AxiosError, AxiosResponse } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 import { ErrorMessage, Field, Formik } from "formik";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,7 +26,6 @@ import { useRouter } from "next/navigation";
 import React, {
   ChangeEvent,
   Dispatch,
-  Key,
   SetStateAction,
   useEffect,
   useState,
@@ -83,11 +81,10 @@ const Users = () => {
         )
         .then((response: AxiosResponse<customer[], any>) => {
           setFilteredUsers(response.data);
-          
+
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-     
           throw error;
         });
     },
@@ -104,11 +101,9 @@ const Users = () => {
       return client
         .get(`/api/role?organisation=${organisationId}`, {})
         .then((response: AxiosResponse<roleResponse[], any>) => {
-         
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-
           throw error;
         });
     },
@@ -124,7 +119,6 @@ const Users = () => {
           {},
         )
         .then((response: AxiosResponse<customer[], any>) => {
-          
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -135,7 +129,6 @@ const Users = () => {
 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
     // setSearchResult(e.target.value);
-
 
     if (allUsers) {
       const filtered = allUsers.filter((item) =>
@@ -177,16 +170,15 @@ const Users = () => {
     refetchAllRoles();
   }, [isUserCreated, isUserEdited, modalContent, refetch, refetchAllRoles]);
 
-  const viewUser = user?.role === "organisation" ||   (user?.role === "staff" &&
-                                userPermissions.includes(
-                                  permissionsMap["view-users"],
-                                ))
+  const viewUser =
+    user?.role === "organisation" ||
+    (user?.role === "staff" &&
+      userPermissions.includes(permissionsMap["view-users"]));
 
-  const editUser = (user?.role === "organisation" ||
-  (user?.role === "staff" &&
-    userPermissions.includes(
-      permissionsMap["edit-user"],
-    )))
+  const editUser =
+    user?.role === "organisation" ||
+    (user?.role === "staff" &&
+      userPermissions.includes(permissionsMap["edit-user"]));
 
   return (
     <>
@@ -242,9 +234,7 @@ const Users = () => {
               }}
             />
           )}
-          
         </div>
-      
 
         <p className="mb-2 text-base font-medium text-white">
           Existing Users List
@@ -331,7 +321,7 @@ const Users = () => {
                         dropdownEnabled
                         dropdownContents={{
                           labels: [
-                            viewUser ? "View User": '',
+                            viewUser ? "View User" : "",
                             // (user?.role === "organisation" ||
                             //   (user?.role === "staff" &&
                             //     userPermissions.includes(
@@ -339,7 +329,7 @@ const Users = () => {
                             //     ))) &&
                             //   "View User",
 
-                            editUser ? "Edit User": '',
+                            editUser ? "Edit User" : "",
                             // (user?.role === "organisation" ||
                             //   (user?.role === "staff" &&
                             //     userPermissions.includes(
@@ -356,13 +346,11 @@ const Users = () => {
                               //       permissionsMap["view-users"],
                               //     ))
                               // )
-                               {
+                              {
                                 setModalState(true);
                                 setModalToShow("view-user");
                                 setUserToBeEdited(user._id);
                                 setIsUserEdited(false);
-
-                          
                               }
                             },
                             () => {
@@ -373,7 +361,7 @@ const Users = () => {
                               //       permissionsMap["edit-user"],
                               //     ))
                               // )
-                               {
+                              {
                                 setModalToShow("edit-user");
                                 setModalState(true);
                                 setUserToBeEdited(user._id);
@@ -423,7 +411,7 @@ const Users = () => {
                 </div>
               ) : (
                 <ModalConfirmation
-                  successTitle={`User ${modalToShow === "create-user" ? "Creation" : modalToShow === "edit-user" ? "Editing": ""} Successful`}
+                  successTitle={`User ${modalToShow === "create-user" ? "Creation" : modalToShow === "edit-user" ? "Editing" : ""} Successful`}
                   errorTitle={`User ${modalToShow === "create-user" ? "Creation" : "Editing"} Failed`}
                   status={isUserCreated || isUserEdited ? "success" : "failed"}
                   responseMessage={mutationResponse}
@@ -459,8 +447,7 @@ const MutateUser = ({
   setMutationResponse: Dispatch<SetStateAction<string>>;
   userToBeEdited: string;
 }) => {
-
-  const router = useRouter()
+  const router = useRouter();
   const { client } = useAuth();
   const organizationId = useSelector(selectOrganizationId);
   const userId = useSelector(selectUserId);
@@ -468,7 +455,7 @@ const MutateUser = ({
     (customer | undefined)[]
   >([]);
   const { data: userInfo, isLoading: isLoadingUserInfo } = useQuery({
-    queryKey: ["userInfo"],
+    queryKey: ["user Info"],
     queryFn: async () => {
       return client
         .get(`/api/user/${userToBeEdited}`)
@@ -476,79 +463,83 @@ const MutateUser = ({
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-         
           throw error;
         });
     },
   });
 
-
-
-  
-  const initialValues: mutateUserProps = actionToTake === 'edit-user' ? {
-    firstName: userInfo?.firstName ?? "", 
-    lastName: userInfo?.lastName ?? "",
-    email: userInfo?.email ?? "",
-    phone: userInfo?.phoneNumber ?? "",
-    homeAddress: userInfo?.homeAddress ?? "",
-    dept_unit: "",
-    userPicture: null,
-    guarantor2ID: null,
-    guarantorForm: null,
-    guarantorForm2: null,
-    idType: userInfo?.meansOfID ?? "",
-    meansOfIDPhoto: null,
-    guarantor1Name: userInfo?.guarantor1?.fullName ?? "",
-    guarantor1Email: userInfo?.guarantor1?.email ?? "",
-    guarantor1Phone: userInfo?.guarantor1?.phoneNumber ?? "",
-    guarantor1Address:userInfo?.guarantor1?.homeAddress ?? "",
-    guarantor2Name: userInfo?.guarantor2?.fullName ?? "",
-    guarantor2Email: userInfo?.guarantor2?.email ?? "",
-    guarantor2Phone: userInfo?.guarantor2?.phoneNumber ?? "",
-    guarantor2Address: userInfo?.guarantor2?.homeAddress ?? "",
-    assignedCustomers: userInfo?.assignedUser ?? [] ,
-    roles: userInfo?.roles ?? [],
-  }: 
-  {
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    homeAddress: "",
-    dept_unit: "",
-    userPicture: null,
-    guarantor2ID: null,
-    guarantorForm: null,
-    guarantorForm2: null,
-    idType: "",
-    meansOfIDPhoto: null,
-    guarantor1Name: "",
-    guarantor1Email: "",
-    guarantor1Phone: "",
-    guarantor1Address: "",
-    guarantor2Name: "",
-    guarantor2Email: "",
-    guarantor2Phone: "",
-    guarantor2Address: "",
-    assignedCustomers: [],
-    roles: [],
-  }
+  const initialValues: mutateUserProps =
+    actionToTake === "edit-user"
+      ? {
+          firstName: userInfo?.firstName ?? "",
+          lastName: userInfo?.lastName ?? "",
+          password: userInfo?.password ?? "",
+          email: userInfo?.email ?? "",
+          phone: userInfo?.phoneNumber ?? "",
+          homeAddress: userInfo?.homeAddress ?? "",
+          dept_unit: "",
+          userPicture: null,
+          guarantor2ID: null,
+          guarantorForm: null,
+          guarantorForm2: null,
+          idType: userInfo?.meansOfID ?? "",
+          meansOfIDPhoto: null,
+          guarantor1Name: userInfo?.guarantor1?.fullName ?? "",
+          guarantor1Email: userInfo?.guarantor1?.email ?? "",
+          guarantor1Phone: userInfo?.guarantor1?.phoneNumber ?? "",
+          guarantor1Address: userInfo?.guarantor1?.homeAddress ?? "",
+          guarantor2Name: userInfo?.guarantor2?.fullName ?? "",
+          guarantor2Email: userInfo?.guarantor2?.email ?? "",
+          guarantor2Phone: userInfo?.guarantor2?.phoneNumber ?? "",
+          guarantor2Address: userInfo?.guarantor2?.homeAddress ?? "",
+          assignedCustomers: userInfo?.assignedUser
+            ? userInfo.assignedUser.map((user) => user._id)
+            : [],
+          roles:
+            Array.isArray(userInfo?.roles) && userInfo.roles.length > 0
+              ? userInfo.roles[0]._id
+              : "",
+        }
+      : {
+          firstName: "",
+          lastName: "",
+          password: "",
+          email: "",
+          phone: "",
+          homeAddress: "",
+          dept_unit: "",
+          userPicture: null,
+          guarantor2ID: null,
+          guarantorForm: null,
+          guarantorForm2: null,
+          idType: "",
+          meansOfIDPhoto: null,
+          guarantor1Name: "",
+          guarantor1Email: "",
+          guarantor1Phone: "",
+          guarantor1Address: "",
+          guarantor2Name: "",
+          guarantor2Email: "",
+          guarantor2Phone: "",
+          guarantor2Address: "",
+          assignedCustomers: [],
+          roles: "",
+        };
   const [assignedCustomerIds, setAssignedCustomerIds] = useState<string[]>([]);
-
+  console.log(assignedCustomerIds);
   useEffect(() => {
-    if(actionToTake === 'edit-user'){
+    if (actionToTake === "edit-user") {
       if (userInfo?.assignedUser) {
-      const customerIds = userInfo?.assignedUser?.map((customer: { _id: any }) => customer._id);
-      setAssignedCustomerIds(customerIds || []);
+        const customerIds = userInfo?.assignedUser?.map(
+          (customer: { _id: any }) => customer._id,
+        );
+
+        setAssignedCustomerIds(customerIds || []);
+      }
+    } else {
+      setAssignedCustomerIds([]);
     }
-    }
-    else{
-      setAssignedCustomerIds([])
-    }
-    
   }, [userInfo, actionToTake]);
-
-
 
   const { data: allCustomers, isLoading: isLoadingAllCustomers } = useQuery({
     queryKey: ["allCustomers"],
@@ -559,7 +550,6 @@ const MutateUser = ({
           {},
         )
         .then((response: AxiosResponse<customer[], any>) => {
-          
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
@@ -582,91 +572,81 @@ const MutateUser = ({
     },
   });
 
-  
- 
   const { mutate: createUser, isPending: isCreatingRole } = useMutation({
     mutationFn: async (values: mutateUserProps) => {
-   
+      const formData = new FormData();
+      formData.append("firstName", values.firstName);
+      formData.append("lastName", values.lastName);
+      formData.append("password", values.password);
+      formData.append("phoneNumber", values.phone);
+      formData.append("organisation", organizationId);
+      formData.append("homeAddress", values.homeAddress);
+      formData.append("email", values.email);
 
-      const formData = new FormData()
-      formData.append("firstName", values.firstName)
-      formData.append("lastName", values.lastName)
-      formData.append("phoneNumber", values.phone)
-      formData.append("organisation", organizationId)
-      formData.append("homeAddress", values.homeAddress)
-      formData.append("email", values.email)
-      
-      formData.append('guarantor1.fullName', values.guarantor1Name);
-      formData.append('guarantor1.homeAddress', values.guarantor1Address);
-      formData.append('guarantor1.email', values.guarantor1Email);
-      formData.append('guarantor1.phoneNumber', values.guarantor1Phone);
+      formData.append("guarantor1.fullName", values.guarantor1Name);
+      formData.append("guarantor1.homeAddress", values.guarantor1Address);
+      formData.append("guarantor1.email", values.guarantor1Email);
+      formData.append("guarantor1.phoneNumber", values.guarantor1Phone);
 
+      formData.append("guarantor2.fullName", values.guarantor2Name);
+      formData.append("guarantor2.homeAddress", values.guarantor2Address);
+      formData.append("guarantor2.email", values.guarantor2Email);
+      formData.append("guarantor2.phoneNumber", values.guarantor2Phone);
 
-      formData.append('guarantor2.fullName', values.guarantor2Name);
-      formData.append('guarantor2.homeAddress', values.guarantor2Address);
-      formData.append('guarantor2.email', values.guarantor2Email);
-      formData.append('guarantor2.phoneNumber', values.guarantor2Phone);
-
-      formData.append("roles", values.roles)
+      formData.append("roles", values.roles);
       // formData.append("assignedUser", values.assignedCustomers)
-      formData.append('meansOfID', values.idType)
-      formData.append
-      if(values.userPicture){
+      formData.append("meansOfID", values.idType);
+      formData.append;
+      if (values.userPicture) {
         formData.append("photo", values.userPicture[0]);
       }
-      if(values.guarantorForm){
+      if (values.guarantorForm) {
         formData.append("guarantorForm", values.guarantorForm[0]);
       }
-      if(values.guarantorForm2){
+      if (values.guarantorForm2) {
         formData.append("guarantorForm2", values.guarantorForm2[0]);
       }
-      if(values.meansOfIDPhoto){
+      if (values.meansOfIDPhoto) {
         formData.append("meansOfIDPhoto", values.meansOfIDPhoto[0]);
       }
-      values.assignedCustomers.forEach((item: string | Blob) => formData.append("assignedUser[]", item))
+      values.assignedCustomers.forEach((item: string | Blob) =>
+        formData.append("assignedUser[]", item),
+      );
 
-      return client.post(`/api/user/create-staff`, formData
-   
-    );
+      return client.post(`/api/user/create-staff`, formData);
     },
 
     onSuccess(response) {
       setUserCreated(true);
       setModalContent("status");
       setMutationResponse(response?.data.message);
-      
+
       setTimeout(() => {
         setCloseModal(false);
-        setModalContent("form")
-        router.push("/merchant/users")
-      }, 1000);
-      
+        setModalContent("form");
+        router.push("/merchant/users");
+      }, 3000);
     },
 
     onError(error: AxiosError<any, any>) {
       setUserCreated(false);
       setModalContent("status");
-      
+
       setMutationResponse(error.response?.data.message);
       setTimeout(() => {
-        setModalContent("form")
-      }, 1000);
-      
+        setModalContent("form");
+      }, 3000);
     },
   });
 
   const { mutate: editUser, isPending: isEditingRole } = useMutation({
     mutationKey: ["edit user"],
     mutationFn: async (values: mutateUserProps) => {
-      
       if (Array.isArray(values.roles)) {
         if (values.roles.length > 0 && values.roles[0]._id) {
           values.roles = values.roles[0]._id;
-        } 
-      } 
-      
-    
-
+        }
+      }
 
       // const socials = {
       //   facebook: values.facebook,
@@ -676,69 +656,70 @@ const MutateUser = ({
       //   pintrest: values.pinterest,
       // };
 
-      
-      const formData = new FormData()
-      
-      formData.append("firstName", values.firstName)
-      formData.append("lastName", values.lastName)
-      formData.append("phoneNumber", values.phone)
-      formData.append("organisation", organizationId)
-      formData.append("homeAddress", values.homeAddress)
-      formData.append("email", values.email)
-      
-      formData.append('guarantor1.fullName', values.guarantor1Name);
-      formData.append('guarantor1.homeAddress', values.guarantor1Address);
-      formData.append('guarantor1.email', values.guarantor1Email);
-      formData.append('guarantor1.phoneNumber', values.guarantor1Phone);
+      const formData = new FormData();
 
+      formData.append("firstName", values.firstName);
+      formData.append("lastName", values.lastName);
+      formData.append("password", values.password);
+      formData.append("phoneNumber", values.phone);
+      formData.append("organisation", organizationId);
+      formData.append("homeAddress", values.homeAddress);
+      formData.append("email", values.email);
 
-      formData.append('guarantor2.fullName', values.guarantor2Name);
-      formData.append('guarantor2.homeAddress', values.guarantor2Address);
-      formData.append('guarantor2.email', values.guarantor2Email);
-      formData.append('guarantor2.phoneNumber', values.guarantor2Phone);
+      formData.append("guarantor1.fullName", values.guarantor1Name);
+      formData.append("guarantor1.homeAddress", values.guarantor1Address);
+      formData.append("guarantor1.email", values.guarantor1Email);
+      formData.append("guarantor1.phoneNumber", values.guarantor1Phone);
 
-      formData.append("roles", values.roles)
+      formData.append("guarantor2.fullName", values.guarantor2Name);
+      formData.append("guarantor2.homeAddress", values.guarantor2Address);
+      formData.append("guarantor2.email", values.guarantor2Email);
+      formData.append("guarantor2.phoneNumber", values.guarantor2Phone);
+
+      formData.append("roles", values.roles);
       // formData.append("assignedUser", JSON.stringify(assignedCustomerIds))
-      formData.append('meansOfID', values.idType)
-      formData.append
-      if(values.userPicture){
+      formData.append("meansOfID", values.idType);
+      formData.append;
+      if (values.userPicture) {
         formData.append("photo", values.userPicture[0]);
       }
-      if(values.guarantorForm){
+      if (values.guarantorForm) {
         formData.append("guarantorForm", values.guarantorForm[0]);
       }
-      if(values.guarantorForm2){
+      if (values.guarantorForm2) {
         formData.append("guarantorForm2", values.guarantorForm2[0]);
       }
-      if(values.meansOfIDPhoto){
+      if (values.meansOfIDPhoto) {
         formData.append("meansOfIDPhoto", values.meansOfIDPhoto[0]);
       }
-      assignedCustomerIds.forEach((item) => formData.append("assignedUser[]", item))
+      assignedCustomerIds.forEach((item) =>
+        formData.append("assignedUser[]", item),
+      );
 
       // const assignedUser = assignedCustomerIds
       // const combinedData = { ...formData, assignedUser };
       // console.log(combinedData)
       // return client.put(`/api/user/${userId}`, formData);
-      return client.put(`/api/user/${userToBeEdited}`, formData )
+      return client.put(`/api/user/${userToBeEdited}`, formData);
     },
 
     onSuccess(response) {
       setUserEdited(true);
       setModalContent("status");
       setTimeout(() => {
-       setCloseModal(false);
-        setModalContent('form')
+        setCloseModal(false);
+        setModalContent("form");
       }, 1000);
     },
 
     onError(error: AxiosError<any, any>) {
       setUserEdited(false);
       setModalContent("status");
-      
+
       setMutationResponse(error.response?.data.message);
       setTimeout(() => {
         setCloseModal(false);
-        setModalContent('form')
+        setModalContent("form");
       }, 1000);
     },
   });
@@ -761,403 +742,421 @@ const MutateUser = ({
     setSelectedOptions(updatedOptions);
   };
 
-  
   return (
     <div>
-      
-   
-    <Formik
-      enableReinitialize={true}
-      initialValues={initialValues}
-      // validationSchema={Yup.object({
-      //   firstName: Yup.string().required("Required"),
-      //   lastName: Yup.string().required("Required"),
-      //   email: Yup.string().required("Required").email("Invalid email address"),
-      //   phone: Yup.string()
-      //     .matches(
-      //       /^(?:\+234\d{10}|\d{11})$/,
-      //       "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
-      //     )
-      //     .required("Required"),
-      //   homeAddress: Yup.string().required("Required"),
-      //   dept_unit: Yup.string().optional(),
-      //   userPicture: Yup.mixed()
-      //     .required("Required")
-      //     .test(
-      //       "fileSize",
-      //       "File size must be less than 2MB",
-      //       (value: MyFileList) => {
-      //         if (value) {
-      //           return value[0].size <= 2097152;
-      //         }
-      //         return true;
-      //       },
-      //     )
-      //     .test(
-      //       "fileType",
-      //       "Only .jpg, .png files are allowed",
-      //       (value: MyFileList) => {
-      //         if (value) {
-      //           const file = value[0];
-      //           const fileType = file.type;
-      //           return fileType === "image/jpeg" || fileType === "image/png";
-      //         }
-      //         return true;
-      //       },
-      //     ),
-      //   // guarantor2ID: Yup.mixed()
-      //   //   .required("required")
-      //   //   .test(
-      //   //     "fileSize",
-      //   //     "File size must be less than 2MB",
-      //   //     (value: MyFileList) => {
-      //   //       if (value) {
-      //   //         return value[0].size <= 2097152;
-      //   //       }
-      //   //       return true;
-      //   //     },
-      //   //   )
-      //   //   .test(
-      //   //     "fileType",
-      //   //     "Only .jpg, .png files are allowed",
-      //   //     (value: MyFileList) => {
-      //   //       if (value) {
-      //   //         const file = value[0];
-      //   //         const fileType = file.type;
-      //   //         return fileType === "image/jpeg" || fileType === "image/png";
-      //   //       }
-      //   //       return true;
-      //   //     },
-      //   //   ),
-      //   idType: Yup.string().optional(),
-      //   guarantor1Name: Yup.string().required("Required"),
-      //   guarantor1Email: Yup.string()
-      //     .required("Required")
-      //     .email("Invalid email address"),
-      //   guarantor1Phone: Yup.string()
-      //     .matches(
-      //       /^(?:\+234\d{10}|\d{11})$/,
-      //       "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
-      //     )
-      //     .required("Required"),
-      //   guarantor1Address: Yup.string().required("Required"),
-      //   guarantor2Name: Yup.string().required("Required"),
-      //   guarantor2Email: Yup.string()
-      //     .required("Required")
-      //     .email("Invalid email address"),
-      //   guarantor2Address: Yup.string().required("Required"),
-      //   assignedCustomers: Yup.array()
-      //     .of(Yup.string())
-      //     .min(1, "At least one customer must be selected")
-      //     .required("required"),
-      //   roles: Yup.string().required("Required"),
-      //   guarantorForm: Yup.mixed()
-      //     .optional()
-      //     .test(
-      //       "fileSize",
-      //       "File size must be less than 2MB",
-      //       (value?: MyFileList) => {
-      //         if (value) {
-      //           return value[0].size <= 2097152;
-      //         }
-      //         return true;
-      //       },
-      //     )
-      //     .test(
-      //       "fileType",
-      //       "Only .pdf, .jpg, .png files are allowed",
-      //       (value?: MyFileList) => {
-      //         if (value) {
-      //           const file = value[0];
-      //           const fileType = file.type;
-      //           return (
-      //             fileType === "application/pdf" ||
-      //             fileType === "image/jpeg" ||
-      //             fileType === "image/png"
-      //           );
-      //         }
-      //         return true;
-      //       },
-      //     ),
-      // })}
-      onSubmit={(values, { setSubmitting }) => {
-        
-        setTimeout(() => {
-          if (actionToTake === "create-user") {
-            console.log("creating user.....................");
-            
-              createUser(values);
-            
-          } else {
-            console.log("editing user.....................");
-            editUser(values);
-          }
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={Yup.object({
+          firstName: Yup.string().required("Required"),
+          lastName: Yup.string().required("Required"),
+          email: Yup.string()
+            .required("Required")
+            .email("Invalid email address"),
+          phone: Yup.string()
+            .matches(
+              /^(?:\+234\d{10}|\d{11})$/,
+              "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
+            )
+            .required("Required"),
+          homeAddress: Yup.string().optional(),
+          dept_unit: Yup.string().optional(),
+          // userPicture: Yup.mixed()
+          //   .required("Required")
+          //   .test(
+          //     "fileSize",
+          //     "File size must be less than 2MB",
+          //     (value: MyFileList) => {
+          //       if (value) {
+          //         return value[0].size <= 2097152;
+          //       }
+          //       return true;
+          //     },
+          //   )
+          //   .test(
+          //     "fileType",
+          //     "Only .jpg, .png files are allowed",
+          //     (value: MyFileList) => {
+          //       if (value) {
+          //         const file = value[0];
+          //         const fileType = file.type;
+          //         return fileType === "image/jpeg" || fileType === "image/png";
+          //       }
+          //       return true;
+          //     },
+          //   ),
+          // guarantor2ID: Yup.mixed()
+          //   .required("required")
+          //   .test(
+          //     "fileSize",
+          //     "File size must be less than 2MB",
+          //     (value: MyFileList) => {
+          //       if (value) {
+          //         return value[0].size <= 2097152;
+          //       }
+          //       return true;
+          //     },
+          //   )
+          //   .test(
+          //     "fileType",
+          //     "Only .jpg, .png files are allowed",
+          //     (value: MyFileList) => {
+          //       if (value) {
+          //         const file = value[0];
+          //         const fileType = file.type;
+          //         return fileType === "image/jpeg" || fileType === "image/png";
+          //       }
+          //       return true;
+          //     },
+          idType: Yup.string().optional(),
+          guarantor1Name: Yup.string().optional(),
+          guarantor1Email: Yup.string()
+            .optional()
+            .email("Invalid email address"),
+          guarantor1Phone: Yup.string()
+            .matches(
+              /^(?:\+234\d{10}|\d{11})$/,
+              "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
+            )
+            .optional(),
+          guarantor1Address: Yup.string().optional(),
+          guarantor2Name: Yup.string().optional(),
+          guarantor2Email: Yup.string()
+            .optional()
+            .email("Invalid email address"),
+          guarantor2Address: Yup.string().optional(),
+          assignedCustomers: Yup.array()
+            .of(Yup.string())
+            .min(1, "At least one customer must be selected")
+            .required("required"),
+          roles: Yup.string()
+            .min(1, "One role must be selected")
+            .required("You must assign a role to a customer"),
+          // guarantorForm: Yup.mixed()
+          //   .optional()
+          //   .test(
+          //     "fileSize",
+          //     "File size must be less than 2MB",
+          //     (value?: MyFileList) => {
+          //       if (value) {
+          //         return value[0].size <= 2097152;
+          //       }
+          //       return true;
+          //     },
+          //   )
+          // .test(
+          //   "fileType",
+          //   "Only .pdf, .jpg, .png files are allowed",
+          //   (value?: MyFileList) => {
+          //     if (value) {
+          //       const file = value[0];
+          //       const fileType = file.type;
+          //       return (
+          //         fileType === "application/pdf" ||
+          //         fileType === "image/jpeg" ||
+          //         fileType === "image/png"
+          //       );
+          //     }
+          //     return true;
+          //   },
+          // ),
+        })}
+        onSubmit={(values, { setSubmitting }) => {
+          setTimeout(() => {
+            if (actionToTake === "create-user") {
+              console.log("creating user.....................", values);
 
-          setSubmitting(false);
-        }, 800);
-      }}
-    >
-      {({
-        isSubmitting,
-        handleChange,
-        handleSubmit,
-        values,
-        errors,
-        setFieldValue,
-        submitForm,
-      }) => (
-        <form className=" flex flex-col items-center" onSubmit={handleSubmit}>
-          
-          <div className=" mb-10 w-full space-y-10 rounded-md bg-white px-[5%] py-[3%]">
-            {/* Personal Details */}
-            <section>
-              <div className="my-3 flex flex-col gap-4 md:flex-row">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="firstName"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    First Name
-                  </label>
-                  <Field
-                    onChange={handleChange}
-                    name="firstName"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  />
-                  <ErrorMessage
-                    name="firstName"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
+              createUser(values);
+            } else {
+              console.log("editing user.....................", values);
+              editUser(values);
+            }
+
+            setSubmitting(false);
+          }, 800);
+        }}
+      >
+        {({
+          isSubmitting,
+          handleChange,
+          handleSubmit,
+          values,
+          errors,
+          setFieldValue,
+          submitForm,
+        }) => (
+          <form className=" flex flex-col items-center" onSubmit={handleSubmit}>
+            <div className=" mb-10 w-full space-y-10 rounded-md bg-white px-[5%] py-[3%]">
+              {/* Personal Details */}
+              <section>
+                <div className="my-3 flex flex-col gap-4 md:flex-row">
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="firstName"
+                      className="m-0 text-xs font-medium text-ajo_darkBlue"
+                    >
+                      First Name
+                    </label>
+                    <Field
+                      onChange={handleChange}
+                      name="firstName"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                    />
+                    <ErrorMessage
+                      name="firstName"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label
+                      htmlFor="lastName"
+                      className="m-0 text-xs font-medium text-ajo_darkBlue"
+                    >
+                      Last Name
+                    </label>
+                    <Field
+                      name="lastName"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                    />
+                    <ErrorMessage
+                      name="lastName"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
                 </div>
                 <div className="flex-1">
                   <label
-                    htmlFor="lastName"
+                    htmlFor="password"
                     className="m-0 text-xs font-medium text-ajo_darkBlue"
                   >
-                    Last Name
+                    Password
                   </label>
                   <Field
-                    name="lastName"
+                    name="password"
                     type="text"
                     className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
                   />
                   <ErrorMessage
-                    name="lastName"
+                    name="password"
                     component="div"
                     className="text-xs text-red-500"
                   />
                 </div>
-              </div>
-              <div className="my-3 flex flex-col gap-4 md:flex-row">
-                <div className="flex-1">
-                  <label
-                    htmlFor="email"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    Email
-                  </label>
-                  <Field
-                    onChange={handleChange}
-                    name="email"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  />
-                  <ErrorMessage
-                    name="email"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
+                <div className="my-3 flex flex-col gap-4 md:flex-row">
+                  <div className="flex-1">
+                    <label
+                      htmlFor="email"
+                      className="m-0 text-xs font-medium text-ajo_darkBlue"
+                    >
+                      Email
+                    </label>
+                    <Field
+                      onChange={handleChange}
+                      name="email"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                    />
+                    <ErrorMessage
+                      name="email"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label
+                      htmlFor="phone"
+                      className="text-ajo_darkBluee m-0 text-xs font-medium"
+                    >
+                      Phone Number
+                    </label>
+                    <Field
+                      name="phone"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                    />
+                    <ErrorMessage
+                      name="phone"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <label
-                    htmlFor="phone"
-                    className="text-ajo_darkBluee m-0 text-xs font-medium"
-                  >
-                    Phone Number
-                  </label>
-                  <Field
-                    name="phone"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  />
-                  <ErrorMessage
-                    name="phone"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
-              </div>
-              <div className="my-3 flex flex-col gap-4 md:flex-row">
-                <div className="flex-1">
-                  <label
-                    htmlFor="homeAddress"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    Home Address
-                  </label>
-                  <Field
-                    onChange={handleChange}
-                    name="homeAddress"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  />
-                  <ErrorMessage
-                    name="homeAddress"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
-                <div className="mb-4 flex-1">
-                  <label
-                    htmlFor="dept_unit"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    Department/Unit
-                  </label>
-                  <Field
-                    as="select"
-                    id="dept_unit"
-                    name="dept_unit"
-                    className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
-                  >
-                    {/* {StatesAndLGAs.map((country) => (
+                <div className="my-3 flex flex-col gap-4 md:flex-row">
+                  <div className="flex-1">
+                    <label
+                      htmlFor="homeAddress"
+                      className="m-0 text-xs font-medium text-ajo_darkBlue"
+                    >
+                      Home Address
+                    </label>
+                    <Field
+                      onChange={handleChange}
+                      name="homeAddress"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                    />
+                    <ErrorMessage
+                      name="homeAddress"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                  <div className="mb-4 flex-1">
+                    <label
+                      htmlFor="dept_unit"
+                      className="m-0 text-xs font-medium text-ajo_darkBlue"
+                    >
+                      Department/Unit
+                    </label>
+                    <Field
+                      as="select"
+                      id="dept_unit"
+                      name="dept_unit"
+                      className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
+                    >
+                      {/* {StatesAndLGAs.map((country) => (
                     <option key={country.country} value={country.country}>
                       {country.country}
                     </option>
                   ))} */}
-                    <option className="invisible"></option>
-                  </Field>
-                  <ErrorMessage
-                    name="dept_unit"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
-              </div>
-              
-              {
-                actionToTake === 'create-user' ? (
-                   <div className="mt-4">
-                <label
-                  htmlFor="userPicture"
-                  className="m-0 text-xs font-medium text-ajo_darkBlue"
-                >
-                  Picture
-                </label>
-                <label
-                  htmlFor="userPicture"
-                  className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
-                >
-                  <input
-                    type="file"
-                    name="userPicture"
-                    id="userPicture"
-                    className="hidden w-full"
-                    onChange={(e) => {
-                      setFieldValue("userPicture", e.target.files);
-                    }}
-                    accept="application/pdf, .jpg, .png"
-                  />
-                  <div className="flex flex-col items-center justify-center">
-                    <Image
-                      src="/upload.svg"
-                      alt="document upload icon"
-                      width={48}
-                      height={48}
+                      <option className="invisible"></option>
+                    </Field>
+                    <ErrorMessage
+                      name="dept_unit"
+                      component="div"
+                      className="text-xs text-red-500"
                     />
-                    <p className="text-center text-[gray]">
-                      Drag n drop a{" "}
-                      <span className="font-semibold">.jpg, .png</span> here, or
-                      click to select one
-                    </p>
                   </div>
-                </label>
-                {values.userPicture &&
-                  values.userPicture[0] &&
-                  ((values.userPicture[0] as File).type.includes("image") ? (
-                    <Image
-                      src={URL.createObjectURL(values.userPicture[0])}
-                      alt="userPicture"
-                      className="mt-4 max-w-full rounded-md"
-                      style={{ maxWidth: "100%" }}
-                      width={100}
-                      height={100}
-                    />
-                  ) : (
-                    <iframe
-                      src={URL.createObjectURL(values.userPicture[0])}
-                      className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
-                      title="Bank Recommendation Letter"
-                    ></iframe>
-                  ))}
-                <div className="text-xs text-red-600">
-                  <ErrorMessage name="userPicture" />
                 </div>
-              </div> )
-              : ""
-                
-              }
 
-              {
-                actionToTake === 'edit-user' ? (
-                  <div className="mb-8">
-                  <div className="mb-4 ">
-                  <label
-                  htmlFor="userPicture"
-                  className="mb-8  text-xs font-medium text-ajo_darkBlue"
-                >
-                  Picture
-                </label>
-                  {values.userPicture && (values.userPicture as string[]).length > 0 && values.userPicture[0]  ? (
-                      <Image
-                        src={URL.createObjectURL(values.userPicture[0])} // Display placeholder image or actual image URL
-                        alt="photo"
-                        className="h-auto w-full"
-                        style={{ maxWidth: "100%" }}
-                        width={500}
-                        height={300}
-                      />
-                    ) : (
-                      <Image
-                        src={userInfo ? userInfo?.photo: ""} // Display placeholder image or actual image URL
-                        alt="photo"
-                        className="h-auto w-full"
-                        style={{ maxWidth: "100%" }}
-                        width={500}
-                        height={300}
-                      />
-                    )}
-                  </div>
-
-                  <div className="mt-8">
+                {actionToTake === "create-user" ? (
+                  <div className="mt-4">
                     <label
                       htmlFor="userPicture"
-                      className=" cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
+                      className="m-0 text-xs font-medium text-ajo_darkBlue"
                     >
-                      Change
-                      <input
-                        id="userPicture"
-                        name="userPicture"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(event) => {
-                          const file = event.target.files;
-                          setFieldValue("userPicture", file); // Store the selected file in state
-                        }}
-                      />
+                      Picture
                     </label>
-                    {isSubmitting && (
-                      <span className="ml-2">Uploading...</span>
-                    )}
+                    <label
+                      htmlFor="userPicture"
+                      className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
+                    >
+                      <input
+                        type="file"
+                        name="userPicture"
+                        id="userPicture"
+                        className="hidden w-full"
+                        onChange={(e) => {
+                          setFieldValue("userPicture", e.target.files);
+                        }}
+                        accept="application/pdf, .jpg, .png"
+                      />
+                      <div className="flex flex-col items-center justify-center">
+                        <Image
+                          src="/upload.svg"
+                          alt="document upload icon"
+                          width={48}
+                          height={48}
+                        />
+                        <p className="text-center text-[gray]">
+                          Drag n drop a{" "}
+                          <span className="font-semibold">.jpg, .png</span>{" "}
+                          here, or click to select one
+                        </p>
+                      </div>
+                    </label>
+                    {values.userPicture &&
+                      values.userPicture[0] &&
+                      ((values.userPicture[0] as File).type.includes(
+                        "image",
+                      ) ? (
+                        <Image
+                          src={URL.createObjectURL(values.userPicture[0])}
+                          alt="userPicture"
+                          className="mt-4 max-w-full rounded-md"
+                          style={{ maxWidth: "100%" }}
+                          width={100}
+                          height={100}
+                        />
+                      ) : (
+                        <iframe
+                          src={URL.createObjectURL(values.userPicture[0])}
+                          className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
+                          title="Bank Recommendation Letter"
+                        ></iframe>
+                      ))}
+                    <div className="text-xs text-red-600">
+                      <ErrorMessage name="userPicture" />
+                    </div>
                   </div>
-             </div>
-                ): ""
-              }
+                ) : (
+                  ""
+                )}
 
-              <div className="mb-4 w-1/2">
+                {actionToTake === "edit-user" ? (
+                  <div className="mb-8">
+                    <div className="mb-4 ">
+                      <label
+                        htmlFor="userPicture"
+                        className="mb-8  text-xs font-medium text-ajo_darkBlue"
+                      >
+                        Picture
+                      </label>
+                      {values.userPicture &&
+                      (values.userPicture as string[]).length > 0 &&
+                      values.userPicture[0] ? (
+                        <Image
+                          src={URL.createObjectURL(values.userPicture[0])} // Display placeholder image or actual image URL
+                          alt="photo"
+                          className="h-auto w-full"
+                          style={{ maxWidth: "100%" }}
+                          width={500}
+                          height={300}
+                        />
+                      ) : (
+                        <Image
+                          src={userInfo ? userInfo?.photo : ""} // Display placeholder image or actual image URL
+                          alt="photo"
+                          className="h-auto w-full"
+                          style={{ maxWidth: "100%" }}
+                          width={500}
+                          height={300}
+                        />
+                      )}
+                    </div>
+
+                    <div className="mt-8">
+                      <label
+                        htmlFor="userPicture"
+                        className=" cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
+                      >
+                        Change
+                        <input
+                          id="userPicture"
+                          name="userPicture"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(event) => {
+                            const file = event.target.files;
+                            setFieldValue("userPicture", file); // Store the selected file in state
+                          }}
+                        />
+                      </label>
+                      {isSubmitting && (
+                        <span className="ml-2">Uploading...</span>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  ""
+                )}
+
+                <div className="mb-4 w-1/2">
                   <label
                     htmlFor="idType"
                     className="m-0 text-xs font-medium text-ajo_darkBlue"
@@ -1190,424 +1189,433 @@ const MutateUser = ({
                   />
                 </div>
 
-                {actionToTake === 'create-user'? (
+                {actionToTake === "create-user" ? (
                   <div className="mt-4">
-                  <label
-                    htmlFor="meansOfIDPhoto"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    {values.idType ? values.idType : "Id Photo"}
-                  </label>
-                  <label
-                    htmlFor="meansOfIDPhoto"
-                    className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
-                  >
-                    <input
-                      type="file"
-                      name="meansOfIDPhoto"
-                      id="meansOfIDPhoto"
-                      className="hidden w-full"
-                      onChange={(e) => {
-                        setFieldValue("meansOfIDPhoto", e.target.files);
-                      }}
-                      accept="application/pdf, .jpg, .png"
-                    />
-                    <div className="flex flex-col items-center justify-center">
-                      <Image
-                        src="/upload.svg"
-                        alt="document upload icon"
-                        width={48}
-                        height={48}
-                      />
-                      <p className="text-center text-[gray]">
-                        Drag n drop a{" "}
-                        <span className="font-semibold">.jpg, .png</span> here, or
-                        click to select one
-                      </p>
-                    </div>
-                  </label>
-                  {values.meansOfIDPhoto &&
-                    values.meansOfIDPhoto[0] &&
-                    ((values.meansOfIDPhoto[0] as File).type.includes("image") ? (
-                      <Image
-                        src={URL.createObjectURL(values.meansOfIDPhoto[0])}
-                        alt="meansOfIDPhoto"
-                        className="mt-4 max-w-full rounded-md"
-                        style={{ maxWidth: "100%" }}
-                        width={100}
-                        height={100}
-                      />
-                    ) : (
-                      <iframe
-                        src={URL.createObjectURL(values.meansOfIDPhoto[0])}
-                        className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
-                        title="Bank Recommendation Letter"
-                      ></iframe>
-                    ))}
-                  <div className="text-xs text-red-600">
-                    <ErrorMessage name="meansOfIDPhoto" />
-                  </div>
-                </div>
-                ): ''}
-                
-
-              {
-                actionToTake === 'edit-user' ? (
-                  <div className="">
-                  <div className="mb-4 ">
-                  <label
-                  htmlFor="meansOfIDPhoto"
-                  className="mb-8  text-xs font-medium text-ajo_darkBlue"
-                >
-                  {values.idType}
-                </label>
-                  {values.meansOfIDPhoto && (values.meansOfIDPhoto as string[]).length > 0 && values.meansOfIDPhoto[0]  ? (
-                      <Image
-                        src={URL.createObjectURL(values.meansOfIDPhoto[0])} // Display placeholder image or actual image URL
-                        alt="photo"
-                        className="h-auto w-full"
-                        style={{ maxWidth: "100%" }}
-                        width={500}
-                        height={300}
-                      />
-                    ) : (
-                      <Image
-                        src={userInfo?.meansOfIDPhoto} // Display placeholder image or actual image URL
-                        alt="photo"
-                        className="h-auto w-full"
-                        style={{ maxWidth: "100%" }}
-                        width={500}
-                        height={300}
-                      />
-                    )}
-                  </div>
-
-                  <div className="mt-8">
                     <label
                       htmlFor="meansOfIDPhoto"
-                      className="mt-4 cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
+                      className="m-0 text-xs font-medium text-ajo_darkBlue"
                     >
-                      Change
+                      {values.idType ? values.idType : "Id Photo"}
+                    </label>
+                    <label
+                      htmlFor="meansOfIDPhoto"
+                      className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
+                    >
                       <input
-                        id="meansOfIDPhoto"
+                        type="file"
                         name="meansOfIDPhoto"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(event) => {
-                          const file = event.target.files;
-                          setFieldValue("meansOfIDPhoto", file); // Store the selected file in state
+                        id="meansOfIDPhoto"
+                        className="hidden w-full"
+                        onChange={(e) => {
+                          setFieldValue("meansOfIDPhoto", e.target.files);
                         }}
+                        accept="application/pdf, .jpg, .png"
                       />
+                      <div className="flex flex-col items-center justify-center">
+                        <Image
+                          src="/upload.svg"
+                          alt="document upload icon"
+                          width={48}
+                          height={48}
+                        />
+                        <p className="text-center text-[gray]">
+                          Drag n drop a{" "}
+                          <span className="font-semibold">.jpg, .png</span>{" "}
+                          here, or click to select one
+                        </p>
+                      </div>
                     </label>
-                    {isSubmitting && (
-                      <span className="ml-2">Uploading...</span>
-                    )}
-                  </div>
-             </div>
-                ): ""
-              }
-
-            </section>
-
-            <section>
-              <p className="pb-3 text-lg font-semibold text-ajo_darkBlue">
-                Guarantor&apos;s Details
-              </p>
-
-              {/* Guarantor 1 Details */}
-              <div id="guarantor1">
-                <label
-                  htmlFor="guarantor1"
-                  className="text-sm font-semibold text-ajo_darkBlue"
-                >
-                  Guarantor 1
-                </label>
-                <div className="mt-1">
-                  <label
-                    htmlFor="guarantor1Name"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    First Name
-                  </label>
-                  <Field
-                    onChange={handleChange}
-                    name="guarantor1Name"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  />
-                  <ErrorMessage
-                    name="guarantor1Name"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
-                <div className="my-3 flex flex-col gap-4 md:flex-row">
-                  <div className="flex-1">
-                    <label
-                      htmlFor="guarantor1Phone"
-                      className="m-0 text-xs font-medium text-ajo_darkBlue"
-                    >
-                      Phone Number
-                    </label>
-                    <Field
-                      onChange={handleChange}
-                      name="guarantor1Phone"
-                      type="text"
-                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                    />
-                    <ErrorMessage
-                      name="guarantor1Phone"
-                      component="div"
-                      className="text-xs text-red-500"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label
-                      htmlFor="guarantor1Email"
-                      className="m-0 text-xs font-medium text-ajo_darkBlue"
-                    >
-                      Email
-                    </label>
-                    <Field
-                      name="guarantor1Email"
-                      type="text"
-                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                    />
-                    <ErrorMessage
-                      name="guarantor1Email"
-                      component="div"
-                      className="text-xs text-red-500"
-                    />
-                  </div>
-                </div>
-                <div className="">
-                  <label
-                    htmlFor="guarantor1Address"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    Home Address
-                  </label>
-                  <Field
-                    onChange={handleChange}
-                    name="guarantor1Address"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  />
-                  <ErrorMessage
-                    name="guarantor1Address"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
-
-                {actionToTake === 'create-user' ? (
-                  <div className="mt-4">
-                  <label
-                    htmlFor="guarantorForm"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
-                  >
-                    Upload Filled Guarantor 1 Form
-                  </label>
-                  <label
-                    htmlFor="guarantorForm"
-                    className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
-                  >
-                    <input
-                      type="file"
-                      name="guarantorForm"
-                      id="guarantorForm"
-                      className="hidden w-full"
-                      onChange={(e) => {
-                        setFieldValue("guarantorForm", e.target.files);
-                      }}
-                      accept="application/pdf, .jpg, .png"
-                    />
-                    <div className="flex flex-col items-center justify-center">
-                      <Image
-                        src="/upload.svg"
-                        alt="guarantor form upload icon"
-                        width={48}
-                        height={48}
-                      />
-                      <p className="text-center text-[gray]">
-                        Drag n drop a{" "}
-                        <span className="font-semibold">.pdf, .jpg, .png</span>{" "}
-                        here, or click to select one
-                      </p>
+                    {values.meansOfIDPhoto &&
+                      values.meansOfIDPhoto[0] &&
+                      ((values.meansOfIDPhoto[0] as File).type.includes(
+                        "image",
+                      ) ? (
+                        <Image
+                          src={URL.createObjectURL(values.meansOfIDPhoto[0])}
+                          alt="meansOfIDPhoto"
+                          className="mt-4 max-w-full rounded-md"
+                          style={{ maxWidth: "100%" }}
+                          width={100}
+                          height={100}
+                        />
+                      ) : (
+                        <iframe
+                          src={URL.createObjectURL(values.meansOfIDPhoto[0])}
+                          className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
+                          title="Bank Recommendation Letter"
+                        ></iframe>
+                      ))}
+                    <div className="text-xs text-red-600">
+                      <ErrorMessage name="meansOfIDPhoto" />
                     </div>
-                  </label>
-                  {values.guarantorForm &&
-                    values.guarantorForm[0] &&
-                    ((values.guarantorForm[0] as File).type.includes(
-                      "image",
-                    ) ? (
-                      <Image
-                        src={URL.createObjectURL(values.guarantorForm[0])}
-                        alt="guarantor2ID"
-                        className="mt-4 max-w-full rounded-md"
-                        style={{ maxWidth: "100%" }}
-                        width={100}
-                        height={100}
-                      />
-                    ) : (
-                      <iframe
-                        src={URL.createObjectURL(values.guarantorForm[0])}
-                        className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
-                        title="Guarantor Form"
-                      ></iframe>
-                    ))}
-                  <div className="text-xs text-red-600">
-                    <ErrorMessage name="guarantorForm" />
                   </div>
-                </div>
-                ): ""}
-             
-              </div>
+                ) : (
+                  ""
+                )}
 
-              {
-                actionToTake === 'edit-user' ? (
-                  <div className="mt-8">
-                  <div className="mb-4 ">
+                {actionToTake === "edit-user" ? (
+                  <div className="">
+                    <div className="mb-4 ">
+                      <label
+                        htmlFor="meansOfIDPhoto"
+                        className="mb-8  text-xs font-medium text-ajo_darkBlue"
+                      >
+                        {values.idType}
+                      </label>
+                      {values.meansOfIDPhoto &&
+                      (values.meansOfIDPhoto as string[]).length > 0 &&
+                      values.meansOfIDPhoto[0] ? (
+                        <Image
+                          src={URL.createObjectURL(values.meansOfIDPhoto[0])} // Display placeholder image or actual image URL
+                          alt="photo"
+                          className="h-auto w-full"
+                          style={{ maxWidth: "100%" }}
+                          width={500}
+                          height={300}
+                        />
+                      ) : (
+                        <Image
+                          src={userInfo?.meansOfIDPhoto} // Display placeholder image or actual image URL
+                          alt="photo"
+                          className="h-auto w-full"
+                          style={{ maxWidth: "100%" }}
+                          width={500}
+                          height={300}
+                        />
+                      )}
+                    </div>
+
+                    <div className="mt-8">
+                      <label
+                        htmlFor="meansOfIDPhoto"
+                        className="mt-4 cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
+                      >
+                        Change
+                        <input
+                          id="meansOfIDPhoto"
+                          name="meansOfIDPhoto"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(event) => {
+                            const file = event.target.files;
+                            setFieldValue("meansOfIDPhoto", file); // Store the selected file in state
+                          }}
+                        />
+                      </label>
+                      {isSubmitting && (
+                        <span className="ml-2">Uploading...</span>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  ""
+                )}
+              </section>
+
+              <section>
+                <p className="pb-3 text-lg font-semibold text-ajo_darkBlue">
+                  Guarantor&apos;s Details
+                </p>
+
+                {/* Guarantor 1 Details */}
+                <div id="guarantor1">
                   <label
-                  htmlFor="guarantorForm"
-                  className="mb-8 mt-4  text-xs font-medium text-ajo_darkBlue"
-                >
-                  Guarantor Form 1
-                </label>
-                  {values.guarantorForm && (values.guarantorForm as string[]).length > 0 && values.guarantorForm[0] ? (
-                      <Image
-                        src={URL.createObjectURL(values.guarantorForm[0])} // Display placeholder image or actual image URL
-                        alt="photo"
-                        className="h-auto w-full"
-                        style={{ maxWidth: "100%" }}
-                        width={500}
-                        height={300}
-                      />
-                    ) : (
-                      <Image
-                        src={userInfo ? userInfo?.guarantorForm : ""} // Display placeholder image or actual image URL
-                        alt="photo"
-                        className="h-auto w-full"
-                        style={{ maxWidth: "100%" }}
-                        width={500}
-                        height={300}
-                      />
-                    )}
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="guarantorForm"
-                      className=" cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
-                    >
-                      Change
-                      <input
-                        id="guarantorForm"
-                        name="guarantorForm"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(event) => {
-                          const file = event.target.files;
-                          setFieldValue("guarantorForm", file); // Store the selected file in state
-                        }}
-                      />
-                    </label>
-                    {isSubmitting && (
-                      <span className="ml-2">Uploading...</span>
-                    )}
-                  </div>
-             </div>
-                ): ""
-              }
-
-              {/* Guarantor 2 Details */}
-              <div id="guarantor2" className="mt-12">
-                <label
-                  htmlFor="guarantor2"
-                  className="text-sm font-semibold text-ajo_darkBlue"
-                >
-                  Guarantor 2
-                </label>
-                <div className="mt-1">
-                  <label
-                    htmlFor="guarantor2Name"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
+                    htmlFor="guarantor1"
+                    className="text-sm font-semibold text-ajo_darkBlue"
                   >
-                    First Name
+                    Guarantor 1
                   </label>
-                  <Field
-                    onChange={handleChange}
-                    name="guarantor2Name"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  />
-                  <ErrorMessage
-                    name="guarantor2Name"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
-                <div className="my-4 flex flex-col gap-4 md:flex-row">
-                  <div className="flex-1">
+                  <div className="mt-1">
                     <label
-                      htmlFor="guarantor2Phone"
+                      htmlFor="guarantor1Name"
                       className="m-0 text-xs font-medium text-ajo_darkBlue"
                     >
-                      Phone Number
+                      First Name
                     </label>
                     <Field
                       onChange={handleChange}
-                      name="guarantor2Phone"
+                      name="guarantor1Name"
                       type="text"
                       className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
                     />
                     <ErrorMessage
-                      name="guarantor2Phone"
+                      name="guarantor1Name"
                       component="div"
                       className="text-xs text-red-500"
                     />
                   </div>
-                  <div className="flex-1">
+                  <div className="my-3 flex flex-col gap-4 md:flex-row">
+                    <div className="flex-1">
+                      <label
+                        htmlFor="guarantor1Phone"
+                        className="m-0 text-xs font-medium text-ajo_darkBlue"
+                      >
+                        Phone Number
+                      </label>
+                      <Field
+                        onChange={handleChange}
+                        name="guarantor1Phone"
+                        type="text"
+                        className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                      />
+                      <ErrorMessage
+                        name="guarantor1Phone"
+                        component="div"
+                        className="text-xs text-red-500"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label
+                        htmlFor="guarantor1Email"
+                        className="m-0 text-xs font-medium text-ajo_darkBlue"
+                      >
+                        Email
+                      </label>
+                      <Field
+                        name="guarantor1Email"
+                        type="text"
+                        className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                      />
+                      <ErrorMessage
+                        name="guarantor1Email"
+                        component="div"
+                        className="text-xs text-red-500"
+                      />
+                    </div>
+                  </div>
+                  <div className="">
                     <label
-                      htmlFor="guarantor2Email"
+                      htmlFor="guarantor1Address"
                       className="m-0 text-xs font-medium text-ajo_darkBlue"
                     >
-                      Email
+                      Home Address
                     </label>
                     <Field
-                      name="guarantor2Email"
+                      onChange={handleChange}
+                      name="guarantor1Address"
                       type="text"
                       className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
                     />
                     <ErrorMessage
-                      name="guarantor2Email"
+                      name="guarantor1Address"
                       component="div"
                       className="text-xs text-red-500"
                     />
                   </div>
+
+                  {actionToTake === "create-user" ? (
+                    <div className="mt-4">
+                      <label
+                        htmlFor="guarantorForm"
+                        className="m-0 text-xs font-medium text-ajo_darkBlue"
+                      >
+                        Upload Filled Guarantor 1 Form
+                      </label>
+                      <label
+                        htmlFor="guarantorForm"
+                        className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
+                      >
+                        <input
+                          type="file"
+                          name="guarantorForm"
+                          id="guarantorForm"
+                          className="hidden w-full"
+                          onChange={(e) => {
+                            setFieldValue("guarantorForm", e.target.files);
+                          }}
+                          accept="application/pdf, .jpg, .png"
+                        />
+                        <div className="flex flex-col items-center justify-center">
+                          <Image
+                            src="/upload.svg"
+                            alt="guarantor form upload icon"
+                            width={48}
+                            height={48}
+                          />
+                          <p className="text-center text-[gray]">
+                            Drag n drop a{" "}
+                            <span className="font-semibold">
+                              .pdf, .jpg, .png
+                            </span>{" "}
+                            here, or click to select one
+                          </p>
+                        </div>
+                      </label>
+                      {values.guarantorForm &&
+                        values.guarantorForm[0] &&
+                        ((values.guarantorForm[0] as File).type.includes(
+                          "image",
+                        ) ? (
+                          <Image
+                            src={URL.createObjectURL(values.guarantorForm[0])}
+                            alt="guarantor2ID"
+                            className="mt-4 max-w-full rounded-md"
+                            style={{ maxWidth: "100%" }}
+                            width={100}
+                            height={100}
+                          />
+                        ) : (
+                          <iframe
+                            src={URL.createObjectURL(values.guarantorForm[0])}
+                            className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
+                            title="Guarantor Form"
+                          ></iframe>
+                        ))}
+                      <div className="text-xs text-red-600">
+                        <ErrorMessage name="guarantorForm" />
+                      </div>
+                    </div>
+                  ) : (
+                    ""
+                  )}
                 </div>
-                <div className="mb-8">
+
+                {actionToTake === "edit-user" ? (
+                  <div className="mt-8">
+                    <div className="mb-4 ">
+                      <label
+                        htmlFor="guarantorForm"
+                        className="mb-8 mt-4  text-xs font-medium text-ajo_darkBlue"
+                      >
+                        Guarantor Form 1
+                      </label>
+                      {values.guarantorForm &&
+                      (values.guarantorForm as string[]).length > 0 &&
+                      values.guarantorForm[0] ? (
+                        <Image
+                          src={URL.createObjectURL(values.guarantorForm[0])} // Display placeholder image or actual image URL
+                          alt="photo"
+                          className="h-auto w-full"
+                          style={{ maxWidth: "100%" }}
+                          width={500}
+                          height={300}
+                        />
+                      ) : (
+                        <Image
+                          src={userInfo ? userInfo?.guarantorForm : ""} // Display placeholder image or actual image URL
+                          alt="photo"
+                          className="h-auto w-full"
+                          style={{ maxWidth: "100%" }}
+                          width={500}
+                          height={300}
+                        />
+                      )}
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="guarantorForm"
+                        className=" cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
+                      >
+                        Change
+                        <input
+                          id="guarantorForm"
+                          name="guarantorForm"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(event) => {
+                            const file = event.target.files;
+                            setFieldValue("guarantorForm", file); // Store the selected file in state
+                          }}
+                        />
+                      </label>
+                      {isSubmitting && (
+                        <span className="ml-2">Uploading...</span>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  ""
+                )}
+
+                {/* Guarantor 2 Details */}
+                <div id="guarantor2" className="mt-12">
                   <label
-                    htmlFor="guarantor2Address"
-                    className="m-0 text-xs font-medium text-ajo_darkBlue"
+                    htmlFor="guarantor2"
+                    className="text-sm font-semibold text-ajo_darkBlue"
                   >
-                    Home Address
+                    Guarantor 2
                   </label>
-                  <Field
-                    onChange={handleChange}
-                    name="guarantor2Address"
-                    type="text"
-                    className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
-                  />
-                  <ErrorMessage
-                    name="guarantor2Address"
-                    component="div"
-                    className="text-xs text-red-500"
-                  />
-                </div>
-                {/* <div className="mb-4 w-1/2">
+                  <div className="mt-1">
+                    <label
+                      htmlFor="guarantor2Name"
+                      className="m-0 text-xs font-medium text-ajo_darkBlue"
+                    >
+                      First Name
+                    </label>
+                    <Field
+                      onChange={handleChange}
+                      name="guarantor2Name"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                    />
+                    <ErrorMessage
+                      name="guarantor2Name"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                  <div className="my-4 flex flex-col gap-4 md:flex-row">
+                    <div className="flex-1">
+                      <label
+                        htmlFor="guarantor2Phone"
+                        className="m-0 text-xs font-medium text-ajo_darkBlue"
+                      >
+                        Phone Number
+                      </label>
+                      <Field
+                        onChange={handleChange}
+                        name="guarantor2Phone"
+                        type="text"
+                        className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                      />
+                      <ErrorMessage
+                        name="guarantor2Phone"
+                        component="div"
+                        className="text-xs text-red-500"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label
+                        htmlFor="guarantor2Email"
+                        className="m-0 text-xs font-medium text-ajo_darkBlue"
+                      >
+                        Email
+                      </label>
+                      <Field
+                        name="guarantor2Email"
+                        type="text"
+                        className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                      />
+                      <ErrorMessage
+                        name="guarantor2Email"
+                        component="div"
+                        className="text-xs text-red-500"
+                      />
+                    </div>
+                  </div>
+                  <div className="mb-8">
+                    <label
+                      htmlFor="guarantor2Address"
+                      className="m-0 text-xs font-medium text-ajo_darkBlue"
+                    >
+                      Home Address
+                    </label>
+                    <Field
+                      onChange={handleChange}
+                      name="guarantor2Address"
+                      type="text"
+                      className="mt-1 w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D] outline-gray-300"
+                    />
+                    <ErrorMessage
+                      name="guarantor2Address"
+                      component="div"
+                      className="text-xs text-red-500"
+                    />
+                  </div>
+                  {/* <div className="mb-4 w-1/2">
                   <label
                     htmlFor="idType"
                     className="m-0 text-xs font-medium text-ajo_darkBlue"
@@ -1639,408 +1647,419 @@ const MutateUser = ({
                     className="text-xs text-red-500"
                   />
                 </div> */}
-                {actionToTake === 'create-user' ? (
-                  <div className="mt-4">
+                  {actionToTake === "create-user" ? (
+                    <div className="mt-4">
+                      <label
+                        htmlFor="guarantorForm2"
+                        className="m-0 text-xs font-medium text-ajo_darkBlue"
+                      >
+                        Upload Filled Guarantor 2 Form
+                      </label>
+                      <label
+                        htmlFor="guarantorForm2"
+                        className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
+                      >
+                        <input
+                          type="file"
+                          name="guarantorForm2"
+                          id="guarantorForm2"
+                          className="hidden w-full"
+                          onChange={(e) => {
+                            setFieldValue("guarantorForm2", e.target.files);
+                          }}
+                          accept="application/pdf, .jpg, .png"
+                        />
+                        <div className="flex flex-col items-center justify-center">
+                          <Image
+                            src="/upload.svg"
+                            alt="guarantor form upload icon"
+                            width={48}
+                            height={48}
+                          />
+                          <p className="text-center text-[gray]">
+                            Drag n drop a{" "}
+                            <span className="font-semibold">
+                              .pdf, .jpg, .png
+                            </span>{" "}
+                            here, or click to select one
+                          </p>
+                        </div>
+                      </label>
+                      {values.guarantorForm2 &&
+                        values.guarantorForm2[0] &&
+                        ((values.guarantorForm2[0] as File).type.includes(
+                          "image",
+                        ) ? (
+                          <Image
+                            src={URL.createObjectURL(values.guarantorForm2[0])}
+                            alt="guarantor2ID"
+                            className="mt-4 max-w-full rounded-md"
+                            style={{ maxWidth: "100%" }}
+                            width={100}
+                            height={100}
+                          />
+                        ) : (
+                          <iframe
+                            src={URL.createObjectURL(values.guarantorForm2[0])}
+                            className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
+                            title="Guarantor Form"
+                          ></iframe>
+                        ))}
+                      <div className="text-xs text-red-600">
+                        <ErrorMessage name="guarantorForm2" />
+                      </div>
+                    </div>
+                  ) : (
+                    ""
+                  )}
+                </div>
+
+                {actionToTake === "edit-user" ? (
+                  <div className="mb-8 mt-8">
+                    <div className="mb-4 ">
+                      <label
+                        htmlFor="guarantorForm2"
+                        className="mb-8  text-xs font-medium text-ajo_darkBlue"
+                      >
+                        Guarantor Form 2
+                      </label>
+                      {values.guarantorForm2 &&
+                      (values.guarantorForm2 as string[]).length > 0 &&
+                      values.guarantorForm2[0] ? (
+                        <Image
+                          src={URL.createObjectURL(values.guarantorForm2[0])} // Display placeholder image or actual image URL
+                          alt="photo"
+                          className="h-auto w-full"
+                          style={{ maxWidth: "100%" }}
+                          width={500}
+                          height={300}
+                        />
+                      ) : (
+                        <Image
+                          src={userInfo ? userInfo?.guarantorForm2 : ""} // Display placeholder image or actual image URL
+                          alt="photo"
+                          className="h-auto w-full"
+                          style={{ maxWidth: "100%" }}
+                          width={500}
+                          height={300}
+                        />
+                      )}
+                    </div>
+
+                    <div className="mt-8">
+                      <label
+                        htmlFor="guarantorForm2"
+                        className=" cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
+                      >
+                        Change
+                        <input
+                          id="guarantorForm2"
+                          name="guarantorForm2"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(event) => {
+                            const file = event.target.files;
+                            setFieldValue("guarantorForm2", file); // Store the selected file in state
+                          }}
+                        />
+                      </label>
+                      {isSubmitting && (
+                        <span className="ml-2">Uploading...</span>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  ""
+                )}
+
+                <div className="mb-4 w-3/4">
                   <label
-                    htmlFor="guarantorForm2"
+                    htmlFor="role"
                     className="m-0 text-xs font-medium text-ajo_darkBlue"
                   >
-                    Upload Filled Guarantor 2 Form
+                    Assign Role
                   </label>
-                  <label
-                    htmlFor="guarantorForm2"
-                    className="mt-1 flex h-[150px] cursor-pointer items-center justify-center  rounded-md bg-[#F3F4F6] px-6 pb-6 pt-5"
+                  <Field
+                    as="select"
+                    placeholder="make a selection"
+                    id="roles"
+                    name="roles"
+                    className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
                   >
-                    <input
-                      type="file"
-                      name="guarantorForm2"
-                      id="guarantorForm2"
-                      className="hidden w-full"
-                      onChange={(e) => {
-                        setFieldValue("guarantorForm2", e.target.files);
-                      }}
-                      accept="application/pdf, .jpg, .png"
-                    />
-                    <div className="flex flex-col items-center justify-center">
-                      <Image
-                        src="/upload.svg"
-                        alt="guarantor form upload icon"
-                        width={48}
-                        height={48}
-                      />
-                      <p className="text-center text-[gray]">
-                        Drag n drop a{" "}
-                        <span className="font-semibold">.pdf, .jpg, .png</span>{" "}
-                        here, or click to select one
-                      </p>
-                    </div>
-                  </label>
-                  {values.guarantorForm2 &&
-                    values.guarantorForm2[0] &&
-                    ((values.guarantorForm2[0] as File).type.includes(
-                      "image",
-                    ) ? (
-                      <Image
-                        src={URL.createObjectURL(values.guarantorForm2[0])}
-                        alt="guarantor2ID"
-                        className="mt-4 max-w-full rounded-md"
-                        style={{ maxWidth: "100%" }}
-                        width={100}
-                        height={100}
-                      />
-                    ) : (
-                      <iframe
-                        src={URL.createObjectURL(values.guarantorForm2[0])}
-                        className="no-border mt-4 block h-auto w-auto max-w-full rounded-md"
-                        title="Guarantor Form"
-                      ></iframe>
+                    {allRoles?.map((role: roleResponse) => (
+                      <option key={role?._id} value={role?._id}>
+                        {role?.name + ":  " + role?.description}
+                      </option>
                     ))}
-                  <div className="text-xs text-red-600">
-                    <ErrorMessage name="guarantorForm2" />
-                  </div>
+                    <option className="hidden"></option>
+                  </Field>
+                  <ErrorMessage
+                    name="roles"
+                    component="div"
+                    className="text-xs text-red-500"
+                  />
                 </div>
-                ): ""}
-              </div>
-
-              {
-                actionToTake === 'edit-user' ? (
-                  <div className="mt-8 mb-8">
-                  <div className="mb-4 ">
+                <div className="mb-4 w-3/4">
                   <label
-                  htmlFor="guarantorForm2"
-                  className="mb-8  text-xs font-medium text-ajo_darkBlue"
-                >
-                  Guarantor Form 2
-                </label>
-                  {values.guarantorForm2 && (values.guarantorForm2 as string[]).length > 0 && values.guarantorForm2[0]  ? (
-                      <Image
-                        src={URL.createObjectURL(values.guarantorForm2[0])} // Display placeholder image or actual image URL
-                        alt="photo"
-                        className="h-auto w-full"
-                        style={{ maxWidth: "100%" }}
-                        width={500}
-                        height={300}
-                      />
-                    ) : (
-                      <Image
-                        src={userInfo ? userInfo?.guarantorForm2: ''} // Display placeholder image or actual image URL
-                        alt="photo"
-                        className="h-auto w-full"
-                        style={{ maxWidth: "100%" }}
-                        width={500}
-                        height={300}
-                      />
-                    )}
-                  </div>
+                    htmlFor="assignedCustomers"
+                    className="m-0 text-xs font-medium text-ajo_darkBlue"
+                  >
+                    Assign Customers
+                  </label>
 
-                  <div className="mt-8">
-                    <label
-                      htmlFor="guarantorForm2"
-                      className=" cursor-pointer rounded-md bg-[#221C3E]  px-4 py-2 text-white hover:bg-gray-400"
-                    >
-                      Change
-                      <input
-                        id="guarantorForm2"
-                        name="guarantorForm2"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(event) => {
-                          const file = event.target.files;
-                          setFieldValue("guarantorForm2", file); // Store the selected file in state
+                  {actionToTake === "create-user" ? (
+                    <div className="w-full">
+                      <Field
+                        as="select"
+                        title="Select an option"
+                        name="assignedCustomers"
+                        className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+                        onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                          handleOptionChange(e);
+                          let assignedCustomers = values.assignedCustomers;
+                          // if(actionToTake === 'edit-user'){
+                          //   console.log(values.assignedCustomers)
+                          //   assignedCustomers = values.assignedCustomers.map((customer: { _id: any; }) => customer._id);
+                          // }
+
+                          if (!assignedCustomers.includes(e.target.value)) {
+                            const updatedAssignedCustomers = [
+                              ...assignedCustomers,
+                              e.target.value,
+                            ];
+                            setFieldValue(
+                              "assignedCustomers",
+                              updatedAssignedCustomers,
+                            );
+                          }
                         }}
-                      />
-                    </label>
-                    {isSubmitting && (
-                      <span className="ml-2">Uploading...</span>
-                    )}
-                  </div>
-             </div>
-                ): ""
-              }
+                      >
+                        <option value="hidden"></option>
+                        {/* { actionToTake === 'create-user' ? */}
+                        {allCustomers?.map((option) => (
+                          <option key={option._id} value={option._id}>
+                            {option.firstName} {option.lastName}
+                          </option>
+                        ))}
+                      </Field>
 
-
-              <div className="mb-4 w-3/4">
-                <label
-                  htmlFor="role"
-                  className="m-0 text-xs font-medium text-ajo_darkBlue"
-                >
-                  Assign Role
-                </label>
-                <Field
-                  as="select"
-                  placeholder="make a selection"
-                  id="roles"
-                  name="roles"
-                  className="mt-1 w-full appearance-none rounded-lg border-0 bg-[#F3F4F6]  bg-dropdown-icon  bg-[position:97%_center] bg-no-repeat p-3 pr-10 text-[#7D7D7D] outline-gray-300"
-                >
-                  {allRoles?.map((role: roleResponse) => (
-                    <option key={role?._id} value={role?._id}>
-                      {role?.name + ":  " + role?.description}
-                    </option>
-                  ))}
-                  <option className="hidden"></option>
-                </Field>
-                <ErrorMessage
-                  name="roles"
-                  component="div"
-                  className="text-xs text-red-500"
-                />
-              </div>
-              <div className="mb-4 w-3/4">
-                <label
-                  htmlFor="assignedCustomers"
-                  className="m-0 text-xs font-medium text-ajo_darkBlue"
-                >
-                  Assign Customers
-                </label>
-               
-               {actionToTake === 'create-user' ?
-               (
-                  <div className="w-full">
-                  <Field
-                    as="select"
-                    title="Select an option"
-                    name="assignedCustomers"
-                    className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) => {
-                      handleOptionChange(e);
-                      let assignedCustomers = values.assignedCustomers;
-                      // if(actionToTake === 'edit-user'){
-                      //   console.log(values.assignedCustomers)
-                      //   assignedCustomers = values.assignedCustomers.map((customer: { _id: any; }) => customer._id);
-                      // }
-                     
-                      if (!assignedCustomers.includes(e.target.value)) {
-                        const updatedAssignedCustomers = [
-                          ...assignedCustomers,
-                          e.target.value,
-                        ];
-                        setFieldValue(
-                          "assignedCustomers",
-                          updatedAssignedCustomers,
-                        );
-                       
-                      }
-                    }}
-                  >
-                    <option value="hidden"></option>
-                    {/* { actionToTake === 'create-user' ? */}
-                    {allCustomers?.map((option) => (
-                      <option key={option._id} value={option._id}>
-                        {option.firstName} {option.lastName}
-                      </option>
-                    )) }
-                     
-
-                
-                  </Field>
-
-                  <div className="space-x-1 space-y-2">
-                    {values.assignedCustomers.map((customerId: string, index: number ) => {
-                      const option = allCustomers?.find(
-                        (user) => user._id === customerId,
-                      );
-                      return (
-                        <div key={index} className="mb-2 mr-2 inline-block">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              handleRemoveOption(index);
-                              const updatedCustomers =
-                                values.assignedCustomers.filter(
-                                  (id: any) => id !== customerId,
-                                );
-                              setFieldValue(
-                                "assignedCustomers",
-                                updatedCustomers,
-                              );
-                            }}
-                            className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
-                          >
-                            {option?.firstName} {option?.lastName}
-                            <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
-                              ×
-                            </span>
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-               )
-                : ""}
-
-                {actionToTake === 'edit-user' ? (
-                  <div className="w-full">
-                  <Field
-                    as="select"
-                    title="Select an option"
-                    name="assignedCustomers"
-                    className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) => {
-                      handleOptionChange(e);
-                    let assignedCustomers = assignedCustomerIds
-                      // if(actionToTake === 'edit-user'){
-                      //   console.log(values.assignedCustomers)
-                      //   assignedCustomers = values.assignedCustomers.map((customer: { _id: any; }) => customer._id);
-                      // }
-                      
-
-                      if (!assignedCustomers.includes(e.target.value)) {
-                        const updatedAssignedCustomers = [
-                          ...assignedCustomers,
-                          e.target.value,
-                        ];
-                        setAssignedCustomerIds(updatedAssignedCustomers)
-                        
-                      }
-                    }}
-                  >
-                    <option value="hidden"></option>
-                    {/* { actionToTake === 'create-user' ? */}
-                    {allCustomers?.map((option) => (
-                      <option key={option._id} value={option._id}>
-                        {option.firstName} {option.lastName}
-                      </option>
-                    )) }
-                     
-
-                
-                  </Field>
-
-                  <div className="space-x-1 space-y-2">
-                    {assignedCustomerIds.map((customerId: string, index: number ) => {
-                      const option = allCustomers?.find(
-                        (user) => user._id === customerId,
-                      );
-                      return (
-                        <div key={index} className="mb-2 mr-2 inline-block">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              handleRemoveOption(index);
-                              const updatedCustomers =
-                                assignedCustomerIds.filter(
-                                  (id: any) => id !== customerId,
-                                );
-                              setAssignedCustomerIds(updatedCustomers)
-                            }}
-                            className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
-                          >
-                            {option?.firstName} {option?.lastName}
-                            <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
-                              ×
-                            </span>
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-                ) : ""}
-             
-                <ErrorMessage
-                  name="assignedCustomers"
-                  component="div"
-                  className="text-xs text-red-500"
-                />
-              </div>
-
-              {actionToTake === 'create-user' ? (
-                              <div className="flex gap-x-3">
-                              <Field
-                                id="selectAllCustomers"
-                                name="selectAllCustomers"
-                                type="checkbox"
-                                className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                                checked={
-                                  values.assignedCustomers.length === allCustomers?.length
-                                }
-                                onChange={(e: { target: { checked: any } }) => {
-                                  if (e.target.checked) {
+                      <div className="space-x-1 space-y-2">
+                        {values.assignedCustomers.map(
+                          (customerId: string, index: number) => {
+                            const option = allCustomers?.find(
+                              (user) => user._id === customerId,
+                            );
+                            return (
+                              <div
+                                key={index}
+                                className="mb-2 mr-2 inline-block"
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleRemoveOption(index);
+                                    const updatedCustomers =
+                                      values.assignedCustomers.filter(
+                                        (id: any) => id !== customerId,
+                                      );
                                     setFieldValue(
                                       "assignedCustomers",
-                                      allCustomers?.map((customer) => customer._id),
+                                      updatedCustomers,
                                     );
-                                    
-                                  } else {
-                                    setFieldValue("assignedCustomers", []);
-                                  }
-                                }}
-                              />
-              
-                              <label
-                                htmlFor="selectAllCustomers"
-                                className="m-0 text-sm capitalize text-ajo_darkBlue"
-                              >
-                                Select all Customers
-                              </label>
-                            </div>
-                              ): ''}
+                                  }}
+                                  className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
+                                >
+                                  {option?.firstName} {option?.lastName}
+                                  <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
+                                    ×
+                                  </span>
+                                </button>
+                              </div>
+                            );
+                          },
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    ""
+                  )}
 
-                  {actionToTake === 'edit-user' ? (
-                  <div className="flex gap-x-3">
-                  <Field
-                    id="selectAllCustomers"
-                    name="selectAllCustomers"
-                    type="checkbox"
-                    className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    checked={
-                      assignedCustomerIds.length === allCustomers?.length
-                    }
-                    onChange={(e: { target: { checked: any } }) => {
-                      if (e.target.checked) {
-                        // setFieldValue(
-                        //   "assignedCustomers",
-                        //   allCustomers?.map((customer) => customer._id),
-                        // );
-                        if (allCustomers) {
-                          setAssignedCustomerIds(allCustomers.map((customer) => customer._id));
-                        }
-                        
-                       
-                      } else {
-                        // setFieldValue("assignedCustomers", []);
-                        setAssignedCustomerIds([])
-                      }
-                    }}
+                  {actionToTake === "edit-user" ? (
+                    <div className="w-full">
+                      <Field
+                        as="select"
+                        title="Select an option"
+                        name="assignedCustomers"
+                        className="bg-right-20 mt-1 w-full cursor-pointer appearance-none rounded-lg border-0 bg-[#F3F4F6] bg-[url('../../public/arrow_down.svg')] bg-[95%_center] bg-no-repeat p-3 text-[#7D7D7D]"
+                        onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                          handleOptionChange(e);
+                          let assignedCustomers = assignedCustomerIds;
+                          // if(actionToTake === 'edit-user'){
+                          //   console.log(values.assignedCustomers)
+                          //   assignedCustomers = values.assignedCustomers.map((customer: { _id: any; }) => customer._id);
+                          // }
+
+                          if (!assignedCustomers.includes(e.target.value)) {
+                            const updatedAssignedCustomers = [
+                              ...assignedCustomers,
+                              e.target.value,
+                            ];
+                            console.log(updatedAssignedCustomers);
+                            setAssignedCustomerIds(updatedAssignedCustomers);
+                          }
+                        }}
+                      >
+                        <option value="hidden"></option>
+                        {/* { actionToTake === 'create-user' ? */}
+                        {allCustomers?.map((option) => (
+                          <option key={option._id} value={option._id}>
+                            {option.firstName} {option.lastName}
+                          </option>
+                        ))}
+                      </Field>
+
+                      <div className="space-x-1 space-y-2">
+                        {assignedCustomerIds.map(
+                          (customerId: string, index: number) => {
+                            const option = allCustomers?.find(
+                              (user) => user._id === customerId,
+                            );
+                            return (
+                              <div
+                                key={index}
+                                className="mb-2 mr-2 inline-block"
+                              >
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleRemoveOption(index);
+                                    const updatedCustomers =
+                                      assignedCustomerIds.filter(
+                                        (id: any) => id !== customerId,
+                                      );
+                                    setAssignedCustomerIds(updatedCustomers);
+                                  }}
+                                  className="inline-flex items-center space-x-1 rounded-lg bg-blue-100 px-2 py-1 text-sm"
+                                >
+                                  {option?.firstName} {option?.lastName}
+                                  <span className="ml-1 h-5 w-3 cursor-pointer text-gray-700">
+                                    ×
+                                  </span>
+                                </button>
+                              </div>
+                            );
+                          },
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    ""
+                  )}
+
+                  <ErrorMessage
+                    name="assignedCustomers"
+                    component="div"
+                    className="text-xs text-red-500"
                   />
-  
-                  <label
-                    htmlFor="selectAllCustomers"
-                    className="m-0 text-sm capitalize text-ajo_darkBlue"
-                  >
-                    Select all Customers
-                  </label>
                 </div>
-                ): ""}
-            </section>
-          </div>
-          <button
-            type="submit"
-            className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
-            onClick={() => {
-             
-              submitForm();
-            }}
-            disabled={isSubmitting || isCreatingRole}
-          >
-            {isSubmitting || isCreatingRole || isEditingRole ? (
-              <Image
-                src="/loadingSpinner.svg"
-                alt="loading spinner"
-                className="relative left-1/2"
-                width={25}
-                height={25}
-              />
-            ) : (
-              "Submit"
-            )}
-          </button>
-        </form>
-      )}
-    </Formik>
+
+                {actionToTake === "create-user" ? (
+                  <div className="flex gap-x-3">
+                    <Field
+                      id="selectAllCustomers"
+                      name="selectAllCustomers"
+                      type="checkbox"
+                      className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      checked={
+                        values.assignedCustomers.length === allCustomers?.length
+                      }
+                      onChange={(e: { target: { checked: any } }) => {
+                        if (e.target.checked) {
+                          setFieldValue(
+                            "assignedCustomers",
+                            allCustomers?.map((customer) => customer._id),
+                          );
+                        } else {
+                          setFieldValue("assignedCustomers", []);
+                        }
+                      }}
+                    />
+
+                    <label
+                      htmlFor="selectAllCustomers"
+                      className="m-0 text-sm capitalize text-ajo_darkBlue"
+                    >
+                      Select all Customers
+                    </label>
+                  </div>
+                ) : (
+                  ""
+                )}
+
+                {actionToTake === "edit-user" ? (
+                  <div className="flex gap-x-3">
+                    <Field
+                      id="selectAllCustomers"
+                      name="selectAllCustomers"
+                      type="checkbox"
+                      className="block h-4 w-4 rounded-md border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      checked={
+                        assignedCustomerIds.length === allCustomers?.length
+                      }
+                      onChange={(e: { target: { checked: any } }) => {
+                        if (e.target.checked) {
+                          // setFieldValue(
+                          //   "assignedCustomers",
+                          //   allCustomers?.map((customer) => customer._id),
+                          // );
+                          if (allCustomers) {
+                            setAssignedCustomerIds(
+                              allCustomers.map((customer) => customer._id),
+                            );
+                          }
+                        } else {
+                          // setFieldValue("assignedCustomers", []);
+                          setAssignedCustomerIds([]);
+                        }
+                      }}
+                    />
+
+                    <label
+                      htmlFor="selectAllCustomers"
+                      className="m-0 text-sm capitalize text-ajo_darkBlue"
+                    >
+                      Select all Customers
+                    </label>
+                  </div>
+                ) : (
+                  ""
+                )}
+              </section>
+            </div>
+            <button
+              type="submit"
+              className="w-1/2 rounded-md bg-ajo_blue py-3 text-sm font-semibold  text-white hover:bg-indigo-500 focus:bg-indigo-500"
+              onClick={() => {
+                submitForm();
+              }}
+              disabled={isSubmitting || isCreatingRole}
+            >
+              {isSubmitting || isCreatingRole || isEditingRole ? (
+                <Image
+                  src="/loadingSpinner.svg"
+                  alt="loading spinner"
+                  className="relative left-1/2"
+                  width={25}
+                  height={25}
+                />
+              ) : (
+                "Submit"
+              )}
+            </button>
+          </form>
+        )}
+      </Formik>
     </div>
   );
 };
@@ -2048,7 +2067,7 @@ const MutateUser = ({
 const ViewUser = ({ userId }: { userId: string }) => {
   const { client } = useAuth();
   const { data: userInfo, isLoading: isLoadingUserInfo } = useQuery({
-    queryKey: ["userInfo"],
+    queryKey: ["view user Info"],
     queryFn: async () => {
       return client
         .get(`/api/user/${userId}`)
@@ -2056,12 +2075,10 @@ const ViewUser = ({ userId }: { userId: string }) => {
           return response.data;
         })
         .catch((error: AxiosError<any, any>) => {
-          
           throw error;
         });
     },
   });
-
 
   const Detail = ({
     title,
@@ -2092,22 +2109,20 @@ const ViewUser = ({ userId }: { userId: string }) => {
       <p className="m-0 text-base font-bold text-ajo_darkBlue">USER DETAILS</p>
       <div className="m-0 rounded-md border border-gray-300 px-6 py-4">
         <div className="flex gap-4">
-
-          <Link target="_blank" href={userInfo?.photo ? String(userInfo?.photo): ''}>
+          <Link
+            target="_blank"
+            href={userInfo?.photo ? String(userInfo?.photo) : ""}
+          >
             <Image
               // src={userInfo?.image ?? "/user"}
-              src={userInfo ? userInfo?.photo: ''}
+              src={userInfo ? userInfo?.photo : ""}
               alt={`${userInfo?.firstName}'s image`}
               className="h-full rounded-md"
               width={120}
               height={120}
             />
           </Link>
-          
 
-          
-        
-          
           <div className="w-full space-y-4">
             <Detail title="First name" value={userInfo?.firstName} />
             <Detail title="Last name" value={userInfo?.lastName} />
@@ -2116,39 +2131,36 @@ const ViewUser = ({ userId }: { userId: string }) => {
             <Detail title="Home Address" value={userInfo?.homeAddress} />
             <Detail title="Assigned Role" value={userInfo?.roles[0].name} />
             <div className="flex">
-              <p className="font-semibold ">
-                Assigned User: 
-              </p>
-              
+              <p className="font-semibold ">Assigned User:</p>
+
               {userInfo?.assignedUser.map((user, index) => (
                 <React.Fragment key={user._id}>
-                {user.firstName} {user.lastName}
-                {index < userInfo.assignedUser.length - 1 && ', '}
-              </React.Fragment>
-                
+                  {user.firstName} {user.lastName}
+                  {index < userInfo.assignedUser.length - 1 && ", "}
+                </React.Fragment>
               ))}
             </div>
             <div className="flex ">
-              <p className="font-semibold ">
-                {userInfo?.meansOfID}:
-              </p>
-              
+              <p className="font-semibold ">{userInfo?.meansOfID}:</p>
+
               <div className="ml-4">
-                <Link target="_blank" href={userInfo?.meansOfIDPhoto ? String(userInfo?.meansOfIDPhoto): ""}>
-                
-                <Image
-                
-                src={userInfo ? userInfo?.meansOfIDPhoto: ''}
-                alt={`${userInfo?.firstName}'s ID`}
-                className="h-full rounded-md"
-                width={120}
-                height={120}
-              />
-              
+                <Link
+                  target="_blank"
+                  href={
+                    userInfo?.meansOfIDPhoto
+                      ? String(userInfo?.meansOfIDPhoto)
+                      : ""
+                  }
+                >
+                  <Image
+                    src={userInfo ? userInfo?.meansOfIDPhoto : ""}
+                    alt={`${userInfo?.firstName}'s ID`}
+                    className="h-full rounded-md"
+                    width={120}
+                    height={120}
+                  />
                 </Link>
-                
               </div>
-                
             </div>
           </div>
         </div>
@@ -2168,7 +2180,10 @@ const ViewUser = ({ userId }: { userId: string }) => {
             value={userInfo?.guarantor1.homeAddress}
           />
 
-          <Link target="_blank" href={userInfo?.guarantorForm ? userInfo?.guarantorForm: ''}>
+          <Link
+            target="_blank"
+            href={userInfo?.guarantorForm ? userInfo?.guarantorForm : ""}
+          >
             <button className="flex rounded-md border border-gray-300 p-2">
               <Image
                 src="/pdfLogo.svg"
@@ -2180,7 +2195,6 @@ const ViewUser = ({ userId }: { userId: string }) => {
               {userInfo?.guarantor1.fullName}
             </button>
           </Link>
-          
         </div>
         <div key={userInfo?.guarantor2.phoneNumber} className="mt-8 space-y-2">
           <p className="font-semibold text-ajo_darkBlue">Guarantor 2:</p>
@@ -2195,7 +2209,10 @@ const ViewUser = ({ userId }: { userId: string }) => {
             value={userInfo?.guarantor2.homeAddress}
           />
 
-          <Link target="_blank" href={userInfo?.guarantorForm2 ? userInfo?.guarantorForm2 : ''}>
+          <Link
+            target="_blank"
+            href={userInfo?.guarantorForm2 ? userInfo?.guarantorForm2 : ""}
+          >
             <button className="flex rounded-md border border-gray-300 p-2">
               <Image
                 src="/pdfLogo.svg"

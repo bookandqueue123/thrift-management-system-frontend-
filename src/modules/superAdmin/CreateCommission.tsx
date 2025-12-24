@@ -3,6 +3,7 @@ import ErrorModal from "@/components/ErrorModal";
 import SuccessModal from "@/components/SuccessModal";
 import { OrganisationGroupsProps, getOrganizationProps } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 const CreateCommissionForm = ({
@@ -11,6 +12,7 @@ const CreateCommissionForm = ({
   setIsCommissionCreated: Dispatch<SetStateAction<boolean>>;
 }) => {
   const { client } = useAuth();
+  const router = useRouter();
   const [errorMessage, setErrorMessage] = useState("");
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -283,6 +285,18 @@ const CreateCommissionForm = ({
           >
             All
           </label>
+        </div>
+
+        <div className="mb-2 flex w-full justify-end">
+          <button
+            onClick={() =>
+              router.push(`/superadmin/commission/ecommerce-charge`)
+            }
+            type="button"
+            className="rounded bg-blue-600 px-6 py-2 font-semibold text-white hover:bg-blue-700"
+          >
+            Create Ecommerce Commission
+          </button>
         </div>
         {errors.organisationType && (
           <div className="text-red-500">{errors.organisationType}</div>

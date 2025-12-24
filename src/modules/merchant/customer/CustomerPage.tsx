@@ -17,7 +17,6 @@ import {
   CustomerSignUpProps,
   FormErrors,
   FormValues,
-  MyFileList,
   StateProps,
   UpdateKycProps,
   customer,
@@ -40,12 +39,12 @@ import {
 import { CiExport } from "react-icons/ci";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
-import ninslip from "../../../../public/NIN.svg";
 
 const initialValues: CustomerSignUpProps = {
   firstName: "",
   lastName: "",
   otherName: "",
+  password: "",
   phoneNumber: "",
   homeAddress: "",
   countryOfResidence: "",
@@ -57,7 +56,7 @@ const initialValues: CustomerSignUpProps = {
   nin: "",
   ninslip: null,
   bvn: "",
-  password: "",
+
   confirmPassword: "",
   organization: "",
 };
@@ -163,17 +162,41 @@ const Customers = () => {
     },
     staleTime: 5000,
   });
+ 
   const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchResult(e.target.value);
+  const searchValue = e.target.value;
+  setSearchResult(searchValue);
+   
+  if (allCustomers) {
+    const filtered = allCustomers.filter((customer) => {
+      // Check all relevant fields
+      const matchesAccountNumber = customer.accountNumber?.toString().includes(searchValue);
+      const matchesFirstName = customer.firstName?.toLowerCase().includes(searchValue.toLowerCase());
+      const matchesLastName = customer.lastName?.toLowerCase().includes(searchValue.toLowerCase());
+      const matchesEmail = customer.email?.toLowerCase().includes(searchValue.toLowerCase());
+      
+      return matchesAccountNumber || matchesFirstName || matchesLastName || matchesEmail;
+    });
+    setFilteredCustomer(filtered);
+  }
+};
 
-    if (allCustomers) {
-      const filtered = allCustomers.filter((item) =>
-        String(item.accountNumber).includes(String(e.target.value)),
-      );
-      // Update the filtered data state
-      setFilteredCustomer(filtered);
-    }
-  };
+  
+
+// const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+  //   setSearchResult(e.target.value);
+
+  //   if (allCustomers) {
+  //     const filtered = allCustomers.filter((item) =>
+  //       String(item.accountNumber).includes(String(e.target.value)),
+        
+  //     );
+      
+  //     setFilteredCustomer(filtered);
+  //   }
+  // };
+  
+  
   const handleDateFilter = () => {
     // Filter the data based on the date range
     if (allCustomers) {
@@ -235,36 +258,67 @@ const Customers = () => {
     }
   };
 
-  const handleExcelExport = async () => {
-    try {
-      const organisation = organisationId; // Replace with actual organisation ID or obtain it dynamically
-      const response = await fetch(
-        `${apiUrl}api/user/export-users-excel/${organisation}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+     const handleExcelExport = async () => {
+  try {
+    const organisation = organisationId;
+    const response = await fetch(
+      `${apiUrl}/api/user/export-users-excel/${organisation}`, 
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      },
+    );
 
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "users.xlsx";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      } else {
-        console.error("Failed to export users:", response.statusText);
-      }
-    } catch (error) {
-      console.error("An error occurred while exporting users:", error);
+    if (response.ok) {
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "customers.xlsx"; // Better filename
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } else {
+      console.error("Failed to export users:", response.statusText);
+      // Add user notification here if needed
     }
-  };
+  } catch (error) {
+    console.error("An error occurred while exporting users:", error);
+    // Add user notification here if needed
+  }
+};
+  // const handleExcelExport = async () => {
+  //   try {
+  //     const organisation = organisationId; // Replace with actual organisation ID or obtain it dynamically
+  //     const response = await fetch(
+  //       `${apiUrl}api/user/export-users-excel/${organisation}`,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       },
+  //     );
+
+  //     if (response.ok) {
+  //       const blob = await response.blob();
+  //       const url = window.URL.createObjectURL(blob);
+  //       const a = document.createElement("a");
+  //       a.href = url;
+  //       a.download = "users.xlsx";
+  //       document.body.appendChild(a);
+  //       a.click();
+  //       a.remove();
+  //     } else {
+  //       console.error("Failed to export users:", response.statusText);
+  //     }
+  //   } catch (error) {
+  //     console.error("An error occurred while exporting users:", error);
+  //   }
+  // };
 
   useEffect(() => {
     // Calling refetch to rerun the allRoles query
@@ -402,6 +456,7 @@ const Customers = () => {
               "Local Govt Area",
               "City/Town",
               "Organisation",
+              "Created by",
               "Action",
             ]}
             content={
@@ -449,6 +504,10 @@ const Customers = () => {
                     </td>
 
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      {customer.createdBy || "----"}
+                    </td>
+
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
                       <StatusIndicator
                         label={`Actions`}
                         clickHandler={() => {
@@ -474,6 +533,7 @@ const Customers = () => {
                               setModalToShow("view");
                               setCustomerToBeEdited(customer._id);
                               console.log("View Customer");
+                              console.log(modalToShow);
                             },
                             () => {
                               setModalToShow("edit");
@@ -604,7 +664,7 @@ export const SavingsSettings = ({
 }: ShowModalProps) => {
   const { client } = useAuth();
   const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
-    queryKey: ["customerInfo"],
+    queryKey: ["customer Info savings"],
     queryFn: async () => {
       return client
         .get(`/api/user/${customerId}`)
@@ -1021,9 +1081,7 @@ export const ViewCustomer = ({
     <div>
       <div className="mx-auto mt-8 w-[100%] overflow-hidden rounded-md bg-white p-4 shadow-md">
         {/* Image and First Batch of Details Section */}
-        <p className="mb-8 mt-2 text-xl font-bold text-gray-600">
-          Customer Details
-        </p>
+        <p className="mb-8 mt-2 text-xl font-bold ">Customer Details</p>
         <div className="rounded-lg md:border">
           <div className="p-6 md:flex ">
             <div className="mr-6 md:w-1/6 ">
@@ -1037,7 +1095,7 @@ export const ViewCustomer = ({
             </div>
             <div className="flex w-5/6 flex-wrap md:ml-4">
               <div className="mb-2 mt-2 w-full md:w-1/2">
-                <p className="font-semibold text-gray-600">
+                <p className="font-semibold ">
                   Name:{" "}
                   <span className="font-normal">
                     {customerInfo ? customerInfo.firstName : ""}{" "}
@@ -1047,7 +1105,7 @@ export const ViewCustomer = ({
                 {/* <p className="text-gray-900">John Doe</p> */}
               </div>
               <div className="mb-2 w-full md:w-1/2  md:pl-8">
-                <p className="font-semibold text-gray-600">
+                <p className="font-semibold ">
                   Phone Number:{" "}
                   <span className="font-normal md:pl-8">
                     {customerInfo ? customerInfo.phoneNumber : ""}
@@ -1056,7 +1114,7 @@ export const ViewCustomer = ({
                 {/* <p className="text-gray-900">123-456-7890</p> */}
               </div>
               <div className="mb-2 w-full md:w-1/2">
-                <p className="font-semibold text-gray-600">
+                <p className="font-semibold ">
                   Email Address:{" "}
                   <span className="font-normal">
                     {customerInfo ? customerInfo.email : ""}
@@ -1065,7 +1123,7 @@ export const ViewCustomer = ({
                 {/* <p className="text-gray-900">johndoe@example.com</p> */}
               </div>
               <div className="mb-2 w-full md:w-1/2 md:pl-8">
-                <p className="font-semibold text-gray-600">
+                <p className="font-semibold ">
                   Country of Residence:{" "}
                   <span className="font-normal">
                     {customerInfo ? customerInfo.country : "N/A"}
@@ -1074,7 +1132,7 @@ export const ViewCustomer = ({
                 {/* <p className="text-gray-900">United States</p> */}
               </div>
               <div className="mb-4 w-full">
-                <p className="font-semibold text-gray-600">
+                <p className="font-semibold ">
                   Home Address:{" "}
                   <span className="font-normal">
                     {customerInfo ? customerInfo.homeAddress : "N/A"}
@@ -1089,28 +1147,28 @@ export const ViewCustomer = ({
           <div className="p-6 ">
             <div className="mb-4 flex flex-wrap">
               <div className="w-full sm:w-1/3">
-                <p className="font-semibold text-gray-600">
+                <p className="font-semibold ">
                   State:{" "}
                   <span className="font-normal">
-                    {customerInfo ? customerInfo.state : "N/A"}
+                    {customerInfo?.state || "N/A"}
                   </span>
                 </p>
                 {/* <p className="text-gray-900">California</p> */}
               </div>
               <div className="w-full sm:w-1/3">
-                <p className="font-semibold text-gray-600">
+                <p className="font-semibold ">
                   LGA:{" "}
                   <span className="font-normal">
-                    {customerInfo ? customerInfo.lga : "N/A"}
+                    {customerInfo?.lga || "N/A"}
                   </span>
                 </p>
                 {/* <p className="text-gray-900">Local Government Area</p> */}
               </div>
               <div className="w-full sm:w-1/3">
-                <p className="font-semibold text-gray-600">
+                <p className="font-semibold ">
                   City:{" "}
                   <span className="font-normal">
-                    {customerInfo ? customerInfo.city : "N/A"}
+                    {customerInfo?.city || "N/A"}
                   </span>
                 </p>
                 {/* <p className="text-gray-900">City Name</p> */}
@@ -1118,19 +1176,19 @@ export const ViewCustomer = ({
             </div>
             <div className="mb-4 flex flex-wrap">
               <div className="w-full sm:w-1/3">
-                <p className="font-semibold text-gray-600">
+                <p className="font-semibold ">
                   NIN:{" "}
                   <span className="font-normal">
-                    {customerInfo ? customerInfo.nin : "N/A"}
+                    {customerInfo?.nin || "N/A"}
                   </span>
                 </p>
                 {/* <p className="text-gray-900">1234567890</p> */}
               </div>
               <div className="w-full sm:w-1/3">
-                <p className="font-semibold text-gray-600">
+                <p className="font-semibold ">
                   BVN:{" "}
                   <span className="font-normal">
-                    {customerInfo ? customerInfo.bvn : "N/A"}
+                    {customerInfo?.bvn || "N/A"}
                   </span>
                 </p>
                 {/* <p className="text-gray-900">1234567890</p> */}
@@ -1139,7 +1197,7 @@ export const ViewCustomer = ({
           </div>
         </div>
 
-        <div className=" mt-8 rounded-lg text-gray-600">
+        <div className=" mt-8 rounded-lg ">
           <div className="md:flex ">
             <div className="w-[60%] rounded-lg p-6 md:border">
               <p className="mb-8 mt-2 text-xl font-bold">Next of Kin Details</p>
@@ -1149,7 +1207,7 @@ export const ViewCustomer = ({
                   <p className="font-bold">
                     Name:{" "}
                     <span className="font-normal">
-                      {customerInfo ? customerInfo.nok : "N/A"}
+                      {customerInfo?.nok || "N/A"}
                     </span>
                   </p>
                   {/* <p className="text-gray-900">John Doe</p> */}
@@ -1159,7 +1217,7 @@ export const ViewCustomer = ({
                   <p className=" font-bold">
                     Phone Number:{" "}
                     <span className="pl-8 font-normal">
-                      {customerInfo ? customerInfo.nokPhone : "N/A"}
+                      {customerInfo?.nokPhone || "N/A"}
                     </span>
                   </p>
                   {/* <p className="text-gray-900">123-456-7890</p> */}
@@ -1169,7 +1227,7 @@ export const ViewCustomer = ({
                   <p className=" font-bold">
                     Relationship:{" "}
                     <span className="pl-8 font-normal">
-                      {customerInfo ? customerInfo.nokRelationship : "N/A"}
+                      {customerInfo?.nokRelationship || "N/A"}
                     </span>
                   </p>
                   {/* <p className="text-gray-900">123-456-7890</p> */}
@@ -1192,7 +1250,7 @@ export const ViewCustomer = ({
 
               <div className="">
                 <Image
-                  src={customerInfo?.meansOfIDPhoto ?? ninslip}
+                  src={customerInfo?.meansOfIDPhoto ?? ""}
                   alt="Customer"
                   width={270}
                   height={165}
@@ -1213,6 +1271,7 @@ export const EditCustomer = ({
   content,
   closeModal,
 }: ShowModalProps) => {
+  console.log(123456);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showErrorToast, setShowErrorToast] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -1227,7 +1286,7 @@ export const EditCustomer = ({
 
   const { client } = useAuth();
   const { data: customerInfo, isLoading: isLoadingCustomerInfo } = useQuery({
-    queryKey: ["customerInfo"],
+    queryKey: ["customer Info"],
     queryFn: async () => {
       return client
         .get(`/api/user/${customerId}`)
@@ -1240,12 +1299,13 @@ export const EditCustomer = ({
     },
   });
 
+  console.log(customerInfo);
   const {
     data: organizations,
     isLoading: isUserLoading,
     isError: getGroupError,
   } = useQuery({
-    queryKey: ["allOrganizations"],
+    queryKey: ["all Organizations edit"],
     queryFn: async () => {
       return client
         .get(`/api/user?role=organisation`, {})
@@ -1354,14 +1414,18 @@ export const EditCustomer = ({
       }
     }
   }, [selectedCountry, selectedState]);
+  if (isLoadingCustomerInfo) {
+    return <div className="text-white">Loading...</div>;
+  }
   return (
-    <div className="mx-auto mt-8 w-[100%] overflow-hidden rounded-md bg-white p-4 shadow-md">
+    <div className="mx-auto mt-8 w-[100%]  rounded-md  p-4 ">
       <div>
         {customerInfo && (
           <Formik
             initialValues={{
               firstName: customerInfo?.firstName,
               lastName: customerInfo?.lastName,
+              password: customerInfo?.password,
               otherName: customerInfo?.otherName,
               phoneNumber: customerInfo?.phoneNumber,
               email: customerInfo?.email,
@@ -1373,8 +1437,8 @@ export const EditCustomer = ({
               organisation: customerInfo?.organisation,
               meansOfIDPhoto: null,
               photo: null,
-              nin: customerInfo?.nin,
-              bvn: customerInfo?.bvn,
+              nin: customerInfo?.nin || "",
+              bvn: customerInfo?.bvn || "",
               ninslip: null,
               nok: "",
               nokRelationship: "",
@@ -1385,18 +1449,20 @@ export const EditCustomer = ({
               bankAcctNo: "",
             }}
             validationSchema={Yup.object({
-              firstName: Yup.string().required("Required"),
-              lastName: Yup.string().required("Required"),
+              firstName: Yup.string().optional(),
+              lastName: Yup.string().optional(),
+              password: Yup.string().optional(),
               otherName: Yup.string().optional(),
-              email: Yup.string().required("Required"),
-              homeAddress: Yup.string().required("Required"),
-              country: Yup.string().required("Required"),
-              state: Yup.string().required("Required"),
-              lga: Yup.string().required("Required"),
-              city: Yup.string().required("Required"),
-              organisation: Yup.string().required("Required"),
+              email: Yup.string().optional(),
+              homeAddress: Yup.string().optional(),
+              country: Yup.string().optional(),
+              state: Yup.string().optional(),
+              lga: Yup.string().optional(),
+              city: Yup.string().optional(),
+              organisation: Yup.string().optional(),
             })}
             onSubmit={(values, { setSubmitting }) => {
+              console.log(values);
               updateUserInfo(values);
               setTimeout(() => {
                 setShowSuccessToast(false);
@@ -1418,7 +1484,7 @@ export const EditCustomer = ({
                 className="mt-8 w-full"
               >
                 {" "}
-                <p className="mb-8 mt-2 text-xl font-bold text-gray-600">
+                <p className="mb-8 mt-2 text-xl font-bold text-white">
                   Edit Customer Details
                 </p>
                 <div className="p-6 md:flex ">
@@ -1476,12 +1542,9 @@ export const EditCustomer = ({
                         <div className="mb-3 w-full">
                           <label
                             htmlFor="firstName"
-                            className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
+                            className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%]"
                           >
-                            First Name{" "}
-                            <span className="font-base font-semibold text-[#FF0000]">
-                              *
-                            </span>
+                            First Name
                           </label>
                           <div>
                             <Field
@@ -1500,12 +1563,9 @@ export const EditCustomer = ({
                         <div className="mb-3 w-full">
                           <label
                             htmlFor="lastName"
-                            className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
+                            className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%]"
                           >
-                            Last Name{" "}
-                            <span className="font-base font-semibold text-[#FF0000]">
-                              *
-                            </span>
+                            Last Name
                           </label>
                           <div>
                             <Field
@@ -1527,7 +1587,7 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="otherName"
-                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%]"
                         >
                           Other Names
                         </label>
@@ -1544,12 +1604,9 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="phoneNumber"
-                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%]"
                         >
-                          Phone Number{" "}
-                          <span className="font-base font-semibold text-[#FF0000]">
-                            *
-                          </span>
+                          Phone Number
                         </label>
                         <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
                           <Field
@@ -1569,12 +1626,9 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="email"
-                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%]"
                         >
-                          Email address{" "}
-                          <span className="font-base font-semibold text-[#FF0000]">
-                            *
-                          </span>
+                          Email address
                         </label>
                         <div></div>
                         <Field
@@ -1593,12 +1647,9 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="homeAddress"
-                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%]"
                         >
-                          Home Address{" "}
-                          <span className="font-base font-semibold text-[#FF0000]">
-                            *
-                          </span>
+                          Home Address
                         </label>
                         <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
                           <Field
@@ -1618,7 +1669,7 @@ export const EditCustomer = ({
                       <div className="mb-3 w-full">
                         <label
                           htmlFor="country"
-                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%]"
                         >
                           Country of Residence
                         </label>
@@ -1655,7 +1706,7 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="state"
-                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%]"
                         >
                           State
                         </label>
@@ -1686,7 +1737,7 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="lga"
-                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%]"
                         >
                           Local Government Area (lga)
                         </label>
@@ -1718,12 +1769,9 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="city"
-                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%]"
                         >
-                          City{" "}
-                          <span className="font-base font-semibold text-[#FF0000]">
-                            *
-                          </span>
+                          City
                         </label>
                         <div className="mt-1 flex w-full items-center gap-2 rounded-lg border-0  bg-[#F3F4F6] p-3 text-[#7D7D7D]">
                           <Field
@@ -1744,12 +1792,9 @@ export const EditCustomer = ({
                         <div className="mb-3">
                           <label
                             htmlFor="organisation"
-                            className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%]"
+                            className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%]"
                           >
                             Select Organisation i.e Thrift Collector
-                            <span className="font-base font-semibold text-[#FF0000]">
-                              *
-                            </span>
                           </label>
                           <div>
                             <Field
@@ -1779,7 +1824,7 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="nin"
-                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%] "
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%] "
                         >
                           NIN number
                         </label>
@@ -1799,7 +1844,7 @@ export const EditCustomer = ({
                       <div className="mb-3">
                         <label
                           htmlFor="bvn"
-                          className="w-[20%] whitespace-nowrap text-xs font-medium text-gray-600 md:mt-[2%] "
+                          className="w-[20%] whitespace-nowrap text-xs font-medium text-white md:mt-[2%] "
                         >
                           BVN number
                         </label>
@@ -1916,6 +1961,10 @@ export const CreateCustomer = ({
   setError: Dispatch<SetStateAction<string>>;
 }) => {
   const { client } = useAuth();
+  const user = useSelector(selectUser);
+  console.log(user);
+
+  const [createdBy, setCreatedBy] = useState("");
   const [selectedOption, setSelectedOption] = useState("manual");
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedStateArray, setselectedStateArray] = useState<StateProps[]>(
@@ -1934,6 +1983,13 @@ export const CreateCustomer = ({
   const pathname = usePathname();
   const isSuperAdminPath = pathname.includes("/superadmin");
 
+  useEffect(() => {
+    if (user?.role === "organisation") {
+      setCreatedBy("Merchant");
+    } else if (user?.firstName && user?.lastName) {
+      setCreatedBy(`${user.firstName} ${user.lastName}`);
+    }
+  }, [user]);
   const handleOrganisationChange = (e: {
     target: { value: SetStateAction<string> };
   }) => {
@@ -2036,6 +2092,7 @@ export const CreateCustomer = ({
       // Append all the fields to the formData
       formData.append("firstName", values.firstName);
       formData.append("lastName", values.lastName);
+      formData.append("password", values.password);
       formData.append("otherName", values.otherName);
       formData.append("phoneNumber", values.phoneNumber);
       formData.append("email", values.email);
@@ -2057,6 +2114,7 @@ export const CreateCustomer = ({
       formData.append("bvn", values.bvn);
       formData.append("meansOfID", values.meansOfID);
       formData.append("bankAcctNo", values.bankAcctNo);
+      formData.append("createdBy", createdBy);
       //       formData.append("bankAcctName", values.bankAcctName);
       // formData.append("bankName", values.bankAcctNo);
       // Append images
@@ -2256,42 +2314,44 @@ export const CreateCustomer = ({
                 "Phone number must start with +234 and be 14 characters long or start with 0 and be 11 characters long",
               )
               .required("Phone number is required"),
-            email: Yup.string().email("Invalid email address").optional(),
-            country: Yup.string().required("Required"),
-            state: Yup.string().required("Required"),
-            lga: Yup.string().required("Required"),
-            city: Yup.string().required("Required"),
-            popularMarket: Yup.string().required("Required"),
-            nok: Yup.string().required("Required"),
-            nokRelationship: Yup.string().required("Required"),
-            nokPhone: Yup.string().required("Required"),
+            email: Yup.string()
+              .email("Invalid email address")
+              .required("email is required"),
+            country: Yup.string().optional(),
+            state: Yup.string().optional(),
+            lga: Yup.string().optional(),
+            city: Yup.string().optional(),
+            popularMarket: Yup.string().optional(),
+            nok: Yup.string().optional(),
+            nokRelationship: Yup.string().optional(),
+            nokPhone: Yup.string().optional(),
             homeAddress: Yup.string().optional(),
             //  organisation: Yup.string().optional(),
-            photo: Yup.mixed()
-              .required("Required")
-              .test(
-                "fileSize",
-                "File size must be less than 5MB",
-                (value: MyFileList) => {
-                  if (value) {
-                    return value[0].size <= 5242880;
-                  }
-                  return true;
-                },
-              ),
-            meansOfID: Yup.string().required("Required"),
-            meansOfIDPhoto: Yup.mixed()
-              .required("Means of ID photo is required")
-              .test(
-                "fileSize",
-                "File size must be less than 5MB",
-                (value: MyFileList) => {
-                  if (value) {
-                    return value[0].size <= 5242880;
-                  }
-                  return true;
-                },
-              ),
+            // photo: Yup.mixed()
+            //   .optional()
+            //   .test(
+            //     "fileSize",
+            //     "File size must be less than 5MB",
+            //     (value: MyFileList | undefined) => {
+            //       if (value && (value as File[]).length > 0) {
+            //         return value[0].size <= 5242880;
+            //       }
+            //       return true;
+            //     },
+            //   ),
+            meansOfID: Yup.string().optional(),
+            // meansOfIDPhoto: Yup.mixed()
+            //   .optional()
+            //   .test(
+            //     "fileSize",
+            //     "File size must be less than 5MB",
+            //     (value: MyFileList | undefined) => {
+            //       if (value && (value as File[]).length > 0) {
+            //         return value[0].size <= 5242880;
+            //       }
+            //       return true;
+            //     },
+            //   ),
             nin: Yup.string().optional(),
             bvn: Yup.string().optional(),
             // bankName: Yup.string()
@@ -2392,6 +2452,26 @@ export const CreateCustomer = ({
                     className="text-red-500"
                   />
                 </div>
+              </div>
+
+              <div className="mb-3">
+                <label
+                  htmlFor="password"
+                  className="m-0 text-xs font-medium text-white"
+                >
+                  Password
+                </label>
+                <Field
+                  id="password"
+                  name="password"
+                  type="text"
+                  className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                />
+                <ErrorMessage
+                  name="password"
+                  component="div"
+                  className="text-red-500"
+                />
               </div>
 
               <div className="mb-3">
@@ -2510,6 +2590,25 @@ export const CreateCustomer = ({
               </div>
               {/* Personal Details Fields */}
               <div className="mb-8">
+                <div className="mb-3">
+                  <label
+                    htmlFor="homeAddress"
+                    className="m-0 text-xs font-medium text-white"
+                  >
+                    Home address
+                  </label>
+                  <Field
+                    name="homeAddress"
+                    type="text"
+                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
+                  />
+                  <ErrorMessage
+                    name="homeAddress"
+                    component="div"
+                    className="text-red-500"
+                  />
+                </div>
+
                 <div className="mb-3">
                   <label
                     htmlFor="country"
@@ -2703,24 +2802,6 @@ export const CreateCustomer = ({
                   </div>
                   <ErrorMessage
                     name="nokPhone"
-                    component="div"
-                    className="text-red-500"
-                  />
-                </div>
-                <div className="mb-3">
-                  <label
-                    htmlFor="homeAddress"
-                    className="m-0 text-xs font-medium text-white"
-                  >
-                    Home address
-                  </label>
-                  <Field
-                    name="homeAddress"
-                    type="text"
-                    className="w-full rounded-lg border-0 bg-[#F3F4F6]  p-3 text-[#7D7D7D]"
-                  />
-                  <ErrorMessage
-                    name="homeAddress"
                     component="div"
                     className="text-red-500"
                   />

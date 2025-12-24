@@ -2,12 +2,14 @@ import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { ReactNode } from "react";
 
 export type customer = {
+  password: unknown;
   industry: string;
   natureOfBusiness: string;
   officeAddress1: string;
   organisationName?: string;
   _id: string;
   firstName: string;
+  createdBy: string;
   lastName: string;
   otherName: string;
   email: string;
@@ -297,9 +299,11 @@ export interface getOrganizationProps {
 export interface UpdateKycProps {
   email?: any;
   phoneNumber?: any;
+  password?: any;
   otherName?: any;
   lastName?: any;
   firstName?: any;
+  createdBy?: string;
   country: string;
   state: string;
   lga: string;
@@ -674,6 +678,7 @@ export interface createSuperRoleProps {
 export interface mutateUserProps {
   firstName: string;
   lastName: string;
+  password: string;
   email: string;
   phone: string;
   homeAddress: string;
@@ -695,6 +700,15 @@ export interface mutateUserProps {
   assignedCustomers: any;
 
   roles: any;
+  // roles: {
+  //   _id: string;
+  //   name: string;
+  //   description: string;
+  //   permissions: Permission[];
+  //   createdAt: string;
+  //   updatedAt: string;
+  //   __v: number;
+  // }[];
   allCustomers?: string[];
 }
 
@@ -736,6 +750,7 @@ export interface staffResponse {
   _id: string;
   firstName: string;
   lastName: string;
+  password: string;
   email: string;
   homeAddress: string;
   phoneNumber: string;
@@ -765,6 +780,7 @@ interface assignedUserdata {
   lastName: string;
 }
 interface RolesData {
+  _id: string;
   name: string;
 }
 
